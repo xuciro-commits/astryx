@@ -30,6 +30,7 @@ import {
   linkReferenceTopic,
   lowerReferenceTopic,
 } from '../../foundation/doc-compiler/compile.mjs';
+import {overlayAuthoredDoc} from '../../foundation/doc-compiler/overlays.mjs';
 import {
   deepFreeze,
   loadTopicFile,
@@ -1647,15 +1648,32 @@ const typedDocIndexes = new WeakMap();
  * @param {DocsCatalog} catalog
  * @param {DocsTree} tree
  * @param {TreeNode} node
- * @returns {Promise<{content: any[], problems: LinkProblem[]}>}
+ * @param {string | null} [lang] language for the sibling overlay
+ * @returns {Promise<{content: any[], problems: LinkProblem[], title?: string, summary?: string, slots?: any}>}
  */
-export async function nodeContent(catalog, tree, node) {
+export async function nodeContent(catalog, tree, node, lang = null) {
   if (!node.ref?.selfDoc) return {content: [], problems: []};
+  let selfDoc = node.ref.selfDoc;
+  // Tree nodes carry the authored doc as read for the default language. A
+  // localized read lays the sibling overlay over a fresh read of the same
+  // file, so namespace summaries, slot titles, and layout blocks translate
+  // without rebuilding the whole tree for every language.
+  if (lang && lang !== 'en' && node.file) {
+    const file = await loadTopicFile(node.file, lang);
+    if (file.doc && file.overlay) {
+      selfDoc = overlayAuthoredDoc(file.doc, file.overlay);
+    }
+  }
   const resolve = await linkResolver(catalog, node.providerId);
-  return linkBlocks(
-    cliDocSection(node.ref.selfDoc, typedDocIndex(tree)).content,
-    resolve,
-  );
+  return {
+    ...(await linkBlocks(
+      cliDocSection(selfDoc, typedDocIndex(tree)).content,
+      resolve,
+    )),
+    title: selfDoc.title,
+    summary: selfDoc.summary,
+    slots: selfDoc.slots,
+  };
 }
 
 /**

@@ -54,7 +54,12 @@ import {
  * @returns {Promise<import('../docs.type.mjs').DocsNode>}
  */
 export async function nodeView(catalog, tree, node, read) {
-  const {content} = await nodeContent(catalog, tree, node);
+  const {content, title, summary, slots: translatedSlots} = await nodeContent(
+    catalog,
+    tree,
+    node,
+    read?.lang,
+  );
   const slots = node.slots.filter(slot => slot.children.length > 0);
   /** @type {import('../docs.type.mjs').DocsNode} */
   const view = {
@@ -62,8 +67,8 @@ export async function nodeView(catalog, tree, node, read) {
     route: node.route,
     kind: node.kind,
     package: node.provider,
-    title: node.title,
-    summary: node.summary,
+    title: title ?? node.title,
+    summary: summary ?? node.summary,
     ...stabilityOf(tree, node),
     breadcrumb: tree
       .ancestors(node)
@@ -71,7 +76,7 @@ export async function nodeView(catalog, tree, node, read) {
     slots: !read
       ? slots.map(slot => ({
           name: slot.name,
-          title: slot.title,
+          title: translatedSlots?.[slot.name]?.title ?? slot.title,
           children: slot.children.map(route =>
             childIdentity(tree, /** @type {TreeNode} */ (tree.get(route))),
           ),
@@ -173,7 +178,7 @@ async function childText(catalog, tree, child, lang) {
       sections: detailView(await compileTopic(catalog, entry, lang)).sections,
     };
   }
-  const {content} = await nodeContent(catalog, tree, child);
+  const {content} = await nodeContent(catalog, tree, child, lang);
   return {content};
 }
 

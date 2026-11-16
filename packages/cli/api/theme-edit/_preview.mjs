@@ -1513,8 +1513,16 @@ export async function screenshot(project, html, png, mode) {
     // Run without blocking, so a stop (Ctrl-C, SIGTERM) reaches this
     // process while the browser runs: the browser is stopped with it, and
     // the stop is reported as a stop, never as a browser that failed.
+    //
+    // A headless Chrome still opens the system keychain for "Chrome Safe
+    // Storage", and a machine whose Chrome never stored one gets the system
+    // asking where to put it — once for every browser, and a picture run
+    // starts them one after another. These two keep that storage in memory,
+    // so making a picture raises no window and asks nothing of the machine.
     const r = await runBrowser(chrome, [
       '--headless=new',
+      '--use-mock-keychain',
+      '--password-store=basic',
       '--disable-gpu',
       '--no-sandbox',
       '--hide-scrollbars',

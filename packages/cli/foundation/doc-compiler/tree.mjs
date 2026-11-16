@@ -86,6 +86,7 @@ export const KIND_GROUPS = Object.freeze({
  * @property {number} [rank] which provider wins a contested route: the CLI's
  *   own docs are 0, then each integration in configured order
  * @property {string} source `<package>/<path>` of its file
+ * @property {string} [file] absolute path of its file, for language overlays
  * @property {NamespaceDoc} doc
  */
 
@@ -180,6 +181,7 @@ export const topicLevel = category =>
  *   level, or a flat topics' level), not authored
  * @property {TreeSlot[]} slots a namespace's slots; empty for a leaf
  * @property {string} source
+ * @property {string} [file] absolute path of its file, for language overlays
  * @property {any} [ref]
  * @property {import('../discovery/docs-discovery.mjs').GuideOverlay} [guideOverlay]
  *   what integrations do to a guide the tree places, by its route: set by the
@@ -498,6 +500,7 @@ export function buildDocsTree({namespaces, docs, topics = []}) {
         order: home?.order ?? null,
         generated: false,
         ref: {selfDoc: input.doc},
+        ...(input.file ? {file: input.file} : null),
         slots: Object.entries(input.doc.slots).map(([name, slot]) => ({
           name,
           title: slot.title,
@@ -895,6 +898,7 @@ export async function loadTreeInputs({
         provider: CLI_PROVIDER,
         providerId: CLI_PROVIDER_ID,
         source,
+        file,
         doc,
       });
     } else if (doc.type === 'generic') {

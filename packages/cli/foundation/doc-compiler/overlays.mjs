@@ -64,11 +64,53 @@ export function mergeTranslation(docs, translation) {
       merged.usage.bestPractices = translation.usage.bestPractices;
     if (translation.usage?.accessibility)
       merged.usage.accessibility = translation.usage.accessibility;
+    if (translation.usage?.anatomy && merged.usage.anatomy)
+      merged.usage.anatomy = merged.usage.anatomy.map(
+        (/** @type {any} */ item, /** @type {number} */ i) => {
+          const trans =
+            translation.usage.anatomy.find(
+              (/** @type {any} */ a) => a.name === item.name,
+            ) ?? translation.usage.anatomy[i];
+          if (!trans) return item;
+          return {...item, ...trans, required: item.required};
+        },
+      );
   }
 
-  // Legacy top-level fields (for docsZh that are full ComponentDoc clones)
-  if (translation.description && !merged.usage)
+  // Top-level title/description (namespace docs and component listings read
+  // these even when usage exists)
+  if (translation.title) merged.title = translation.title;
+  if (translation.description)
     merged.description = translation.description;
+
+  // Namespace docs keep their intro copy on the doc itself rather than in
+  // usage: summary, slot labels, and the reference blocks below the title.
+  if (translation.summary) merged.summary = translation.summary;
+  if (translation.slots && merged.slots) {
+    merged.slots = {...merged.slots};
+    for (const [key, slot] of Object.entries(translation.slots)) {
+      if (merged.slots[key] && slot?.title) {
+        merged.slots[key] = {...merged.slots[key], title: slot.title};
+      }
+    }
+  }
+  if (Array.isArray(translation.blocks) && Array.isArray(merged.blocks)) {
+    merged.blocks = merged.blocks.map((/** @type {any} */ block, /** @type {number} */ i) => {
+      const trans =
+        translation.blocks.find((/** @type {any} */ b) => b.i === i) ??
+        translation.blocks[i];
+      if (!trans) return block;
+      const next = {...block};
+      if (trans.text) next.text = trans.text;
+      if (Array.isArray(trans.items) && trans.items.length)
+        next.items = trans.items;
+      if (Array.isArray(trans.headers) && trans.headers.length)
+        next.headers = trans.headers;
+      if (Array.isArray(trans.rows) && trans.rows.length) next.rows = trans.rows;
+      if (trans.label) next.label = trans.label;
+      return next;
+    });
+  }
 
   // Merge prop descriptions for single-component docs
   if (translation.propDescriptions && merged.props) {

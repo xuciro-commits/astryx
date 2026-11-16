@@ -344,6 +344,7 @@ function applyOverlay(docs, translation) {
   }
   return {
     ...docs,
+    title: translation.title || docs.title,
     description: translation.description || docs.description,
     sections: docs.sections.map((/** @type {any} */ section) => {
       const ts = bySection.get(section.title);
@@ -359,6 +360,17 @@ function applyOverlay(docs, translation) {
               return {...block, text: tb.text};
             if (tb.type === 'list' && block.type === 'list')
               return {...block, items: tb.items};
+            if (tb.type === 'heading' && block.type === 'heading')
+              return {...block, text: tb.text};
+            if (tb.type === 'table' && block.type === 'table') {
+              return {
+                ...block,
+                ...(tb.headers ? {headers: tb.headers} : null),
+                ...(tb.rows ? {rows: tb.rows} : null),
+              };
+            }
+            if (tb.type === 'code' && block.type === 'code')
+              return {...block, ...(tb.label ? {label: tb.label} : null)};
             return block;
           },
         ),

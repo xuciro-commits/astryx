@@ -17,7 +17,15 @@ const [entry, html, png, mode, executablePath] = process.argv.slice(2);
 try {
   const pw = await import(pathToFileURL(entry).href);
   const chromium = pw.chromium ?? pw.default?.chromium;
-  const browser = await chromium.launch(executablePath ? {executablePath} : {});
+  // A headless browser still opens the system keychain for its "Safe
+  // Storage" item, and a machine whose browser never stored one is asked
+  // where to put it — once for every picture taken. These keep that storage
+  // in memory instead, whatever browser this is: Playwright's own or the
+  // one the machine has.
+  const browser = await chromium.launch({
+    ...(executablePath ? {executablePath} : {}),
+    args: ['--use-mock-keychain', '--password-store=basic'],
+  });
   try {
     const page = await browser.newPage({
       viewport: {width: 1280, height: 900},

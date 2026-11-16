@@ -572,6 +572,7 @@ export async function discoverIntegrationDocs(integration) {
         provider: integration.name,
         providerId,
         source,
+        file,
         doc: /** @type {any} */ (doc),
       });
       continue;

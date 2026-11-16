@@ -1,31 +1,31 @@
-# Search ordering data
+# 搜索排序数据
 
-`astryx search` decides **what matches**, and each match's score and reason, with the lexical ranker (`_lexical.mjs` and the files it imports). The files in this folder only decide **the order of matches inside one score band**: they never add or drop a match, change a score, or move a match past one of another band or kind (doc or not). The bands are scores 195 and up, 188–194, 170–187, 160–169, 151–159, 100–150, 55–99, and under 55. A band can be wide (55–99 holds keyword matches beside one-word description hits), so inside a band a lower score can lead a higher one.
+`astryx search` 通过词法排序器（`_lexical.mjs` 及其导入的文件）决定**哪些内容匹配**，以及每个匹配的分数和原因。本文件夹中的文件只决定**同一分数段内匹配的顺序**：它们从不增加或删除匹配、不改变分数，也不会把匹配移过另一个分数段或类型（doc 或非 doc）的边界。分数段为 195 及以上、188–194、170–187、160–169、151–159、100–150、55–99，以及 55 以下。一个分数段可能很宽（55–99 中既有单词描述命中，也有关键字匹配），因此在同一分数段内，较低的分数可能排在较高的分数之前。
 
-## Rule
+## 规则
 
-`spec:AST-083` owns search's result order; this file describes the data that implements it. Inside one score band, a searcher's static weights decide the order. Matches with the same score move together as one block, placed by the learned position of the block's first match: moving each one on its own breaks search's existing rules for tied matches. Inside a block, the lexical ranker's order holds, except below the first result: there a block of one domain puts a part of the first result first (its name words start with the first result's; at most two parts lead across an answer), then the match whose matched words are rarer in the catalog. Matches never cross bands or kinds. There is no model runtime: every number is a plain static value read at load time.
+`spec:AST-083` 拥有搜索的结果顺序；本文件描述实现该顺序的数据。在同一个分数段内，搜索器的静态权重决定顺序。分数相同的匹配作为一个块一起移动，其位置由该块第一个匹配的学习位置决定：单独移动每一个匹配会破坏搜索现有的并列匹配规则。在一个块内部，词法排序器的顺序保持不变，但第一个结果之下除外：在那里，同一域的一个块会把第一个结果的一个组成部分排在前面（其名称单词以第一个结果的名称单词开头；整份答案中最多有两个部分领先），然后是匹配词在目录中更罕见的匹配。匹配永远不会跨分数段或类型。不存在模型运行时：每个数字都是加载时读取的普通静态值。
 
-After that order, one fit pass reads the first ten results (`_fit-order.mjs`). The first result stays. The others split into runs of one band and kind. Inside a run, each match gets a fit to the whole query from the block picker's `matchOf` (`../build/blocks/blocks.mjs` with `blocks.weights.json`, over the weights' vocabulary) over the match's own docs: its name words, display name or title, description, and keywords. A match whose fit is under 1.7 times the run's median fit moves, in order, after the others in its run, unless its name spells two or more of the query's words. Such a match never moves down; it can still move up when others move after it. A run whose median fit is zero or less keeps its order. A query that is an entry's whole name skips the pass, as it skips the learned order. The pass always reads ten places before the limit cuts the answer. At the default limit, and at any limit of 10 or more, the set of results stays the same. A smaller limit shows the top of the new order, so it can show a different result. Build's loader (`loadBlockPicker` in `../build/_adapter.mjs`) reads and checks the block-picker weights for both commands. When the file is missing, unreadable, or not the picker's shape, the loader returns null and the pass keeps the order. The pass reads the weights only when a run holds two or more matches, and it decodes only the matrix rows that the query's words and those matches' docs use, so a search does not pay for the whole catalog.
+在该顺序之后，一次适配遍历读取前十个结果（`_fit-order.mjs`）。第一个结果保持不变。其余结果按分数段和类型拆分为连续段。在一个连续段内，每个匹配会得到针对整个查询的适配度，该适配度来自块选择器的 `matchOf`（`../build/blocks/blocks.mjs` 与 `blocks.weights.json`，基于权重的词表），并针对匹配自身的文档：其名称单词、显示名称或标题、描述和关键字。适配度低于该连续段中位数 1.7 倍的匹配会按顺序移到该连续段中其他匹配之后，除非其名称拼出了查询中两个或更多的单词。这样的匹配永远不会下移；当其他匹配移到它后面时，它仍然可以上移。中位适配度为零或更低的连续段保持其顺序。如果查询恰好是某个条目的完整名称，则跳过该遍历，就像它会跳过学习顺序一样。该遍历总是在限制截断答案之前读取十个位置。在默认限制下，以及任何 10 或以上的限制下，结果集合保持不变。更小的限制会显示新顺序的顶部，因此可能显示不同的结果。构建的加载器（`../build/_adapter.mjs` 中的 `loadBlockPicker`）会为 search 和 build 两个命令读取并检查块选择器的权重。当文件缺失、不可读或不符合选择器的结构时，加载器返回 null，该遍历保持原顺序。只有当连续段包含两个或更多匹配时，该遍历才会读取权重，并且只解码查询的单词和那些匹配的文档所使用的矩阵行，因此一次搜索不需要为整个目录付出代价。
 
-## Files
+## 文件
 
-| File                                                                                           | What it holds                                                                                                                                                                                                                                 |
-| ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tree.weights.json`                                                                            | The root classifier: for each query word or word pair, one number per class (component, hook, doc, template, theme, none). The query's tokens vote, and a topic searcher takes the query only when its class wins by the floor in `tree.mjs`. |
-| `_main-searcher.weights.json`, `_doc-searcher.weights.json`, `_template-searcher.weights.json` | One weight, mean and spread per signal for each searcher (see `SIGNALS` and `PER_DOMAIN` in `_features.mjs`). A match's place inside its band is the weighted sum of its standardized signals.                                                |
-| `../build/blocks/blocks.weights.json`                                                          | The block picker's vocabulary, idf and two projection matrices, shared with build. The fit pass reads them through build's loader; search ships no copy.                                                                                      |
-| `_cards.json`                                                                                  | One card per Core component and hook: what it is, the words people use for it, and its main props, written from the item's own source. Cards feed one signal, word overlap with the card.                                                     |
+| 文件                                                                                           | 内容                                                                                                                                                                                                   |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `tree.weights.json`                                                                            | 根分类器：对于每个查询单词或单词对，每个类（component、hook、doc、template、theme、none）对应一个数字。查询的 token 会投票，只有当某个类的票数以 `tree.mjs` 中的下限胜出时，主题搜索器才会采用该查询。 |
+| `_main-searcher.weights.json`, `_doc-searcher.weights.json`, `_template-searcher.weights.json` | 每个搜索器每个信号一个权重、均值和离散度（见 `_features.mjs` 中的 `SIGNALS` 和 `PER_DOMAIN`）。一个匹配在其分数段内的位置是其标准化信号的加权和。                                                      |
+| `../build/blocks/blocks.weights.json`                                                          | 块选择器的词表、idf 和两个投影矩阵，与 build 共享。适配遍历通过 build 的加载器读取它们；search 不自带副本。                                                                                            |
+| `_cards.json`                                                                                  | 每个 Core 组件和 hook 一张卡片：它是什么、人们用什么词称呼它，以及它的主要 props，均根据条目自身的源代码编写。卡片为一个信号提供输入，即与卡片的单词重叠度。                                           |
 
-The signals are counts over the query and each entry's own text: the lexical score and rank, BM25 over the entry's name, docs text and card, how many query words the entry covers, whether the query holds the entry's name, and the classifier's guess of the domain.
+这些信号是对查询和每个条目自身文本的计数：词法分数和排名、对条目名称、文档文本和卡片计算的 BM25、条目覆盖了多少个查询单词、查询是否包含该条目的名称，以及分类器对域的猜测。
 
-## Status
+## 状态
 
-These files are static and reviewed. They are not computed when the CLI runs, and nothing at run time writes them.
+这些文件是静态的，并经过审查。它们不会在 CLI 运行时计算，运行时也不会有任何东西写入它们。
 
-## Refreshing
+## 刷新
 
-- A Core component or hook without a card is still matched and scored as usual; inside its band it is ordered by its other signals.
-- When Core adds or renames items, a reviewed change adds or updates their cards and, if needed, refreshed weights.
-- Any refresh must keep every test that pins search's behavior passing, including the ordering invariants in `_order.test.mjs`. It must also keep the `astryx search` output's matches, scores and reasons identical to the lexical ranker's.
-- Any refresh must also be measured as `spec:AST-083` FR6 requires: against the held-out, fresh and synthetic evaluation sets, with no row worse than the previous order (a row is worse when the paired 95% confidence interval of its change lies entirely below zero).
+- 没有卡片的 Core 组件或 hook 仍会照常匹配和评分；在其分数段内，它按其他信号排序。
+- 当 Core 添加或重命名条目时，经过审查的变更会添加或更新它们的卡片，并在需要时刷新权重。
+- 任何刷新都必须让所有固定搜索行为的测试保持通过，包括 `_order.test.mjs` 中的排序不变量。它还必须让 `astryx search` 输出的匹配、分数和原因与词法排序器的保持一致。
+- 任何刷新还必须按照 `spec:AST-083` FR6 的要求进行测量：针对留出的、全新的和合成的评估集，没有任何一行比之前的顺序更差（当某行变化的配对 95% 置信区间完全低于零时，该行就是更差的）。
