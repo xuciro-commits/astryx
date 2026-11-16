@@ -1,0 +1,408 @@
+{
+  "ai-chat": {
+    "slug": "ai-chat",
+    "file": "packages/cli/assets/templates/pages/ai-chat/template.doc.mjs",
+    "name": "AI 对话",
+    "description": "交替消息流以行内形式呈现 Markdown、代码块和可折叠的工具调用输出，旁边是可调整大小的成果面板：生成内容留在面板中，消息流则持续滚动。",
+    "category": "AI Chat - Conversation"
+  },
+  "ai-chat-landing": {
+    "slug": "ai-chat-landing",
+    "file": "packages/cli/assets/templates/pages/ai-chat-landing/template.doc.mjs",
+    "name": "AI 对话落地页",
+    "description": "以单一输入框为中心的零状态入口，用建议标签代替历史记录，专为尚无任何内容的初始时刻设计，是对话记录的空状态版本。",
+    "category": "AI Chat - Landing"
+  },
+  "blank": {
+    "slug": "blank",
+    "file": "packages/cli/assets/templates/pages/blank/template.doc.mjs",
+    "name": "空白页",
+    "description": "极简脚手架：一个标题位、一块空白内容区，没有导航，也没有多余框架。当其他布局都显得结构过重时，从这里开始。",
+    "category": "Shell - Blank"
+  },
+  "canvas-editor": {
+    "slug": "canvas-editor",
+    "file": "packages/cli/assets/templates/pages/canvas-editor/template.doc.mjs",
+    "name": "画布编辑器",
+    "description": "分层画板工作区：文档标签下方是图层栏，固定尺寸的画框可在灰色背景上缩放，位置、类型和滤镜字段的检查器会随选中图层切换。对象以坐标定位而非自动重排，移动其中一个不会带动其他对象。",
+    "category": "Tools - Canvas Editor"
+  },
+  "centered-hero": {
+    "slug": "centered-hero",
+    "file": "packages/cli/assets/templates/pages/centered-hero/template.doc.mjs",
+    "name": "居中首屏",
+    "description": "对称的居中版式——标题、简短介绍和成对的行动按钮——置于一张宽幅满屏图片之上，两侧没有任何元素分散注意力。",
+    "category": "Gallery - Hero"
+  },
+  "checkout-wizard": {
+    "slug": "checkout-wizard",
+    "file": "packages/cli/assets/templates/pages/checkout-wizard/template.doc.mjs",
+    "name": "结账向导",
+    "description": "多步骤的购物车、订单与支付结账向导，摘要会随填写内容实时重新计算。布局自适应容器宽度，窄屏时优先显示摘要；每一步前进都会校验，并在本地完成流程，不会实际发送支付。",
+    "category": "Form - Checkout"
+  },
+  "classic-gallery": {
+    "slug": "classic-gallery",
+    "file": "packages/cli/assets/templates/pages/classic-gallery/template.doc.mjs",
+    "name": "经典画廊",
+    "description": "居中的引导文案下方是等比媒体卡片组成的整齐网格，筛选标签可就地缩小展示范围。节奏规整，不同于高度参差的瀑布流版本。",
+    "category": "Gallery - Basic"
+  },
+  "contact-form": {
+    "slug": "contact-form",
+    "file": "packages/cli/assets/templates/pages/contact-form/template.doc.mjs",
+    "name": "联系表单",
+    "description": "平铺的单列表单，混合使用文本输入、胶囊开关、下拉选择和长文本等控件，最终汇入一个全宽提交按钮。没有分步、没有分支，也没有摘要侧栏。",
+    "category": "Form - Basic"
+  },
+  "course-detail": {
+    "slug": "course-detail",
+    "file": "packages/cli/assets/templates/pages/course-detail/template.doc.mjs",
+    "name": "课程详情",
+    "description": "面向单一课程的长页销售模板，分为两栏：先读介绍，再从固定侧栏报名。主栏包含带信息栏的预览海报、带技能标签的简介、可按模块折叠的课程大纲、讲师卡片、含评分维度面板的学员评价以及常见问题；侧栏包含价格、自学或班期开课选择，以及可计算完成日期的每周学习进度滑块。适用于任何带课程体系和购买面板的内容：课程、培训班、大师课、训练营、工作坊或企业培训。",
+    "category": "Content - Course Detail"
+  },
+  "dashboard": {
+    "slug": "dashboard",
+    "file": "packages/cli/assets/templates/pages/dashboard/template.doc.mjs",
+    "name": "分析仪表盘",
+    "description": "三段式分析布局：先是核心指标卡片行，然后是图表，最后是辅助数据表，全部由同一全局筛选栏驱动刷新。重在广度而非深度，是概览页面而非下钻分析。",
+    "category": "Dashboard - Analytics"
+  },
+  "dashboard-alert-rail": {
+    "slug": "dashboard-alert-rail",
+    "file": "packages/cli/assets/templates/pages/dashboard-alert-rail/template.doc.mjs",
+    "name": "服务监控仪表盘",
+    "description": "常驻在线的监控分析：带状态色的指标卡片和迷你趋势图、可切换时间窗口的多序列时序图，以及独立滚动的告警栏；窄屏时告警栏会收进内容区。",
+    "category": "Dashboard - Monitoring"
+  },
+  "dashboard-cohort-funnel": {
+    "slug": "dashboard-cohort-funnel",
+    "file": "packages/cli/assets/templates/pages/dashboard-cohort-funnel/template.doc.mjs",
+    "name": "漏斗与同期群仪表盘",
+    "description": "面向流程转化与留存分析：把普通仪表盘难以容纳的两种视图放在一起——分阶段漏斗，每一步都对比上一步显示流失；以及用热力图呈现的双轴同期群矩阵。",
+    "category": "Dashboard - Funnel & Cohort"
+  },
+  "dashboard-comparison": {
+    "slug": "dashboard-comparison",
+    "file": "packages/cli/assets/templates/pages/dashboard-comparison/template.doc.mjs",
+    "name": "数据仪表盘",
+    "description": "以对比为主的数据分析，顶部有常驻筛选栏：每张指标卡片都含行内迷你趋势图和多个环比变化值，下方则是分群明细。每个数字都与另一个数字对照呈现。",
+    "category": "Dashboard - Comparison"
+  },
+  "dashboard-composition": {
+    "slug": "dashboard-composition",
+    "file": "packages/cli/assets/templates/pages/dashboard-composition/template.doc.mjs",
+    "name": "投资组合仪表盘",
+    "description": "回答资产价值随时间变化的问题：余额与变动指标卡片上方是展示构成演变的堆叠面积图，最后以最大贡献者的排名表收尾。",
+    "category": "Dashboard - Portfolio"
+  },
+  "dashboard-progress": {
+    "slug": "dashboard-progress",
+    "file": "packages/cli/assets/templates/pages/dashboard-progress/template.doc.mjs",
+    "name": "项目状态仪表盘",
+    "description": "混合进度与时间轴视图的状态分析：完成率环形图、以今日标记为参照的横向日期条时间线、按负责人列出的进度与状态表、风险清单，以及燃尽图。",
+    "category": "Dashboard - Project Status"
+  },
+  "dashboard-scorecard": {
+    "slug": "dashboard-scorecard",
+    "file": "packages/cli/assets/templates/pages/dashboard-scorecard/template.doc.mjs",
+    "name": "高管摘要仪表盘",
+    "description": "报告式分析布局，图表旁配有文字栏：含周期变化和状态色标记的核心数字记分卡、目标达成进度条、趋势网格，以及窄屏时折叠到内容下方的书面评论栏。",
+    "category": "Dashboard - Scorecard"
+  },
+  "detail-page": {
+    "slug": "detail-page",
+    "file": "packages/cli/assets/templates/pages/detail-page/template.doc.mjs",
+    "name": "订单详情",
+    "description": "双栏的单条记录详情：带状态和操作的摘要头部、重复的明细行列表、汇总总计区块，以及侧栏中按时间排序的活动记录。适用于任何既有子项又有历史记录的对象：含物流的客户订单、发票、交易或工单。",
+    "category": "Content - Order Detail"
+  },
+  "documentation": {
+    "slug": "documentation",
+    "file": "packages/cli/assets/templates/pages/documentation/template.doc.mjs",
+    "name": "文档目录",
+    "description": "纯粹的导航型参考首页：横幅下方是分类卡片网格，点击进入各章节，页面本身不承载文章内容。",
+    "category": "Content - Documentation Catalog"
+  },
+  "documentation-design": {
+    "slug": "documentation-design",
+    "file": "packages/cli/assets/templates/pages/documentation-design/template.doc.mjs",
+    "name": "设计文档",
+    "description": "正文与实时渲染示例交替出现的参考文章：交互式预览、属性表、成对的推荐与避免示例，以及可复制的代码块。",
+    "category": "Content - Documentation Design"
+  },
+  "documentation-technical": {
+    "slug": "documentation-technical",
+    "file": "packages/cli/assets/templates/pages/documentation-technical/template.doc.mjs",
+    "name": "技术文档",
+    "description": "按顺序编号的步骤组织的参考文章，每个阶段都配有代码，另有前置条件和后续链接的提示卡片。它是一条线性教程，而非可随意浏览的参考手册。",
+    "category": "Content - Documentation Technical"
+  },
+  "editor": {
+    "slug": "editor",
+    "file": "packages/cli/assets/templates/pages/editor/template.doc.mjs",
+    "name": "页面编辑器",
+    "description": "双栏创作工作区：侧边面板包含“区块”和“属性”标签，旁边是实时画布。在“区块”标签中添加区块，选中后即可在“属性”中编辑并立即看到渲染效果，还能用上移、下移调整区块顺序。",
+    "category": "Tools - Page Editor"
+  },
+  "file-explorer": {
+    "slug": "file-explorer",
+    "file": "packages/cli/assets/templates/pages/file-explorer/template.doc.mjs",
+    "name": "文件浏览器",
+    "description": "层级式浏览器，逐层下钻时以相邻列展开，而不是每次替换当前列表；配有面包屑历史、可切换的列表与网格密度，以及所选节点的元数据面板。",
+    "category": "Tools - File Explorer"
+  },
+  "form-two-column": {
+    "slug": "form-two-column",
+    "file": "packages/cli/assets/templates/pages/form-two-column/template.doc.mjs",
+    "name": "双列表单",
+    "description": "首屏标题下方分成两列的表单：一侧是输入项，另一侧是常驻的上下文面板，字段滚动时面板保持不动。平铺结构、单次提交，没有分步。",
+    "category": "Form - Two-column"
+  },
+  "form-wizard": {
+    "slug": "form-wizard",
+    "file": "packages/cli/assets/templates/pages/form-wizard/template.doc.mjs",
+    "name": "表单向导",
+    "description": "线性多步骤表单，一次只显示一个面板，横向进度条固定在顶部而非沿侧栏排布，让每一步的字段都能使用完整的内容宽度。仅渲染当前步骤，不像手风琴那样所有区块展开成一张超长表单。每次前进都会校验，未通过的步骤会保留标记，方便跳回修改。",
+    "category": "Form - Wizard"
+  },
+  "form-wizard-dialog": {
+    "slug": "form-wizard-dialog",
+    "file": "packages/cli/assets/templates/pages/form-wizard-dialog/template.doc.mjs",
+    "name": "对话框向导",
+    "description": "在对话框、浮层或弹窗中完成一段短流程，底层页面保持原位。紧凑的步骤标记和固定操作栏都收在受限宽度内，而不是像常规向导那样占满整页。适合两到四个简短步骤——初始化设置、邀请成员、安排日程、新手引导——此时离开底层上下文反而得不偿失。",
+    "category": "Form - Wizard Dialog"
+  },
+  "form-wizard-inline": {
+    "slug": "form-wizard-inline",
+    "file": "packages/cli/assets/templates/pages/form-wizard-inline/template.doc.mjs",
+    "name": "内联向导",
+    "description": "手风琴式向导，所有步骤纵向堆叠在一栏：当前步骤就地展开，已完成的步骤则收成一行，显示结果并提供返回入口。自动执行的步骤会展开为嵌套步骤条，逐项打勾，失败时阻断该列。最适合后续步骤依赖前面选择结果的场景。",
+    "category": "Form - Wizard Inline"
+  },
+  "form-wizard-vertical": {
+    "slug": "form-wizard-vertical",
+    "file": "packages/cli/assets/templates/pages/form-wizard-vertical/template.doc.mjs",
+    "name": "垂直向导",
+    "description": "多步骤向导，步骤列表固定在左侧栏，表单滚动时始终可见；旁边的引导面板会跟随当前聚焦的字段。适合步骤较长或长短不一、包含上传、预览和密集复核信息的流程。宽度收紧时先收起引导面板，随后左侧栏转为表单上方的横向步骤条。",
+    "category": "Form - Wizard Vertical"
+  },
+  "gallery-hero": {
+    "slug": "gallery-hero",
+    "file": "packages/cli/assets/templates/pages/gallery-hero/template.doc.mjs",
+    "name": "画廊首屏",
+    "description": "居中版式——标题、简短介绍和行动按钮——自然过渡到多图照片网格，而非一张宽幅满屏图片，让整组影像呈现出合集感。",
+    "category": "Gallery - Hero"
+  },
+  "ide": {
+    "slug": "ide",
+    "file": "packages/cli/assets/templates/pages/ide/template.doc.mjs",
+    "name": "IDE 工作区",
+    "description": "高密度多面板工作区，各区域都可调整大小和折叠：一侧是层级树，中间是标签页文档，底部是停靠抽屉，另一侧是检查器。拖动分隔条即可调整或收起任意面板。",
+    "category": "Tools - IDE"
+  },
+  "incident-console": {
+    "slug": "incident-console",
+    "file": "packages/cli/assets/templates/pages/incident-console/template.doc.mjs",
+    "name": "事件控制台",
+    "description": "高密度的行式队列加检查器：按状态分组、以严重程度着色的行、带保存搜索的筛选栏、分段状态控件，以及为选中行提供的可调整大小详情面板。用行而非卡片呈现，专为大量信息扫读而设计。",
+    "category": "Tools - Incident Console"
+  },
+  "kanban-board": {
+    "slug": "kanban-board",
+    "file": "packages/cli/assets/templates/pages/kanban-board/template.doc.mjs",
+    "name": "看板",
+    "description": "横向排列的可拖拽卡片泳道，列本身就是状态，因此在泳道间拖放即完成状态变更。列宽固定，卡片高度可变。",
+    "category": "Tools - Kanban Board"
+  },
+  "library": {
+    "slug": "library",
+    "file": "packages/cli/assets/templates/pages/library/template.doc.mjs",
+    "name": "卡片网格",
+    "description": "可搜索、可浏览的卡片网格，带筛选标签和真正的空状态：按主题组织的统一卡片，就地缩小范围，背后没有详情页。",
+    "category": "Content - Card Grid"
+  },
+  "login": {
+    "slug": "login",
+    "file": "packages/cli/assets/templates/pages/login/template.doc.mjs",
+    "name": "基础登录",
+    "description": "极简的居中登录表单，置于纯色背景：两个字段加一个提交按钮，没有任何元素争夺注意力。界面元素最少的入口页面。",
+    "category": "Login - Basic"
+  },
+  "login-card": {
+    "slug": "login-card",
+    "file": "packages/cli/assets/templates/pages/login-card/template.doc.mjs",
+    "name": "登录卡片",
+    "description": "登录表单放在居中的悬浮卡片内，第三方登录按钮由分隔线与字段隔开，下方是次要的注册入口和法律链接。",
+    "category": "Login - Card"
+  },
+  "login-split": {
+    "slug": "login-split",
+    "file": "packages/cli/assets/templates/pages/login-split/template.doc.mjs",
+    "name": "分屏登录",
+    "description": "登录表单占据双栏分屏的一半，另一半是满版媒体画面。字段与卡片版相同，但整体布局更适合展示品牌影像。",
+    "category": "Login - Split"
+  },
+  "login-sso": {
+    "slug": "login-sso",
+    "file": "packages/cli/assets/templates/pages/login-sso/template.doc.mjs",
+    "name": "单点登录",
+    "description": "渐进式登录流程，会根据输入分支：通过邮箱域名解析身份提供商并跳转，密码登录作为备选路径。两阶段流程，而非单一表单。",
+    "category": "Login - SSO"
+  },
+  "messaging-shell": {
+    "slug": "messaging-shell",
+    "file": "packages/cli/assets/templates/pages/messaging-shell/template.doc.mjs",
+    "name": "消息应用外壳",
+    "description": "四列嵌套导航，从左到右逐层收窄（团队工作区、频道列表、消息流、话题面板），每一列都为下一列限定范围。密集行式布局，不使用卡片。",
+    "category": "Shell - Messaging"
+  },
+  "mixed-gallery": {
+    "slug": "mixed-gallery",
+    "file": "packages/cli/assets/templates/pages/mixed-gallery/template.doc.mjs",
+    "name": "混合画廊",
+    "description": "高度不一的瀑布流网格，卡片彼此紧凑拼接，而非裁切成统一比例，每张卡片都配有说明文字。节奏错落，不同于规整的经典画廊。",
+    "category": "Gallery - Mixed"
+  },
+  "payment-form": {
+    "slug": "payment-form",
+    "file": "packages/cli/assets/templates/pages/payment-form/template.doc.mjs",
+    "name": "结账表单",
+    "description": "较长的分段表单与摘要并排，滚动填写时摘要始终可见，并随内容变化重新计算，最终以确认总价收尾。各段依次为联系方式、地址、配送方式，最后是银行卡信息。",
+    "category": "Form - Checkout"
+  },
+  "product-detail": {
+    "slug": "product-detail",
+    "file": "packages/cli/assets/templates/pages/product-detail/template.doc.mjs",
+    "name": "商品详情",
+    "description": "单品详情页，媒体画廊与选择栏并排：变体色板、数量步进器、主要与次要购买操作，下方是可折叠的规格参数区。",
+    "category": "Content - Product Detail"
+  },
+  "product-gallery": {
+    "slug": "product-gallery",
+    "file": "packages/cli/assets/templates/pages/product-gallery/template.doc.mjs",
+    "name": "商品画廊",
+    "description": "整齐的卡片网格，每张卡片都包含图片、标题、辅助说明和价格。仅用于浏览挑选，不带筛选，也没有详情页。",
+    "category": "Gallery - Product"
+  },
+  "settings": {
+    "slug": "settings",
+    "file": "packages/cli/assets/templates/pages/settings/template.doc.mjs",
+    "name": "设置表单",
+    "description": "把偏好设置做成一张连续滚动的表单，各分区按顺序堆叠，分区之间没有导航。最简单的设置形态：滚动即可触达全部内容。",
+    "category": "Settings - Form"
+  },
+  "settings-dialog": {
+    "slug": "settings-dialog",
+    "file": "packages/cli/assets/templates/pages/settings-dialog/template.doc.mjs",
+    "name": "设置对话框",
+    "description": "偏好设置放在模态容器内，配有可搜索的分区导航，无需离开底层页面即可完成配置。分组开关、外观选项实时预览，以及可重新绑定的快捷键。",
+    "category": "Settings - Dialog"
+  },
+  "settings-sidebar": {
+    "slug": "settings-sidebar",
+    "file": "packages/cli/assets/templates/pages/settings-sidebar/template.doc.mjs",
+    "name": "设置面板",
+    "description": "偏好设置拆分为由导航切换的面板：常驻的分区列表切换旁边的面板，各设置行就地编辑，无需打开独立表单。",
+    "category": "Settings - Panels"
+  },
+  "shell-nav": {
+    "slug": "shell-nav",
+    "file": "packages/cli/assets/templates/pages/shell-nav/template.doc.mjs",
+    "name": "组合导航外壳",
+    "description": "同时组合横向和纵向导航的应用外壳：顶部菜单栏带命令面板搜索，下方是可调整大小的层级侧栏，包裹占位内容。适合单一导航维度不够用的场景。",
+    "category": "Shell - Top Nav + Left Sidebar"
+  },
+  "shell-side-nav": {
+    "slug": "shell-side-nav",
+    "file": "packages/cli/assets/templates/pages/shell-side-nav/template.doc.mjs",
+    "name": "侧边导航",
+    "description": "应用外壳，仅有一条可折叠、可调整大小的左侧栏，承载分组历史记录和搜索，包裹主内容区。只有纵向导航，没有顶部栏。",
+    "category": "Shell - Left Sidebar"
+  },
+  "shell-top-nav": {
+    "slug": "shell-top-nav",
+    "file": "packages/cli/assets/templates/pages/shell-top-nav/template.doc.mjs",
+    "name": "顶部导航",
+    "description": "仅含横向导航的应用外壳：居中的导航栏，菜单项可展开全宽巨型菜单面板，覆盖在保持整宽的占位内容之上。",
+    "category": "Shell - Top Nav"
+  },
+  "side-gallery": {
+    "slug": "side-gallery",
+    "file": "packages/cli/assets/templates/pages/side-gallery/template.doc.mjs",
+    "name": "侧栏画廊",
+    "description": "不对称的分栏区块：一侧是包含标题、辅助文字和链接的文案栏，另一侧是聚拢的图片拼贴。刻意打破平衡，不同于居中的首屏。",
+    "category": "Gallery - Side"
+  },
+  "table": {
+    "slug": "table",
+    "file": "packages/cli/assets/templates/pages/table/template.doc.mjs",
+    "name": "基础表格",
+    "description": "平铺的行集合：列可排序，选中行会激活批量操作工具栏，每行还带溢出菜单。支持排序但不分组，也没有详情面板，是表格的基础形态。",
+    "category": "Table - Basic"
+  },
+  "table-collapsible": {
+    "slug": "table-collapsible",
+    "file": "packages/cli/assets/templates/pages/table-collapsible/template.doc.mjs",
+    "name": "可折叠表格",
+    "description": "同一页面上放置多张表格，每张都在可折叠卡片中，拥有各自的列——适合结构不一致、合成一张表会出现大量空单元格的分组。一个时间范围统一驱动所有表格，行可展开为历史图表。涵盖账户、集成、分区等场景，可排序、展开或收起。",
+    "category": "Table - Grouped"
+  },
+  "table-comparison": {
+    "slug": "table-comparison",
+    "file": "packages/cli/assets/templates/pages/table-comparison/template.doc.mjs",
+    "name": "对比表格",
+    "description": "转置矩阵：候选项放在列中，评估标准按组放在行中；标签列固定，横向滚动时保持可见，列可交换或新增，每行的最佳项标记可切换。适用于比较、对照、矩阵、规格表、功能网格、价格表、基准评测、冻结列、固定列或并排对比等场景。",
+    "category": "Table - Comparison"
+  },
+  "table-filter": {
+    "slug": "table-filter",
+    "file": "packages/cli/assets/templates/pages/table-filter/template.doc.mjs",
+    "name": "可筛选表格",
+    "description": "围绕渐进式筛选构建的平铺行集合：筛选标签栏可逐步升级为完整查询语法，保存视图能持久化筛选条件，提供列与分组选项，以及可调整大小的详情面板。",
+    "category": "Table - Filtering"
+  },
+  "table-grouped": {
+    "slug": "table-grouped",
+    "file": "packages/cli/assets/templates/pages/table-grouped/template.doc.mjs",
+    "name": "分组表格",
+    "description": "行集合按可折叠分区打包，并显示每组的数量，让长列表变成若干个可展开、收起的区块。支持查询筛选，以及针对选中行的可调整大小检查器。",
+    "category": "Table - Grouped"
+  },
+  "table-inbox": {
+    "slug": "table-inbox",
+    "file": "packages/cli/assets/templates/pages/table-inbox/template.doc.mjs",
+    "name": "收件箱表格",
+    "description": "双栏消息队列：表格为阅读窗格提供索引，而非最终目的地，中间的分隔条可拖动调整大小。表格变窄时行会堆叠，窗口本身不变；会话以可折叠消息呈现；回复时打开编辑器，列表保持可用。",
+    "category": "Table - Split Pane"
+  },
+  "table-page": {
+    "slug": "table-page",
+    "file": "packages/cli/assets/templates/pages/table-page/template.doc.mjs",
+    "name": "可搜索表格",
+    "description": "记录级信息摘要区下方是行格式统一的平铺表格，可同时通过三种方式缩小范围——全文搜索框、范围切换和按列弹出的筛选——列支持排序与筛选，悬停行可查看详情，总计基于可见行计算，并在筛选启用时标注为部分合计。适合单一同质列表，而非嵌套行或各自带列的分组。",
+    "category": "Table - Basic"
+  },
+  "table-tree": {
+    "slug": "table-tree",
+    "file": "packages/cli/assets/templates/pages/table-tree/template.doc.mjs",
+    "name": "树形表格",
+    "description": "层级表格，每个父行都由其子项汇总而成——例如代码仓库，文件夹下显示最新提交，旁边是详情侧栏和渲染后的 README。列可调整宽度，同级项在各自层级内排序，方向键可逐行浏览，搜索会把树裁剪到匹配的分支。",
+    "category": "Table - Tree/Hierarchical List"
+  },
+  "theme-showcase": {
+    "slug": "theme-showcase",
+    "file": "packages/cli/assets/templates/pages/theme-showcase/template.doc.mjs",
+    "name": "主题展示",
+    "description": "多界面并排对比外壳：示例产品页面（带账户对话框的店铺、结账、聊天、活动与库存）在同一响应式画布上以当前主题渲染。既是主题预览，也是设计系统展示，并提供可嵌入现有应用外壳的内容视图。",
+    "category": "Shell - Top Nav"
+  },
+  "work-item-detail": {
+    "slug": "work-item-detail",
+    "file": "packages/cli/assets/templates/pages/work-item-detail/template.doc.mjs",
+    "name": "工作项详情",
+    "description": "双栏的单个工作项详情：主栏包含带状态选择器的标题、描述、带进度的子任务清单、附件区块，以及评论与活动流；属性侧栏则显示负责人、日期、标签和关联项。适用于任何包含子项、属性和评论历史的跟踪事项——任务、工单、问题、用户故事、缺陷、卡片、请求或工作项。",
+    "category": "Content - Work Item Detail"
+  }
+}

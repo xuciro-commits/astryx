@@ -1,0 +1,13 @@
+scripts/zh/cli/browser-support.json
+scripts/zh/cli/motion.json
+scripts/zh/cli/tree-versioning.json
+scripts/zh/cli/tree-computer-agent-guide.json
+scripts/zh/cli/tree-start-a-template.json
+scripts/zh/cli/tree-project-global-or-both.json
+scripts/zh/cli/tree-component-family.json
+scripts/zh/cli/tree-sections-and-placement.json
+scripts/zh/cli/tree-tokens-ease.json
+scripts/zh/cli/tree-i18n-calendars.json
+scripts/zh/cli/tree-package-and-test.json
+scripts/zh/cli/tree-components.json
+scripts/zh/cli/tree-layout.json

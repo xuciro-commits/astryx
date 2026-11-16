@@ -1,0 +1,50 @@
+{
+  "@astryxdesign/charts": {
+    "displayName": "图表",
+    "description": "Astryx 图表——基于 d3 的配置模型数据可视化库。仅以 @canary dist-tag 发布到 npm 供早期测试，从未作为稳定（latest）版本发布。"
+  },
+  "@astryxdesign/cli": {
+    "displayName": "CLI",
+    "description": "从命令行搭建项目、浏览模板、生成主题，并获取面向智能体的文档。"
+  },
+  "@astryxdesign/core": {
+    "displayName": "Astryx 核心",
+    "description": "组件库。无障碍、可主题化的 React 组件，内置间距、深色模式与 StyleX 样式。"
+  },
+  "@astryxdesign/lab": {
+    "displayName": "实验室",
+    "description": "实验性 Astryx 组件——仅以 @canary dist-tag 发布到 npm 供早期测试，从未作为稳定（latest）版本发布。"
+  },
+  "@astryxdesign/richtext": {
+    "displayName": "富文本",
+    "description": "Astryx 富文本——基于 Lexical 的富文本编辑器与查看器，使用 Astryx 设计令牌设置样式。"
+  },
+  "@astryxdesign/theme-butter": {
+    "displayName": "黄油主题",
+    "description": "温暖柔和的黄色搭配友好的蓝色点缀。既足够活泼适合消费级界面，又足够柔和保持可读性。"
+  },
+  "@astryxdesign/theme-gothic": {
+    "displayName": "哥特主题",
+    "description": "深蓝灰色与标志性展示衬线字体。戏剧化且富有编辑感，适合希望被记住的界面。"
+  },
+  "@astryxdesign/theme-matcha": {
+    "displayName": "抹茶主题",
+    "description": "带有平静自然气息的大地绿色。自然、扎实，非常适合健康或内容优先的应用。"
+  },
+  "@astryxdesign/theme-neutral": {
+    "displayName": "中性主题",
+    "description": "克制的暖灰色。极简而安静，让内容始终成为焦点。"
+  },
+  "@astryxdesign/theme-stone": {
+    "displayName": "石头主题",
+    "description": "温暖的石材与石板色，质朴而低调，恰好带一点手工质感。"
+  },
+  "@astryxdesign/theme-y2k": {
+    "displayName": "Y2K 主题",
+    "description": "亮粉色、青柠绿与 Poppins 字体。活泼俏皮，复古感十足。"
+  },
+  "@astryxdesign/vega": {
+    "displayName": "Vega",
+    "description": "Astryx Vega 封装——图表与数据可视化组件。仅以 @canary dist-tag 发布到 npm 供早期测试，从未作为稳定（latest）版本发布。"
+  }
+}

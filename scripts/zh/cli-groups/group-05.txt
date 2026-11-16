@@ -1,0 +1,13 @@
+scripts/zh/cli/tree-migration-setup.json
+scripts/zh/cli/tree-quick-start.json
+scripts/zh/cli/tree-debug-and-gap-reports.json
+scripts/zh/cli/tree-tokens-type-scale.json
+scripts/zh/cli/tree-template-images-media.json
+scripts/zh/cli/theme.json
+scripts/zh/cli/tree-short-and-findable.json
+scripts/zh/cli/tree-tokens-duration.json
+scripts/zh/cli/tree-template-styles.json
+scripts/zh/cli/tree-tokens-typography.json
+scripts/zh/cli/tree-configuration.json
+scripts/zh/cli/tree-templates.json
+scripts/zh/cli/tree-cli.json

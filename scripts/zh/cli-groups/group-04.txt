@@ -1,0 +1,10 @@
+scripts/zh/cli/working-with-ai.json
+scripts/zh/cli/getting-started.json
+scripts/zh/cli/tree-doc-syntax.json
+scripts/zh/cli/tree-cli-command.json
+scripts/zh/cli/tree-scaffold.json
+scripts/zh/cli/tree-define-the-theme.json
+scripts/zh/cli/tree-block-template.json
+scripts/zh/cli/tree-upgrading.json
+scripts/zh/cli/tree-use-a-theme-in-an-app.json
+scripts/zh/cli/tree-tokens-spacing.json

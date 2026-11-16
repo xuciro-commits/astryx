@@ -1,0 +1,11 @@
+scripts/zh/cli/icons.json
+scripts/zh/cli/use-a-theme.json
+scripts/zh/cli/elevation.json
+scripts/zh/cli/tree-tailwind.json
+scripts/zh/cli/tree-component-lookups.json
+scripts/zh/cli/tree-write-the-template-file.json
+scripts/zh/cli/tree-add-a-theme.json
+scripts/zh/cli/tree-template-fonts.json
+scripts/zh/cli/tree-grade-template-with-agent.json
+scripts/zh/cli/tree-tokens-focus.json
+scripts/zh/cli/tree-tokens-size.json
