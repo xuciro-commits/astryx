@@ -6,9 +6,9 @@
 
 # Astryx
 
-An open source design system that's fully customizable and built for how we build now: <br/> by people and the agents working alongside them.
+一套完全可定制的开源设计系统，为当下的构建方式而生：<br/>由人以及与其并肩工作的智能体共同构建。
 
-**Currently in Beta** · Built on [React 19+](https://react.dev) and [StyleX](https://stylexjs.com)
+**目前处于 Beta 阶段** · 基于 [React 19+](https://react.dev) 与 [StyleX](https://stylexjs.com)
 
 [![npm version](https://img.shields.io/npm/v/@astryxdesign/core?label=npm&color=cb3837&logo=npm)](https://www.npmjs.com/package/@astryxdesign/core)
 [![license MIT](https://img.shields.io/npm/l/@astryxdesign/core?color=blue)](LICENSE)
@@ -18,28 +18,28 @@ An open source design system that's fully customizable and built for how we buil
 [![Storybook](https://img.shields.io/badge/Storybook-live-ff4785?logo=storybook&logoColor=white)](https://astryx.atmeta.com/storybook/)
 [![Sandbox](https://img.shields.io/badge/Sandbox-playground-A9792B)](https://astryx.atmeta.com/sandbox/)
 
-**[Docs](https://astryx.atmeta.com)** · **[Storybook](https://astryx.atmeta.com/storybook/)** · **[Sandbox](https://astryx.atmeta.com/sandbox/)** · **[Contributing](https://github.com/meta/astryx/wiki/Contributing)** · **[Discord](https://discord.com/invite/XnsUcFykEP)**
+**[文档](https://astryx.atmeta.com)** · **[Storybook](https://astryx.atmeta.com/storybook/)** · **[沙盒](https://astryx.atmeta.com/sandbox/)** · **[参与贡献](https://github.com/meta/astryx/wiki/Contributing)** · **[Discord](https://discord.com/invite/XnsUcFykEP)**
 
 </div>
 
-## Overview
+## 概览
 
-Astryx is an open source design system that grew inside Meta over the last eight years, where it became the most-used and largest design system in the company — powering 13,000+ apps and shaped by the engineers, designers, and product teams who depend on it every day.
+Astryx 是一套在 Meta 内部成长了八年的开源设计系统，现已成为公司内使用最广泛、规模最大的设计系统，支撑着 13,000 多个应用，并由每天使用它的工程师、设计师和产品团队共同塑造。
 
-It ships 150+ accessible components, brand-level theming, dark mode, ready-to-ship templates, and a CLI as one cohesive system. You import pre-built CSS and use typed React components — no build plugin, no styling library to adopt — and both people and AI assistants build with the same tooling.
+它提供 150 多个无障碍组件、品牌级主题定制、深色模式、开箱即用的模板以及 CLI，并将这些能力整合为一套连贯的系统。你可以直接导入预构建的 CSS，使用带类型的 React 组件——无需构建插件，也无需引入新的样式库——人和 AI 助手都能用同一套工具进行构建。
 
-**What makes Astryx different:**
+**Astryx 的独特之处：**
 
-- **Open internals.** Components are built to be composed at any level, not locked behind a closed top-level API. The building blocks you'd reach for are exported directly, and when you need to go deeper, swizzle ejects a component's full source into your project to own.
-- **No styling lock-in.** Astryx authors its styles with StyleX, but that's invisible to consumers. Override with `className` using Tailwind, CSS modules, or plain CSS — whatever your project already uses.
-- **Customize without wrapping.** A theme is a set of CSS custom property overrides, so a designer can make Astryx unmistakably theirs without forking or wrapping component source.
-- **Built for people and agents.** The API, docs, and CLI are designed together so a person and an AI assistant build the same way, from the same reference.
+- **开放的内部实现。** 组件在设计上支持任意层级的组合，而不是被封闭的顶层 API 锁住。你需要的构建模块会直接导出；当需要更深入地定制时，swizzle 可以将组件的完整源码弹出到你的项目中，由你完全掌控。
+- **不锁定样式方案。** Astryx 使用 StyleX 编写样式，但这对使用者是透明的。你可以用 `className` 配合 Tailwind、CSS Modules 或普通 CSS 来覆盖样式——沿用项目现有的方案即可。
+- **无需包裹即可定制。** 主题就是一组 CSS 自定义属性覆盖，设计师无需分叉或包裹组件源码，就能让 Astryx 呈现鲜明的品牌风格。
+- **为人与智能体而构建。** API、文档和 CLI 一同设计，让人和 AI 助手基于同一份参考，以相同的方式构建。
 
-## Getting Started
+## 快速开始
 
-Astryx requires **React 19** or later (`react` and `react-dom` are peer dependencies of `@astryxdesign/core`).
+Astryx 需要 **React 19** 或更高版本（`react` 和 `react-dom` 是 `@astryxdesign/core` 的 peer dependencies）。
 
-Install Astryx, a theme, and its peer dependencies:
+安装 Astryx、一个主题及其 peer dependencies：
 
 ```bash
 # npm
@@ -55,17 +55,17 @@ yarn add @astryxdesign/core @astryxdesign/theme-neutral @stylexjs/stylex
 yarn add -D @astryxdesign/cli
 ```
 
-You can also install the CLI once for your computer, so `astryx` works in any folder and every coding agent knows Astryx; in a project, it still runs that project's own version:
+你也可以在电脑上全局安装一次 CLI，这样 `astryx` 能在任意文件夹中使用，每个编码智能体也都能了解 Astryx；在项目内，它仍会运行项目自身的版本：
 
 ```bash
 npm i -g @astryxdesign/cli
 ```
 
-Project install, global install, or both? `astryx docs global/project-global-or-both` compares them (both is recommended), and `astryx docs global` explains how global mode works.
+项目安装、全局安装，还是两者都要？`astryx docs global/project-global-or-both` 会比较这几种方式（推荐两者都要），`astryx docs global` 则解释全局模式的工作方式。
 
-The simplest setup is a few CSS imports plus a theme provider — no build plugin, no PostCSS or Babel config. See the **[@astryxdesign/core README](packages/core/README.md#quick-start)** for the full guide (Next.js, Tailwind, Vite, and CDN).
+最简单的配置只需几行 CSS 导入加一个主题 Provider——无需构建插件，也无需 PostCSS 或 Babel 配置。完整指南（Next.js、Tailwind、Vite 和 CDN）见 **[`@astryxdesign/core` README](packages/core/README.md#quick-start)**。
 
-For reliable CLI access, add a script to your `package.json`:
+为了稳定地使用 CLI，请在 `package.json` 中添加一个脚本：
 
 ```json
 "scripts": {
@@ -73,83 +73,80 @@ For reliable CLI access, add a script to your `package.json`:
 }
 ```
 
-Then use it as `npm run astryx -- component --list`. This avoids path errors when AI assistants or new developers invoke the CLI directly.
+然后通过 `npm run astryx -- component --list` 使用它。这样可避免 AI 助手或新开发者直接调用 CLI 时出现路径错误。
 
-## Packages
+## 软件包
 
-| Package                                    | Description                                                                                          | README                             |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| [`@astryxdesign/core`](packages/core)      | Components, theme system, and utilities                                                              | [README](packages/core/README.md)  |
-| [`@astryxdesign/cli`](packages/cli)        | CLI tooling: component docs, templates, scaffolding, themes, and codemods                            | [README](packages/cli/README.md)   |
-| [`@astryxdesign/build`](packages/build)    | Build plugins for StyleX source builds                                                               | [README](packages/build/README.md) |
-| [`@astryxdesign/theme-*`](packages/themes) | Seven ready-made, fully customizable themes (neutral, butter, chocolate, matcha, stone, gothic, y2k) | [README](packages/themes)          |
+| 软件包                                     | 说明                                                                                     | README                             |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------- | ---------------------------------- |
+| [`@astryxdesign/core`](packages/core)      | 组件、主题系统与工具函数                                                                 | [README](packages/core/README.md)  |
+| [`@astryxdesign/cli`](packages/cli)        | CLI 工具：组件文档、模板、脚手架、主题与 codemods                                        | [README](packages/cli/README.md)   |
+| [`@astryxdesign/build`](packages/build)    | 用于 StyleX 源码构建的构建插件                                                           | [README](packages/build/README.md) |
+| [`@astryxdesign/theme-*`](packages/themes) | 七套开箱即用、完全可定制的主题（neutral、butter、chocolate、matcha、stone、gothic、y2k） | [README](packages/themes)          |
 
-> `@astryxdesign/lab` (experimental components) is used internally for Storybook and the sandbox and is not published to npm. `@astryxdesign/vega` (Vega/Vega-Lite chart wrapper) and `@astryxdesign/charts` (chart components) are published to npm only under the `@canary` dist-tag — there is no stable release yet.
+> `@astryxdesign/lab`（实验性组件）仅供内部 Storybook 和沙盒使用，不发布到 npm。`@astryxdesign/vega`（Vega/Vega-Lite 图表包装器）和 `@astryxdesign/charts`（图表组件）仅以 `@canary` dist-tag 发布到 npm——目前还没有稳定版本。
 
-## Principles
+## 原则
 
-These are the promises Astryx makes to the people building on it.
+这些是 Astryx 对使用它构建产品的人所作出的承诺。
 
-- **Guidance over enforcement.** Components give you capability rather than guardrails that fight you. Design opinions live in docs and examples — if you pass a value, the component renders it.
-- **Strong, documented conventions.** Every component follows the same naming, prop, and composition rules, and every one is thoroughly documented — so once you've learned a few, the rest feel familiar, and both people and AI can predict how an unfamiliar component behaves.
-- **One system for humans and AI.** The API, conventions, docs, and CLI are designed together so people and AI assistants build the same way. Every change that made Astryx easier for AI made it easier for people too.
-- **Earned by measurement.** We test conventions rather than assert them, hold the results loosely, and revisit them when a new situation proves them wrong.
+- **引导优于强制。** 组件提供的是能力，而不是与你对抗的护栏。设计观点存在于文档和示例中——只要你传入某个值，组件就会渲染它。
+- **强大且成文的约定。** 每个组件都遵循相同的命名、属性和组合规则，并且都有详尽文档——因此学会几个组件后，其余组件也会感到熟悉，人和 AI 都能预判陌生组件的行为。
+- **人与 AI 共用一套系统。** API、约定、文档和 CLI 一同设计，让人和 AI 助手以相同方式构建。每一项让 Astryx 对 AI 更友好的改动，也让它对人更友好。
+- **以度量赢得信任。** 我们通过测试来验证约定，而不是凭空断言；对结论保持开放，并在新情况证明其错误时重新审视。
 
-## Architecture
+## 架构
 
-### Foundations
+### 基础
 
-The building blocks for visually cohesive and accessible interfaces: typography, color, layout, and accessibility.
+构建视觉统一、无障碍界面的基础要素：排版、色彩、布局和无障碍。
 
-### Components
+### 组件
 
-A library of 150+ reusable UI building blocks with full TypeScript support.
+一个包含 150 多个可复用 UI 构建模块的组件库，提供完整的 TypeScript 支持。
 
-### Patterns
+### 模式
 
-Battle-tested design solutions for common interactions and workflows: table pages, detail page layouts, form wizards, navigation patterns, data entry flows.
+经过实践检验的设计方案，覆盖常见交互与工作流：表格页面、详情页布局、表单向导、导航模式、数据录入流程。
 
-## Project Structure
+## 项目结构
 
-| Directory   | Purpose                                                     |
-| ----------- | ----------------------------------------------------------- |
-| `apps/`     | Example apps, the docsite, and Storybook                    |
-| `packages/` | Published packages: core, cli, build, themes                |
-| `internal/` | Internal tooling: test utilities, eslint plugin, vibe tests |
+| 目录        | 用途                                       |
+| ----------- | ------------------------------------------ |
+| `apps/`     | 示例应用、文档站点和 Storybook             |
+| `packages/` | 已发布的软件包：core、cli、build、themes   |
+| `internal/` | 内部工具：测试工具、eslint 插件、vibe 测试 |
 
-## Contributing
+## 参与贡献
 
-We welcome contributions! See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full guide.
+我们欢迎贡献！完整指南见 **[CONTRIBUTING.md](CONTRIBUTING.md)**。
 
-Questions, or want a hand with a PR? Come find us in
-**[Discord](https://discord.com/invite/XnsUcFykEP)**.
+有问题，或希望在 PR 上获得帮助？来
+**[Discord](https://discord.com/invite/XnsUcFykEP)** 找我们。
 
-Our conventions and review rubrics live in the
-[Contributing wiki](https://github.com/meta/astryx/wiki/Contributing) —
-including [API Conventions](https://github.com/meta/astryx/wiki/API-Conventions),
-[Design Conventions](https://github.com/meta/astryx/wiki/Design-Conventions),
-the [Component Lifecycle](https://github.com/meta/astryx/wiki/Component-Lifecycle),
-the [Contributing Templates](https://github.com/meta/astryx/wiki/Contributing-Templates),
-and the [Blog Review Rubric](https://github.com/meta/astryx/wiki/Blog-Review-Rubric#three-required-scored-criteria). Read the relevant rubric before opening a PR.
+我们的约定和评审细则位于
+[贡献 Wiki](https://github.com/meta/astryx/wiki/Contributing)——
+包括 [API 约定](https://github.com/meta/astryx/wiki/API-Conventions)、
+[设计约定](https://github.com/meta/astryx/wiki/Design-Conventions)、
+[组件生命周期](https://github.com/meta/astryx/wiki/Component-Lifecycle)、
+[贡献模板](https://github.com/meta/astryx/wiki/Contributing-Templates)
+以及 [博客评审细则](https://github.com/meta/astryx/wiki/Blog-Review-Rubric#three-required-scored-criteria)。在提交 PR 前请阅读相关细则。
 
-Quick start for contributors: this repo uses **Node 22+ on an active LTS line**
-and **pnpm 11**. Install pnpm directly, or enable
-[Corepack](https://nodejs.org/api/corepack.html) once so the pinned pnpm version
-installs automatically:
+贡献者快速开始：本仓库要求 **Node 22+（活跃 LTS 系列）**
+和 **pnpm 11**。可直接安装 pnpm，或启用一次
+[Corepack](https://nodejs.org/api/corepack.html)，让锁定的 pnpm 版本自动安装：
 
 ```bash
 corepack enable
 pnpm install
 ```
 
-If `corepack` is missing, install pnpm directly or install Corepack manually;
-see the troubleshooting notes in
-[CONTRIBUTING.md](CONTRIBUTING.md#troubleshooting).
+如果缺少 `corepack`，请直接安装 pnpm，或手动安装 Corepack；
+参见 [CONTRIBUTING.md](CONTRIBUTING.md#troubleshooting) 中的故障排查说明。
 
-The Theme Showcase DOM tests use the root `ui` project for shared DOM and
-StyleX test setup. Run `pnpm exec vitest run --project ui apps/docsite/src/__tests__/theme-showcase/`
-from the repository root.
+Theme Showcase DOM 测试使用根目录的 `ui` 项目共享 DOM 与 StyleX 测试环境。请在仓库根目录运行
+`pnpm exec vitest run --project ui apps/docsite/src/__tests__/theme-showcase/`。
 
-## License
+## 许可证
 
 MIT

@@ -1,22 +1,22 @@
-# Create Astryx Theme
+# 创建 Astryx 主题
 
-Create a new Astryx theme using `defineTheme`.
+使用 `defineTheme` 创建新的 Astryx 主题。
 
-> Read `packages/cli/assets/theme.template.ts` first (`astryx theme template` writes it into a consumer project). It is the annotated,
-> drift-guarded map of the whole theme surface — every field, the token
-> families, the override syntax — and it names the CLI command that prints the
-> authoritative reference for each. What follows is the packaging around a
-> theme; the template is what goes inside it.
+> 请先阅读 `packages/cli/assets/theme.template.ts`
+> （`astryx theme template` 会将其写入使用方项目）。它是整个主题表面经过
+> 标注、受漂移保护的地图——每个字段、令牌族、覆盖语法——并指明了为每一项
+> 打印权威参考的 CLI 命令。下文介绍的是主题的外包装；
+> 模板才是要放进去的内容。
 
-## Theme Name
+## 主题名称
 
 $ARGUMENTS
 
-## Instructions
+## 说明
 
-Create a new theme package at `packages/themes/{themeName}/`.
+在 `packages/themes/{themeName}/` 创建新的主题包。
 
-### File Structure
+### 文件结构
 
 ```
 packages/themes/{themeName}/
@@ -54,7 +54,7 @@ packages/themes/{themeName}/
 }
 ```
 
-### Theme File (src/index.ts)
+### 主题文件（src/index.ts）
 
 ```tsx
 import {defineTheme} from '@astryxdesign/core/theme';
@@ -120,22 +120,22 @@ export const {themeName}Theme = defineTheme({
 });
 ```
 
-## Key Concepts
+## 关键概念
 
-### Token Values
+### 令牌值
 
-- **String**: Used as-is for both light and dark modes
-- **[light, dark] tuple**: Converted to CSS `light-dark(light, dark)`
+- **字符串**：在浅色和深色模式下均按原样使用
+- **[light, dark] 元组**：转换为 CSS `light-dark(light, dark)`
 
-### Component Override Keys
+### 组件覆盖键
 
-- `base` — styles applied to all instances
-- `prop:value` — styles when a visual prop matches (e.g. `variant:secondary`)
-- `prop:value+prop:value` — intersection of multiple props (e.g. `variant:editorial+level:1`)
+- `base`——应用于所有实例的样式
+- `prop:value`——当某个视觉属性匹配时的样式（例如 `variant:secondary`）
+- `prop:value+prop:value`——多个属性的交集（例如 `variant:editorial+level:1`）
 
-### CSS Output
+### CSS 输出
 
-Component overrides generate scoped CSS:
+组件覆盖会生成作用域 CSS：
 
 ```css
 @scope ([data-astryx-theme="{themeName}"]) to ([data-astryx-theme]) {
@@ -148,14 +148,14 @@ Component overrides generate scoped CSS:
 }
 ```
 
-### Distribution
+### 分发
 
-- **Unbuilt**: `Theme` generates CSS and injects `<style>` at runtime
-- **Built**: `astryx theme build` pre-compiles to a CSS file
+- **未构建**：`Theme` 在运行时生成 CSS 并注入 `<style>`
+- **已构建**：`astryx theme build` 预编译为 CSS 文件
 
-## Extending an Existing Theme
+## 扩展现有主题
 
-Use `extends` to derive from another theme — inherits tokens, components, icons, fonts. Only specify overrides.
+使用 `extends` 从另一个主题派生——继承令牌、组件、图标、字体。只需指定覆盖项。
 
 ```tsx
 import {defineTheme} from '@astryxdesign/core/theme';
@@ -171,18 +171,18 @@ export const brandTheme = defineTheme({
 });
 ```
 
-Child values win. Tokens and components are deep-merged; scale configs (typography, motion, radius) replace entirely.
+子值优先。令牌和组件会深度合并；比例配置（排版、动效、圆角）整体替换。
 
-## Reference
+## 参考
 
-See existing themes for examples:
+参见现有主题示例：
 
-- `packages/themes/neutral/src/neutralTheme.ts` — Grayscale reference theme with Geist font
-- `packages/themes/stone/src/stoneTheme.ts` — Warm neutral theme with component overrides
-- `packages/themes/y2k/src/y2kTheme.ts` — Showcase theme with bold component overrides
+- `packages/themes/neutral/src/neutralTheme.ts` —— 使用 Geist 字体的灰度参考主题
+- `packages/themes/stone/src/stoneTheme.ts` —— 带组件覆盖的温暖中性主题
+- `packages/themes/y2k/src/y2kTheme.ts` —— 带大胆组件覆盖的展示主题
 
-## After Creation
+## 创建之后
 
-1. Add to workspace in root `package.json` if needed
-2. Add theme to Storybook preview: `apps/storybook/.storybook/preview.tsx`
-3. Test in both light and dark modes
+1. 如需要，将主题加入根 `package.json` 的工作区
+2. 将主题添加到 Storybook 预览：`apps/storybook/.storybook/preview.tsx`
+3. 在浅色和深色模式下测试

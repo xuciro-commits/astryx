@@ -1,29 +1,24 @@
-# Security Policy
+# 安全政策
 
-## Reporting a Vulnerability
+## 报告漏洞
 
-The Astryx team takes security seriously. If you discover a security issue,
-please bring it to our attention right away.
+Astryx 团队非常重视安全。如果你发现安全问题，请立即告知我们。
 
-**Please do not file a public issue.** Public issues are visible to anyone, and
-disclosing a vulnerability before it is fixed puts Astryx users at risk.
+**请勿提交公开 issue。** 公开 issue 对所有人可见，在漏洞修复前披露它会让 Astryx 用户面临风险。
 
-### Meta Bug Bounty
+### Meta 漏洞赏金
 
-Meta has a [bounty program](https://bugbounty.meta.com/) for the safe disclosure
-of security bugs. Please report security issues there. We will respond as quickly
-as possible.
+Meta 设有[漏洞赏金计划](https://bugbounty.meta.com/)，用于安全披露安全漏洞。请在那里报告安全问题。我们会尽快回复。
 
-### What to Include
+### 需要包含的内容
 
-When reporting, please include as much information as practical:
+报告时，请尽可能提供相关信息：
 
-- A description of the issue and its impact
-- Steps to reproduce, or a proof-of-concept
-- Affected versions or packages
-- Any potential mitigations you've identified
+- 问题及其影响的描述
+- 复现步骤或概念验证
+- 受影响的版本或包
+- 你已识别出的任何潜在缓解措施
 
-## Supported Versions
+## 支持的版本
 
-Only the latest released version of each `@astryxdesign/*` package receives security
-updates. Please keep your dependencies current.
+每个 `@astryxdesign/*` 包只有最新发布版本会接受安全更新。请保持依赖为最新版本。

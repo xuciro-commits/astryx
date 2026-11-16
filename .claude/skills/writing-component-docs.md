@@ -1,24 +1,24 @@
-# Component Documentation Guide
+# 组件文档指南
 
-## Overview
+## 概览
 
-Every component directory has a `{Name}.doc.mjs` file with structured documentation. The Astryx CLI reads these files to generate agent-friendly docs, skill files, and reference material.
+每个组件目录都有一个 `{Name}.doc.mjs` 文件，其中包含结构化文档。Astryx CLI 会读取这些文件，生成便于 agent 使用的文档、skill 文件和参考资料。
 
-These docs are for people **building with** Astryx, not for people building Astryx. Before adding process material — a rubric, a readiness gate, an audit checklist, lab→core criteria — read [`packages/cli/assets/docs/README.md`](../../packages/cli/assets/docs/README.md), which carries the test and the wiki page each kind goes to.
+这些文档面向**使用** Astryx 构建应用的人，而不是构建 Astryx 本身的人。在添加流程性材料——评分标准、就绪门禁、审计清单、lab→core 标准——之前，请先阅读 [`packages/cli/assets/docs/README.md`](../../packages/cli/assets/docs/README.md)，其中说明了每类材料对应的测试和应归属的 wiki 页面。
 
-## Exports
+## 导出
 
-| Export      | Type                      | Purpose                          | Required?                       |
-| ----------- | ------------------------- | -------------------------------- | ------------------------------- |
-| `docs`      | `ComponentDoc`            | English docs (source of truth)   | Yes                             |
-| `docsZh`    | `ComponentTranslationDoc` | Chinese Simplified prose overlay | Optional, falls back to English |
-| `docsDense` | `ComponentTranslationDoc` | Compressed prose overlay         | Optional, falls back to English |
+| 导出        | 类型                      | 用途                 | 是否必需？             |
+| ----------- | ------------------------- | -------------------- | ---------------------- |
+| `docs`      | `ComponentDoc`            | 英文文档（事实来源） | 是                     |
+| `docsZh`    | `ComponentTranslationDoc` | 简体中文叙述覆盖层   | 可选，缺失时回退到英文 |
+| `docsDense` | `ComponentTranslationDoc` | 压缩叙述覆盖层       | 可选，缺失时回退到英文 |
 
-**English first.** When adding a new component, write the `docs` export. That's it. Both `--lang zh` and `--lang dense` fall back to English if their exports don't exist. Translations are generated from English by AI and can be added later.
+**英文优先。** 添加新组件时，编写 `docs` 导出即可。如果 `docsZh` 和 `docsDense` 导出不存在，`--lang zh` 和 `--lang dense` 都会回退到英文。翻译由 AI 从英文生成，可以稍后添加。
 
-## Architecture
+## 架构
 
-`docs` contains everything: props, examples, types, defaults, and English prose. Translations only override the prose. The CLI merges them at read time.
+`docs` 包含一切：属性、示例、类型、默认值和英文叙述。翻译只覆盖叙述部分。CLI 在读取时合并它们。
 
 ```
 docs (English, full)     <- source of truth
@@ -26,16 +26,16 @@ docs (English, full)     <- source of truth
   + docsDense (prose only) <- merged onto docs when --lang dense
 ```
 
-This means:
+这意味着：
 
-- Examples are defined once in `docs`, shared across all languages
-- Prop names, types, defaults are defined once in `docs`
-- Adding a new example only requires editing `docs`
-- Translations only need to be updated when prose changes
+- 示例只在 `docs` 中定义一次，供所有语言共享
+- 属性名、类型、默认值只在 `docs` 中定义一次
+- 新增示例只需编辑 `docs`
+- 只有叙述发生变化时才需要更新翻译
 
-## Writing `docs` (English)
+## 编写 `docs`（英文）
 
-See `@astryxdesign/cli/authoring` for the full type definitions.
+完整类型定义见 `@astryxdesign/cli/authoring`。
 
 ```js
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
@@ -70,9 +70,9 @@ export const docs = {
 };
 ```
 
-## Writing Translations (docsZh / docsDense)
+## 编写翻译（docsZh / docsDense）
 
-Translations use the `ComponentTranslationDoc` type. Only prose fields, no structure.
+翻译使用 `ComponentTranslationDoc` 类型。只包含叙述字段，不包含结构。
 
 ```js
 // -------------------------------------------------------
@@ -98,16 +98,16 @@ export const docsDense = {
 };
 ```
 
-The CLI merges this onto `docs`: compressed descriptions replace English ones, but props, examples, types, and defaults all come from `docs`.
+CLI 会将其合并到 `docs` 上：压缩后的描述替换英文描述，但属性、示例、类型和默认值都来自 `docs`。
 
-## Adding a New Component's Docs
+## 添加新组件的文档
 
-1. Create `packages/core/src/MyComponent/MyComponent.doc.mjs`
-2. Write the `docs` export (English, required)
-3. Optionally add `docsZh` and `docsDense` (both fall back to English if missing)
-4. The CLI discovers doc files automatically, no registration needed
+1. 创建 `packages/core/src/MyComponent/MyComponent.doc.mjs`
+2. 编写 `docs` 导出（英文，必需）
+3. 可选地添加 `docsZh` 和 `docsDense`（缺失时都会回退到英文）
+4. CLI 会自动发现文档文件，无需注册
 
-## CLI Flags
+## CLI 标志
 
 ```bash
 astryx component Button                       # Full docs (default)
@@ -118,22 +118,22 @@ astryx --lang dense component Button           # Compressed prose, same structur
 astryx --detail compact --lang dense component Button  # Compact + compressed
 ```
 
-`--lang` controls which prose translation is used. `--detail` controls how much detail (full, compact, brief). They compose independently.
+`--lang` 控制使用哪一份叙述翻译。`--detail` 控制详略程度（full、compact、brief）。两者可以独立组合。
 
-## Reference Docs (non-component)
+## 参考文档（非组件）
 
-Reference docs (tokens, principles, theme) use a different type: `ReferenceDoc` from `@astryxdesign/cli/authoring`.
+参考文档（tokens、principles、theme）使用另一种类型：来自 `@astryxdesign/cli/authoring` 的 `ReferenceDoc`。
 
-They live in `packages/cli/assets/docs/` as `.doc.mjs` files with translations in `*.doc.dense.mjs` and `*.doc.zh.mjs`.
+它们位于 `packages/cli/assets/docs/`，以 `.doc.mjs` 文件形式存在，翻译位于 `*.doc.dense.mjs` 和 `*.doc.zh.mjs`。
 
-Content is structured as sections with ordered content blocks:
+内容按 section 组织，每个 section 包含有序的内容块：
 
-- `prose` — translatable text
-- `code` — code examples (not translated)
-- `table` — data tables (not translated)
-- `list` — rules, anti-patterns, tips (translatable)
+- `prose`——可翻译的文本
+- `code`——代码示例（不翻译）
+- `table`——数据表格（不翻译）
+- `list`——规则、反模式、提示（可翻译）
 
-To add a new reference doc: create `packages/cli/assets/docs/mytopic.doc.mjs` exporting a `docs` constant. It auto-discovers.
+要添加新的参考文档：创建 `packages/cli/assets/docs/mytopic.doc.mjs` 并导出 `docs` 常量。它会被自动发现。
 
 ```bash
 astryx docs                          # list topics

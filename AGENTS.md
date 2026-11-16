@@ -1,114 +1,55 @@
-# Astryx repository guidance
+# Astryx 仓库指南
 
-Astryx is a public design-system repository. Never commit internal links,
-identifiers, service names, private operational instructions, or other
-Meta-only context.
+Astryx 是一个公开的设计系统仓库。切勿提交内部链接、标识符、服务名称、私有运营说明或其他仅限 Meta 上下文的内容。
 
-## Instruction surface
+## 指令入口
 
-This `AGENTS.md` is the canonical, tool-agnostic instruction surface for the
-repository. Add or change shared agent guidance here rather than duplicating it
-in tool-specific instruction files. Put genuinely path-specific guidance in a
-nested `AGENTS.md`.
+本 `AGENTS.md` 是该仓库的规范指令入口，与具体工具无关。共享的 agent 指导应在此处添加或修改，而不是复制到特定工具的指令文件中。真正与路径相关的指导应放在嵌套的 `AGENTS.md` 中。
 
-## Start here
+## 从这里开始
 
-- Product builders: use `astryx docs`, component `{Name}.doc.mjs` files, and
-  `packages/cli/assets/docs/`.
-- Contributors: read `CONTRIBUTING.md` and the relevant guidance linked from
-  `docs/README.md`.
-- CLI output: an agent reads every byte a command prints. Think about how long
-  an answer is, and test a change with agents, as
-  `docs/contributing/cli-conventions.md` ("Output: keep answers short") says.
-- Pull requests: choose one primary intent and use its template under
-  `.github/PULL_REQUEST_TEMPLATE/`; read `docs/contributing/pull-requests.md`
-  before opening or reviewing a mixed change. Before you request review, run
-  `pnpm review:pre` and its checklist from a fresh session.
-- Component work: derive the review's semantic triggers, load matching `current`
-  global baseline claims with `node scripts/review-global-baselines.mjs
---authority-commit <base-sha> --review-head <head-sha> --triggers
-<comma-separated-triggers>`, then read
-  the component's `docs/specs/components/<ComponentRoot>/{Name}.spec.md` when
-  one exists and any `module:*` records it
-  lists. Load global records before narrower owners, but resolve the direct
-  component or family owner first when it governs the exact delta. A global
-  route exposes only the listed claim; it never makes the whole record govern
-  the component or change. Preserve each matched record, claim, trigger, and
-  match reason in the review receipt.
-- Before editing a path, run `pnpm specs:for <path>`. After editing, before
-  you commit or push, run `pnpm specs:for --diff origin/main` and follow every
-  concern-routed claim.
-- Any path: `pnpm specs:for <path>` lists the current records linked to it,
-  the specs that decided them, and the global claims its component's triggers
-  route. It reads the working tree, so on a pull-request branch it shows that
-  branch's proposed records; it is a lookup, not review authority. It adds to
-  the component-review steps above; it does not replace them.
-- Component-local visual intent: reuse or amend the optional `Design decisions`
-  table in the current component/module spec only when durable local intent must
-  survive future redesigns. Keep exact tuning in code/evidence and shared rules
-  in `docs/design/`. DESIGNOWNER authors may include that local intent with the
-  pixels and evidence in one atomic appearance-only PR. External contributors
-  follow the normal contribution flow and are never asked to author specs;
-  maintainers own missing authority.
-- Before adding a new `data-*` attribute to a component, treat it as public API: themes generate selectors on data attributes. Add one only when a current record names it and says why ([`architecture:public-component-api`](docs/architecture/public-component-api.md) DEC-2). For a dynamic per-instance style, first use a StyleX dynamic style (`stylex.create({x: (v) => ({...})})`), which sets a private CSS variable; never add a data attribute just to feed CSS. For any other internal-only concern, use a private `data-astryx-*` attribute under INV23, or no attribute.
-- Layers: anchored layers follow their anchor through CSS anchor positioning only; script never moves a layer to follow its anchor ([`architecture:layer-runtime`](docs/architecture/layer-runtime.md) INV21). A press scales only the trigger's own visual; a layer renders outside it and anchors to the untransformed box (INV22).
-- Cross-component work: read the relevant contract under `docs/families/`,
-  applicable design spec under `docs/design/`, and current architecture under
-  `docs/architecture/`.
-- Consequential shared-system changes: use a record under `docs/specs/`.
-- Writing or reviewing any knowledge record: run the rubric in
-  `docs/contributing/spec-writing.md` over the record and put its results in
-  the pull request description under `## Writing rubric results`. A record
-  describes the system in the present tense; proposals, history, pull requests,
-  research, and project status (what is built so far, what goes first) stay out
-  of it. When reviewing, read the record against the reported results; a record
-  pull request without them is incomplete, so ask for them before reviewing the
-  content.
-- Integration contribution work: read `docs/specs/AST-039/spec.md`. Every new
-  discoverable item owns a strongly typed, same-stem `.doc.mjs`; root manifests
-  locate directories and never catalog their items. No catalog file (like
-  `themes/manifest.json`) and no per-item map in the manifest, ever.
+- 产品构建者：使用 `astryx docs`、组件 `{Name}.doc.mjs` 文件以及 `packages/cli/assets/docs/`。
+- 贡献者：阅读 `CONTRIBUTING.md` 以及 `docs/README.md` 中链接的相关指导。
+- CLI 输出：agent 会读取命令打印的每一个字节。要考虑答案有多长，并让 agent 测试改动，正如 `docs/contributing/cli-conventions.md`（“Output: keep answers short”）所说。
+- Pull request：选择一个主要意图，并使用 `.github/PULL_REQUEST_TEMPLATE/` 下对应的模板；在打开或审查混合改动之前，先阅读 `docs/contributing/pull-requests.md`。在请求审查之前，请从全新的会话运行 `pnpm review:pre` 及其检查清单。
+- 组件工作：推导审查的语义触发条件，用 `node scripts/review-global-baselines.mjs --authority-commit <base-sha> --review-head <head-sha> --triggers <comma-separated-triggers>` 加载匹配的 `current` 全局基线声明，然后读取组件的 `docs/specs/components/<ComponentRoot>/{Name}.spec.md`（若存在），以及它列出的任何 `module:*` 记录。先加载全局记录，再加载更窄的所有者记录，但当直接组件或 family 所有者管辖确切差异时，应优先解析它。全局路由只暴露所列的声明；它绝不会让整条记录管辖该组件或改动。在审查回执中保留每一条匹配的记录、声明、触发条件和匹配原因。
+- 编辑某个路径之前，先运行 `pnpm specs:for <path>`。编辑之后、提交或推送之前，运行 `pnpm specs:for --diff origin/main` 并遵循每一条按关注点路由的声明。
+- 任意路径：`pnpm specs:for <path>` 会列出链接到它的当前记录、决定这些记录的规范，以及其组件触发条件所路由的全局声明。它读取工作树，因此在 pull request 分支上会显示该分支提议的记录；它是查询，不是审查权威。它是对上述组件审查步骤的补充，而非替代。
+- 组件本地视觉意图：仅当持久的本地意图必须在未来重新设计中保留时，才复用或修改当前组件/模块规范中可选的 `Design decisions` 表。将精确调参保留在代码/证据中，将共享规则保留在 `docs/design/` 中。DESIGNOWNER 作者可以在一个仅涉及外观的原子 PR 中，将该本地意图与像素和证据一并提交。外部贡献者遵循常规贡献流程，永远不会被要求撰写规范；缺失的权威由维护者负责。
+- 在向组件添加新的 `data-*` 属性之前，将其视为公共 API：主题会基于 data 属性生成选择器。仅当当前记录指明它并说明原因时才添加（[`architecture:public-component-api`](docs/architecture/public-component-api.md) DEC-2）。对于动态的每实例样式，首先使用 StyleX 动态样式（`stylex.create({x: (v) => ({...})})`），它会设置一个私有 CSS 变量；绝不要仅为提供 CSS 而添加 data 属性。对于任何其他仅内部关注的问题，使用 INV23 下的私有 `data-astryx-*` 属性，或不使用属性。
+- 层：锚定层仅通过 CSS 锚点定位跟随其锚点；脚本绝不会移动层来跟随锚点（[`architecture:layer-runtime`](docs/architecture/layer-runtime.md) INV21）。按下只缩放触发元素自身的视觉；层渲染在其外部，并锚定到未变换的盒子（INV22）。
+- 跨组件工作：阅读 `docs/families/` 下的相关契约、`docs/design/` 下的适用设计规范，以及 `docs/architecture/` 下的当前架构。
+- 有重大影响的共享系统改动：使用 `docs/specs/` 下的记录。
+- 撰写或审查任何知识记录：对记录运行 `docs/contributing/spec-writing.md` 中的评分标准，并将结果放在 pull request 描述的 `## Writing rubric results` 下。记录以现在时描述系统；提案、历史、pull request、研究以及项目状态（目前已构建了什么、先做什么）都不应写入其中。审查时，对照报告的结果阅读记录；缺少这些结果的记录 pull request 是不完整的，因此在审查内容之前应先要求提供。
+- 集成贡献工作：阅读 `docs/specs/AST-039/spec.md`。每个新的可发现项都拥有一个强类型、同名主干 `.doc.mjs`；根清单定位目录，绝不编目其项目。绝不要有目录文件（如 `themes/manifest.json`），也绝不要在清单中有逐项映射。
 
-## Authority
+## 权威
 
-Knowledge records declare `authority`:
+知识记录会声明 `authority`：
 
-- `draft`: not authoritative; may still need evidence or owner review;
-- `current`: explicitly approved and authoritative;
-- `archived`: context only, with a reason such as `superseded`, `withdrawn`,
-  or `historical` and a replacement link when one exists.
+- `draft`：不具权威性；仍可能需要证据或所有者审查；
+- `current`：已明确批准且具有权威性；
+- `archived`：仅作背景参考，需附原因（如 `superseded`、`withdrawn` 或 `historical`），若存在替代链接则一并提供。
 
-Only `current` records govern implementation and review. Never infer approval
-from merged code, silence, an old review, or an existing wiki page.
+只有 `current` 记录对实现和审查具有约束力。绝不要从已合并的代码、沉默、旧审查或现有 wiki 页面推断出批准。
 
-## Judgment boundary
+## 判断边界
 
-Resolve checkable behavior from code, tests, and browser evidence. Ask a human
-only when a stable public API, theme contract, ownership boundary, compatibility
-policy, or genuinely subjective visual direction remains undecided. Ask one
-question at a time.
+从代码、测试和浏览器证据中解决可检查的行为。仅当稳定的公共 API、主题契约、所有权边界、兼容性策略或真正主观的视觉方向仍未确定时，才询问人类。一次只问一个问题。
 
-Before drafting, reviewing, or implementing a proposed outcome, search current
-records and open pull requests using the proposed canonical owner/id, affected
-paths and exported symbols, and the behavior's semantic terms. Extend or project
-the existing canonical owner by default. Create a new record only for a distinct
-fact boundary, and state why the existing owner cannot contain it. Do not create
-new policy for work that is already complete, owned, or superseded.
+在起草、审查或实现提议的结果之前，使用提议的规范所有者/ID、受影响的路径和导出的符号，以及该行为的语义术语，搜索当前记录和未关闭的 pull request。默认应扩展或投影现有的规范所有者。仅为不同的事实边界创建新记录，并说明为什么现有所有者无法容纳它。不要为已完成、已有所有者或已被取代的工作创建新政策。
 
-## Validation
+## 验证
 
-Run `pnpm check:knowledge` after editing knowledge records or templates. A
-material template-shape change requires a schema-version bump and migration of
-active records; changing template guidance alone does not rewrite accepted
-history.
+在编辑知识记录或模板后运行 `pnpm check:knowledge`。实质性的模板形状变更需要提升 schema 版本并迁移活跃记录；仅更改模板指南不会重写已接受的历史。
 
-## Custom Commands
+## 自定义命令
 
-### `/vibe-test [count]` - Run vibeability tests
+### `/vibe-test [count]` - 运行 vibeability 测试
 
-Tests how well AGENTS.md helps LLMs generate correct Astryx component code.
+测试 AGENTS.md 在多大程度上帮助 LLM 生成正确的 Astryx 组件代码。
 
-**Usage:**
+**用法：**
 
 ```
 /vibe-test 5                    # Run 5 stratified sample tests (one-shot)
@@ -116,23 +57,22 @@ Tests how well AGENTS.md helps LLMs generate correct Astryx component code.
 /vibe-test 5 --degradation      # Run 5 tests with degradation curve (10-turn)
 ```
 
-**How to execute:**
+**执行方式：**
 
-1. Run `pnpm -F @astryxdesign/vibe-tests interactive --sample <count>` to set up iteration
-2. Spawn parallel subagents (one per test prompt) to:
-   - Read the task file from `results/<iteration>/tasks/{promptId}.json`
-   - Generate code for the prompt using Astryx components (AGENTS.md auto-injected)
-   - Self-evaluate for success/escape hatches
-   - Write `.tsx` result to `results/<iteration>/results/{promptId}.tsx`
-   - Write `.json` metadata to `results/<iteration>/results/{promptId}.json`
-3. Trigger `gh workflow run vibe-screenshots.yml` to build previews and capture screenshots
-4. Run `pnpm -F @astryxdesign/vibe-tests aggregate --iteration <id>` to see results
+1. 运行 `pnpm -F @astryxdesign/vibe-tests interactive --sample <count>` 设置迭代
+2. 为每个测试提示生成并行子 agent：
+   - 从 `results/<iteration>/tasks/{promptId}.json` 读取任务文件
+   - 使用 Astryx 组件为提示生成代码（AGENTS.md 自动注入）
+   - 自评成功/规避行为
+   - 将 `.tsx` 结果写入 `results/<iteration>/results/{promptId}.tsx`
+   - 将 `.json` 元数据写入 `results/<iteration>/results/{promptId}.json`
+3. 触发 `gh workflow run vibe-screenshots.yml` 构建预览并捕获截图
+4. 运行 `pnpm -F @astryxdesign/vibe-tests aggregate --iteration <id>` 查看结果
 
-**Degradation mode (--degradation):**
-Tests context retention across 10-turn conversations with filler, distractor, and recovery turns.
-Probes at turns 0, 6, 8, 10 to measure quality degradation. Results show a line graph of each test's progression.
+**降级模式（--degradation）：**
+测试跨 10 轮对话的上下文保持能力，包含填充、干扰和恢复轮次。在第 0、6、8、10 轮进行探测以测量质量退化。结果以折线图显示每个测试的进展。
 
-**Result format:**
+**结果格式：**
 
 ```json
 {
@@ -148,46 +88,44 @@ Probes at turns 0, 6, 8, 10 to measure quality degradation. Results show a line 
 }
 ```
 
-Runners may also write an optional `<promptId>.provenance.json` sidecar beside the result metadata. The versioned, executor-neutral contract and fallback behavior are documented in `internal/vibe-tests/docs/execution-provenance.md`.
+运行器还可以在结果元数据旁写入可选的 `<promptId>.provenance.json` sidecar。版本化、执行器中立的契约和回退行为记录在 `internal/vibe-tests/docs/execution-provenance.md`。
 
-## AI Context
+## AI 上下文
 
-For architectural context, decisions, and research, see the **[GitHub Wiki](https://github.com/meta/astryx/wiki)**:
+有关架构背景、决策和研究，请参阅 **[GitHub Wiki](https://github.com/meta/astryx/wiki)**：
 
-- **Decisions** — API Conventions, Why StyleX, StyleX Distribution
-- **Architecture** — System Architecture, Component Authoring Guide
-- **Research** — AI + Design Systems, AI Model Trajectory, Swizzle Ergonomics
-- **Future** — Animation System, RSC Utilities, Distribution Strategy
+- **决策** — API Conventions、Why StyleX、StyleX Distribution
+- **架构** — System Architecture、Component Authoring Guide
+- **研究** — AI + Design Systems、AI Model Trajectory、Swizzle Ergonomics
+- **未来** — Animation System、RSC Utilities、Distribution Strategy
 
-For component-specific documentation, see the `{Name}.doc.mjs` file in each component directory under `packages/core/src/` (e.g. `Button/Button.doc.mjs`). These are plain JS files with JSDoc type annotations exporting a `ComponentDoc` object (typed via `@astryxdesign/cli/authoring`).
+有关组件的具体文档，请参阅 `packages/core/src/` 下每个组件目录中的 `{Name}.doc.mjs` 文件（例如 `Button/Button.doc.mjs`）。这些是带有 JSDoc 类型注解的普通 JS 文件，导出一个 `ComponentDoc` 对象（通过 `@astryxdesign/cli/authoring` 提供类型）。
 
-## Documentation Standard
+## 文档标准
 
-Documentation lives in two places:
+文档存在于两个地方：
 
-1. **File Headers** — Each source file has a structured JSDoc header with `@input`, `@output`, `@position`, in about 12 lines at most
-2. **Component Docs** — `{Name}.doc.mjs` files in each component directory (props, features, examples)
+1. **文件头** — 每个源文件都有一个结构化的 JSDoc 头，包含 `@input`、`@output`、`@position`，最多约 12 行
+2. **组件文档** — 每个组件目录中的 `{Name}.doc.mjs` 文件（props、功能、示例）
 
-**Update Protocol**: When modifying code, keep the file's header comment accurate. Look for `SYNC:` comments as reminders.
+**更新协议**：修改代码时，保持文件头注释准确。留意 `SYNC:` 注释作为提醒。
 
-**Source comments** ([`architecture:knowledge-contracts`](docs/architecture/knowledge-contracts.md#source-comments) INV29): make the code explain itself with names, structure, and control flow. A comment explains only non-obvious work: a reason, a constraint, an invariant, or a browser quirk. Never narrate the code, restate names or types, or cite pull requests, issues, dates, or spec records (`pnpm specs:for <path>` finds the record). When a citation is a file's only link to a record or claim, add that link to a record before you remove it: for a whole record, link the file through `applies_to`, `verified_by`, or `path-applicability:v1`; for a claim such as `AST-108 FR4`, add a claim-scoped reference such as `system_specs: [spec:AST-108/FR4]` to the file's own component, module, or theme record. Write in ASD-STE100 Simplified Technical English: short sentences, one topic each, active voice, present tense. Keep public JSDoc, the Effect note naming the system it syncs, and directives a tool reads: lint and TypeScript directives, `@pr-a11y` lines, and any other comment line a repository tool parses. The record has a worked before/after example.
+**源码注释**（[`architecture:knowledge-contracts`](docs/architecture/knowledge-contracts.md#source-comments) INV29）：让代码通过命名、结构和控制流自我解释。注释只解释非显而易见的工作：原因、约束、不变量或浏览器怪癖。绝不要叙述代码、复述名称或类型，也不要引用 pull request、issue、日期或规范记录（`pnpm specs:for <path>` 可以找到记录）。当引用是文件与记录或声明的唯一链接时，在删除它之前先将该链接添加到记录中：对于整条记录，通过 `applies_to`、`verified_by` 或 `path-applicability:v1` 链接该文件；对于诸如 `AST-108 FR4` 的声明，在文件自身的组件、模块或主题记录中添加声明作用域的引用，例如 `system_specs: [spec:AST-108/FR4]`。使用 ASD-STE100 简化技术英语写作：句子简短，一个主题一句，主动语态，现在时。保留公共 JSDoc、说明其同步系统的 Effect 注释，以及工具读取的指令：lint 和 TypeScript 指令、`@pr-a11y` 行，以及任何其他由仓库工具解析的注释行。该记录中有一个前后对照的示例。
 
-**Audience**: every `.doc.mjs`, and everything under `packages/cli/assets/docs/`, is written for people **building with** Astryx — not for people building Astryx. Internal review rubrics, readiness gates, audit checklists and lab→core criteria belong in the wiki. A public authoring-quality rubric belongs in shipped docs when callers use it to evaluate an artifact they create through Astryx and a current system spec assigns that ownership. [`packages/cli/assets/docs/README.md`](packages/cli/assets/docs/README.md) has the test and the page each kind of material goes to.
+**受众**：每个 `.doc.mjs`，以及 `packages/cli/assets/docs/` 下的所有内容，都是为**使用** Astryx 构建的人而写，而不是为构建 Astryx 的人而写。内部审查评分标准、就绪门禁、审计清单和 lab→core 标准属于 wiki。当调用者使用公共创作质量评分标准来评估他们通过 Astryx 创建的产物，并且当前系统规范指派了该所有权时，该评分标准属于随附文档。[`packages/cli/assets/docs/README.md`](packages/cli/assets/docs/README.md) 中有测试以及各类材料应归属的页面。
 
-## Quick Reference
+## 快速参考
 
-- **Package manager**: pnpm 11, pinned by the `packageManager` field (see
-  CONTRIBUTING.md for install options — Corepack is one of several, and Node
-  25+ no longer bundles it)
-- **Testing**: Vitest (colocated tests)
-- **Components**: `packages/core/`
-- **Storybook**: `apps/storybook/`
-- **Imports inside a package**: import the defining module (`'../List/List'`), never a folder's index barrel (`'../List'`); public consumers import `@astryxdesign/core`. `@astryx/no-internal-barrel-import` enforces it.
+- **包管理器**：pnpm 11，由 `packageManager` 字段固定（安装选项见 CONTRIBUTING.md — Corepack 是其中一种，Node 25+ 不再内置它）
+- **测试**：Vitest（测试与代码同目录）
+- **组件**：`packages/core/`
+- **Storybook**：`apps/storybook/`
+- **包内导入**：导入定义模块（`'../List/List'`），绝不要导入文件夹的索引桶（`'../List'`）；公共消费者导入 `@astryxdesign/core`。`@astryx/no-internal-barrel-import` 会强制执行此规则。
 
-## JSDoc Conventions
+## JSDoc 约定
 
-- **`@example` code fences must use plain ` ``` `, not ` ```tsx `.**
-  Storybook's autodocs parser doesn't handle language-tagged fences in JSDoc correctly — the code block won't render as a proper code block. Always use untagged fences in `@example` blocks.
+- **`@example` 代码围栏必须使用普通的 ` ``` `，而不是 ` ```tsx `。**
+  Storybook 的 autodocs 解析器无法正确处理 JSDoc 中带语言标签的围栏 — 代码块将无法渲染为正确的代码块。在 `@example` 块中始终使用不带标签的围栏。
 
 <!-- STYLEX-CAPS:START -->
 
