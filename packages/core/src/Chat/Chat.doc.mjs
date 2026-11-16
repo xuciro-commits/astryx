@@ -94,32 +94,177 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  usage: {
-    description: 'Chat 是一组用于构建 AI 和人工聊天体验的可组合基础组件。组合 ChatLayout、ChatMessageList、ChatMessage、气泡、系统消息、工具调用、标记文本和 ChatComposer，可构建完整对话，而无需重新实现发送者感知布局、密度、滚动或编写器行为。',
-    bestPractices: [
-      { guidance: true, description: '使用 MessageList > Message > Bubble 组合来获得一致的发送者感知样式和密度。' },
-      { guidance: true, description: '设置 density 属性来全局控制间距：compact 用于侧边栏，balanced 用于大多数视图，spacious 用于长篇阅读。' },
-      { guidance: true, description: '当同一发送者发送多条连续消息时，使用气泡的 group 属性（first、middle、last）来视觉上连接相关消息。' },
-      { guidance: true, description: '使用 ChatSystemMessage 的 variant="divider" 作为日期分隔线，使用 default 作为内联状态通知。' },
-      { guidance: true, description: '将 name 放在第一个气泡上，metadata 放在最后一个气泡上，使其与气泡的内边距对齐。' },
-      { guidance: true, description: '将自定义消息内容（卡片、附件、引用）包裹在 ghost 变体的气泡中，使其与气泡文本列对齐；需要占满消息列宽度时设置 width="100%"。' },
-      { guidance: true, description: '提供 emptyState 属性，让新用户看到开始对话的提示，而不是空白屏幕。' },
-      { guidance: true, description: '使用 ghost 气泡变体显示代码块或 Markdown 等富内容，无需可见边界。' },
-      { guidance: false, description: '不要将 ChatSystemMessage 用于发送者内容，它没有头像、对齐或气泡。请使用带有发送者角色的 ChatMessage。' },
-      { guidance: false, description: '不要在系统消息中放置冗长或多行内容，保持一句简短的话。如需更多内容，请使用气泡或卡片。' },
-      { guidance: false, description: '不要将 ChatMessage 嵌套在另一个 ChatMessage 内，每条消息都是独立的 article 元素。' },
-      { guidance: false, description: '不要直接在消息列表上应用固定高度，将其包裹在有尺寸的容器中，让列表以 flex: 1 填充。' },
-      { guidance: false, description: '不要在同一发送者的消息中混用 filled 和 ghost 气泡变体，每一侧选择一种样式并保持一致。' },
-      { guidance: false, description: '不要同时在气泡和消息包装器上放置 metadata 或 name，根据内容是否有气泡边界来选择。' },
+  "usage": {
+    "description": "`Chat` 是一组可组合的基础组件，用于构建 AI 和人工聊天体验。组合 `ChatLayout`、`ChatMessageList`、`ChatMessage`、气泡、系统消息、工具调用、令牌化文本和 `ChatComposer`，即可组装完整对话，无需重新实现发送者感知布局、密度、滚动或输入区行为。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "使用 `MessageList > Message > Bubble` 组合消息，以获得一致的发送者感知样式和密度。"
+      },
+      {
+        "guidance": true,
+        "description": "设置 `density` 属性以全局控制间距：`compact` 适合侧边栏，`balanced` 适合大多数视图，`spacious` 适合长文阅读。单条消息可以覆盖。"
+      },
+      {
+        "guidance": true,
+        "description": "当顶层行相互独立（例如 LLM 工具事件或流式块）且列表间距需要与密度分开调整时，使用 `gap`。"
+      },
+      {
+        "guidance": true,
+        "description": "当同一发送者连续发送多条消息时，在气泡上使用 `group` 属性（`first`、`middle`、`last`）；它会收紧圆角，在视觉上连接这些消息。"
+      },
+      {
+        "guidance": true,
+        "description": "使用 `variant=\"divider\"` 的 `ChatSystemMessage` 作为日期分隔符，使用默认变体显示加入、离开或主题变更等内联状态通知。"
+      },
+      {
+        "guidance": true,
+        "description": "将 `name` 放在消息的第一个气泡上，将 `metadata` 放在最后一个气泡上，使它们与气泡的内联内边距对齐。"
+      },
+      {
+        "guidance": true,
+        "description": "将自定义消息内内容（卡片、附件、引用）包裹在 Ghost 气泡中，使其与气泡文本列对齐；当内容需要横跨整个消息列而不是默认气泡宽度上限时，添加 `width=\"100%\"`。"
+      },
+      {
+        "guidance": true,
+        "description": "提供 `emptyState` 属性，让新用户看到清晰的开始对话提示，而不是空白屏幕。"
+      },
+      {
+        "guidance": true,
+        "description": "对于展示代码块或 Markdown 等富内容且不需要可见边界的 AI 风格回复，使用 Ghost 气泡变体。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将 `ChatSystemMessage` 用于发送者内容；它没有头像、对齐方式或气泡。请改用带发送者角色的 `ChatMessage`。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在系统消息中放置过长或多行内容；保持为一句简短的话。如需更多内容，请使用气泡或卡片。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将 `ChatMessage` 嵌套在另一个 `ChatMessage` 内；每条消息都是独立的 `article` 元素，拥有自己的发送者上下文。"
+      },
+      {
+        "guidance": false,
+        "description": "不要直接在消息列表上应用固定高度；将其包裹在已设定尺寸的容器中，并让列表通过 `flex: 1` 填满。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在同一发送者的消息中混用填充气泡和 Ghost 气泡变体；每一侧选择一种样式并保持一致。"
+      },
+      {
+        "guidance": false,
+        "description": "不要同时在气泡和消息包装元素上放置元数据或名称；根据内容是否有气泡边界选择其一。"
+      }
     ],
-    anatomy: [
-      { name: 'Message area', required: true, description: 'Scrollable region for messages. Renders children (typically ChatMessageList) in a flex column that pushes content to the bottom when the list is short.' },
-      { name: 'Frosted glass dock', required: true, description: 'Sticky or fixed container at the bottom with a backdrop-blur layer. Houses the scroll button and composer.' },
-      { name: 'Scroll-to-bottom button', required: false, description: 'Appears when the user scrolls up or new messages arrive. Defaults to ChatLayoutScrollButton; pass null to hide or a custom element to override.' },
-      { name: 'Composer', required: true, description: 'The input area for sending messages, typically ChatComposer. Docked at the bottom inside the frosted glass layer.' },
-      { name: 'Empty state', required: false, description: 'Centered placeholder shown when no messages exist. Use EmptyState for a consistent look.' },
-    ],
+    "anatomy": [
+      {
+        "name": "消息区域",
+        "required": true,
+        "description": "消息的可滚动区域。将子元素（通常是 `ChatMessageList`）渲染在 flex 列中，列表较短时将内容推向底部。"
+      },
+      {
+        "name": "毛玻璃停靠区",
+        "required": true,
+        "description": "位于底部的粘性定位或固定容器，带有背景模糊层。容纳滚动按钮和输入区。"
+      },
+      {
+        "name": "滚动到底部按钮",
+        "required": false,
+        "description": "当用户向上滚动或有新消息到达时出现。默认为 `ChatLayoutScrollButton`；传入 `null` 可隐藏，或传入自定义元素以覆盖。"
+      },
+      {
+        "name": "输入区",
+        "required": true,
+        "description": "用于发送消息的输入区域，通常是 `ChatComposer`。停靠在毛玻璃层内的底部。"
+      },
+      {
+        "name": "空状态",
+        "required": false,
+        "description": "没有消息时显示的居中占位内容。使用 `EmptyState` 以获得一致的外观。"
+      },
+      {
+        "name": "头像",
+        "required": false,
+        "description": "消息旁渲染的发送者头像。通常是 `size=\"md\"` 的 `Avatar`。系统消息中隐藏。"
+      },
+      {
+        "name": "名称",
+        "required": false,
+        "description": "消息正文上方的发送者名称。使用气泡时放在气泡上；原始内容则放在消息包装元素上。"
+      },
+      {
+        "name": "内容",
+        "required": true,
+        "description": "消息正文：一个或多个 `ChatMessageBubble` 元素，或任意自由形式的 `ReactNode`（如图片或工具调用）。将非气泡内容包裹在 Ghost 气泡中，使其与气泡文本列对齐。"
+      },
+      {
+        "name": "元数据",
+        "required": false,
+        "description": "消息下方的时间戳、送达状态和页脚操作。放在最后一个气泡或消息包装元素上。"
+      }
+    ]
   },
+  "name": "Chat",
+  "components": [
+    {
+      "name": "ChatMessageList",
+      "description": ""
+    },
+    {
+      "name": "ChatMessage",
+      "description": ""
+    },
+    {
+      "name": "ChatMessageBubble",
+      "description": ""
+    },
+    {
+      "name": "ChatMessageMetadata",
+      "description": ""
+    },
+    {
+      "name": "ChatSystemMessage",
+      "description": ""
+    },
+    {
+      "name": "ChatComposer",
+      "description": ""
+    },
+    {
+      "name": "ChatComposerInput",
+      "description": ""
+    },
+    {
+      "name": "ChatComposerDrawer",
+      "description": ""
+    },
+    {
+      "name": "ChatSendButton",
+      "description": ""
+    },
+    {
+      "name": "ChatToolCalls",
+      "description": ""
+    },
+    {
+      "name": "ChatTokenizedText",
+      "description": ""
+    },
+    {
+      "name": "ChatComposerTokenElement",
+      "description": ""
+    },
+    {
+      "name": "ChatLayout",
+      "description": ""
+    },
+    {
+      "name": "ChatLayoutScrollButton",
+      "description": ""
+    }
+  ]
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

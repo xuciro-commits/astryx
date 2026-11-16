@@ -28,3 +28,11 @@ export const docsDense = {
       'Map a row to semantic {status,label}, custom {color,icon?,label}, or null. Semantic status owns themed glyph + tone. Custom color always owns paint; omitted icon = dot, explicit icon = caller glyph. Branches are exclusive and label is required.',
   },
 };
+
+export const docsZh = {
+  "name": "useTableRowStatus",
+  "description": "返回 TablePlugin 的 Hook，该插件会前置一个窄列以指示每行状态。为语义化的 success、warning 或 error 返回 {status, label}：Table 会通过活动主题解析匹配的字形和色调。为自定义标记返回 {color, icon?, label}：每种颜色都仅用于绘制，省略 icon 时渲染稳定的 8px 圆点，显式 icon 则渲染调用方选择的字形。命名自定义图标保留其已发布的 Icon 颜色映射；原始 CSS 自定义图标继承调用方的精确绘制，而不是之前的 primary 回退。现有调用方无需源代码迁移。label 是必需的，会成为无障碍图像名称以及补充的悬停工具提示；返回 null 表示不显示指示器。列页眉视觉上为空，但带有仅供屏幕阅读器使用的本地化名称（\"Row status\"，i18n 键 @astryx.table.rowStatus.columnHeader）。使用 useCallback 记忆化 getStatus 以获得稳定的插件标识。",
+  "propDescriptions": {
+    "getStatus": "派生语义化结果或自定义标记。{status, label} 接受封闭的 success/error/warning 词汇，并通过活动主题解析其字形和色调。{color, icon?, label} 保留稳定的自定义标记路径：color 始终选择绘制，没有 icon 时渲染 8px 圆点，icon 渲染显式的调用方字形。即使颜色值名为 success/error/warning，没有 icon 时仍保持为圆点。有效图标名称：close、chevronDown、chevronLeft、chevronRight、chevronsLeft、chevronsRight、check、success、error、warning、info、calendar、clock、externalLink、menu、moreHorizontal、search、upload、arrowUp、arrowDown、arrowsUpDown、funnel、eyeSlash、viewColumns、copy、checkDouble、wrench、stop、microphone。各分支互斥，label 是必需的并通过 role=\"img\" 宣布，null 使行状态单元格为空。使用 useCallback 记忆化以获得稳定的插件标识。"
+  }
+};

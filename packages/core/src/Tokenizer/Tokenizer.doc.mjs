@@ -422,366 +422,367 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'Tokenizer',
-  displayName: 'Tokenizer',
-  props: [
+  "name": "Tokenizer",
+  "displayName": "Tokenizer",
+  "props": [
     {
-      name: 'label',
-      type: 'string',
-      description:
-        '\u8f93\u5165\u6846\u7684\u65e0\u969c\u788d\u6807\u7b7e\u3002',
-      required: true,
+      "name": "label",
+      "type": "string",
+      "description": "输入框的可访问标签。",
+      "required": true
     },
     {
-      name: 'searchSource',
-      type: 'SearchSource<T>',
-      description:
-        '提供搜索和引导方法的数据源。`search(query, context)` 可调用 `context.update(items)` 先显示已有的匹配项；返回值是最终列表，同一查询在第一个列表之后的每个列表都保留已显示的行，并只在其后追加新行。',
-      required: true,
+      "name": "searchSource",
+      "type": "SearchSource<T>",
+      "description": "提供 search 和 bootstrap 方法的数据源。`search(query, context)` 可以在返回前调用 `context.update(items)` 以显示它已经拥有的匹配项；它返回的值是最终列表，并且某个查询在第一次之后的每个列表都会保持已显示的行在前，并在其后添加新行。",
+      "required": true
     },
     {
-      name: 'value',
-      type: 'T[]',
-      description:
-        '\u5f53\u524d\u5df2\u9009\u9879\u76ee\u7684\u6570\u7ec4\u3002',
-      required: true,
+      "name": "value",
+      "type": "T[]",
+      "description": "当前选中项的数组。",
+      "required": true
     },
     {
-      name: 'onChange',
-      type: '(items: T[], change: TokenizerChange<T>) => void',
-      description:
-        "\u9009\u62e9\u53d8\u66f4\u65f6\u8c03\u7528\u3002change \u53c2\u6570\u5305\u542b\u53d7\u5f71\u54cd\u7684\u9879\u76ee\u548c\u7c7b\u578b\uff08'add' | 'create' | 'remove' | 'reorder'\uff09\u3002",
-      required: true,
+      "name": "onChange",
+      "type": "(items: T[], change: TokenizerChange<T>) => void",
+      "description": "当选择发生变化时调用。change 参数包含受影响的条目和类型（'add' | 'create' | 'remove' | 'reorder'）。添加和移除（包括在空输入框上按 Backspace）会通过礼貌的实时区域向屏幕阅读器宣布。",
+      "required": true
     },
     {
-      name: 'placeholder',
-      type: 'string',
-      description:
-        '\u8f93\u5165\u6846\u5360\u4f4d\u6587\u672c\u3002\u4ec5\u5728\u672a\u9009\u62e9\u4efb\u4f55\u6807\u8bb0\u65f6\u663e\u793a\u3002',
+      "name": "placeholder",
+      "type": "string",
+      "description": "输入框占位文本。仅在未选择任何令牌时显示。"
     },
     {
-      name: 'maxEntries',
-      type: 'number',
-      description:
-        '\u5141\u8bb8\u7684\u6700\u5927\u9009\u62e9\u6570\u91cf\u3002\u8fbe\u5230\u9650\u5236\u65f6\u8f93\u5165\u6846\u4f1a\u9690\u85cf\u3002',
+      "name": "maxEntries",
+      "type": "number",
+      "description": "允许的最大选择数量。达到限制时隐藏输入框。"
     },
     {
-      name: 'hasClear',
-      type: 'boolean',
-      description:
-        '\u663e\u793a\u5168\u90e8\u6e05\u9664\u6309\u94ae\uff0c\u7528\u4e8e\u6279\u91cf\u79fb\u9664\u6240\u6709\u6807\u8bb0\u3002',
-      default: 'false',
+      "name": "hasClear",
+      "type": "boolean",
+      "description": "显示一个清除全部按钮，用于批量移除所有令牌。",
+      "default": "false"
     },
     {
-      name: 'renderToken',
-      type: '(item: T, onRemove: () => void) => ReactNode',
-      description:
-        '\u5df2\u9009\u6807\u8bb0\u7684\u81ea\u5b9a\u4e49\u6e32\u67d3\u51fd\u6570\u3002\u9ed8\u8ba4\u6e32\u67d3\u5e26\u6709 label \u548c onRemove \u7684 Token\u3002',
+      "name": "renderToken",
+      "type": "(item: T, onRemove: () => void) => ReactNode",
+      "description": "已选令牌的自定义渲染函数。默认渲染带 label 和 onRemove 的 Token。"
     },
     {
-      name: 'renderItem',
-      type: '(item: T) => ReactNode',
-      description:
-        '\u4e0b\u62c9\u5217\u8868\u9879\u7684\u81ea\u5b9a\u4e49\u6e32\u67d3\u51fd\u6570\u3002\u9ed8\u8ba4\u6e32\u67d3 TypeaheadItem\u3002',
+      "name": "renderItem",
+      "type": "(item: T) => ReactNode",
+      "description": "下拉项的自定义渲染函数。默认渲染 TypeaheadItem。"
     },
     {
-      name: 'isDisabled',
-      type: 'boolean',
-      description:
-        '\u7981\u7528\u8f93\u5165\u6846\u548c\u6240\u6709\u6807\u8bb0\u4ea4\u4e92\u3002',
-      default: 'false',
+      "name": "isDisabled",
+      "type": "boolean",
+      "description": "禁用输入框及所有令牌交互。输入框保留其 Tab 停靠点：它会被宣布为已禁用（aria-disabled）、为只读，并且不打开或选择任何内容。当 tokenOverflowBehavior=\"unfocusedLayer\" 且未设置 disabledMessage 时，输入框会原生禁用并移出 Tab 顺序。",
+      "default": "false"
     },
     {
-      name: 'htmlName',
-      type: 'string',
-      description:
-        '用于表单提交的 HTML name 属性。为每个已选项目的 id 渲染一个隐藏输入。',
+      "name": "htmlName",
+      "type": "string",
+      "description": "用于表单提交的 HTML name 属性。为每个选中项 id 渲染一个隐藏输入框。"
     },
     {
-      name: 'disabledMessage',
-      type: 'string',
-      description:
-        'Explains why the tokenizer is disabled. With isDisabled, shows a tooltip on hover/keyboard focus and keeps the input focusable via aria-disabled (input stays blocked). Use this instead of wrapping a disabled Tokenizer in Tooltip, so the reason is attached to the field itself.',
+      "name": "disabledMessage",
+      "type": "string",
+      "description": "解释 Tokenizer 被禁用的原因。与 isDisabled 一起使用时，在悬停/键盘聚焦时显示工具提示，并通过 aria-disabled 保持输入框可聚焦（输入仍被阻止）。请使用此属性而不是将禁用的 Tokenizer 包裹在 Tooltip 中，以便原因附加到字段本身。"
     },
     {
-      name: 'status',
-      type: "{type: 'warning' | 'error' | 'success', message?: string}",
-      description:
-        '\u9a8c\u8bc1\u72b6\u6001\u5bf9\u8c61\uff0c\u5305\u542b\u7c7b\u578b\u548c\u6d88\u606f\uff0c\u7528\u4e8e\u9519\u8bef/\u8b66\u544a/\u6210\u529f\u72b6\u6001\u3002',
+      "name": "status",
+      "type": "{type: 'warning' | 'error' | 'success', message?: string}",
+      "description": "用于错误/警告/成功状态的验证状态对象，包含 type 和 message。"
     },
     {
-      name: 'statusVariant',
-      type: "'attached' | 'detached' | 'tooltip'",
-      description:
-        '状态消息相对于输入框的放置方式。attached 直接叠加在输入框下方（带边框处理）；detached 作为独立元素浮于下方并留有间距；tooltip 在状态图标的提示气泡中显示消息。',
-      default: "'attached'",
+      "name": "statusVariant",
+      "type": "'attached' | 'detached' | 'tooltip'",
+      "description": "状态消息相对于输入框的放置方式。attached 直接重叠在输入框下方（带边框的处理）；detached 作为独立元素带间距地浮动在下方；tooltip 在信息提示按钮中显示消息。",
+      "default": "'attached'"
     },
     {
-      name: 'isLabelHidden',
-      type: 'boolean',
-      description:
-        '\u89c6\u89c9\u9690\u85cf\u6807\u7b7e\uff0c\u540c\u65f6\u4fdd\u6301\u5176\u53ef\u8bbf\u95ee\u6027\u3002',
-      default: 'false',
+      "name": "isLabelHidden",
+      "type": "boolean",
+      "description": "在视觉上隐藏标签，同时保持其可访问。",
+      "default": "false"
     },
     {
-      name: 'description',
-      type: 'string',
-      description:
-        '\u663e\u793a\u5728\u6807\u7b7e\u4e0b\u65b9\u7684\u8f85\u52a9\u6587\u672c\u3002',
+      "name": "description",
+      "type": "string",
+      "description": "显示在标签下方的辅助文本。"
     },
     {
-      name: 'isRequired',
-      type: 'boolean',
-      description: '\u5c06\u5b57\u6bb5\u6807\u8bb0\u4e3a\u5fc5\u586b\u3002',
-      default: 'false',
+      "name": "isRequired",
+      "type": "boolean",
+      "description": "将字段标记为必填。",
+      "default": "false"
     },
     {
-      name: 'isOptional',
-      type: 'boolean',
-      description:
-        '\u5728\u6807\u7b7e\u4e0a\u663e\u793a\u53ef\u9009\u6307\u793a\u5668\u3002',
-      default: 'false',
+      "name": "isOptional",
+      "type": "boolean",
+      "description": "在标签上显示可选指示符。",
+      "default": "false"
     },
     {
-      name: 'labelTooltip',
-      type: 'string',
-      description:
-        '\u6807\u7b7e\u4e0a\u663e\u793a\u7684\u5de5\u5177\u63d0\u793a\u6587\u672c\u3002',
+      "name": "labelTooltip",
+      "type": "string",
+      "description": "标签上显示的工具提示文本。"
     },
     {
-      name: 'hasEntriesOnFocus',
-      type: 'boolean',
-      description:
-        '\u805a\u7126\u65f6\u5728\u8f93\u5165\u524d\u663e\u793a\u5f15\u5bfc\u7ed3\u679c\u3002从该列表中选择一项后，只要还有其他选项，输入框保持焦点，列表保持打开，并激活下一项。',
-      default: 'false',
+      "name": "hasEntriesOnFocus",
+      "type": "boolean",
+      "description": "在输入前聚焦时显示 bootstrap 结果。从该列表中选择后，输入框保持焦点，列表保持打开并激活下一个选项，同时仍有其他选项可用。",
+      "default": "false"
     },
     {
-      name: 'maxMenuItems',
-      type: 'number',
-      description:
-        '下拉列表显示的最大搜索结果数。“创建 ...”条目会在此之外额外提供，因此菜单可能比该数量多显示一项。',
-      default: '10',
+      "name": "maxMenuItems",
+      "type": "number",
+      "description": "显示的最大搜索结果数量。hasCreate 条目会在它们之上提供，因此菜单可以比此多显示一项。",
+      "default": "10"
     },
     {
-      name: 'menuWidth',
-      type: 'number',
-      description: '下拉菜单的固定像素宽度。菜单不会小于其锚点宽度。',
+      "name": "menuWidth",
+      "type": "number",
+      "description": "固定的下拉宽度（像素）。菜单绝不会收缩到小于其锚点宽度。"
     },
     {
-      name: 'minQueryLength',
-      type: 'number',
-      description:
-        '查询搜索源前的最小查询长度。低于该长度不会发起搜索，菜单保持关闭；但设置 hasCreate 时仍会提供“创建 ...”条目——该条目由输入的文本推导而来，并非通过搜索获取。',
-      default: '1',
+      "name": "minQueryLength",
+      "type": "number",
+      "description": "查询搜索源之前的最小查询长度。低于此长度不会运行搜索，菜单保持关闭——除非设置了 hasCreate，此时仍会提供 \"Create ...\" 条目，因为它是根据键入的文本派生的，而不是为此获取的。",
+      "default": "1"
     },
     {
-      name: 'emptySearchText',
-      type: 'ReactNode',
-      description:
-        '查询无匹配结果时显示的内容。接受 ReactNode，因此可在无结果处放置链接或创建入口。会从 DOM 读取其渲染出的文本在礼貌性实时区域中播报；aria-hidden 的部分两处都不包含，不渲染任何文本的内容则不会播报。null 与 undefined 同样视为未提供，将回退到默认值；若要不渲染任何内容，请传入空字符串。',
-      default: "'No results found'",
+      "name": "emptySearchText",
+      "type": "ReactNode",
+      "description": "查询未匹配任何内容时显示的内容。接受 ReactNode，因此死胡同可以带有链接或创建行。它会作为其渲染的文本在礼貌的实时区域中宣布，从 DOM 读取；aria-hidden 的部分不会出现在两者中，不渲染文本的内容不会宣布任何内容。null 视为未提供，与 undefined 一样，并回退到默认值；传入空字符串以不渲染任何内容。",
+      "default": "'No results found'"
     },
     {
-      name: 'hasAutoFocus',
-      type: 'boolean',
-      description:
-        '\u6302\u8f7d\u65f6\u81ea\u52a8\u805a\u7126\u8f93\u5165\u6846\u3002',
-      default: 'false',
+      "name": "hasAutoFocus",
+      "type": "boolean",
+      "description": "挂载时自动聚焦输入框。",
+      "default": "false"
     },
     {
-      name: 'size',
-      type: "'sm' | 'md' | 'lg'",
-      description:
-        '\u8f93\u5165\u6846\u548c\u6807\u8bb0\u7684\u5c3a\u5bf8\u3002\u5728 InputGroup \u5185\u5219\u4f7f\u7528\u8be5\u7ec4\u7684\u5c3a\u5bf8\u3002',
-      default: "'md'",
+      "name": "size",
+      "type": "'sm' | 'md' | 'lg'",
+      "description": "输入框和令牌的尺寸。在 InputGroup 内则应用组的尺寸。",
+      "default": "'md'"
     },
     {
-      name: 'debounceMs',
-      type: 'number',
-      description:
-        '触发搜索前的防抖延迟（毫秒）。同步数据源，以及通过 `context.update` 显示本地匹配项并自行延迟服务器请求的数据源，设置为 0。',
-      default: '150',
+      "name": "debounceMs",
+      "type": "number",
+      "description": "触发搜索前的防抖延迟（毫秒）。对同步数据源设为 0；对于通过 `context.update` 显示本地匹配并延迟自身服务器请求的数据源也设为 0。",
+      "default": "150"
     },
     {
-      name: 'onChangeQuery',
-      type: '(query: string) => void',
-      description:
-        '\u641c\u7d22\u67e5\u8be2\u6587\u672c\u53d8\u66f4\u65f6\u89e6\u53d1\u7684\u56de\u8c03\u3002',
+      "name": "onChangeQuery",
+      "type": "(query: string) => void",
+      "description": "搜索查询文本变化时触发的回调。"
     },
     {
-      name: 'startIcon',
-      type: 'ReactNode | IconType',
-      description:
-        '\u5728\u8f93\u5165\u6846\u5f00\u5934\uff08token \u4e4b\u524d\uff09\u663e\u793a\u7684\u56fe\u6807\u3002\u63a5\u53d7\u8bed\u4e49\u56fe\u6807\u540d\u79f0\u3001SVG \u56fe\u6807\u7ec4\u4ef6\u6216\u76f4\u63a5\u4f20\u5165 ReactNode\u3002',
+      "name": "startIcon",
+      "type": "ReactNode | IconType",
+      "description": "显示在输入框开头、任何令牌之前的图标。接受语义图标名称、SVG 图标组件或直接的 ReactNode。"
     },
     {
-      name: 'endContent',
-      type: 'ReactNode',
-      description:
-        '\u5728\u8f93\u5165\u884c\u672b\u5c3e\u663e\u793a\u7684\u5185\u5bb9\u3002\u9002\u7528\u4e8e\u6309\u94ae\u3001\u7ed3\u679c\u8ba1\u6570\u6216\u5176\u4ed6\u63a7\u4ef6\u3002',
+      "name": "endContent",
+      "type": "ReactNode",
+      "description": "显示在输入行末端的内容。适用于按钮、结果计数或其他控件。"
     },
     {
-      name: 'handleRef',
-      type: 'React.Ref<TokenizerHandle>',
-      description:
-        '命令式句柄，提供 focus()、blur()、open() 和 close()。open() 和 close() 控制内联菜单；底部面板呈现会忽略它们。',
+      "name": "handleRef",
+      "type": "React.Ref<TokenizerHandle>",
+      "description": "命令式句柄，暴露 focus()、blur()、open() 和 close()。open() 和 close() 驱动内联菜单；底部面板呈现方式会忽略它们。"
     },
     {
-      name: 'menu',
-      type: 'BaseTypeaheadMenu',
-      description:
-        "菜单显示的内容。role 为 'listbox'（默认）时显示结果列表；可选的 render({listbox, query, isBusy, isEmptySearch, close}) 可在列表周围放置标题或提示等信息，用户可操作的内容仍需作为结果放在列表中，以便方向键可达。role 为 'dialog' 时在以 label 命名的对话框中显示 render({query, close})，并将焦点移入；按 Escape、点击外部或调用 close() 后焦点回到菜单打开时的位置。两种情况下图层都由 Astryx 管理。从 listbox 切换到 dialog 时菜单保持打开：在 onChange 中调用 handleRef.open()。底部面板呈现保留自己的面板并忽略此属性。",
+      "name": "menu",
+      "type": "BaseTypeaheadMenu",
+      "description": "菜单显示的内容。role 'listbox'（默认）是结果列表；其可选的 render({listbox, query, isBusy, isEmptySearch, close}) 会在其周围放置标题或提示等信息，而人们会操作的内容仍作为结果，以便方向键可以到达。role 'dialog' 会在以 label 命名的对话框中显示 render({query, close}) 并获得焦点；Escape、外部按下或 close() 会将焦点返回到菜单打开时的位置。无论哪种方式，Astryx 都拥有该层。从 listbox 切换到 dialog 会保持菜单打开：在 onChange 中调用 handleRef.open()。底部面板呈现方式保留自己的面板并忽略它。"
     },
     {
-      name: 'onOpenChange',
-      type: '(isOpen: boolean) => void',
-      description:
-        '内联菜单打开或关闭时调用。它只报告变化；请用 handleRef 控制菜单。底部面板呈现不会调用它。',
+      "name": "onOpenChange",
+      "type": "(isOpen: boolean) => void",
+      "description": "内联菜单打开或关闭时调用。它仅报告变化；请使用 handleRef 驱动菜单。底部面板呈现方式不会调用它。"
     },
     {
-      name: 'containerXstyle',
-      type: 'StyleXStyles',
-      description:
-        '字段容器（标签、控件和状态整体）的 StyleX 样式。在 InputGroup 内（请改为设置 InputGroup 的样式）或 `horizontal-labels` FormLayout 中无效。不接受根级 `xstyle`、`className` 和 `style`。',
+      "name": "containerXstyle",
+      "type": "StyleXStyles",
+      "description": "用于字段容器（标签、控件和状态一起）的 StyleX 样式。在 InputGroup 内（请改为设置 InputGroup 样式）或 `horizontal-labels` FormLayout 中无效。不接受根级 `xstyle`、`className` 和 `style`。"
     },
     {
-      name: 'containerClassName',
-      type: 'string',
-      description: '字段容器的类名，作用目标同 `containerXstyle`。',
+      "name": "containerClassName",
+      "type": "string",
+      "description": "字段容器的类名。目标与 `containerXstyle` 相同。"
     },
     {
-      name: 'containerStyle',
-      type: 'CSSProperties',
-      description: '字段容器的内联样式，作用目标同 `containerXstyle`。',
+      "name": "containerStyle",
+      "type": "CSSProperties",
+      "description": "字段容器的内联样式。目标与 `containerXstyle` 相同。"
     },
     {
-      name: 'controlXstyle',
-      type: 'StyleXStyles',
-      description:
-        '可视控件框的 StyleX 样式：绘制边框和背景并包含图标与尾部控件的元素，而非原生输入元素。',
+      "name": "controlXstyle",
+      "type": "StyleXStyles",
+      "description": "视觉控件盒的 StyleX 样式：绘制边框和背景并容纳图标和末端控件的元素。绝不是原生输入框。"
     },
     {
-      name: 'controlClassName',
-      type: 'string',
-      description: '可视控件框的类名。',
+      "name": "controlClassName",
+      "type": "string",
+      "description": "视觉控件盒的类名。"
     },
     {
-      name: 'controlStyle',
-      type: 'CSSProperties',
-      description: '可视控件框的内联样式。',
+      "name": "controlStyle",
+      "type": "CSSProperties",
+      "description": "视觉控件盒的内联样式。"
     },
     {
-      name: 'presentation',
-      type: "'popover' | 'bottom-sheet' | 'adaptive'",
-      description:
-        '字段如何呈现选项。adaptive（默认）在紧凑触摸屏上使用底部面板，其他情况使用 popover，解析方式与 Selector 相同；服务端渲染和水合期间的渲染均为 popover。popover 在所有设备上为内联组合框及其锚定建议菜单。bottom-sheet 在所有设备上改为一个显示已选标记的字段，点按其中的触发按钮后打开一个高的模态底部面板——顶部为搜索行，下方为整行复选框行（面板打开期间位置保持不变），hasCreate 时有「创建」行，底部固定显示需确认的「全部清除」和「保存」；面板编辑的是草稿，onChange 仅在「保存」提交时触发一次，草稿有改动时滑动、点击遮罩或按 Escape 关闭会先询问是否放弃。在底部面板呈现中，字段框包含触发按钮、标记和 endContent，并保留内联字段的外框、主题目标和焦点环；触发按钮即为控件：ref、id、aria-* 和 data-* 都作用于它，ref 在该呈现中收到的是触发按钮，因此请将其类型声明为组件所接受的 Ref<HTMLInputElement | HTMLButtonElement>（TokenizerProps 保留已发布的输入框 ref 类型）。endContent 位于字段的行内末端，renderToken 渲染字段中的标记，与内联字段相同；其中的控件可直接操作，不会打开底部面板。renderItem、hasClear（底部面板自带“全部清除”）、hasEntriesOnFocus、menuWidth、menu、onOpenChange、tokenOverflowBehavior（字段会换行显示标记）和 hasAutoFocus 在底部面板中没有作用对象，传入时开发模式下会警告一次。传入 presentation="popover" 可在所有设备上保留内联字段和这些属性。',
-      default: "'adaptive'",
-    },
+      "name": "presentation",
+      "type": "'popover' | 'bottom-sheet' | 'adaptive'",
+      "description": "字段呈现其选项的方式。adaptive（默认值）在紧凑触摸屏上使用底部面板，否则使用弹出框，解析方式与 Selector 相同；服务端渲染和 hydration 渲染都是弹出框。popover 是在所有设备上使用带锚定建议菜单的内联组合框。bottom-sheet 在所有设备上将其替换为一个显示已选令牌的字段，其触发按钮打开一个高模态面板：顶部是搜索行，全宽复选框行在面板打开期间保持位置，使用 hasCreate 时有一行 Create，以及一个在任何状态下都固定的页脚，带有需确认的 Clear all 和 Save；面板编辑草稿，因此 onChange 仅在 Save 提交时触发一次，而在草稿已更改时通过滑动、遮罩或 Escape 关闭会先询问是否放弃。在底部面板呈现方式中，字段盒容纳触发按钮、令牌和 endContent，并保留内联字段的盒子、主题目标和焦点环；触发按钮就是控件：ref、id、aria-* 和 data-* 会到达它，并且 ref 在那里接收触发按钮，因此请将其类型设为 Ref<HTMLInputElement | HTMLButtonElement>，组件接受该类型（TokenizerProps 保留其已发布的输入 ref 类型）。endContent 位于字段的行内末端，renderToken 像内联字段一样渲染其令牌；它们自己的控件可在不打开面板的情况下操作。renderItem、hasClear（面板有自己的 Clear all）、hasEntriesOnFocus、menuWidth、menu、onOpenChange、tokenOverflowBehavior（字段会包裹其令牌）和 hasAutoFocus 在面板中没有对应表面，传递时字段会在开发环境中警告一次。请传入 presentation=\"popover\" 以在所有设备上保留内联字段和这些属性。",
+      "default": "'adaptive'"
+    }
   ],
-  theming: {
-    targets: [
+  "theming": {
+    "targets": [
       {
-        className: 'astryx-tokenizer',
-        visualProps: ['size', 'status'],
-        states: ['disabled'],
-      },
-    ],
+        "className": "astryx-tokenizer",
+        "visualProps": [
+          "size",
+          "status"
+        ],
+        "states": [
+          "disabled"
+        ]
+      }
+    ]
   },
-  usage: {
-    description:
-      'Tokenizer is a multi-select input that lets users search, select, and manage multiple items displayed as removable chips. Use it when users need to build a set of selections from a searchable data source, like adding team members, applying tags, or choosing filters.',
-    bestPractices: [
+  "usage": {
+    "description": "Tokenizer 是一个多选输入控件，让用户可以搜索、选择并管理多个以可移除标签形式显示的条目。当用户需要从可搜索的数据源中构建一组选择时使用它，例如添加团队成员、应用标签或选择筛选条件。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          'Write a placeholder that tells users what they can search for, such as "Search people..." or "Add tags...", so the input is not a blank mystery.',
+        "guidance": true,
+        "description": "编写能告诉用户可以搜索什么的占位符，例如 \"Search people...\" 或 \"Add tags...\"，以免输入框成为一个空白的谜团。"
       },
       {
-        guidance: true,
-        description:
-          'Set maxEntries when the number of selections should be bounded, like limiting a review to 5 approvers.',
+        "guidance": true,
+        "description": "当选择数量应有上限时设置 maxEntries，例如将评审限制为 5 位审批人。"
       },
       {
-        guidance: true,
-        description:
-          'Use hasCreate for free-form tagging where users need to enter values that do not exist in the search source.',
+        "guidance": true,
+        "description": "对于需要输入搜索源中不存在的值的自由标签，使用 hasCreate。"
       },
       {
-        guidance: true,
-        description:
-          'Show validation status with the status prop so users know immediately when a selection is missing or invalid.',
+        "guidance": true,
+        "description": "使用 status 属性显示验证状态，让用户立即知道某个选择缺失或无效。"
       },
       {
-        guidance: true,
-        description:
-          'Use inside InputGroup only when the tokenizer needs a short prefix or suffix addon as part of one decorated input surface; the grouped row stays single-line, so keep selections few (maxEntries) or use tokenOverflowBehavior to summarize them.',
+        "guidance": true,
+        "description": "仅当 Tokenizer 需要作为单个装饰输入表面的一部分提供简短的前缀或后缀附加项时，才在 InputGroup 内使用；分组行保持单行，因此请保持选择较少（maxEntries），或使用 tokenOverflowBehavior 对其进行汇总。"
       },
       {
-        guidance: false,
-        description:
-          "Don't use Tokenizer for single-item selection; use Typeahead instead. Tokenizer is for building sets of two or more items.",
+        "guidance": false,
+        "description": "不要将 Tokenizer 用于单项选择；请改用 Typeahead。Tokenizer 用于构建包含两个或更多条目的集合。"
       },
       {
-        guidance: false,
-        description:
-          'Avoid applying custom colors to individual tokens inside a Tokenizer; use the default token style for visual consistency across the set.',
+        "guidance": false,
+        "description": "避免为 Tokenizer 内的单个令牌应用自定义颜色；使用默认令牌样式以保持整组视觉一致。"
       },
       {
-        guidance: false,
-        description:
-          "Don't hide the label; every Tokenizer needs a visible label so users understand what they are selecting. Use isLabelHidden only when surrounding context makes the purpose obvious.",
+        "guidance": false,
+        "description": "不要隐藏标签；每个 Tokenizer 都需要可见的标签，以便用户理解他们在选择什么。仅当周围上下文使目的显而易见时才使用 isLabelHidden。"
       },
       {
-        guidance: false,
-        description:
-          'Wrap a disabled Tokenizer in Tooltip to explain why it is disabled; disabled controls swallow the hover events the wrapper needs. Use the disabledMessage prop instead.',
-      },
+        "guidance": false,
+        "description": "不要将禁用的 Tokenizer 包裹在 Tooltip 中以解释其禁用原因；禁用的控件会吞掉包装器所需的悬停事件。请改用 disabledMessage 属性。"
+      }
     ],
-    anatomy: [
+    "anatomy": [
       {
-        name: 'Label',
-        required: true,
-        description:
-          'The visible text above the input describing what the user is selecting. Also used as the accessible name.',
+        "name": "标签",
+        "required": true,
+        "description": "输入框上方描述用户正在选择什么的可见文本。同时也用作可访问名称。"
       },
       {
-        name: 'Token chips',
-        required: false,
-        description:
-          'Removable chips representing each selected item. Each chip shows a label and a remove button.',
+        "name": "令牌标签",
+        "required": false,
+        "description": "代表每个选中项的可移除令牌标签。每个令牌标签显示文本和一个移除按钮。"
       },
       {
-        name: 'Search input',
-        required: true,
-        description:
-          'The text input where users type to search the data source. Hides when maxEntries is reached.',
+        "name": "搜索输入框",
+        "required": true,
+        "description": "用户在其中输入以搜索数据源的文本输入框。达到 maxEntries 时隐藏。"
       },
       {
-        name: 'Dropdown menu',
-        required: false,
-        description:
-          'The search results list that appears below the input as the user types.',
+        "name": "下拉菜单",
+        "required": false,
+        "description": "用户输入时出现在输入框下方的搜索结果列表。"
       },
       {
-        name: 'Spinner',
-        required: false,
-        description:
-          'Loading indicator shown at the end of the field while a search is in flight.',
+        "name": "加载指示器",
+        "required": false,
+        "description": "搜索进行中时显示在字段末端的加载指示器。"
       },
       {
-        name: 'End content',
-        required: false,
-        description:
-          'A trailing slot after the input for action buttons, counts, or other controls.',
+        "name": "结束内容",
+        "required": false,
+        "description": "输入框之后用于操作按钮、计数或其他控件的尾随插槽。"
       },
       {
-        name: 'Clear button',
-        required: false,
-        description:
-          'A button that removes all selected tokens at once. Shown when hasClear is true and tokens are present.',
-      },
-    ],
+        "name": "清除按钮",
+        "required": false,
+        "description": "一次移除所有已选令牌的按钮。当 hasClear 为 true 且存在令牌时显示。"
+      }
+    ]
   },
+  "propDescriptions": {
+    "label": "输入框的可访问标签。",
+    "searchSource": "提供 search 和 bootstrap 方法的数据源。`search(query, context)` 可以在返回前调用 `context.update(items)` 以显示它已经拥有的匹配项；它返回的值是最终列表，并且某个查询在第一次之后的每个列表都会保持已显示的行在前，并在其后添加新行。",
+    "value": "当前选中项的数组。",
+    "onChange": "当选择发生变化时调用。change 参数包含受影响的条目和类型（'add' | 'create' | 'remove' | 'reorder'）。添加和移除（包括在空输入框上按 Backspace）会通过礼貌的实时区域向屏幕阅读器宣布。",
+    "placeholder": "输入框占位文本。仅在未选择任何令牌时显示。",
+    "maxEntries": "允许的最大选择数量。达到限制时隐藏输入框。",
+    "hasClear": "显示一个清除全部按钮，用于批量移除所有令牌。",
+    "renderToken": "已选令牌的自定义渲染函数。默认渲染带 label 和 onRemove 的 Token。",
+    "renderItem": "下拉项的自定义渲染函数。默认渲染 TypeaheadItem。",
+    "isDisabled": "禁用输入框及所有令牌交互。输入框保留其 Tab 停靠点：它会被宣布为已禁用（aria-disabled）、为只读，并且不打开或选择任何内容。当 tokenOverflowBehavior=\"unfocusedLayer\" 且未设置 disabledMessage 时，输入框会原生禁用并移出 Tab 顺序。",
+    "htmlName": "用于表单提交的 HTML name 属性。为每个选中项 id 渲染一个隐藏输入框。",
+    "disabledMessage": "解释 Tokenizer 被禁用的原因。与 isDisabled 一起使用时，在悬停/键盘聚焦时显示工具提示，并通过 aria-disabled 保持输入框可聚焦（输入仍被阻止）。请使用此属性而不是将禁用的 Tokenizer 包裹在 Tooltip 中，以便原因附加到字段本身。",
+    "status": "用于错误/警告/成功状态的验证状态对象，包含 type 和 message。",
+    "statusVariant": "状态消息相对于输入框的放置方式。attached 直接重叠在输入框下方（带边框的处理）；detached 作为独立元素带间距地浮动在下方；tooltip 在信息提示按钮中显示消息。",
+    "isLabelHidden": "在视觉上隐藏标签，同时保持其可访问。",
+    "description": "显示在标签下方的辅助文本。",
+    "isRequired": "将字段标记为必填。",
+    "isOptional": "在标签上显示可选指示符。",
+    "labelTooltip": "标签上显示的工具提示文本。",
+    "hasEntriesOnFocus": "在输入前聚焦时显示 bootstrap 结果。从该列表中选择后，输入框保持焦点，列表保持打开并激活下一个选项，同时仍有其他选项可用。",
+    "maxMenuItems": "显示的最大搜索结果数量。hasCreate 条目会在它们之上提供，因此菜单可以比此多显示一项。",
+    "menuWidth": "固定的下拉宽度（像素）。菜单绝不会收缩到小于其锚点宽度。",
+    "minQueryLength": "查询搜索源之前的最小查询长度。低于此长度不会运行搜索，菜单保持关闭——除非设置了 hasCreate，此时仍会提供 \"Create ...\" 条目，因为它是根据键入的文本派生的，而不是为此获取的。",
+    "emptySearchText": "查询未匹配任何内容时显示的内容。接受 ReactNode，因此死胡同可以带有链接或创建行。它会作为其渲染的文本在礼貌的实时区域中宣布，从 DOM 读取；aria-hidden 的部分不会出现在两者中，不渲染文本的内容不会宣布任何内容。null 视为未提供，与 undefined 一样，并回退到默认值；传入空字符串以不渲染任何内容。",
+    "hasAutoFocus": "挂载时自动聚焦输入框。",
+    "size": "输入框和令牌的尺寸。在 InputGroup 内则应用组的尺寸。",
+    "debounceMs": "触发搜索前的防抖延迟（毫秒）。对同步数据源设为 0；对于通过 `context.update` 显示本地匹配并延迟自身服务器请求的数据源也设为 0。",
+    "hasCreate": "允许用户从自由文本输入创建新令牌。为 true 时，下拉菜单中会为不匹配现有结果的键入文本显示 \"Create\" 选项。这些条目的 onChange 变更类型为 'create'。",
+    "onChangeQuery": "搜索查询文本变化时触发的回调。",
+    "startIcon": "显示在输入框开头、任何令牌之前的图标。接受语义图标名称、SVG 图标组件或直接的 ReactNode。",
+    "endContent": "显示在输入行末端的内容。适用于按钮、结果计数或其他控件。",
+    "handleRef": "命令式句柄，暴露 focus()、blur()、open() 和 close()。open() 和 close() 驱动内联菜单；底部面板呈现方式会忽略它们。",
+    "menu": "菜单显示的内容。role 'listbox'（默认）是结果列表；其可选的 render({listbox, query, isBusy, isEmptySearch, close}) 会在其周围放置标题或提示等信息，而人们会操作的内容仍作为结果，以便方向键可以到达。role 'dialog' 会在以 label 命名的对话框中显示 render({query, close}) 并获得焦点；Escape、外部按下或 close() 会将焦点返回到菜单打开时的位置。无论哪种方式，Astryx 都拥有该层。从 listbox 切换到 dialog 会保持菜单打开：在 onChange 中调用 handleRef.open()。底部面板呈现方式保留自己的面板并忽略它。",
+    "onOpenChange": "内联菜单打开或关闭时调用。它仅报告变化；请使用 handleRef 驱动菜单。底部面板呈现方式不会调用它。",
+    "width": "字段宽度（数字 = 像素，字符串按原样使用，例如 \"100%\"）。会调整整个字段（标签、控件和状态）的尺寸，使它们保持对齐。",
+    "tokenOverflowBehavior": "控制容器太窄时令牌如何溢出。",
+    "onFocus": "焦点进入 Tokenizer 输入框时触发。",
+    "onBlur": "焦点离开 Tokenizer 输入框时触发。",
+    "containerXstyle": "用于字段容器（标签、控件和状态一起）的 StyleX 样式。在 InputGroup 内（请改为设置 InputGroup 样式）或 `horizontal-labels` FormLayout 中无效。不接受根级 `xstyle`、`className` 和 `style`。",
+    "containerClassName": "字段容器的类名。目标与 `containerXstyle` 相同。",
+    "containerStyle": "字段容器的内联样式。目标与 `containerXstyle` 相同。",
+    "controlXstyle": "视觉控件盒的 StyleX 样式：绘制边框和背景并容纳图标和末端控件的元素。绝不是原生输入框。",
+    "controlClassName": "视觉控件盒的类名。",
+    "controlStyle": "视觉控件盒的内联样式。",
+    "presentation": "字段呈现其选项的方式。adaptive（默认值）在紧凑触摸屏上使用底部面板，否则使用弹出框，解析方式与 Selector 相同；服务端渲染和 hydration 渲染都是弹出框。popover 是在所有设备上使用带锚定建议菜单的内联组合框。bottom-sheet 在所有设备上将其替换为一个显示已选令牌的字段，其触发按钮打开一个高模态面板：顶部是搜索行，全宽复选框行在面板打开期间保持位置，使用 hasCreate 时有一行 Create，以及一个在任何状态下都固定的页脚，带有需确认的 Clear all 和 Save；面板编辑草稿，因此 onChange 仅在 Save 提交时触发一次，而在草稿已更改时通过滑动、遮罩或 Escape 关闭会先询问是否放弃。在底部面板呈现方式中，字段盒容纳触发按钮、令牌和 endContent，并保留内联字段的盒子、主题目标和焦点环；触发按钮就是控件：ref、id、aria-* 和 data-* 会到达它，并且 ref 在那里接收触发按钮，因此请将其类型设为 Ref<HTMLInputElement | HTMLButtonElement>，组件接受该类型（TokenizerProps 保留其已发布的输入 ref 类型）。endContent 位于字段的行内末端，renderToken 像内联字段一样渲染其令牌；它们自己的控件可在不打开面板的情况下操作。renderItem、hasClear（面板有自己的 Clear all）、hasEntriesOnFocus、menuWidth、menu、onOpenChange、tokenOverflowBehavior（字段会包裹其令牌）和 hasAutoFocus 在面板中没有对应表面，传递时字段会在开发环境中警告一次。请传入 presentation=\"popover\" 以在所有设备上保留内联字段和这些属性。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

@@ -89,3 +89,49 @@ export const docsDense = {
     minWidth: 'minimum width override',
   },
 };
+
+export const docsZh = {
+  "name": "NavHeadingMenu",
+  "displayName": "Nav Heading Menu",
+  "usage": {
+    "description": "用于导航标题弹出层的无障碍菜单容器和菜单项。NavHeadingMenu 提供带键盘导航的 `role=\"menu\"`；NavHeadingMenuItem 渲染单个可选项。作为 SideNavHeading 或 TopNavHeading 的 `menu` 属性传入。",
+    "anatomy": [
+      {
+        "name": "菜单",
+        "required": true,
+        "description": "用于导航标题操作的菜单容器，具备菜单语义和键盘导航。"
+      },
+      {
+        "name": "菜单项",
+        "required": true,
+        "description": "菜单内可选择的操作或导航链接。"
+      },
+      {
+        "name": "图标",
+        "required": false,
+        "description": "可选的、通过 Icon 渲染的图形，显示在菜单项标签之前。"
+      },
+      {
+        "name": "文本渲染的菜单项标签",
+        "required": false,
+        "description": "通过 Text 渲染的字符串菜单项标签。"
+      },
+      {
+        "name": "调用方渲染的菜单项标签",
+        "required": false,
+        "description": "由调用方直接渲染的非字符串菜单项标签内容。"
+      },
+      {
+        "name": "菜单项描述",
+        "required": false,
+        "description": "可选的、通过 Text 渲染的辅助描述。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "children": "菜单项。",
+    "size": "控制最小宽度和菜单项内边距。",
+    "minWidth": "最小宽度覆盖值。",
+    "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 `stylex.create()` 的值，而不是像 `style={{}}` 这样的内联样式对象。"
+  }
+};

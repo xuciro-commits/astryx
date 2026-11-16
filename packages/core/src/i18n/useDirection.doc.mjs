@@ -81,3 +81,28 @@ export const docsDense = {
     direction: "ambient text direction ('ltr' or 'rtl'), defaulting to 'ltr'.",
   },
 };
+
+export const docsZh = {
+  "name": "useDirection",
+  "usage": {
+    "description": "在渲染期间读取当前文本方向。当严格需要渲染时方向（例如无法使用 CSS 逻辑属性的 canvas 绘制）时，将此 Hook 作为最后手段。按优先级顺序，始终优先使用：CSS 逻辑属性（margin-inline、inset-inline）；方向性图标的共享镜像样式（CSS scaleX）；以及用于键盘或手势逻辑的 DOM 读取。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "在使用 useDirection 之前，优先使用 CSS 逻辑属性和方向性 CSS 镜像。"
+      },
+      {
+        "guidance": true,
+        "description": "在 HTML canvas 上绘制或计算起始边缘取决于文本方向的非 CSS 布局坐标时，使用 useDirection。"
+      },
+      {
+        "guidance": false,
+        "description": "不要使用 useDirection 有条件地交换 margin、padding 或内联对齐，这些可以用 CSS 逻辑属性解决。"
+      }
+    ]
+  },
+  "paramDescriptions": {},
+  "returnDescriptions": {
+    "direction": "来自外层 InternationalizationProvider 的环境文本方向（'ltr' 或 'rtl'）；在 Provider 外调用时回退为 'ltr'。"
+  }
+};

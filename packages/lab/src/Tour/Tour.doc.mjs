@@ -104,3 +104,57 @@ export const docs = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "Tour",
+  "description": "引导式产品导览（NUX / 新手引导）。Tour 是一个控制器，带领用户依次浏览一系列聚光灯标注，这些标注锚定到页面上的元素。它本身不渲染任何界面框架；它拥有活动步骤状态，并与以声明方式嵌套的 TourStep 子元素共享该状态（步骤顺序遵循子元素顺序）。实验性：先进入 lab（meta/astryx#4239）。",
+  "usage": {
+    "description": "使用 Tour 介绍功能，或通过 UI 的几个关键部分引导用户完成新手引导。由 TourStep 子元素组成，每个子元素通过 targetRef 指向一个元素；Tour 通过 Next/Back 在它们之间前进，并在 Done 结束。它是受控的：将 isActive 保存在你自己的状态中，并自行持久化 \"has seen this tour\"（组件仅通过 onDismiss 报告关闭）。基于现有的层锚定和覆盖层令牌构建，而不是定制的定位引擎。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "保持导览简短：几个高价值步骤。长导览会被跳过。"
+      },
+      {
+        "guidance": true,
+        "description": "自行持久化完成状态（来自 onDismiss），以免用户每次访问都看到同一导览。"
+      },
+      {
+        "guidance": true,
+        "description": "将每个步骤指向一个稳定、可见的元素；确保目标在其步骤变为活动之前位于屏幕上。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将关键、必看的信息设为只有完成导览步骤才能看到；用户可以关闭导览；请将关键信息内联放置。"
+      },
+      {
+        "guidance": false,
+        "description": "不要用导览来替代清晰的 UI；修复令人困惑的界面，而不是对其进行叙述。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Tour",
+      "description": "引导式导览的控制器。在其 TourStep 子元素之间协调活动步骤，暴露 advance / retreat / complete / dismiss，并可选地在活动步骤周围调暗页面（聚光灯挖空）。通过 isActive 受控：消费者拥有 \"has this user seen the tour?\"。",
+      "propDescriptions": {
+        "isActive": "导览是否正在运行。为 false 时不渲染任何内容，并将导览重置到第一步，因此下次激活时可以干净地重新开始。",
+        "children": "导览步骤：TourStep 元素。步骤顺序遵循它们在此处的顺序；仅活动步骤渲染其标注。",
+        "onDismiss": "每次退出时调用，并带有原因（'backdrop' | 'escape' | 'close' | 'skip' | 'complete'）。消费者据此将 isActive 设为 false，并可根据来源分支以区分成功完成与提前退出。",
+        "hasBackdrop": "将活动步骤周围的页面调暗为聚光灯挖空：目标保持点亮，其他一切变暗。页面变暗时，在标注之外的任何位置按下（包括目标）都会以 \"backdrop\" 结束导览。用于要求专注的模态式步骤；对于仅围绕目标画圈的轻量教练标记，或用户应按下目标的步骤，请不要启用。",
+        "isStepCountShown": "在每个步骤中显示步骤计数（“第 2 步，共 5 步”）。"
+      }
+    },
+    {
+      "name": "TourStep",
+      "description": "单个聚光灯步骤。用作为独立覆盖层绘制的圆环突出目标元素（目标本身从不重新设置样式），并渲染锚定到它的非模态标注，包含标题、正文、可选的步骤进度以及返回/下一步/关闭控件。标注是一个以其标题命名的区域。步骤开始时焦点移动到它，Tab 可以离开它进入页面，因此步骤可以介绍用户随后操作的控件。没有背景遮罩时，按下目标或页面会保持导览运行；Escape 结束它。挂载时向父 Tour 注册，并且仅在活动时渲染其标注。",
+      "propDescriptions": {
+        "targetRef": "指向此步骤目标的元素 ref：任何元素，例如按钮、卡片、表格单元格或图表区域。标注位于其旁边。目标保留自己的行为：没有背景遮罩时，按下它不会结束导览，键盘焦点可以在步骤显示时到达它。在 Tour 的背景遮罩下，按下目标会以 \"backdrop\" 结束导览。",
+        "heading": "步骤标题。",
+        "children": "步骤正文内容。",
+        "placement": "标注位于目标的哪一侧。",
+        "alignment": "标注沿放置侧的对齐方式（例如 placement=\"below\" 时：start 在目标下方左对齐，center 居中，end 右对齐）。"
+      }
+    }
+  ]
+};

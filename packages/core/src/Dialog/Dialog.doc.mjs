@@ -210,73 +210,85 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  usage: {
-    description:
-      'Dialog displays a modal overlay that blocks interaction with the page until the user responds. Use it for delete confirmations, edit forms, terms acceptance, or any decision that should not be skipped.',
-    bestPractices: [
+  "usage": {
+    "description": "Dialog 显示一个模态覆盖层，在用户响应之前阻止与页面交互。用于删除确认、编辑表单、条款接受，或任何不应被跳过的决定。\n\n对于希望显示对话框但不想管理打开状态的场景，可使用 `useImperativeDialog` Hook：调用 `dialog.show(content)` 并在树中渲染 `dialog.element`。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          'Choose the right purpose: info for dismissable content, form to prevent accidental backdrop dismissal, required when the user must respond.',
+        "guidance": true,
+        "description": "选择合适的目的：info 用于可关闭内容，form 用于防止意外通过背景关闭，required 用于用户必须响应的情况。"
       },
       {
-        guidance: true,
-        description:
-          'Include a clear title in the header so users immediately understand what the dialog is asking.',
+        "guidance": true,
+        "description": "在页眉中包含清晰的标题，让用户立即理解对话框在询问什么。"
       },
       {
-        guidance: true,
-        description:
-          'Use purpose="form" for dialogs with inputs so the user can\'t accidentally lose data by clicking the backdrop.',
+        "guidance": true,
+        "description": "对于包含输入项的对话框，使用 purpose=\"form\"，以免用户点击背景时意外丢失数据。"
       },
       {
-        guidance: true,
-        description:
-          'Keep dialogs focused on a single task; if the content grows beyond what fits, consider a full page instead.',
+        "guidance": true,
+        "description": "让对话框专注于单一任务；如果内容超出可容纳范围，请考虑改用整页。"
       },
       {
-        guidance: false,
-        description:
-          'Use a dialog for simple messages that could be shown inline or as a toast notification.',
+        "guidance": false,
+        "description": "不要将对话框用于可内联显示或作为 Toast 通知显示的简单消息。"
       },
       {
-        guidance: false,
-        description:
-          'Nest dialogs inside other dialogs; restructure the flow into steps within a single dialog instead.',
+        "guidance": false,
+        "description": "不要在对话框内嵌套对话框；请将流程重构为单个对话框内的多个步骤。"
       },
       {
-        guidance: false,
-        description:
-          'Use the fullscreen variant for simple confirmations; it is meant for complex content like editors or long forms.',
-      },
+        "guidance": false,
+        "description": "不要将全屏变体用于简单确认；它适用于编辑器或长表单等复杂内容。"
+      }
     ],
-    anatomy: [
+    "anatomy": [
       {
-        name: 'Header',
-        required: true,
-        description:
-          'Title, optional subtitle, and close button. The title receives focus on open and labels the dialog via aria-labelledby.',
+        "name": "页眉",
+        "required": true,
+        "description": "标题、可选副标题和关闭按钮。打开时标题获得焦点，并通过 aria-labelledby 标记对话框。"
       },
       {
-        name: 'Body',
-        required: true,
-        description:
-          'The main content area: text, forms, lists, or any layout.',
+        "name": "主体",
+        "required": true,
+        "description": "主内容区域：文本、表单、列表或任意布局。"
       },
       {
-        name: 'Footer',
-        required: false,
-        description:
-          'Action buttons like Save/Cancel or Accept/Decline, aligned to the end.',
+        "name": "页脚",
+        "required": false,
+        "description": "保存/取消或接受/拒绝等操作按钮，末尾对齐。"
       },
       {
-        name: 'Backdrop',
-        required: true,
-        description:
-          'Semi-transparent overlay behind the dialog that blocks page interaction.',
-      },
-    ],
+        "name": "背景遮罩",
+        "required": true,
+        "description": "对话框后方阻止页面交互的半透明覆盖层。"
+      }
+    ]
   },
+  "name": "Dialog",
+  "description": "使用原生 <dialog> 元素实现的模态对话框。模态和行内内容从主题正文文本默认值开始。祖先表面/组成员关系整体结束，包括组拥有的状态。显式属性与无关上下文保持不变。将有意的分组和完整的必需 Provider 放在对话框内部。在减少动效模式下，对话框绝不会滑入或缩放入场：在触摸屏上，它以 200 毫秒或更短时间内淡入；使用鼠标时则立即出现。在手机或平板电脑上（粗略主指针），当对话框仍在入场时落下的轻点或拖动不会到达任何内容，对话框会完成入场；键盘和辅助技术保持可用，鼠标或触控板仍可点击：若它是最后使用的指针则立即响应，否则移动后响应。",
+  "propDescriptions": {
+    "isOpen": "对话框是否打开。",
+    "onOpenChange": "对话框可见性变化时的回调。",
+    "children": "对话框内容。",
+    "width": "对话框的首选宽度，单位为像素或任意 CSS 值。标准对话框会通过带间距令牌的边距限制在容器和动态视口内，使窄视口也能将内容保持在屏幕上。",
+    "maxHeight": "对话框的最大高度。默认使用动态视口值，以便在支持的地方反映浏览器 UI 变化。",
+    "position": "对话框的静态位置；省略时居中。使用逻辑值 `start`/`end` 作为行内偏移，使定位对话框在 RTL 下正确镜像。",
+    "variant": "对话框变体：fullscreen 会扩展填满整个视口。",
+    "purpose": "控制关闭行为：required 禁用 Escape 和背景点击；form 在交互后禁用背景点击；info 允许两者。",
+    "padding": "使用间距比例步进的对话框内部内边距。",
+    "isInline": "不使用 <dialog> 元素、背景遮罩或模态行为，直接内联渲染对话框内容。仅用于文档预览和展示。"
+  },
+  "components": [
+    {
+      "name": "DialogHeader",
+      "description": ""
+    },
+    {
+      "name": "useImperativeDialog",
+      "description": ""
+    }
+  ]
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

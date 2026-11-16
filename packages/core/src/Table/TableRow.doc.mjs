@@ -19,18 +19,21 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'TableRow',
-  isHiddenFromOverview: true,
-  displayName: 'Table Row',
-  description: '<tr> 包装器，读取 TableContext 以在 Table 内部使用时应用条纹、悬停和分隔线样式。',
-  props: [
+  "name": "TableRow",
+  "isHiddenFromOverview": true,
+  "displayName": "Table Row",
+  "description": "<tr> 包装组件，在 Table 内使用时会读取 TableContext 以应用斑马纹、悬停和分隔线样式。",
+  "props": [
     {
-      name: 'children',
-      type: 'ReactNode',
-      description: '行单元格元素。',
-      required: true,
-    },
+      "name": "children",
+      "type": "ReactNode",
+      "description": "行单元格元素。",
+      "required": true
+    }
   ],
+  "propDescriptions": {
+    "children": "行单元格元素。"
+  }
 };
 
 export const docsDense = {

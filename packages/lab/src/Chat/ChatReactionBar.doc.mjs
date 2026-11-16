@@ -47,17 +47,17 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'ChatReactionBar',
-  displayName: 'Chat Reaction Bar',
-  description: '聊天消息下方的表情回应胶囊行。每个胶囊显示表情和数量；当前用户自己的回应带有强调色和 aria-pressed。提供 onAdd 会渲染末尾的添加回应按钮，打开 ChatEmojiPicker 弹出层。',
-  propDescriptions: {
-    reactions: '按显示顺序渲染的回应列表。isSelected 标记当前用户自己的回应（强调色 + aria-pressed）。label 是人类可读的描述，用作胶囊的提示与无障碍标签。',
-    onToggle: '用户切换回应时以该表情调用。',
-    onAdd: '用户从表情选择器添加回应时以所选表情调用。仅在提供时渲染末尾的添加按钮。',
-    emojis: '添加回应选择器的表情选项，默认 DEFAULT_CHAT_EMOJIS。',
-    addLabel: '添加回应按钮与选择器对话框的无障碍标签。',
-    label: '回应组的无障碍标签。',
-  },
+  "name": "ChatReactionBar",
+  "displayName": "Chat Reaction Bar",
+  "description": "聊天消息下方的一行 emoji 反应胶囊。每个胶囊显示一个 emoji 和计数；当前用户自己的反应会获得强调色调和 aria-pressed。提供 onAdd 以渲染一个尾随的添加反应按钮，打开 ChatEmojiPicker 浮层。",
+  "propDescriptions": {
+    "reactions": "要渲染的反应，按显示顺序排列。isSelected 标记当前用户自己的反应（强调色调 + aria-pressed）。label 是人类可读的描述，如 \"Ana and Dana reacted with 🎉\"，用作胶囊工具提示和可访问标签。",
+    "onToggle": "当用户切换反应开/关时，以胶囊的 emoji 调用。",
+    "onAdd": "当用户从 emoji 选择器添加反应时，以所选 emoji 调用。仅当提供时才会渲染尾随的添加反应按钮。",
+    "emojis": "添加反应选择器的 emoji 选项。默认为 DEFAULT_CHAT_EMOJIS。",
+    "addLabel": "添加反应按钮和选择器对话框的可访问标签。",
+    "label": "反应组的可访问标签。"
+  }
 };
 
 export const docsDense = {

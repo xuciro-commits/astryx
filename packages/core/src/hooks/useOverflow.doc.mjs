@@ -153,3 +153,38 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useOverflow",
+  "usage": {
+    "description": "测量渲染在隐藏容器中的子元素，以确定在可用宽度内能容纳多少个而不产生闪烁。使用 ResizeObserver 响应容器和被测子元素的尺寸变化。测量容器应容纳所有项目以及一个可选的溢出指示器元素（由 data-overflow-indicator 属性标识）。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将所有项目渲染到 measureRef 容器（隐藏），仅将前 visibleCount 个项目渲染到 containerRef 容器（可见）。"
+      },
+      {
+        "guidance": true,
+        "description": "在测量容器的最后一个子元素中包含一个溢出指示器（例如“+N more”按钮），并带有 data-overflow-indicator 属性。"
+      },
+      {
+        "guidance": false,
+        "description": "不要用于垂直溢出；此 Hook 仅测量水平宽度。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "itemCount": "要测量是否溢出的项目总数。",
+    "options": "溢出行为的配置对象。",
+    "options.gap": "项目之间的间距，单位为像素。用于宽度计算。",
+    "options.minVisibleItems": "始终显示的最少项目数，即使它们无法容纳。",
+    "options.collapseFrom": "从哪一端折叠项目。",
+    "options.behavior": "用于溢出计算时要观察的元素。'observeParent' 使用容器的父元素宽度，使可见容器可以保持由内容决定大小。"
+  },
+  "returnDescriptions": {
+    "containerRef": "附加到可见容器元素的 Ref 回调。",
+    "measureRef": "附加到容纳所有项目的隐藏测量容器的 Ref 回调。",
+    "visibleCount": "可见容器中可容纳的项目数。",
+    "hasOverflow": "是否有任何项目溢出（visibleCount < itemCount）。"
+  }
+};

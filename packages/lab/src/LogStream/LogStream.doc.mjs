@@ -66,3 +66,22 @@ export const docs = {
     },
   ],
 };
+
+export const docsZh = {
+  "name": "LogStream",
+  "displayName": "Log Stream",
+  "usage": {
+    "description": "实验性流式日志查看器：等宽网格行（timestamp | level | source | message），带令牌派生的级别强调色、可展开的每行详情面板、带 \"Jump to latest\" 提示的跟随滚动实时尾随，以及始终为深色的终端变体。在默认变体中，警告和错误标签使用其普通表面状态前景角色。追加的行通过 @starting-style 淡入。实时播报遵循固定状态：role=\"log\" 区域仅在跟随尾部时为 aria-live=\"polite\"，未跟随时为 aria-live=\"off\"，因此繁忙的流永远不会淹没辅助技术。"
+  },
+  "propDescriptions": {
+    "entries": "要渲染的日志条目对象数组。",
+    "variant": "视觉变体样式：'default' 使用主题表面背景，'terminal' 使用固定的深色背景。",
+    "isFollowing": "受控的跟随固定状态，用于自动滚动到最新条目。",
+    "onFollowChange": "跟随固定状态变化时触发的回调。",
+    "maxHeight": "垂直滚动前的最大容器高度。",
+    "hasTimestamps": "显示或隐藏时间戳列。",
+    "label": "日志区域的无障碍标签。",
+    "renderEntry": "用于替换单行布局的自定义渲染函数。",
+    "xstyle": "用于布局自定义的 StyleX 样式。"
+  }
+};

@@ -192,71 +192,77 @@ function SettingsTabs() {
 };
 
 export const docsZh = {
-  name: 'Tab',
-  isHiddenFromOverview: true,
-  displayName: 'Tab',
-  description: '单个标签项，渲染为按钮或锚点链接，具有选中状态样式和可选图标。',
-  props: [
+  "name": "Tab",
+  "isHiddenFromOverview": true,
+  "displayName": "Tab",
+  "description": "单个选项卡项，渲染为按钮或锚点链接，带选中态样式和可选图标。",
+  "props": [
     {
-      name: 'value',
-      type: 'string',
-      description: '此标签的唯一值，与 TabListContext.value 进行匹配。',
-      required: true,
+      "name": "value",
+      "type": "string",
+      "description": "此选项卡的唯一值，与 TabListContext.value 匹配。",
+      "required": true
     },
     {
-      name: 'label',
-      type: 'string',
-      description:
-        '此标签的无障碍标签。默认作为可见文本使用；当 isLabelHidden 为 true 时用作 aria-label。',
-      required: true,
+      "name": "label",
+      "type": "string",
+      "description": "此选项卡的无障碍标签。默认用作可见文本，当 isLabelHidden 为 true 时用作 aria-label。",
+      "required": true
     },
     {
-      name: 'isLabelHidden',
-      type: 'boolean',
-      description:
-        '是否在视觉上隐藏标签。为 true 时，仅显示图标和 endContent，并将 label 用作无障碍 aria-label。',
-      default: 'false',
+      "name": "isLabelHidden",
+      "type": "boolean",
+      "description": "标签是否在视觉上隐藏。为 true 时仅显示图标和 endContent，label 用作无障碍的 aria-label。",
+      "default": "false"
     },
     {
-      name: 'href',
-      type: 'string',
-      description: '要导航到的 URL；提供时，标签渲染为锚点元素。',
+      "name": "href",
+      "type": "string",
+      "description": "要导航到的 URL；提供后选项卡渲染为锚点元素。在显式指定 role=\"tablist\" 的 TabList 中忽略。"
     },
     {
-      name: 'panelId',
-      type: 'string',
-      description:
-        'Id of the panel this tab controls, wired up as aria-controls where the TabList speaks the tabs pattern. Put the same id on the panel element. No effect under the navigation pattern, and a development warning says so.',
+      "name": "panelId",
+      "type": "string",
+      "description": "此选项卡控制的 panel 的 id，在 TabList 使用 tabs 模式时作为 aria-controls 接线。将相同的 id 放在 panel 元素上。在导航模式下无效，并会给出开发警告。"
     },
     {
-      name: 'as',
-      type: 'LinkComponentType',
-      description:
-        '用于替代 <a> 渲染链接标签的自定义组件。覆盖 LinkProvider 的默认值。仅在提供 href 时生效。',
+      "name": "as",
+      "type": "LinkComponentType",
+      "description": "链接选项卡中替代 <a> 渲染的自定义组件。覆盖 LinkProvider 的默认值。仅在提供 href 时适用。"
     },
     {
-      name: 'icon',
-      type: 'ReactNode',
-      description: '标签未选中时显示的图标元素。',
+      "name": "icon",
+      "type": "ReactNode",
+      "description": "选项卡未选中时显示的图标元素。"
     },
     {
-      name: 'selectedIcon',
-      type: 'ReactNode',
-      description: '标签选中时显示的图标元素；未提供时回退到 icon。',
+      "name": "selectedIcon",
+      "type": "ReactNode",
+      "description": "选项卡选中时显示的图标元素；未提供时回退到 icon。"
     },
     {
-      name: 'endContent',
-      type: 'ReactNode',
-      description:
-        '在标签文本之后渲染的内容，例如徽章计数或状态点。标签本身是一个按钮，因此 endContent 只能放非交互内容：不能放按钮、链接、InfoTip 或其他可聚焦控件。要说明一个标签，请通过 ref 把 Tooltip 锚定在 Tab 上，把它渲染在 TabList 之后，并在这里放一个装饰性的信息 Icon。',
+      "name": "endContent",
+      "type": "ReactNode",
+      "description": "标签之后渲染的内容，例如徽标计数或状态点。选项卡是一个按钮，因此 endContent 只能包含非交互内容：不能有按钮、链接、InfoTip 或其他可聚焦控件。若要解释某个选项卡，请通过其 ref 在 Tab 上锚定 Tooltip，在 TabList 之后渲染它，并在此处放置一个装饰性 info Icon。"
     },
     {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description:
-        'StyleX 样式，用于布局自定义（边距、定位、尺寸）。必须是 stylex.create() 的值，而非内联样式对象如 style={{}}。',
-    },
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 的返回值：不能是 style={{}} 这样的内联样式对象。"
+    }
   ],
+  "propDescriptions": {
+    "value": "此选项卡的唯一值，与 TabListContext.value 匹配。",
+    "label": "此选项卡的无障碍标签。默认用作可见文本，当 isLabelHidden 为 true 时用作 aria-label。",
+    "isLabelHidden": "标签是否在视觉上隐藏。为 true 时仅显示图标和 endContent，label 用作无障碍的 aria-label。",
+    "href": "要导航到的 URL；提供后选项卡渲染为锚点元素。在显式指定 role=\"tablist\" 的 TabList 中忽略。",
+    "panelId": "此选项卡控制的 panel 的 id，在 TabList 使用 tabs 模式时作为 aria-controls 接线。将相同的 id 放在 panel 元素上。在导航模式下无效，并会给出开发警告。",
+    "as": "链接选项卡中替代 <a> 渲染的自定义组件。覆盖 LinkProvider 的默认值。仅在提供 href 时适用。",
+    "icon": "选项卡未选中时显示的图标元素。",
+    "selectedIcon": "选项卡选中时显示的图标元素；未提供时回退到 icon。",
+    "endContent": "标签之后渲染的内容，例如徽标计数或状态点。选项卡是一个按钮，因此 endContent 只能包含非交互内容：不能有按钮、链接、InfoTip 或其他可聚焦控件。若要解释某个选项卡，请通过其 ref 在 Tab 上锚定 Tooltip，在 TabList 之后渲染它，并在此处放置一个装饰性 info Icon。",
+    "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 的返回值：不能是 style={{}} 这样的内联样式对象。"
+  }
 };
 
 export const docsDense = {

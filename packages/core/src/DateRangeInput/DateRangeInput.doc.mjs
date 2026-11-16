@@ -399,3 +399,123 @@ export const docsDense = {
       'visual control box (border/bg/icons), never the native input; also controlClassName/controlStyle. no root xstyle/className/style',
   },
 };
+
+export const docsZh = {
+  "name": "DateRangeInput",
+  "displayName": "Date Range Input",
+  "usage": {
+    "description": "DateRangeInput 让用户从双月日历弹出层中选择开始和结束日期。用于按时间段筛选数据、生成报表、分析仪表盘和预订流程。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "`ref`、`id`、`data-*`、`aria-*` 和 DOM 事件处理器等基础属性会传到范围触发器，也就是获得焦点并被播报的元素。针对同一事件，DOM 处理器在 DateRangeInput 自身的处理器之后运行，并且仍会收到它已处理的事件（包括它调用过 `preventDefault` 的事件），因此无法取消内置行为。"
+      },
+      {
+        "guidance": true,
+        "description": "对“最近 7 天”等常用范围使用预设，以加快选择速度。"
+      },
+      {
+        "guidance": true,
+        "description": "使用 `min`/`max` 将可选日期限制在有效范围内。"
+      },
+      {
+        "guidance": true,
+        "description": "保持 `hasClear` 启用（默认启用），以便用户重置筛选条件。"
+      },
+      {
+        "guidance": true,
+        "description": "提供清晰的标签和描述，让用户理解该范围控制的内容。"
+      },
+      {
+        "guidance": false,
+        "description": "仅需单个日期时使用 DateRangeInput；这种情况下应改用 DateInput。"
+      },
+      {
+        "guidance": false,
+        "description": "在没有能让用途显而易见的上下文时隐藏标签。"
+      },
+      {
+        "guidance": false,
+        "description": "用 Tooltip 包裹已禁用的 DateRangeInput 来解释禁用原因。请改用 `disabledMessage` 属性，它会把原因与该字段关联起来。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "标签",
+        "required": true,
+        "description": "触发器上方的文本，用于说明期望的日期范围。"
+      },
+      {
+        "name": "字段表面",
+        "required": true,
+        "description": "带边框的控件，包含日历切换按钮、范围触发器和末端辅助控件。"
+      },
+      {
+        "name": "触发按钮",
+        "required": true,
+        "description": "显示格式化范围或占位符的按钮。点击后打开弹出层。"
+      },
+      {
+        "name": "日历图标",
+        "required": true,
+        "description": "尾部图标，也可打开弹出层。"
+      },
+      {
+        "name": "日历弹出层",
+        "required": true,
+        "description": "双月日历网格，支持范围选择和悬停预览。"
+      },
+      {
+        "name": "预设侧栏",
+        "required": false,
+        "description": "日历旁的预设范围选项列表；当两者无法并排显示时，显示在日历上方。"
+      },
+      {
+        "name": "预设按钮",
+        "required": false,
+        "description": "用于快速选择一个预设范围的操作，会反映当前和禁用状态。"
+      },
+      {
+        "name": "清除按钮",
+        "required": false,
+        "description": "一个 × 按钮，将范围重置为 `null`。"
+      },
+      {
+        "name": "状态消息",
+        "required": false,
+        "description": "触发器下方的错误、警告或成功消息。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "label": "标签文本。",
+    "isLabelHidden": "在视觉上隐藏标签。",
+    "description": "显示在标签下方的辅助文本。",
+    "isOptional": "显示“(可选)”指示符。",
+    "isRequired": "将字段标记为必填。",
+    "isDisabled": "禁用触发器和选择器。触发器仍可聚焦并暴露 `aria-disabled`；打开操作会被阻止。",
+    "disabledMessage": "说明输入框为何被禁用。与 `isDisabled` 一起使用时，在悬停/键盘聚焦时显示提示，并描述该触发器（激活仍被阻止）。请使用此属性，而不是用 Tooltip 包裹已禁用的 DateRangeInput。",
+    "value": "选中的日期范围或 `null`。从 `@astryxdesign/core/DateRangeInput` 导入 `DateRange` 类型；其结构为 `{start: ISODateString, end: ISODateString}`。不要自行重新声明 DateRange 类型；请使用导出的类型，以便 TypeScript 在结构上匹配。",
+    "onChange": "范围变化时的回调。清除时以 `null` 调用。",
+    "changeAction": "在 `onChange` 之后触发的异步操作。通过 `useTransition` 驱动乐观 UI 更新。",
+    "isLoading": "输入框是否处于加载状态。禁用交互并显示加载指示器。",
+    "min": "可选的最早日期。`ISODateString` 是模板字面量类型（`\\`${number}${number}${number}${number}-${number}${number}-${number}${number}\\``）。请传入 `\"2026-01-28\"` 这样的字符串字面量，而不是运行时字符串变量。从 `@astryxdesign/core/Calendar` 导入该类型，或在动态计算值时使用 `as ISODateString`。",
+    "max": "可选的最晚日期。与 `min` 使用相同的模板字面量类型：使用 YYYY-MM-DD 字符串字面量，或用 `as ISODateString` 进行类型断言。",
+    "dateConstraints": "用于禁用特定日期的自定义约束函数。",
+    "maxRangeSpan": "选中范围最多可跨越的天数，包含两个端点（`7` = 7 天窗口，开始日期 + 6 天）。选定开始日期后，超出该距离的日期会被禁用，因此范围不能超过上限。窗口相对于开始日期滚动；如需固定的日历边界，请使用 `min`/`max`。此属性仅约束选择，不会改写已经超过上限的 `value`（请通过 `status` 标记）。",
+    "minRangeSpan": "选中范围必须跨越的最少天数，包含两个端点（`2` 禁止单日范围）。选定开始日期后，距离更近的日期会被禁用。再次点击开始日期时，如果允许，将提交单日范围；如果最小天数更长，则取消进行中的选择。默认为 1（允许开始和结束为同一天）。",
+    "presets": "以快速选择选项形式显示在日历旁（当两者无法并排时显示在上方）的预设范围。如果任一端点违反 `min`、`max` 或 `dateConstraints`，或其跨度违反 `minRangeSpan` 或 `maxRangeSpan`，该预设会被禁用。",
+    "hasClear": "选中范围时显示清除按钮。",
+    "placeholder": "未选择范围时的占位文本。",
+    "size": "触发器尺寸。",
+    "status": "错误、警告或成功状态的状态指示符。",
+    "statusVariant": "状态消息相对于输入框的放置方式。`attached` 直接重叠在输入框下方（带边框处理）；`detached` 作为独立元素浮在下方并留有间距；`tooltip` 隐藏消息框，改为在状态图标的工具提示中显示。",
+    "labelTooltip": "通过标签末尾信息图标显示的提示文本。",
+    "numberOfMonths": "日历中显示的月份数。",
+    "weekStartsOn": "日历中每周的第一天。可以是数字（0 = 星期日到 6 = 星期六）或三字母的星期名称。",
+    "calendar": "触发文本和弹出层日历所显示的历法，例如 persian、hebrew 或 buddhist。`value`、`onChange`、`min`、`max` 和 `presets` 仍使用公历 ISO 日期。该字段没有文本输入。除 `gregory`、`iso8601`、`buddhist`、`roc` 和 `japanese` 之外的历法需要 Temporal（原生或应用加载的 polyfill）；缺少时字段显示公历日期，并在开发环境中给出警告。中国历和 Dangi 历的月份起始来自运行时的 Temporal；在服务端渲染时，请在服务端和浏览器中加载相同的 Temporal 实现。",
+    "width": "字段宽度（数字 = 像素，字符串按原样使用，例如 `\"100%\"`）。用于设置整个字段（标签、控件和状态）的尺寸，使它们保持对齐。",
+    "containerXstyle": "用于标签、控件和状态外层 Field 盒子的 StyleX 样式。`containerClassName` 和 `containerStyle` 为同一盒子接收类名和内联样式。在没有渲染 Field 盒子的地方无效（会在开发环境警告）：InputGroup 内（请为该组设置样式）以及水平标签的 FormLayout 中。",
+    "controlXstyle": "用于视觉控件盒子的 StyleX 样式：即承载文本、图标和末端控件的带边框元素，绝不是原生输入框。`controlClassName` 和 `controlStyle` 为同一盒子接收类名和内联样式。它会替代根级 `xstyle`、`className` 和 `style`，本组件不接受这些属性。"
+  }
+};

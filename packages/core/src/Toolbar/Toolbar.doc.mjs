@@ -180,38 +180,71 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  components: [
+  "components": [
     {
-      name: 'Toolbar',
-      displayName: 'Toolbar',
-      description: '通用工具栏容器，提供三个内容插槽和循环 Tab。',
-      propDescriptions: {
-        label: '工具栏的无障碍标签，作为 aria-label 应用。',
-        startContent: '起始内容（LTR 中靠左对齐）。',
-        centerContent: '居中内容。切换为三栏布局：两侧各栏都能放进中间栏剩余宽度的一半时居中；各栏放不下时换行。',
-        endContent: '结束内容（LTR 中靠右对齐）。',
-        size: '工具栏尺寸。控制最小高度，子组件通过 SizeContext 继承此尺寸作为默认值。',
-        gap: '插槽内项目间距。',
-        orientation: '键盘导航方向。控制方向键方向。',
-        variant: '传递给 Section 的视觉变体。',
-        xstyle: '用于布局自定义的 StyleX 样式。必须是 stylex.create() 的值。',
-      },
-    },
+      "name": "Toolbar",
+      "displayName": "Toolbar",
+      "description": "通用工具栏容器，具有三个内容插槽和漫游 tabindex。",
+      "propDescriptions": {
+        "label": "工具栏的无障碍标签，作为 aria-label 应用。",
+        "startContent": "对齐到起始位置的内容（LTR 中为左侧）。",
+        "centerContent": "居中的内容。会切换为三通道布局：当每个侧通道能放入所留宽度的一半时保持居中，通道放不下时行会换行。",
+        "endContent": "对齐到结束位置的内容（LTR 中为右侧）。",
+        "size": "工具栏的尺寸。控制最小高度并与 Button、TextInput、TabList 和 Selector 协调；子元素通过 SizeContext 继承此尺寸作为默认值。",
+        "gap": "每个插槽内项目之间的间距。",
+        "orientation": "键盘导航的方向。控制方向键方向。",
+        "variant": "传给 Section 的视觉变体。",
+        "xstyle": "用于布局自定义的 StyleX 样式。必须是 stylex.create() 值。",
+        "dividers": "工具栏周围渲染的边框/分隔线。"
+      }
+    }
   ],
-  usage: {
-    anatomy,
-    description:
-      'Toolbar is a horizontal bar with left, center, and right areas. Use it for contextual actions within a content area (above a table, inside a card, or in a panel), not as a page-level header. Set the size once on the toolbar and all buttons, inputs, and tabs inside it match automatically.',
-    bestPractices: [
-      {guidance: true, description: 'Put secondary actions like "Back" on the left, and primary actions like "Save" on the right.'},
-      {guidance: true, description: 'Make temporary toolbars like bulk selection visually distinct so users can tell they\'re contextual, for example with a background color or border.'},
-      {guidance: true, description: 'Visually separate the toolbar from the content below it, with a divider, a background variant, or both.'},
-      {guidance: true, description: 'Use Toolbar as a card header when the header has interactive actions like filter or add; it gives you slot layout, keyboard navigation, and size cascading. If the header is just a title with no actions, a LayoutHeader or Section is enough.'},
-      {guidance: false, description: 'Put too many actions in one toolbar; move less common items into a MoreMenu.'},
-      {guidance: false, description: 'Set size on individual child buttons; set it once on the toolbar and it cascades automatically.'},
-      {guidance: false, description: 'Use Toolbar for app-wide navigation like main menu links or sign out; use TopNav or LayoutHeader for that.'},
+  "usage": {
+    "anatomy": [
+      {
+        "name": "外部框架",
+        "required": true,
+        "description": "由 Section 拥有的容器，提供工具栏表面、内边距和选定的分隔线边缘。"
+      },
+      {
+        "name": "工具栏",
+        "required": true,
+        "description": "具名工具栏行，拥有工具栏语义以及起始、可选居中和结束布局。"
+      }
     ],
+    "description": "Toolbar 是一个带有左、中、右区域的水平栏。用于内容区域内的上下文操作（表格上方、卡片内或面板中），而不是页面级页眉。在工具栏上设置一次 size，其中所有按钮、输入框和标签页都会自动匹配。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将“返回”等次要操作放在左侧，将“保存”等主要操作放在右侧。"
+      },
+      {
+        "guidance": true,
+        "description": "让批量选择等临时工具栏在视觉上有所区分，让用户知道它们是上下文相关的，例如使用背景色或边框。"
+      },
+      {
+        "guidance": true,
+        "description": "用分隔线、背景变体或两者将工具栏与其下方内容在视觉上分开。"
+      },
+      {
+        "guidance": true,
+        "description": "当卡片页眉带有筛选或添加等交互操作时，将 Toolbar 用作卡片页眉；它提供插槽布局、键盘导航和尺寸级联。如果页眉只是无操作的标题，LayoutHeader 或 Section 就足够了。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在一个工具栏中放太多操作；将不常用的项目移到 MoreMenu 中。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在单个子按钮上设置尺寸；在工具栏上设置一次，它会自动级联。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将 Toolbar 用于全应用导航，如主菜单链接或退出登录；请使用 TopNav 或 LayoutHeader。"
+      }
+    ]
   },
+  "name": "Toolbar"
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

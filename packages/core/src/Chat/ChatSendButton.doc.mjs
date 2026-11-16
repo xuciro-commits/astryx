@@ -104,20 +104,52 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'ChatSendButton',
-  isHiddenFromOverview: true,
-  displayName: 'Chat Send Button',
-  description: '编写器的圆形发送/停止切换按钮。默认从 ChatComposerContext 读取状态，在 ChatComposer 内自动工作。所有上下文值均可通过 props 覆盖以用于独立使用。',
-  propDescriptions: {
-    isStopShown: '是否显示停止按钮。默认使用上下文值。',
-    isDisabled: '发送按钮是否禁用。默认使用上下文的 !canSend。',
-    onSend: '用户点击发送时调用。默认使用上下文的 onSubmit。',
-    onStop: '流式响应期间用户点击停止时调用。默认使用上下文的 onStop。',
-    sendIcon: '发送状态的自定义图标。默认使用图标注册表的 arrowUp。',
-    stopIcon: '停止状态的自定义图标。默认使用图标注册表的 stop。',
-    size: '按钮大小。',
-    xstyle: '额外的 StyleX 样式。',
+  "name": "ChatSendButton",
+  "isHiddenFromOverview": true,
+  "displayName": "Chat Send Button",
+  "description": "用于聊天输入框的圆形发送/停止切换按钮。将其放在 ChatComposer 内即可自动读取上下文：无需额外接线。流式传输开始时，按钮从主色的发送图标切换为次色的停止图标。独立或自定义用法可通过属性覆盖任何上下文值。",
+  "propDescriptions": {
+    "isStopShown": "是否显示停止按钮。默认取上下文值。",
+    "isDisabled": "发送按钮是否禁用。默认取上下文中的 !canSend。",
+    "onSend": "用户点击发送时调用。默认取上下文 onSubmit。",
+    "onStop": "流式传输期间用户点击停止时调用。默认取上下文 onStop。",
+    "sendIcon": "发送状态的自定义图标。默认取图标注册表中的 arrowUp。",
+    "stopIcon": "停止状态的自定义图标。默认取图标注册表中的 stop。",
+    "size": "按钮尺寸。",
+    "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 的值：不能是 style={{}} 这样的内联样式对象。"
   },
+  "usage": {
+    "description": "当操作需要在发送与停止之间切换时，将 ChatSendButton 用作 ChatComposer 的发送控件。在 ChatComposer 内，它从上下文读取就绪状态、流式状态和操作回调；独立使用时需显式提供这些值。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "当就绪状态以及发送或停止生命周期应遵循输入框上下文时，将 ChatSendButton 放在 ChatComposer 内。"
+      },
+      {
+        "guidance": true,
+        "description": "独立使用时，显式提供状态以及匹配的 onSend 或 onStop 回调。"
+      },
+      {
+        "guidance": true,
+        "description": "提供自定义图标素材时，保留翻译后的“发送”或“停止”无障碍名称；图标是装饰性的，不得作为唯一的名称来源。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在未提供可用的 onStop 回调（来自属性或 ChatComposer 上下文）时渲染停止状态。"
+      },
+      {
+        "guidance": false,
+        "description": "不要指望 isDisabled 禁用停止操作；它仅适用于发送状态。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "操作按钮",
+        "required": true,
+        "description": "圆形纯图标 Button，暴露翻译后的“发送”或“停止”名称，并带有 chat-send-button 主题目标。"
+      }
+    ]
+  }
 };
 
 export const docsDense = {

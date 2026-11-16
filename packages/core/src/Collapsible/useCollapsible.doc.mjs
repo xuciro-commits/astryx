@@ -72,3 +72,37 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useCollapsible",
+  "usage": {
+    "description": "可复用的 Hook，封装了折叠状态机。支持三种模式：组控制（位于 CollapsibleGroup 内）、受控（isOpen + onOpenChange）和非受控（使用 defaultIsOpen 自行管理）。由 Card 和 Section 内部使用。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "在构建自定义折叠组件、需要 Astryx 折叠行为但不使用 Collapsible 包装时，直接使用该 Hook。"
+      },
+      {
+        "guidance": true,
+        "description": "要实现手风琴行为，将各项包裹在 CollapsibleGroup 中，并传入唯一的 value 属性。"
+      },
+      {
+        "guidance": false,
+        "description": "不要传入局部 isOpen、defaultIsOpen 或 onOpenChange，并期望它们对绑定 value 的组项生效；该状态和通知路径由组管理。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在使用 useCollapsible 已提供能力时自行实现展开/关闭状态；该 Hook 会自动处理组协调。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "isCollapsible": "启用折叠行为。true = 自行管理（初始为展开）。传入配置对象可使用受控模式或自定义默认值。",
+    "value": "在 CollapsibleGroup 内的唯一标识符。当存在且位于组内时，状态由组管理。"
+  },
+  "returnDescriptions": {
+    "isEnabled": "折叠行为是否处于活动状态。",
+    "isOpen": "内容当前是否已展开。",
+    "toggle": "切换展开/关闭状态。分派到组、受控回调或内部状态。"
+  }
+};

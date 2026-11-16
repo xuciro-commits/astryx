@@ -94,61 +94,66 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'RadioListItem',
-  isHiddenFromOverview: true,
-  displayName: 'Radio List Item',
-  description:
-    '单个单选选项，包含标签、描述和内容插槽。在粗指针（触摸）下，已启用选项的目标通过不可见的点击区域向 44 px 扩展。它不小于所在行，与相邻控件较近时止于间距的一半；行尺寸不变。该点击区域是行的 `::after`，因此请用子元素装饰行。',
-  props: [
+  "name": "RadioListItem",
+  "isHiddenFromOverview": true,
+  "displayName": "Radio List Item",
+  "description": "单个单选项目，包含标签、描述和内容插槽。在粗略指针下，启用选项的目标区域会通过不可见的命中区域向 44 px 扩展。它绝不会缩小到该行以下，并在与更近相邻项间距的一半处停止；行本身保持其尺寸。该命中区域是该行的 `::after`，因此请用子元素装饰行。",
+  "props": [
     {
-      name: 'label',
-      type: 'ReactNode',
-      description:
-        '单选选项的主标签。富内容标签可包含链接或按钮，它们保留自身行为且不会选中该选项。标签文本用于命名单选框；仅当可见文本缺失时使用 aria-label，否则覆盖值必须保留全部可见文字。',
-      required: true,
+      "name": "label",
+      "type": "ReactNode",
+      "description": "单选项目的主标签。富标签可包含链接或按钮，它们保留自己的行为而不会选中该项。标签文本为单选按钮命名；仅当该文本不存在时才使用 aria-label，否则在覆盖时保留每个可见标签词。",
+      "required": true
     },
     {
-      name: 'aria-label',
-      type: 'string',
-      description:
-        '单选框的纯文本无障碍名称，应用于控件本身而非整行。它会覆盖由标签推导出的名称。仅当富标签没有可见文本时才完全替代；否则必须保留全部可见文字。',
+      "name": "aria-label",
+      "type": "string",
+      "description": "单选按钮的纯文本可访问名称，应用于控件而非行。它会覆盖从标签派生的名称。当富标签没有可见文本时使用它；否则保留每个可见标签词。"
     },
     {
-      name: 'value',
-      type: 'string',
-      description: '此单选选项的值。',
-      required: true,
+      "name": "value",
+      "type": "string",
+      "description": "此单选项目的值。",
+      "required": true
     },
     {
-      name: 'description',
-      type: 'ReactNode',
-      description:
-        '显示在标签下方的次要内容。链接和按钮保留自身的点击行为——整行仅将非交互区域的点击委派给单选框。',
+      "name": "description",
+      "type": "ReactNode",
+      "description": "显示在标签下方的次要内容。链接和按钮保留自己的点击行为——行只将非交互表面上的点击委托给单选按钮。"
     },
     {
-      name: 'align',
-      type: "'center' | 'start' | 'first-line'",
-      description:
-        '起始和结束内容相对于标签的垂直对齐方式，原样传递给 Item。`first-line` 让小标记（单选按钮）与换行标签的第一行保持水平。参见 Item.align。',
-      default: "'center'",
+      "name": "align",
+      "type": "'center' | 'start' | 'first-line'",
+      "description": "起始和结束内容相对于标签的垂直对齐方式，原样传递给 Item。`first-line` 使小标记（单选按钮）与换行标签的第一行齐平。参见 Item.align。",
+      "default": "'center'"
     },
     {
-      name: 'isDisabled',
-      type: 'boolean',
-      description: '是否禁用此单个单选选项。',
-      default: 'false',
+      "name": "isDisabled",
+      "type": "boolean",
+      "description": "此单独单选项目是否禁用。",
+      "default": "false"
     },
     {
-      name: 'startContent',
-      type: 'ReactNode',
-      description: '在单选圆圈前渲染的内容。',
+      "name": "startContent",
+      "type": "ReactNode",
+      "description": "在单选圆圈之前渲染的内容。"
     },
     {
-      name: 'endContent',
-      type: 'ReactNode',
-      description: '在标签后渲染的内容。',
-    },
+      "name": "endContent",
+      "type": "ReactNode",
+      "description": "在标签之后渲染的内容。"
+    }
   ],
+  "propDescriptions": {
+    "label": "单选项目的主标签。富标签可包含链接或按钮，它们保留自己的行为而不会选中该项。标签文本为单选按钮命名；仅当该文本不存在时才使用 aria-label，否则在覆盖时保留每个可见标签词。",
+    "aria-label": "单选按钮的纯文本可访问名称，应用于控件而非行。它会覆盖从标签派生的名称。当富标签没有可见文本时使用它；否则保留每个可见标签词。",
+    "value": "此单选项目的值。",
+    "description": "显示在标签下方的次要内容。链接和按钮保留自己的点击行为——行只将非交互表面上的点击委托给单选按钮。",
+    "align": "起始和结束内容相对于标签的垂直对齐方式，原样传递给 Item。`first-line` 使小标记（单选按钮）与换行标签的第一行齐平。参见 Item.align。",
+    "isDisabled": "此单独单选项目是否禁用。",
+    "startContent": "在单选圆圈之前渲染的内容。",
+    "endContent": "在标签之后渲染的内容。"
+  }
 };
 
 export const docsDense = {

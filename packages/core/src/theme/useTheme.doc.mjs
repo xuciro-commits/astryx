@@ -132,3 +132,43 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useTheme",
+  "usage": {
+    "description": "为 SVG、canvas、Vega、D3、地图或图表库等非 CSS 使用方提供对主题令牌的编程访问，它们需要 JavaScript 中的值而不是 CSS 自定义属性引用。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "在 React 组件中将主题颜色集成到 SVG 属性、canvas 绘制、图表选项或其他非 CSS 配置对象时，使用 tokens 或 token(name)。"
+      },
+      {
+        "guidance": true,
+        "description": "在 React Hook 之外进行相同令牌解析时，使用 resolveThemeTokens(theme, {mode})。"
+      },
+      {
+        "guidance": true,
+        "description": "普通组件样式请优先使用 CSS 变量或 StyleX 令牌；仅在 JavaScript 需要令牌值时使用此 Hook。"
+      },
+      {
+        "guidance": true,
+        "description": "图表系列请使用 --color-data-categorical-blue 等数据可视化令牌，而不是任意 UI 颜色。"
+      },
+      {
+        "guidance": false,
+        "description": "在数据可视化中硬编码浅色/深色颜色：请改为通过当前主题解析它们。"
+      },
+      {
+        "guidance": false,
+        "description": "假设该 Hook 会反映所有 CSS 级联覆盖。它为当前 Theme 模式解析令牌；局部媒体表面覆盖和任意外部 CSS 可能无法体现。"
+      }
+    ]
+  },
+  "paramDescriptions": {},
+  "returnDescriptions": {
+    "name": "最近主题的名称；没有提供程序时为 default。",
+    "mode": "解析后的有效颜色模式。system 模式会解析为 light 或 dark。",
+    "token": "将单个设计令牌解析为有效模式下的当前 CSS 值。",
+    "tokens": "为当前模式解析的所有令牌，包括默认值和主题覆盖。在活动主题或模式变化之前保持稳定；使用与 resolveThemeTokens(theme, {mode}) 相同的解析逻辑。"
+  }
+};

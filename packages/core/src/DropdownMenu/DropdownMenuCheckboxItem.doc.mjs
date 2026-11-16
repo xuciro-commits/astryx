@@ -103,22 +103,41 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'DropdownMenuCheckboxItem',
-  isHiddenFromOverview: true,
-  displayName: 'Dropdown Menu Checkbox Item',
-  description:
-    '可勾选的菜单项（role="menuitemcheckbox"），用于切换独立的布尔值。用于 DropdownMenu 中的开关选项；单选请使用 DropdownMenuRadioGroup。',
-  propDescriptions: {
-    label: '标识该项的主标签文本。',
-    description: '显示在标签下方的次要描述文本。',
-    icon: '显示在标签前的图标。',
-    value: '该项是否被勾选。受控，与 onChange 搭配使用。',
-    onChange: '切换该项时以下一个勾选状态触发的回调。',
-    isDisabled: '该项是否禁用。',
-    hasCloseOnSelect: '切换该项是否关闭菜单。默认保持打开。',
-    ref: '转发到行根元素（带 role="menuitemcheckbox" 的元素）的 ref。',
-    endContent: '在标签和描述之后渲染的内容。',
+  "name": "DropdownMenuCheckboxItem",
+  "isHiddenFromOverview": true,
+  "displayName": "Dropdown Menu Checkbox Item",
+  "description": "可勾选的菜单项（role=\"menuitemcheckbox\"），用于切换独立的布尔值。用于 DropdownMenu 内的开/关选项；若为 N 选一，请使用 DropdownMenuRadioGroup。",
+  "propDescriptions": {
+    "label": "标识该项的主要标签文本。",
+    "description": "显示在标签下方的次要描述文本。",
+    "icon": "显示在标签前的图标。有效语义名称见 `astryx docs icons`。",
+    "value": "该项是否被勾选。受控；需与 onChange 搭配使用。",
+    "onChange": "切换该项时触发的回调，传入下一个勾选状态。",
+    "isDisabled": "该项是否禁用。禁用项仍以禁用状态（aria-disabled）保留在无障碍树中，方向键和键入搜索可以到达它，以便键盘用户找到它。指针高亮会跳过它，激活也会被阻止。",
+    "hasCloseOnSelect": "切换该项是否关闭菜单。复选框项默认保持打开，以便在一次会话中切换多项。",
+    "ref": "转发到行根节点的 ref，即承载 role=\"menuitemcheckbox\" 的元素。使用以元素为键的 observer 或 overlay 注册该行。",
+    "endContent": "在标签和描述之后渲染的内容，例如键盘快捷键提示或 Badge。"
   },
+  "usage": {
+    "description": "DropdownMenu 内可独立勾选的选项。该行拥有 menuitemcheckbox 语义，而共享的 Indicator 提供装饰性的复选框绘制。",
+    "anatomy": [
+      {
+        "name": "可勾选行",
+        "required": true,
+        "description": "拥有无障碍名称、勾选状态、焦点和激活行为的 menuitemcheckbox 根节点。"
+      },
+      {
+        "name": "标签/内容",
+        "required": true,
+        "description": "由 Item 布局的调用方内容：必填的 label，以及可选的 description、icon 和结束内容。"
+      },
+      {
+        "name": "复选框标记",
+        "required": true,
+        "description": "装饰性的共享 Indicator 外观，用于呈现勾选和禁用状态，同时不增加第二个控件。"
+      }
+    ]
+  }
 };
 
 export const docsDense = {

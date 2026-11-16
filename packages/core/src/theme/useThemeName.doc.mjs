@@ -67,3 +67,28 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useThemeName",
+  "usage": {
+    "description": "只读取当前主题名称。当代码需要知道哪个主题处于开启状态，且不需要令牌或颜色模式时使用。当调用方上方有 Theme 时读取 ThemeContext，否则读取 document 元素上的根主题名称。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将此 Hook 用于主题标识，例如为当前主题挑选语义图标。"
+      },
+      {
+        "guidance": true,
+        "description": "当调用方还需要令牌值或解析后的浅色/深色模式时，使用 useTheme。"
+      },
+      {
+        "guidance": false,
+        "description": "将 null 视为名称默认值。Null 表示没有可用的主题名称。"
+      }
+    ]
+  },
+  "paramDescriptions": {},
+  "returnDescriptions": {
+    "name": "最近的 Theme 名称。当没有 Theme 上下文且根未设置主题名称时为 Null。"
+  }
+};

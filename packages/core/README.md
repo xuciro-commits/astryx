@@ -1,19 +1,19 @@
 # @astryxdesign/core
 
-Core UI components, theme system, and utilities for the Astryx design system. For project setup, see [Quick Start](#quick-start) below.
+Astryx 设计系统的核心 UI 组件、主题系统与工具集。项目搭建请参阅下文的[快速开始](#快速开始)。
 
-> **Building with an AI agent?** Add the CLI, then run `init`:
+> **正在使用 AI 智能体构建？** 先添加 CLI，再运行 `init`：
 >
 > ```bash
 > npm install -D @astryxdesign/cli   # or: pnpm add -D / yarn add -D / bun add -d
 > npx @astryxdesign/cli init         # the CLI you just installed
 > ```
 >
-> `init` writes the Astryx component index into your `AGENTS.md`/`CLAUDE.md` so your agent discovers components, templates, and design tokens instead of guessing. Need a single command without installing? The same scoped command works: `npx @astryxdesign/cli <cmd>`. Always use the scoped name: the unscoped `astryx` resolves to an unrelated npm package until `@astryxdesign/cli` is a dependency. See [XDS CLI](#xds-cli).
+> `init` 会把 Astryx 组件索引写入你的 `AGENTS.md`/`CLAUDE.md`，让智能体发现组件、模板和设计令牌，而不是靠猜测。需要一条不安装也能用的命令？同一个带作用域的命令就能做到：`npx @astryxdesign/cli <cmd>`。请始终使用带作用域的名称：在 `@astryxdesign/cli` 成为依赖之前，不带作用域的 `astryx` 会解析到一个无关的 npm 包。参见 [Astryx CLI](#astryx-cli)。
 
-## Component Docs
+## 组件文档
 
-Look up any component's full API (props, variants, examples, best practices, and theming) via the Astryx CLI:
+通过 Astryx CLI 查阅任意组件的完整 API（属性、变体、示例、最佳实践和主题定制）：
 
 ```bash
 npx @astryxdesign/cli init                   # one-time: writes the component guide into AGENTS.md / CLAUDE.md
@@ -21,17 +21,15 @@ npx @astryxdesign/cli component Button        # full docs for a component
 npx @astryxdesign/cli component --list        # list all components
 ```
 
-> Use the scoped `@astryxdesign/cli`: it runs with or without installing, while the unscoped `astryx` resolves to an unrelated npm package until the CLI is a dependency.
+> 请使用带作用域的 `@astryxdesign/cli`：无论是否安装都能运行；而在 CLI 成为依赖之前，不带作用域的 `astryx` 会解析到一个无关的 npm 包。
 
-## Page Layouts
+## 页面布局
 
-Building a full page? Start with a template rather than composing from scratch.
-Templates are content-only; they compose `Layout` with header, content, and
-panel slots into common page patterns (dashboards, settings, forms, detail pages).
-Wrap them in your own app chrome (`AppShell`, `TopNav`, `SideNav`) to add
-global navigation.
+要构建完整页面？从模板开始，而不是从头拼装。
+模板只包含内容；它们把 `Layout` 与页眉、内容和面板插槽组合成常见的页面模式（仪表盘、设置、表单、详情页）。
+用你自己的应用外壳（`AppShell`、`TopNav`、`SideNav`）包裹它们，以添加全局导航。
 
-Requires `@astryxdesign/cli` (`npm install -D @astryxdesign/cli`):
+需要 `@astryxdesign/cli`（`npm install -D @astryxdesign/cli`）：
 
 ```bash
 astryx template --list              # browse all page and block templates
@@ -41,7 +39,7 @@ astryx template settings --skeleton # layout skeleton with spatial annotations
 
 ## Astryx CLI
 
-The CLI (`@astryxdesign/cli`) provides additional tooling:
+CLI（`@astryxdesign/cli`）提供了额外的工具：
 
 ```bash
 astryx --help                       # full listing of all commands
@@ -57,37 +55,37 @@ astryx discover                     # discover external Astryx packages
 astryx gap-report                   # report a missing capability
 ```
 
-> Run these as `npx @astryxdesign/cli …`, or `pnpm exec astryx …` (or your package manager's equivalent) once the CLI is installed.
+> CLI 安装后，可用 `npx @astryxdesign/cli …` 或 `pnpm exec astryx …`（或你所用包管理器的等效命令）运行这些命令。
 
-## Related Packages
+## 相关软件包
 
-| Package                                                                                           | Description                                                   |
-| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| [`@astryxdesign/cli`](https://github.com/meta/astryx/tree/main/packages/cli)                      | CLI tooling: component docs, templates, scaffolding, codemods |
-| [`@astryxdesign/theme-neutral`](https://github.com/meta/astryx/tree/main/packages/themes/neutral) | Muted, minimal theme (Lucide icons)                           |
+| 包                                                                                                | 描述                                                  |
+| ------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| [`@astryxdesign/cli`](https://github.com/meta/astryx/tree/main/packages/cli)                      | CLI 工具：组件文档、模板、脚手架、代码改造（codemod） |
+| [`@astryxdesign/theme-neutral`](https://github.com/meta/astryx/tree/main/packages/themes/neutral) | 低饱和度、极简主题（Lucide 图标）                     |
 
-## Resources
+## 资源
 
-- [Component Storybook](https://astryx.atmeta.com/storybook/)
-- [GitHub Repository](https://github.com/meta/astryx)
+- [组件 Storybook](https://astryx.atmeta.com/storybook/)
+- [GitHub 仓库](https://github.com/meta/astryx)
 
 ---
 
-## Quick Start
+## 快速开始
 
-Astryx requires **React 19** or later (`react` and `react-dom` >= 19.0.0 are peer dependencies).
+Astryx 需要 **React 19** 或更高版本（`react` 和 `react-dom` 是 >= 19.0.0 的 peer 依赖）。
 
-Install Astryx and a theme:
+安装 Astryx 和一个主题：
 
 ```bash
 npm install @astryxdesign/core @astryxdesign/theme-neutral @stylexjs/stylex
 ```
 
-Then pick your setup below based on your framework and styling approach.
+然后根据你的框架和样式方案，在下面选择对应的配置方式。
 
-### Next.js (simplest)
+### Next.js（最简单）
 
-The fastest way to get started. No build plugins, no PostCSS, no Babel config — Astryx ships pre-built CSS and JS, so you import three stylesheets (order matters) and wrap your app in a theme provider.
+这是最快的上手方式。无需构建插件，无需 PostCSS，无需 Babel 配置——Astryx 自带预构建的 CSS 和 JS，因此你只需导入三个样式表（顺序很重要），再用主题 Provider 包裹应用。
 
 **`src/app/globals.css`**
 
@@ -97,7 +95,7 @@ The fastest way to get started. No build plugins, no PostCSS, no Babel config �
 @import '@astryxdesign/theme-neutral/theme.css';
 ```
 
-The import order maps to the layer cascade: `reset.css` (`@layer reset`) → `astryx.css` component styles (`@layer astryx-base`) → `theme.css` token overrides (`@layer astryx-theme`).
+导入顺序与级联层对应：`reset.css`（`@layer reset`）→ `astryx.css` 组件样式（`@layer astryx-base`）→ `theme.css` 令牌覆盖（`@layer astryx-theme`）。
 
 **`src/app/providers.tsx`**
 
@@ -137,9 +135,9 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
 
 ### Next.js + Tailwind
 
-No build plugins needed; Astryx ships pre-built CSS that works alongside Tailwind.
+无需构建插件；Astryx 自带可与 Tailwind 配合使用的预构建 CSS。
 
-This `globals.css` is the whole file for a new app. For an app that already uses Tailwind, keep its own `@import "tailwindcss"` and put the `@layer` line above it, as `astryx docs styling-libraries/tailwind` shows under "Add Astryx to an app that already uses Tailwind". A `@layer` line below the Tailwind import silently inverts the cascade.
+对于新应用，这个 `globals.css` 就是完整的文件。对于已经使用 Tailwind 的应用，请保留它自己的 `@import "tailwindcss"`，并把 `@layer` 行放在该导入之上，正如 `astryx docs styling-libraries/tailwind` 在“向已使用 Tailwind 的应用添加 Astryx”一节中所展示的那样。若把 `@layer` 行放在 Tailwind 导入之下，则会悄无声息地反转级联顺序。
 
 **`src/app/globals.css`**
 
@@ -155,7 +153,7 @@ This `globals.css` is the whole file for a new app. For an app that already uses
 @import 'tailwindcss/utilities.css' layer(utilities);
 ```
 
-The `tailwind-theme.css` import maps system tokens to Tailwind utilities via `@theme reference inline`, so the mappings generate utilities without redeclaring the tokens at runtime:
+`tailwind-theme.css` 导入通过 `@theme reference inline` 把系统令牌映射到 Tailwind 实用类，因此这些映射可以生成实用类，而无需在运行时重新声明令牌：
 
 ```tsx
 // Without the bridge — verbose:
@@ -165,22 +163,22 @@ The `tailwind-theme.css` import maps system tokens to Tailwind utilities via `@t
 <div className="rounded-lg bg-surface text-primary">
 ```
 
-Some useful mappings:
+一些有用的映射：
 
-| Tailwind class                                               | Astryx token                                                     |
-| ------------------------------------------------------------ | ---------------------------------------------------------------- |
-| `text-primary` / `text-secondary`                            | `--color-text-primary` / `--color-text-secondary`                |
-| `bg-surface` / `bg-card` / `bg-body`                         | `--color-background-surface` / `card` / `body`                   |
-| `border-border` / `border-strong`                            | `--color-border` / `--color-border-emphasized`                   |
-| `bg-info` / `bg-success` / `bg-warning` / `bg-error`         | Strong status fills (`--color-<status>`)                         |
-| `text-on-info` / `bg-info-muted` / `text-on-info-muted`      | Strong-fill content, pale fill, pale-fill content                |
-| `text-success` / `text-warning` / `text-error` / `text-info` | Status text on the page (`--color-text-*`; also `text-status-*`) |
-| `border-success` / `border-warning` / `border-error`         | Status borders (`--color-border-*`)                              |
-| `bg-blue-subtle` / `border-blue-ring` / `text-blue-vivid`    | Hue palette (×10 hues)                                           |
-| `rounded-sm` / `rounded-md` / `rounded-lg`                   | `--radius-inner` / `element` / `container`                       |
-| `shadow-sm` / `shadow-md` / `shadow-lg`                      | `--shadow-low` / `med` / `high`                                  |
+| Tailwind 类                                                  | Astryx 令牌                                                    |
+| ------------------------------------------------------------ | -------------------------------------------------------------- |
+| `text-primary` / `text-secondary`                            | `--color-text-primary` / `--color-text-secondary`              |
+| `bg-surface` / `bg-card` / `bg-body`                         | `--color-background-surface` / `card` / `body`                 |
+| `border-border` / `border-strong`                            | `--color-border` / `--color-border-emphasized`                 |
+| `bg-info` / `bg-success` / `bg-warning` / `bg-error`         | 强状态填充色（`--color-<status>`）                             |
+| `text-on-info` / `bg-info-muted` / `text-on-info-muted`      | 强填充内容色、浅色填充、浅色填充内容色                         |
+| `text-success` / `text-warning` / `text-error` / `text-info` | 页面上的状态文本色（`--color-text-*`；也可用 `text-status-*`） |
+| `border-success` / `border-warning` / `border-error`         | 状态边框色（`--color-border-*`）                               |
+| `bg-blue-subtle` / `border-blue-ring` / `text-blue-vivid`    | 色相调色板（10 种色相）                                        |
+| `rounded-sm` / `rounded-md` / `rounded-lg`                   | `--radius-inner` / `element` / `container`                     |
+| `shadow-sm` / `shadow-md` / `shadow-lg`                      | `--shadow-low` / `med` / `high`                                |
 
-Spacing references `var(--spacing-1)` as the base unit, so `p-4` = 16px, matching Astryx's `--spacing-4`. Arbitrary values still work as an escape hatch: `bg-[var(--color-background-surface)]`.
+间距以 `var(--spacing-1)` 作为基准单位，因此 `p-4` = 16px，与 Astryx 的 `--spacing-4` 一致。任意值仍可作为备用方案使用：`bg-[var(--color-background-surface)]`。
 
 **`src/app/providers.tsx`**
 
@@ -218,7 +216,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
 }
 ```
 
-That's it. Start using components:
+就是这样。开始使用组件：
 
 ```tsx
 import {Button} from '@astryxdesign/core/Button';
@@ -230,7 +228,7 @@ export default function Page() {
 
 ### Next.js + StyleX
 
-Use the pre-built dist alongside StyleX for your own styles.
+将预构建的 dist 与 StyleX 搭配使用，以编写你自己的样式。
 
 ```bash
 npm install @astryxdesign/core @astryxdesign/theme-neutral @stylexjs/stylex
@@ -244,7 +242,7 @@ npm install @astryxdesign/core @astryxdesign/theme-neutral @stylexjs/stylex
 @import '@astryxdesign/theme-neutral/theme.css';
 ```
 
-Providers and layout are the same as the Tailwind example (use `@astryxdesign/theme-neutral/built`).
+Provider 和布局与 Tailwind 示例相同（使用 `@astryxdesign/theme-neutral/built`）。
 
 ### Vite
 
@@ -252,18 +250,13 @@ Providers and layout are the same as the Tailwind example (use `@astryxdesign/th
 npm install @astryxdesign/core @astryxdesign/theme-neutral @stylexjs/stylex
 ```
 
-Same CSS imports and providers as above. No build plugins needed; Astryx ships pre-built.
+CSS 导入和 Provider 与上面相同。无需构建插件；Astryx 自带预构建产物。
 
-### No build step (CDN)
+### 无需构建步骤（CDN）
 
-For prototypes, embeds, or pages without a bundler, load the components straight
-from a public CDN as ES modules. React 19 removed its UMD builds ("To load React
-19 with a script tag, we recommend using an ESM-based CDN such as esm.sh"), so an
-import map is the way in — there is no `window.React` left for a global bundle to
-bind to.
+对于原型、嵌入场景或没有打包器的页面，可以直接从公共 CDN 以 ES 模块加载组件。React 19 移除了 UMD 构建（“要使用 script 标签加载 React 19，我们建议使用基于 ESM 的 CDN，例如 esm.sh”），因此入口方式就是导入映射（import map）——已经没有可供全局包绑定的 `window.React` 了。
 
-The CLI writes this page for you, annotated and pinned to the version you have
-installed:
+CLI 会为你生成这个页面，其中带有注释，并固定到你已安装的版本：
 
 ```bash
 npx @astryxdesign/cli template --cdn   # writes cdn.template.html
@@ -332,26 +325,13 @@ npx @astryxdesign/cli template --cdn   # writes cdn.template.html
 </html>
 ```
 
-Six details carry the whole recipe:
+整个方案的关键在于六个细节：
 
-- **`data-astryx-theme` on `<html>`.** Theme CSS is scoped to that attribute, so
-  without it the page renders with the built-in defaults instead of the theme you
-  just loaded.
-- **`?external=react,react-dom`.** Without it esm.sh bundles its own React and
-  every hook throws `Cannot read properties of null (reading 'useState')`.
-- **`react/jsx-runtime` in the import map.** The published bundle imports it;
-  omit the entry and the page dies with `Failed to resolve module specifier`.
-- **A font on `body`.** Nothing in the three stylesheets sets a document font:
-  the theme styles prose elements and each component styles itself, and `Button`
-  is `font: inherit`. Without that one declaration its label renders in the
-  browser's default serif.
-- **The webfont itself.** The theme _names_ Figtree; it never loads it. Without
-  the Google Fonts link every viewer silently gets the next family in the stack.
-- **No JSX.** Nothing is compiling this file, so elements are created with
-  `React.createElement`.
+- **`<html>` 上的 `data-astryx-theme`。** 主题 CSS 的作用域限定在该属性上，因此缺少它时，页面会用内置默认值渲染，而不是你刚刚加载的主题。
+- **`?external=react,react-dom`。** 缺少它时，esm.sh 会打包自己的 React，每个 Hook 都会抛出 `Cannot read properties of null (reading 'useState')`。
+- **导入映射中的 `react/jsx-runtime`。** 已发布的包会导入它；省略这个条目，页面就会报出 `Failed to resolve module specifier` 并停止运行。
+- **在 `body` 上设置字体。** 三个样式表都没有设置文档字体：主题为正文元素设置样式，每个组件也为自身设置样式，而 `Button` 使用的是 `font: inherit`。没有这一条声明，它的标签会用浏览器的默认衬线字体渲染。
+- **网页字体本身。** 主题只是 _指定_ 了 Figtree，从不加载它。没有 Google Fonts 链接，每位访问者都会在不知不觉中得到字体栈中的下一个字体。
+- **不使用 JSX。** 没有任何工具编译这个文件，因此元素要用 `React.createElement` 创建。
 
-> Pin every version. Unversioned CDN URLs resolve to the latest release and are
-> cached aggressively (0.4.1 above is a real pin; `astryx template --cdn` writes
-> yours). The raw ESM entry (`dist/index.js`) uses bare `react` imports and will
-> not run from a plain `<script src>` — the import map is what makes those
-> specifiers resolvable.
+> 固定每个版本。未指定版本的 CDN URL 会解析到最新发布版本，而且缓存策略非常激进（上面的 0.4.1 是真实的固定版本；`astryx template --cdn` 会写入你的版本）。原始 ESM 入口（`dist/index.js`）使用裸 `react` 导入，无法通过普通的 `<script src>` 运行——正是导入映射让这些说明符可以被解析。

@@ -88,29 +88,54 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'AvatarGroupOverflow',
-  isHiddenFromOverview: true,
-  displayName: 'Avatar Group Overflow',
-  description:
-    'AvatarGroup 的溢出指示器。用于显示隐藏头像数量，可自定义计数字符串或作为按钮使用。',
-  propDescriptions: {
-    count: '隐藏头像数量，用于默认 `+N` 标签和无障碍标签。',
-    children: '可选的自定义计数字符串。省略时使用默认 `+N` 标签。',
-    onClick: '点击溢出指示器时触发。提供后指示器会渲染为可聚焦按钮。',
-    ref: '转发到溢出指示器元素的引用。',
-    xstyle: '用于布局自定义的 StyleX 样式。',
+  "name": "AvatarGroupOverflow",
+  "isHiddenFromOverview": true,
+  "displayName": "Avatar Group Overflow",
+  "description": "AvatarGroup 的溢出指示器。为隐藏的头像显示紧凑计数，可渲染自定义计数字样或充当按钮。",
+  "propDescriptions": {
+    "count": "隐藏头像的数量。用于默认的 `+N` 标签和无障碍标签。",
+    "children": "在指示器内渲染的可选自定义计数字样。省略时使用默认的 `+N` 标签。",
+    "onClick": "点击溢出指示器时触发的回调。提供后，指示器渲染为可聚焦的按钮。",
+    "ref": "转发到溢出指示器元素的 ref。",
+    "xstyle": "`stylex.create()` 值 — 不是内联样式对象。"
   },
-  usage: {
-    description:
-      'AvatarGroupOverflow 显示在 AvatarGroup 末尾，用来汇总未单独展示的成员。适用于只展示少量头像但仍需要显示隐藏数量的场景。',
-    bestPractices: [
-      {guidance: true, description: '向 `count` 传入真实隐藏数量，确保无障碍标签与可见指示器一致。'},
-      {guidance: true, description: '使用 `+12` 或 `99+` 等短文本；指示器在计数较短时为圆形，计数较宽时会拉伸为胶囊形，确保数字始终完整显示。'},
-      {guidance: true, description: '当溢出项会打开成员列表、弹出层或详情视图时提供 `onClick`。'},
-      {guidance: false, description: '不要让自定义文本与 `count` 不一致；`count` 仍用于无障碍标签。'},
-      {guidance: false, description: '不要在指示器内使用长标签；更长的参与者详情应放在头像组旁边。'},
+  "usage": {
+    "description": "AvatarGroupOverflow 出现在 AvatarGroup 末尾，用于汇总未单独显示的人员。当组被裁剪为少量可见头像、但隐藏数量仍然重要时使用。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将真实的隐藏数量传给 `count`，让无障碍标签与可见指示器一致。"
+      },
+      {
+        "guidance": true,
+        "description": "使用 `+12` 或 `99+` 之类的简短自定义文本。指示器在计数较短时呈圆形，计数较长时扩展为胶囊形，因此数字总能容纳。"
+      },
+      {
+        "guidance": true,
+        "description": "当溢出内容会打开成员列表、弹出层或详情视图时，提供 `onClick`。"
+      },
+      {
+        "guidance": false,
+        "description": "不要传入与 `count` 不一致的自定义文本；`count` 仍会提供无障碍标签。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在指示器内使用长标签；请将更详细的参与者信息放在组旁边。"
+      }
     ],
-  },
+    "anatomy": [
+      {
+        "name": "计数标签",
+        "required": true,
+        "description": "显示在圆形指示器内的紧凑 `+N` 或自定义计数字样。"
+      },
+      {
+        "name": "按钮行为",
+        "required": false,
+        "description": "提供 `onClick` 后，指示器变为带焦点和悬停状态的交互式按钮。"
+      }
+    ]
+  }
 };
 
 export const docsDense = {

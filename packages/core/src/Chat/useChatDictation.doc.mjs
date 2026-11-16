@@ -244,3 +244,56 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useChatDictation",
+  "usage": {
+    "description": "聊天输入框的语音输入。它封装语音识别，提供麦克风音量、开始与停止提示，以及 ChatComposerInput 中的可选临时文本。在提供控件前先检查 isSupported。不支持语音识别的浏览器会返回 false 并且不会监听。持续大声说话会使转录文本变为大写。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "当词语应出现在输入框中时传入 inputRef。该 Hook 会在其中插入每一段最终转录，同时仍调用 onResult。"
+      },
+      {
+        "guidance": true,
+        "description": "当 isSupported 为 false 时禁用控件，并说明此浏览器无法接受语音输入。"
+      },
+      {
+        "guidance": true,
+        "description": "处理 onError。它是麦克风权限被拒绝的唯一信号。"
+      },
+      {
+        "guidance": false,
+        "description": "在此 Hook 旁调用浏览器的 SpeechRecognition API。仅在不需要输入框行为时使用 useSpeechRecognition。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "语音与输入框选项。省略时按提供方区域设置监听，直到调用 stop。",
+    "options.lang": "用于识别的 BCP-47 语言标签。",
+    "options.continuous": "识别是否持续到 stop 或 abort。",
+    "options.interimResults": "是否在最终转录之前报告部分转录。",
+    "options.audioContext": "用于麦克风音量和提示音的共享音频上下文。省略时使用该 Hook 自带的上下文。",
+    "options.transformTranscript": "在报告每段转录之前重写它，先于针对大声说话的转大写规则。",
+    "options.inputRef": "输入框句柄。设置后，该 Hook 会聚焦该输入框，在其中显示每段部分转录，并插入每段最终转录。onResult 仍会运行，因此不要再次插入该文本。",
+    "options.hasSounds": "在识别开始和停止时播放简短提示音。",
+    "options.onResult": "每段最终转录调用一次。",
+    "options.onTranscript": "每段部分转录和每段最终转录都会调用。",
+    "options.onError": "识别失败时调用，包括麦克风权限被拒绝的情况。",
+    "options.onStart": "识别开始时调用。",
+    "options.onEnd": "识别结束时调用。"
+  },
+  "returnDescriptions": {
+    "isSupported": "此浏览器是否提供语音识别。",
+    "isListening": "识别是否处于活动状态。",
+    "isSpeaking": "麦克风当前是否听到语音。",
+    "interimTranscript": "部分转录，无待处理内容时为空。",
+    "volume": "监听期间麦克风音量，从 0 到 1。",
+    "bands": "从低频到高频的频段音量，每个值从 0 到 1。",
+    "rawBands": "校准前的相同频段。",
+    "start": "开始识别。",
+    "stop": "停止识别并等待最终转录。",
+    "abort": "立即停止识别。",
+    "toggle": "空闲时开始，监听时停止。"
+  }
+};

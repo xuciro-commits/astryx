@@ -1,82 +1,45 @@
-# Pointer streams
+# 指针事件流
 
-What real browsers delivered for one moving contact, as the page saw it.
-`VelocityTracker.streams.test.ts` replays them (spec:AST-100 FR4).
+真实浏览器在页面视角下，为一个移动中的触点所交付的数据。`VelocityTracker.streams.test.ts` 会回放它们（spec:AST-100 FR4）。
 
-| Files                                  | Browser                                              | Pointer           | Input                                                         |
-| -------------------------------------- | ---------------------------------------------------- | ----------------- | ------------------------------------------------------------- |
-| `android-chromium-*`                   | Chromium 158 on an Android 15 emulator               | touch             | 120 Hz through a uinput touchscreen                           |
-| `android-firefox-*`                    | Firefox 158 on the same emulator                     | touch             | the same                                                      |
-| `ios-safari-*`                         | Safari 26.2 on an iOS 26.2 simulator (iPhone 17 Pro) | touch             | HID through idb, about one move every 30 ms                   |
-| `desktop-chromium-{mouse,pen,touch}-*` | headless Chromium 149                                | mouse, pen, touch | CDP input at 120 Hz, each event stamped at its scheduled time |
+| 文件                                   | 浏览器                                               | 指针               | 输入                                                      |
+| -------------------------------------- | ---------------------------------------------------- | ------------------ | --------------------------------------------------------- |
+| `android-chromium-*`                   | Chromium 158，运行于 Android 15 模拟器               | 触摸               | 通过 uinput 触摸屏以 120 Hz 注入                          |
+| `android-firefox-*`                    | Firefox 158，运行于同一模拟器                        | 触摸               | 同上                                                      |
+| `ios-safari-*`                         | Safari 26.2，运行于 iOS 26.2 模拟器（iPhone 17 Pro） | 触摸               | 通过 idb 注入 HID，约每 30 ms 一次移动                    |
+| `desktop-chromium-{mouse,pen,touch}-*` | 无头 Chromium 149                                    | 鼠标、触控笔、触摸 | 以 120 Hz 通过 CDP 注入输入，每个事件的时间戳为其计划时间 |
 
-Each source has three gestures:
+每个来源包含三种手势：
 
-- `slow`: 200 px down at 200 px/s, lifted while moving;
-- `fling`: 300 px down at 2,000 px/s, lifted while moving;
-- `stop-release`: 200 px in 400 ms, then still for 300 ms (longer than the
-  40 ms stillness interval), then lifted.
+- `slow`：向下 200 px，速度 200 px/s，移动中抬起；
+- `fling`：向下 300 px，速度 2,000 px/s，移动中抬起；
+- `stop-release`：400 ms 内移动 200 px，然后静止 300 ms（长于 40 ms 的静止判定间隔），再抬起。
 
-On iOS the simulator paces the moves itself, so its recordings differ: Safari
-delivered 194 px at 183.5 px/s for the slow drag, 240 px at 2,400 px/s for the
-fling, and the stop-then-release's moves over about 2.2 s before its still
-300 ms. Each fixture's `injected.speed` is what Safari delivered.
+在 iOS 上，模拟器自行控制移动节奏，因此其记录有所不同：slow 拖动时 Safari 交付的是 194 px，速度 183.5 px/s；fling 为 240 px，速度 2,400 px/s；stop-release 的移动历时约 2.2 s，之后静止 300 ms。每个 fixture 的 `injected.speed` 即 Safari 实际交付的速度。
 
-## Format (schema 1)
+## 格式（schema 1）
 
-- `events`: `[type, t, x, y]` for each pointer and touch event, with `t` in ms
-  after the pointerdown's `timeStamp` and `x`, `y` in CSS px from where the
-  contact went down. A `pointermove` adds its `getCoalescedEvents()` samples
-  (`[t, x, y]` each) and its `getPredictedEvents()` count.
-- `injected`: the ground truth. `speed` is px/s along y while the contact
-  moved; a source injected at a set rate also has its `hz` and `points`.
-- `release`: where the replay releases (`pointerup`, or `lastMove` with a
-  `note` saying why) and, for a stream whose release misses the injected
-  speed by more than 10%, `check: "shape"`: it is not velocity evidence, and
-  only its direction and axis are checked.
-- `caveat`: what the input is not (below).
+- `events`：每个指针事件与触摸事件对应 `[type, t, x, y]`，其中 `t` 为 pointerdown 的 `timeStamp` 之后经过的毫秒数，`x`、`y` 为从触点落下位置起算的 CSS px。一个 `pointermove` 还会附带其 `getCoalescedEvents()` 样本（每个样本为 `[t, x, y]`）及其 `getPredictedEvents()` 数量。
+- `injected`：基准真值。`speed` 为触点移动期间沿 y 轴的速度（px/s）；以固定速率注入的来源还会带有 `hz` 与 `points`。
+- `release`：回放的释放位置（`pointerup`，或 `lastMove` 并附 `note` 说明原因）；对于释放速度与注入速度偏差超过 10% 的事件流，带有 `check: "shape"`：它不作为速度证据，只校验其方向与轴向。
+- `caveat`：说明该输入不是什么（见下文）。
 
-## Caveat
+## 注意事项
 
-Rig input is synthetic, not a finger: Android injects at 120 Hz through a
-uinput touchscreen and desktop through CDP, each through the browser's real
-input pipeline; iOS input is HID through idb on a leased simulator, which
-delivers a move every ~30 ms (not 120 Hz), so iOS speeds are the distance
-Safari delivered between the first and last moving pointermove, over that time.
-A physical finger's 120–240 Hz jittered sampling is not reproduced.
+测试装置的输入是合成的，并非真实手指：Android 通过 uinput 触摸屏以 120 Hz 注入，桌面端通过 CDP 注入，二者都经过浏览器真实的输入管线；iOS 输入是在租用的模拟器上通过 idb 注入的 HID，约每 30 ms 才交付一次移动（并非 120 Hz），因此 iOS 的速度是 Safari 在首个与最后一个移动中的 pointermove 之间交付的距离除以该段时间。真实手指 120–240 Hz 且带抖动的采样并未复现。
 
-## What the replay feeds
+## 回放提供什么
 
-Each `pointermove` event's own position and time, one sample per event, as
-`PanGestureRecognizer` reads them (it does not read `getCoalescedEvents()`).
-The coalesced samples are the input the browser received: the replay also
-models a busy main thread from them, one event per four input samples at the
-latest of them, as a browser coalesces input while its handlers run late.
+每个 `pointermove` 事件自身的位置与时间，每个事件一个样本，按 `PanGestureRecognizer` 读取它们的方式提供（它不读取 `getCoalescedEvents()`）。合并样本是浏览器实际收到的输入：回放还会据此模拟主线程繁忙的情况，每四个输入样本合并为一个事件，时间取其中最新者，模拟浏览器在处理函数延迟执行时合并输入的行为。
 
-## What the streams show
+## 这些流展示了什么
 
-- Chromium on Android coalesces one to three samples into each `pointermove`
-  at 120 Hz input; Firefox dispatches about 60 a second, each with a one-entry
-  coalesced list.
-- For CDP-dispatched input, desktop Chromium returns an empty
-  `getCoalescedEvents()` list, so the busy-thread replay uses the events
-  themselves.
-- Safari on the simulator merged two moves that arrived in one frame into a
-  single `pointermove` whose coalesced list had one entry (one 120 px step).
-- idb lifts 58–85 ms after the last move, longer than the stillness interval,
-  so the iOS slow drag and fling release at their last move. The simulator
-  delivers their steps 29–44 ms apart, and against the speed Safari delivered
-  each misses 10% on one of its two releases: the slow
-  drag's pan reads 22.9% under (its scroll 2.3% over), the fling's scroll
-  12.2% under (its pan 7.2% under, from six samples). Neither is velocity
-  evidence; both are checked for direction and axis only.
-- iOS input at 120 Hz would need XCTest's own event synthesis
-  (`press(forDuration:thenDragTo:withVelocity:thenHoldForDuration:)`), which
-  these streams do not use.
+- Android 上的 Chromium 在 120 Hz 输入下会把一到三个样本合并进每个 `pointermove`；Firefox 每秒派发约 60 个事件，每个事件的合并列表只有一项。
+- 对于 CDP 派发的输入，桌面版 Chromium 返回的 `getCoalescedEvents()` 列表为空，因此繁忙主线程回放直接使用事件本身。
+- 模拟器上的 Safari 会把同一帧内到达的两次移动合并为一个 `pointermove`，其合并列表只有一项（一个 120 px 的步进）。
+- idb 在最后一次移动后 58–85 ms 才抬起，长于静止判定间隔，因此 iOS 的 slow 拖动与 fling 都在最后一次移动处释放。模拟器交付的步进间隔为 29–44 ms，对照 Safari 实际交付的速度，两者在各自两个释放点中的一个上偏差达到 10%：slow 拖动的 pan 读数偏低 22.9%（其 scroll 偏高 2.3%），fling 的 scroll 偏低 12.2%（其 pan 偏低 7.2%，基于六个样本）。两者都不作为速度证据；都只校验方向与轴向。
+- 要在 iOS 上以 120 Hz 输入，需要使用 XCTest 自身的事件合成（`press(forDuration:thenDragTo:withVelocity:thenHoldForDuration:)`），而这些流并未使用它。
 
-## Capturing a stream
+## 捕获事件流
 
-`capture.html` records one contact: open it in the browser, drive one gesture
-over it, and read the record from `window.__streams` (or have the page post
-it with `?post=probe` or `?post=beacon`). A fixture is that record plus the
-injected ground truth and the fields above.
+`capture.html` 记录单个触点：在浏览器中打开它，在其上执行一次手势，然后从 `window.__streams` 读取记录（或让页面通过 `?post=probe` 或 `?post=beacon` 上报）。一个 fixture 就是该记录加上注入的基准真值以及上述字段。

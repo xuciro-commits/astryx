@@ -78,39 +78,47 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'SideNavSection',
-  isHiddenFromOverview: true,
-  displayName: 'Side Nav Section',
-  description: '分组，支持可选的标题、副标题和尾部内容。',
-  props: [
+  "name": "SideNavSection",
+  "isHiddenFromOverview": true,
+  "displayName": "Side Nav Section",
+  "description": "带可选标题、副标题和尾部内容的分组区域。",
+  "props": [
     {
-      name: 'title',
-      type: 'string',
-      description: '分组标题。',
-      required: true,
+      "name": "title",
+      "type": "string",
+      "description": "区域标题。",
+      "required": true
     },
     {
-      name: 'subtitle',
-      type: 'string',
-      description: '分组副标题。',
+      "name": "subtitle",
+      "type": "string",
+      "description": "区域副标题。"
     },
     {
-      name: 'children',
-      type: 'ReactNode',
-      description: '分组项目。',
+      "name": "children",
+      "type": "ReactNode",
+      "description": "区域内的项目。"
     },
     {
-      name: 'endContent',
-      type: 'ReactNode',
-      description: '分组头部的右侧内容。',
+      "name": "endContent",
+      "type": "ReactNode",
+      "description": "区域头部右侧的内容。"
     },
     {
-      name: 'isHeaderHidden',
-      type: 'boolean',
-      description: '视觉上隐藏分组头部，同时保持屏幕阅读器可访问。',
-      default: 'false',
-    },
+      "name": "isHeaderHidden",
+      "type": "boolean",
+      "description": "在视觉上隐藏区域头部，同时保持其对屏幕阅读器可访问。",
+      "default": "false"
+    }
   ],
+  "propDescriptions": {
+    "title": "区域标题。",
+    "subtitle": "区域副标题。",
+    "children": "区域内的项目。",
+    "endContent": "区域头部右侧的内容。",
+    "isHeaderHidden": "在视觉上隐藏区域头部，同时保持其对屏幕阅读器可访问。",
+    "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 的值：不能是 style={{}} 这样的内联样式对象。"
+  }
 };
 
 export const docsDense = {

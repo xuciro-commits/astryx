@@ -92,3 +92,48 @@ export const docsDense = {
     ref: 'ref to the text cell',
   },
 };
+
+export const docsZh = {
+  "name": "InputGroupText",
+  "displayName": "Input Group Text",
+  "description": "在 InputGroup 内渲染的前缀或后缀文本元素。可显示文本或图标。",
+  "usage": {
+    "description": "在 InputGroup 内使用 InputGroupText 表示简短的固定前缀或后缀（例如货币符号、协议或单位），或表示装饰性图标。它是纯文本而非控件，也不属于输入框的无障碍名称。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "文本保持简短，例如 $、https:// 或 kg。它会保持单行且不会收缩。"
+      },
+      {
+        "guidance": true,
+        "description": "在从右到左的书写环境中，纯文本会保持字符顺序，因此 https:// 和 .com 仍按原样阅读。当富内容混合了不同书写方向时，请在你自己的内容上标明方向，例如使用 `dir` 或 `<bdi>`。"
+      },
+      {
+        "guidance": true,
+        "description": "把屏幕阅读器用户需要的信息放进输入框自身的 label，例如在 $ 前缀旁写 “Amount in USD”。附加内容会按阅读顺序作为纯文本朗读。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在 InputGroupText 内放置按钮、链接或其他控件。需要操作时请使用 Button 附加项。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在 InputGroup 之外使用 InputGroupText。它的边框和圆角会与 InputGroup 行拼接。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "文本单元格",
+        "required": true,
+        "description": "非交互单元格，用于承载文本或图标，并与行内相邻元素的边框拼接。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "children": "文本或图标内容。",
+    "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 的值：不能是 style={{}} 这样的内联样式对象。",
+    "className": "CSS 类名。",
+    "style": "内联样式。",
+    "ref": "转发到文本单元格元素的 ref。"
+  }
+};

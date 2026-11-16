@@ -47,3 +47,32 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useToast",
+  "usage": {
+    "description": "用于从组件树中的任何位置显示 Toast 通知的 Hook。返回一个接受 Toast 选项并显示通知的函数。与 LayerProvider 配合可自动工作，或自行挂载回退视口。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "用于不需要用户操作的短暂成功/错误反馈。"
+      },
+      {
+        "guidance": true,
+        "description": "设置 uniqueID 以对快速用户操作产生的 Toast 去重。"
+      },
+      {
+        "guidance": false,
+        "description": "将其用于需要确认的严重错误；请改用 AlertDialog。"
+      },
+      {
+        "guidance": false,
+        "description": "在渲染 LayerProvider 的同一组件中调用 useToast；必须从 provider 内部的子组件调用。"
+      }
+    ]
+  },
+  "paramDescriptions": {},
+  "returnDescriptions": {
+    "showToast": "显示 Toast 通知。返回一个关闭函数。选项包括 body（ReactNode）、type（\"info\" | \"error\"）、isAutoHide、autoHideDuration、endContent、uniqueID 和 collisionBehavior。"
+  }
+};

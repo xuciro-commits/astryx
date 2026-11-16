@@ -221,3 +221,51 @@ export const docs = {
     },
   ],
 };
+
+export const docsZh = {
+  "name": "DiffViewer",
+  "displayName": "Diff Viewer",
+  "usage": {
+    "description": "用于代码审查界面的只读、语法高亮单文件 diff。在文件的各个 hunk 上方渲染文件头（路径、Added/Deleted/Renamed 令牌、+/− 行数、`headerEnd` 槽位和可选展开器），支持统一或分栏（并排）视图。各行使用与启用 `isDiff` 的 CodeBlock 相同的语法主题 diff 槽位，因此一个语法主题可同时为两者设置样式。`renderLineAnnotation` 可在任意行下方添加整行（用于审查评论），`onLineNumberClick` 将行号变为按钮。使用 `parseUnifiedDiff(patch)` 构建文件模型，它为 git 或 `diff -u` 补丁中的每个文件返回一个文件；或者当你持有两个版本的文本时，使用 `createDiffFile({oldValue, newValue})`。显示选项涵盖变更的标记方式（经典 +/− 字形、竖条或无）、变更行是否着色，以及每个删除/添加行对内部变化的词级或字符级高亮。每个变更行都带有视觉隐藏的 \"Added\"/\"Removed\" 标签，因此在任何模式下不依赖颜色也能读出变更。不换行时，行号和变更指示符在代码滚动时保持固定；在分栏视图中，每一侧都有自己的滚动容器，因此分栏固定为各占一半，两侧横向滚动保持同步，行高取其较高一侧。当代码横向溢出时，横向过滚动被关闭，因此触控板既不会越过某行弹跳，也不会触发浏览器返回。在从右到左的页面中，hunk 区域保持从左到右，如同代码编辑器：注释内容按页面方向阅读，注释行与代码一起滚动。当变更过大而无法逐行比较时，`createDiffFile` 会将其 hunk 标记为 `isReplacedBlock`：它将每一行旧行列为删除，每一行新行列添加。DiffViewer 会将这些行折叠在一个 \"Large change: N lines\" 行之后，其中 N 是该块删除行数与添加行数之和，并提供 Show full diff 按钮。一个文件如果另有超过 2,000 行变更，也会以同样方式初始折叠，因为每一行都会消耗渲染时间。读者打开它时，其行 diff 仍然存在。如果折叠会隐藏的某行带有注释，折叠会自动展开，因此不会隐藏任何审查评论。行是普通 DOM，没有虚拟化：请折叠非常大的文件或为其设置窗口化。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "每个文件渲染一个 DiffViewer，并自行布局列表；多文件场景即 `parseUnifiedDiff(patch).map(file => <DiffViewer key={file.newPath ?? file.oldPath} file={file} />)`。"
+      },
+      {
+        "guidance": true,
+        "description": "使用 DiffViewerLineRef 的 side + lineNumber 组合定位审查评论：它在统一和分栏视图中相同。"
+      },
+      {
+        "guidance": true,
+        "description": "将文件级操作（例如 \"Viewed\" 复选框）放在 `headerEnd` 中，并在已查看文件应折叠时用同一状态驱动 `isCollapsed`。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在正文或聊天消息中的短 diff 使用 DiffViewer；在这些场景中，启用 `isDiff` 的 CodeBlock（或 Markdown 中的 ```diff 围栏）更轻量。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "file": "要渲染的文件：路径、状态、二进制标志和带编号行的 hunk。使用 `parseUnifiedDiff` 或 `createDiffFile` 构建。",
+    "viewMode": "'unified' 显示单列，删除行在其替换行上方；'split' 左侧显示旧文件、右侧显示新文件，将每个删除行与其替换的添加行配对。",
+    "language": "语法高亮语言：内置标识符，或单独导入的 CodeBlock 语言值（例如从 @astryxdesign/core/CodeBlock/languages/graphql 导入的 graphql），或使用 `createCodeLanguage` 创建。默认从文件名或扩展名在内置语言和 `codeLanguages` 中推断；无法匹配的文件按纯文本渲染。",
+    "codeLanguages": "可由文件名或扩展名推断的语言值，例如 `[graphql, dockerfile]`；后面的条目优先。请将同一列表传给审查页面上的每个 DiffViewer。",
+    "hasLineNumbers": "显示旧行号和新行号栏。",
+    "isWrapped": "换行显示长行，而不是横向滚动。不换行时，行号和变更指示符在代码滚动时保持固定；在分栏视图中每一侧都有自己的滚动容器，分栏固定为各占一半，两侧横向滚动保持同步。当代码横向溢出时，横向过滚动（弹性回弹、滑动导航）被关闭。",
+    "changeIndicator": "如何在代码旁标记变更行：'classic' +/− 字形、'bars'（添加行用实心竖条，删除行用虚线竖条）或 'none'。屏幕阅读器在任何模式下都会听到 \"Added\"/\"Removed\"。",
+    "inlineHighlight": "高亮每个删除行及其替换添加行内部变化的词（或字符），配对方式与分栏视图一致。除空白外没有共同内容的行不会获得行内高亮。",
+    "hasChangeBackground": "为添加和删除行着色。没有它时，只有变更指示符、行号和行内高亮标记变更。",
+    "isCollapsible": "使文件头成为一个可隐藏和显示 hunk 的展开器。仅当文件有可用于命名该控件的路径时适用。",
+    "isCollapsed": "受控的折叠状态。与 `onCollapsedChange` 搭配使用。",
+    "defaultIsCollapsed": "非受控时的初始折叠状态。",
+    "onCollapsedChange": "切换文件头时以新的折叠状态调用。",
+    "headerEnd": "文件头末尾的内容，例如 \"Viewed\" 复选框或文件操作菜单。",
+    "renderLineAnnotation": "在行下方渲染整行内容，例如审查评论；没有内容可显示的行返回 null。在分栏视图中，该行位于所属一侧的行下方。",
+    "onLineNumberClick": "使每一行的行号成为按钮，例如在该行开始评论。按钮是行所锚定的编号：删除行的原始编号，添加或未变更行的变更后文件编号（未变更行的原始编号仍为纯文本）。每个行号都是独立的 Tab 停靠点。",
+    "maxHeight": "hunk 区域滚动前的最大高度。",
+    "syntaxTheme": "实例级语法主题，与 CodeBlock 上相同。否则应用最近的 SyntaxTheme 或主题语法颜色。",
+    "ref": "转发到根元素的 ref。",
+    "xstyle": "用于布局自定义的 StyleX 样式。"
+  }
+};

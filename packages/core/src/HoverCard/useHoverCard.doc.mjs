@@ -222,3 +222,48 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useHoverCard",
+  "usage": {
+    "description": "用于悬停触发的浮动卡片的无头 Hook。基于 useLayer 构建，提供悬停/焦点意图检测、可配置延迟、安全的悬停行为和可访问的 aria-describedby 关联。当你需要完全控制触发器或渲染内容时，用于悬停时的丰富预览。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "用于丰富的内容预览，例如用户资料、实体摘要和链接预览。"
+      },
+      {
+        "guidance": true,
+        "description": "标准的触发器-内容组合优先使用 HoverCard 组件；自定义触发器模式使用此 Hook。"
+      },
+      {
+        "guidance": false,
+        "description": "用于简单的文本提示：请改用 Tooltip 或 useTooltip。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "placement": "相对于触发器的位置。逻辑方向：start/end 依据弹出层自身继承的方向解析（RTL 在纯 CSS 中镜像）。",
+    "alignment": "沿放置轴的对齐方式。逻辑方向：start/end 依据弹出层自身继承的方向解析（RTL 在纯 CSS 中镜像）。",
+    "delay": "悬停时显示悬浮卡的延迟，单位为毫秒。",
+    "hideDelay": "鼠标或焦点离开后隐藏的延迟，单位为毫秒。",
+    "focusTrigger": "焦点何时应打开悬浮卡。auto 在触发器自身获得焦点时打开，或焦点落在当时可聚焦的触发器内部时打开，因此 roving-tabindex 成员会在方向键到达它时打开。",
+    "touchTrigger": "在没有悬停的情况下，点按会做什么。auto 在点按时打开，除非触发器执行自身的操作（aria-disabled 控件不执行任何操作）；tap 始终打开；none 在触摸时从不打开。",
+    "isEnabled": "是否启用悬停和焦点触发。",
+    "label": "悬浮卡弹出层的无障碍名称。提供时，弹出层以具名 `role=\"dialog\"` 暴露；省略时，回退为 `role=\"group\"`（组可以合法地不命名）。",
+    "isOpen": "受控打开状态。true 强制显示，false 强制隐藏，undefined 让悬停/焦点管理可见性。",
+    "isDefaultOpen": "挂载时是否应显示悬浮卡。",
+    "onShow": "悬浮卡变为可见时触发的回调。",
+    "onHide": "悬浮卡隐藏时触发的回调。"
+  },
+  "returnDescriptions": {
+    "ref": "组合 ref，在同一触发器元素上同时设置定位和交互。",
+    "positionRef": "定位锚点元素的 ref。当定位和交互位于不同元素上时使用。",
+    "interactionRef": "悬停/焦点交互元素的 ref。与 `positionRef` 搭配用于拆分触发器的模式。",
+    "anchorId": "用于高级定位场景的 CSS 锚点名称。",
+    "describedBy": "用于组合到触发器 `aria-describedby` 中的 ID。",
+    "renderHoverCard": "锚点定位的悬浮卡内容的渲染函数。排除定位退出选项：悬浮卡始终根据 `placement`/`alignment` 推导其位置。",
+    "show": "立即以命令方式显示悬浮卡。",
+    "hide": "立即以命令方式隐藏悬浮卡。"
+  }
+};

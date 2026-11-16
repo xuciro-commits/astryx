@@ -56,3 +56,30 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useEntryAnimation",
+  "usage": {
+    "description": "返回用于在挂载时对元素进行动画的 StyleX 样式。仅当元素在初始页面绘制后动态插入时才播放动画；页面加载时渲染的元素不会播放动画。使用 Astryx 动效令牌（时长、缓动）以获得一致的动画时序。服务器渲染的元素在水合时不带入场样式，且绝不播放动画；水合后挂载的元素会播放动画。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "用于条件渲染的元素，例如校验消息、toast 或展开区块。"
+      },
+      {
+        "guidance": true,
+        "description": "将返回的样式与其他样式一起展开到 stylex.props() 中。"
+      },
+      {
+        "guidance": false,
+        "description": "用于在初始页面加载时就应可见的元素；它们不会播放动画。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "preset": "挂载时要应用的动画预设。"
+  },
+  "returnDescriptions": {
+    "entryStyle": "用于入场动画的 StyleX 样式对象；若元素在初始页面加载时渲染或从服务器 HTML 水合（无需动画），则为 null。"
+  }
+};

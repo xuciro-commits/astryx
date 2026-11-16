@@ -31,30 +31,35 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'useTableFiltering',
-  isHiddenFromOverview: true,
-  displayName: 'useTableFiltering',
-  description: '表格筛选插件，添加内联列过滤器（弹出式或内联控件）。与 useTableFilterState 配合使用管理状态。',
-  props: [
+  "name": "useTableFiltering",
+  "isHiddenFromOverview": true,
+  "displayName": "useTableFiltering",
+  "description": "Table 插件，添加内联列筛选器，支持弹出层或内联控件。与 useTableFilterState 搭配以实现受管状态。通过 PowerSearch 字段定义支持文本、选择、多选、日期和数字筛选类型。",
+  "props": [
     {
-      name: 'filters',
-      type: 'TableFilterState',
-      description: '当前筛选状态——列键到筛选值的映射。',
-      required: true,
+      "name": "filters",
+      "type": "TableFilterState",
+      "description": "当前筛选状态：从列键到筛选值的映射。",
+      "required": true
     },
     {
-      name: 'onFilterChange',
-      type: '(columnKey: string, value: TableFilterValue | null) => void',
-      description: '用户更改筛选值时调用。null 清除筛选。',
-      required: true,
+      "name": "onFilterChange",
+      "type": "(columnKey: string, value: TableFilterValue | null) => void",
+      "description": "用户更改筛选值时调用。`null` 清除筛选。",
+      "required": true
     },
     {
-      name: 'variant',
-      type: "'popover' | 'inline' | 'inline-compact'",
-      description: '筛选控件的显示变体。',
-      default: "'popover'",
-    },
+      "name": "variant",
+      "type": "'popover' | 'inline' | 'inline-compact'",
+      "description": "筛选控件的显示变体。",
+      "default": "'popover'"
+    }
   ],
+  "propDescriptions": {
+    "filters": "当前筛选状态：从列键到筛选值的映射。",
+    "onFilterChange": "用户更改筛选值时调用。`null` 清除筛选。",
+    "variant": "筛选控件的显示变体。"
+  }
 };
 
 export const docsDense = {

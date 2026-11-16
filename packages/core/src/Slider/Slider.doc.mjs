@@ -330,215 +330,325 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'Slider',
-  displayName: 'Slider',
-  props: [
+  "name": "Slider",
+  "displayName": "Slider",
+  "props": [
     {
-      name: 'label',
-      type: 'string',
-      description: '标签文本（始终渲染以确保无障碍可访问性）。',
-      required: true,
+      "name": "label",
+      "type": "string",
+      "description": "标签文本（始终为无障碍而渲染）。",
+      "required": true
     },
     {
-      name: 'value',
-      type: 'number | [number, number]',
-      description:
-        '当前值——`number` 用于单滑块模式，`[number, number]` 用于范围模式。',
-      required: true,
+      "name": "value",
+      "type": "number | [number, number]",
+      "description": "当前值：单滑块模式为 `number`，范围模式为 `[number, number]`。",
+      "required": true
     },
     {
-      name: 'onChange',
-      type: '(value: number) => void | (value: [number, number]) => void',
-      description: '拖拽过程中值变更时触发的回调。',
+      "name": "onChange",
+      "type": "(value: number) => void | (value: [number, number]) => void",
+      "description": "拖动过程中值变化时触发的回调。"
     },
     {
-      name: 'onChangeEnd',
-      type: '(value: number) => void | (value: [number, number]) => void',
-      description: '拖拽结束时触发的回调。',
+      "name": "onChangeEnd",
+      "type": "(value: number) => void | (value: [number, number]) => void",
+      "description": "拖动结束时触发的回调。"
     },
     {
-      name: 'min',
-      type: 'number',
-      description: '最小值。',
-      default: '0',
+      "name": "min",
+      "type": "number",
+      "description": "最小值。",
+      "default": "0"
     },
     {
-      name: 'max',
-      type: 'number',
-      description: '最大值。',
-      default: '100',
+      "name": "max",
+      "type": "number",
+      "description": "最大值。",
+      "default": "100"
     },
     {
-      name: 'step',
-      type: 'number',
-      description: '步进增量。',
-      default: '1',
+      "name": "step",
+      "type": "number",
+      "description": "步进增量。",
+      "default": "1"
     },
     {
-      name: 'orientation',
-      type: "'horizontal' | 'vertical'",
-      description: '滑块的方向。',
-      default: "'horizontal'",
+      "name": "orientation",
+      "type": "'horizontal' | 'vertical'",
+      "description": "滑块的方向。",
+      "default": "'horizontal'"
     },
     {
-      name: 'formatValue',
-      type: '(value: number) => string',
-      description: '自定义值格式化函数，用于显示和 `aria-valuetext`。',
+      "name": "formatValue",
+      "type": "(value: number) => string",
+      "description": "用于显示和 `aria-valuetext` 的自定义值格式化函数。"
     },
     {
-      name: 'valueDisplay',
-      type: "'tooltip' | 'text' | 'none'",
-      description: '当前值的显示方式。',
-      default: "'tooltip'",
+      "name": "valueDisplay",
+      "type": "'tooltip' | 'text' | 'none'",
+      "description": "当前值的显示方式。",
+      "default": "'tooltip'"
     },
     {
-      name: 'marks',
-      type: 'Array<{ value: number; label?: string }>',
-      description:
-        '在指定位置的刻度标记，带可选标签。未填充区域的标记使用轨道颜色；填充区域内的标记使用强调色。',
+      "name": "marks",
+      "type": "Array<{ value: number; label?: string }>",
+      "description": "指定位置上的刻度标记，可带标签。未填充的标记使用轨道颜色；填充区域内的标记（位于滑块处或其后，或范围模式中两个滑块之间）使用填充颜色。"
     },
     {
-      name: 'minStepsBetweenThumbs',
-      type: 'number',
-      description: '范围模式下滑块之间的最小步数；防止滑块重叠。',
-      default: '0',
+      "name": "minStepsBetweenThumbs",
+      "type": "number",
+      "description": "范围模式中滑块之间的最小步数；防止滑块重叠。",
+      "default": "0"
     },
     {
-      name: 'isDisabled',
-      type: 'boolean',
-      description: '是否禁用滑块。',
-      default: 'false',
+      "name": "isDisabled",
+      "type": "boolean",
+      "description": "滑块是否禁用。",
+      "default": "false"
     },
     {
-      name: 'htmlName',
-      type: 'string',
-      description:
-        '用于表单提交的 HTML name 属性。渲染携带当前值的隐藏输入（范围模式下为两个条目）。',
+      "name": "htmlName",
+      "type": "string",
+      "description": "用于表单提交的 HTML name 属性。渲染携带当前值的隐藏输入框（范围模式为两个条目）。"
     },
     {
-      name: 'disabledMessage',
-      type: 'string',
-      description:
-        'Explains why the slider is disabled. With isDisabled, shows a tooltip on hover/keyboard focus and keeps the thumb focusable via aria-disabled (value changes stay blocked). Use this instead of wrapping a disabled Slider in Tooltip. Disabled controls swallow the hover events an external Tooltip needs.',
+      "name": "disabledMessage",
+      "type": "string",
+      "description": "解释滑块为何被禁用。与 isDisabled 搭配时，在悬停/键盘聚焦时显示工具提示，并通过 aria-disabled 保持滑块可聚焦（值更改仍被阻止）。请使用此属性，而不是用 Tooltip 包裹禁用的 Slider。禁用控件会吞掉外部 Tooltip 所需的悬停事件。"
     },
     {
-      name: 'isOptional',
-      type: 'boolean',
-      description: '字段是否为可选。',
-      default: 'false',
+      "name": "isOptional",
+      "type": "boolean",
+      "description": "字段是否可选。",
+      "default": "false"
     },
     {
-      name: 'isRequired',
-      type: 'boolean',
-      description: '字段是否为必填。',
-      default: 'false',
+      "name": "isRequired",
+      "type": "boolean",
+      "description": "字段是否必填。",
+      "default": "false"
     },
     {
-      name: 'isLabelHidden',
-      type: 'boolean',
-      description: '是否在视觉上隐藏标签。',
-      default: 'false',
+      "name": "isLabelHidden",
+      "type": "boolean",
+      "description": "是否在视觉上隐藏标签。",
+      "default": "false"
     },
     {
-      name: 'description',
-      type: 'string',
-      description: '标签下方渲染的描述文本。',
+      "name": "description",
+      "type": "string",
+      "description": "在标签下方渲染的描述文本。"
     },
     {
-      name: 'status',
-      type: "{type: 'warning' | 'error' | 'success', message?: string}",
-      description: '验证反馈的状态指示器对象（`{ type, message }`）。',
+      "name": "status",
+      "type": "{type: 'warning' | 'error' | 'success', message?: string}",
+      "description": "用于校验反馈的状态指示器对象（`{ type, message }`）。"
     },
     {
-      name: 'labelTooltip',
-      type: 'string',
-      description: '标签旁信息图标的提示文本。',
+      "name": "labelTooltip",
+      "type": "string",
+      "description": "显示在标签旁信息图标上的工具提示文本。"
     },
     {
-      name: 'containerXstyle',
-      type: 'StyleXStyles',
-      description:
-        '字段容器（标签、控件和状态整体）的 StyleX 样式。在 InputGroup 内（请改为设置 InputGroup 的样式）或 `horizontal-labels` FormLayout 中无效。不接受根级 `xstyle`、`className` 和 `style`。',
+      "name": "containerXstyle",
+      "type": "StyleXStyles",
+      "description": "字段容器（标签、控件和状态一起）的 StyleX 样式。在 InputGroup 内无效（请改为设置 InputGroup 样式），在 `horizontal-labels` FormLayout 中也无效。不接受根级 `xstyle`、`className` 和 `style`。"
     },
     {
-      name: 'containerClassName',
-      type: 'string',
-      description: '字段容器的类名，作用目标同 `containerXstyle`。',
+      "name": "containerClassName",
+      "type": "string",
+      "description": "字段容器的类名。定位方式与 `containerXstyle` 相同。"
     },
     {
-      name: 'containerStyle',
-      type: 'CSSProperties',
-      description: '字段容器的内联样式，作用目标同 `containerXstyle`。',
+      "name": "containerStyle",
+      "type": "CSSProperties",
+      "description": "字段容器的内联样式。定位方式与 `containerXstyle` 相同。"
     },
     {
-      name: 'controlXstyle',
-      type: 'StyleXStyles',
-      description:
-        '可视控件框的 StyleX 样式：绘制边框和背景并包含图标与尾部控件的元素，而非原生输入元素。',
+      "name": "controlXstyle",
+      "type": "StyleXStyles",
+      "description": "可视控件框的 StyleX 样式：绘制边框和背景并容纳图标和结束控件的元素。绝不是原生输入框。"
     },
     {
-      name: 'controlClassName',
-      type: 'string',
-      description: '可视控件框的类名。',
+      "name": "controlClassName",
+      "type": "string",
+      "description": "可视控件框的类名。"
     },
     {
-      name: 'controlStyle',
-      type: 'CSSProperties',
-      description: '可视控件框的内联样式。',
-    },
+      "name": "controlStyle",
+      "type": "CSSProperties",
+      "description": "可视控件框的内联样式。"
+    }
   ],
-  theming: {
-    targets: [
+  "theming": {
+    "targets": [
       {
-        className: 'astryx-slider',
-        visualProps: ['orientation'],
-        states: ['disabled'],
+        "className": "astryx-slider",
+        "visualProps": [
+          "orientation"
+        ],
+        "states": [
+          "disabled"
+        ]
       },
       {
-        className: 'astryx-slider-control',
-        visualProps: ['orientation'],
-        states: ['disabled'],
+        "className": "astryx-slider-control",
+        "visualProps": [
+          "orientation"
+        ],
+        "states": [
+          "disabled"
+        ]
       },
-      {className: 'astryx-slider-track', visualProps: ['orientation']},
       {
-        className: 'astryx-slider-thumb',
-        visualProps: ['orientation'],
-        states: ['disabled'],
+        "className": "astryx-slider-track",
+        "visualProps": [
+          "orientation"
+        ]
       },
-    ],
+      {
+        "className": "astryx-slider-thumb",
+        "visualProps": [
+          "orientation"
+        ],
+        "states": [
+          "disabled"
+        ]
+      }
+    ]
   },
-  usage: {
-    anatomy,
-    description:
-      'A draggable control for selecting a numeric value or range within defined bounds. Supports single value and range selection, tick marks, custom value formatting, and vertical orientation. Use it when users need to explore a continuous range, such as volume, price, or percentage. Under a finger, on any touch device, it tracks as UISlider does: only the thumb takes a drag, through a target larger than it, the value follows the finger’s travel rather than jumping to it, a release coasts on before `onChangeEnd`, a swipe from the track scrolls the page, and a tap on the track or a mark sets the value when the finger lifts (the thumb springs there). A mouse drag on a thumb tracks the same way, past the same 10 px in any direction, with no lift or coast; a mouse press on the track moves the thumb there, and only a primary click presses. A pen drags as a finger does, claiming only along the track, and its drag ends at the release with no coast. A wheel or a trackpad scroll over the slider goes to whatever scrolls under it.',
-    bestPractices: [
+  "usage": {
+    "anatomy": [
       {
-        guidance: true,
-        description:
-          'Always provide a label, even if visually hidden, so the slider is accessible to screen readers.',
+        "name": "标签",
+        "required": true,
+        "description": "标识滑块所控制数值设置的文本。"
       },
       {
-        guidance: true,
-        description:
-          'Format values with meaningful units like "$50" or "75%" instead of raw numbers.',
+        "name": "描述",
+        "required": false,
+        "description": "标签和滑块控件之间的辅助文本。"
       },
       {
-        guidance: false,
-        description:
-          'Use for precise numeric entry; pair with a text input or use NumberInput instead.',
+        "name": "滑块",
+        "required": true,
+        "description": "包含轨道、一个或多个滑块以及可选文本值的控件行。"
       },
       {
-        guidance: false,
-        description:
-          'Set a step size so large that only a few positions are possible; use SegmentedControl or radio buttons instead.',
+        "name": "交互控件",
+        "required": true,
+        "description": "包含轨道、填充、标记和滑块的指针与键盘交互表面。"
       },
       {
-        guidance: false,
-        description:
-          'Wrap a disabled slider in Tooltip to explain why it is disabled; disabled controls swallow the hover events the wrapper needs. Use the disabledMessage prop instead.',
+        "name": "轨道",
+        "required": true,
+        "description": "表示可用数值范围的背景轨道。"
       },
+      {
+        "name": "填充范围",
+        "required": true,
+        "description": "从最小值到单值、或两个范围值之间的强调段。"
+      },
+      {
+        "name": "刻度标记",
+        "required": false,
+        "description": "通过 marks 集合提供的位置标记。"
+      },
+      {
+        "name": "标记标签",
+        "required": false,
+        "description": "显示在刻度标记旁的可选文本。"
+      },
+      {
+        "name": "滑块手柄",
+        "required": true,
+        "description": "可拖动的值指示器；范围模式会渲染最小值和最大值滑块。"
+      },
+      {
+        "name": "值显示",
+        "required": false,
+        "description": "当 valueDisplay 为 text 时，显示在滑块旁的格式化当前值。"
+      },
+      {
+        "name": "值工具提示",
+        "required": false,
+        "description": "当 valueDisplay 为 tooltip 时，在工具提示中显示的格式化当前值。"
+      },
+      {
+        "name": "状态消息",
+        "required": false,
+        "description": "滑块下方的错误、警告或成功消息。"
+      }
     ],
+    "description": "用于在限定范围内选择数值或范围的可拖动控件。支持单值和范围选择、刻度标记、自定义值格式以及垂直方向。当用户需要探索连续范围（如音量、价格或百分比）时使用。在任何触摸设备上用手指操作时，它的行为与 UISlider 一致：只有滑块可拖动，通过比它更大的目标区域；值跟随手指移动而不是跳到手指位置；释放后会继续滑行，然后触发 `onChangeEnd`；从轨道上滑动会滚动页面；轻触轨道或标记会在手指抬起时设置值（滑块弹到该处）。用鼠标拖动滑块时跟踪方式相同，同样超过任意方向的 10 px，但没有抬起或滑行；在轨道上按下鼠标会将滑块移到该处，且只有主键点击才会按下。笔的拖动与手指相同，仅沿轨道声明，拖动在释放时结束，没有滑行。在滑块上滚动滚轮或触控板会传递给其下方可滚动的任何内容。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "始终提供标签，即使视觉上隐藏，以便滑块对屏幕阅读器可访问。"
+      },
+      {
+        "guidance": true,
+        "description": "使用有意义的单位（如 \"$50\" 或 \"75%\"）格式化值，而不是原始数字。"
+      },
+      {
+        "guidance": false,
+        "description": "将其用于精确数值输入；请搭配文本输入框或改用 NumberInput。"
+      },
+      {
+        "guidance": false,
+        "description": "将步长设置得过大以致只有少数位置可选；请改用 SegmentedControl 或单选按钮。"
+      },
+      {
+        "guidance": false,
+        "description": "用 Tooltip 包裹禁用的滑块来解释其禁用原因；禁用控件会吞掉包装器所需的悬停事件。请改用 disabledMessage 属性。"
+      }
+    ],
+    "accessibility": [
+      {
+        "name": "滑块手柄",
+        "category": "Color contrast",
+        "criterion": "1.4.11 Non-text Contrast",
+        "requirement": "3:1",
+        "states": [
+          "静止",
+          "悬停",
+          "指针按下"
+        ],
+        "description": "滑块与轨道及其背后表面的对比度必须至少为 3:1。指针按下指整个拖动过程：测量时应用按下叠加层后的滑块。"
+      }
+    ]
   },
+  "propDescriptions": {
+    "label": "标签文本（始终为无障碍而渲染）。",
+    "value": "当前值：单滑块模式为 `number`，范围模式为 `[number, number]`。",
+    "onChange": "拖动过程中值变化时触发的回调。",
+    "onChangeEnd": "拖动结束时触发的回调。",
+    "min": "最小值。",
+    "max": "最大值。",
+    "step": "步进增量。",
+    "orientation": "滑块的方向。",
+    "formatValue": "用于显示和 `aria-valuetext` 的自定义值格式化函数。",
+    "valueDisplay": "当前值的显示方式。",
+    "marks": "指定位置上的刻度标记，可带标签。未填充的标记使用轨道颜色；填充区域内的标记（位于滑块处或其后，或范围模式中两个滑块之间）使用填充颜色。",
+    "minStepsBetweenThumbs": "范围模式中滑块之间的最小步数；防止滑块重叠。",
+    "isDisabled": "滑块是否禁用。",
+    "htmlName": "用于表单提交的 HTML name 属性。渲染携带当前值的隐藏输入框（范围模式为两个条目）。",
+    "disabledMessage": "解释滑块为何被禁用。与 isDisabled 搭配时，在悬停/键盘聚焦时显示工具提示，并通过 aria-disabled 保持滑块可聚焦（值更改仍被阻止）。请使用此属性，而不是用 Tooltip 包裹禁用的 Slider。禁用控件会吞掉外部 Tooltip 所需的悬停事件。",
+    "isOptional": "字段是否可选。",
+    "isRequired": "字段是否必填。",
+    "isLabelHidden": "是否在视觉上隐藏标签。",
+    "description": "在标签下方渲染的描述文本。",
+    "status": "用于校验反馈的状态指示器对象（`{ type, message }`）。",
+    "labelTooltip": "显示在标签旁信息图标上的工具提示文本。",
+    "width": "字段宽度（数字 = 像素，字符串按原样使用，例如 \"100%\"）。设置整个字段（标签、控件和状态）的尺寸，使它们保持对齐。",
+    "containerXstyle": "字段容器（标签、控件和状态一起）的 StyleX 样式。在 InputGroup 内无效（请改为设置 InputGroup 样式），在 `horizontal-labels` FormLayout 中也无效。不接受根级 `xstyle`、`className` 和 `style`。",
+    "containerClassName": "字段容器的类名。定位方式与 `containerXstyle` 相同。",
+    "containerStyle": "字段容器的内联样式。定位方式与 `containerXstyle` 相同。",
+    "controlXstyle": "可视控件框的 StyleX 样式：绘制边框和背景并容纳图标和结束控件的元素。绝不是原生输入框。",
+    "controlClassName": "可视控件框的类名。",
+    "controlStyle": "可视控件框的内联样式。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

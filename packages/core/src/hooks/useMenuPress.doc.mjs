@@ -213,3 +213,51 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useMenuPress",
+  "usage": {
+    "description": "macOS 和 iOS 菜单的按压模型，适用于任何指针：RELEASE 时指针下的行才是执行操作的行；按住时高亮跟随指针；鼠标按下即打开菜单并可以直接拖入其中；手指或触控笔在仍按下时打开它——若未指定延迟则按下即打开；否则移动 10 px 后才选择行，或按住达到延迟后选择。指针在文档级按 pointerId 跟踪，因此从落点滑出的手指仍会被跟随；触摸结束时浏览器报告的点击（瞄准触摸开始处的行）会被吞掉，以免重复执行。DropdownMenu、ContextMenu、DropdownMenuSubMenu、Selector 和菜单底部表单已经挂载它；仅当构建自己的类菜单表面时才需要直接使用。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "只传入匹配 ENABLED 行的选择器，这样指针下的禁用行或分隔线会清除高亮，而不是点亮它。"
+      },
+      {
+        "guidance": true,
+        "description": "让默认高亮在菜单中移动焦点；仅当 listbox 必须将焦点保留在其 combobox 上并通过 aria-activedescendant 高亮时，才提供 onHighlight。"
+      },
+      {
+        "guidance": true,
+        "description": "在菜单根元素上声明 touch-action：当行能够放下时使用 pinch-zoom，当它滚动时使用 pan-y pinch-zoom，这样由浏览器（而不是 Hook）决定手指何时在滚动，双指捏合仍能缩放页面。"
+      },
+      {
+        "guidance": false,
+        "description": "不要同时通过行自身的 pointerdown 或 pointerup 处理函数对该行执行操作；Hook 已经在释放时激活行，第二条路径会导致重复执行。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将 detail 为 0 的行点击视为键盘激活；Hook 派发其指针激活时 detail 也为 0。请使用 isMenuPressActivation() 区分两者。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "配置对象。",
+    "options.menuRef": "菜单或 listbox 根元素——按压从中选择行的表面。",
+    "options.itemSelector": "匹配 ENABLED 行的选择器。指针位于菜单内其他任何位置（分隔线、标题、禁用行）时不会高亮任何内容。",
+    "options.triggerRef": "打开菜单的控件，当按压可能从该处开始时使用。",
+    "options.onTriggerPress": "鼠标按下了触发器，或手指/触控笔打开了它：若未指定 longPressDelayMs 则按下即打开，否则按住该延迟后打开。在按住的指针下方打开菜单，并返回是否已打开。如果按压反而关闭了已打开的菜单，则返回 false。",
+    "options.onHighlight": "移动高亮；null 会清除高亮。默认使用 preventScroll 将 DOM 焦点移到该行，没有行时移到菜单根元素；指针按压后该焦点不匹配 :focus-visible。通过 aria-activedescendant 高亮的选取器应提供自己的实现。",
+    "options.onActivate": "对释放位置下的行执行操作。默认在携带释放按钮和修饰键的行上派发点击。",
+    "options.onDismiss": "关闭菜单：鼠标在菜单外释放且没有执行任何操作时调用。手指在外部释放会让菜单保持打开，因此此时绝不会调用。",
+    "options.getScroller": "被跟踪的指针停在其顶部或底部边缘附近时要滚动的元素。默认在菜单根元素溢出时使用该根元素。",
+    "options.longPressDelayMs": "手指必须停在触发器上多久，菜单才会在其下方打开。未设置时，所有设备上手指按下即打开菜单，或在滚动视图内等待 150 ms 后打开。设置后，各处都使用该等待时间。更早释放的轻点会通过触发器的 click 打开菜单。",
+    "options.isEnabled": "该模型是否生效。"
+  },
+  "returnDescriptions": {
+    "menuProps": "展开到菜单根元素上。声明处理从其内部开始的按压，并将根元素标记为承载按压模型。",
+    "triggerProps": "展开到触发器上：鼠标按下会立即打开菜单。手指或触控笔在仍按下时打开它：若未指定 longPressDelayMs 则按下即打开（在滚动视图内，等待 150 ms 内容触摸延迟且未滚动后打开），否则按住该延迟后打开。",
+    "isTriggerClickFromPress": "到达触发器的点击是否属于刚刚按压它的手势。该按压已经打开或关闭了菜单，因此该点击既不能切换也不能重新打开。",
+    "cancel": "结束进行中的手势且不执行任何操作，用于菜单在手势下关闭时。"
+  }
+};

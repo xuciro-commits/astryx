@@ -59,17 +59,17 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'SegmentedControlItem',
-  isHiddenFromOverview: true,
-  displayName: 'Segmented Control Item',
-  description: '单个分段项，在分段控件中渲染为单选按钮。',
-  propDescriptions: {
-    value: '该分段的唯一值，与父组件的 value 匹配。',
-    label: '该分段的无障碍标签。除非 isLabelHidden 为 true，否则渲染为可见文本。',
-    isLabelHidden: '是否在视觉上隐藏标签。为 true 时仅显示图标，label 用作 aria-label。',
-    icon: '显示在标签前的图标元素。',
-    isDisabled: '是否禁用该单个项。',
-  },
+  "name": "SegmentedControlItem",
+  "isHiddenFromOverview": true,
+  "displayName": "Segmented Control Item",
+  "description": "单个分段项，在分段控件内渲染为单选按钮。",
+  "propDescriptions": {
+    "value": "此分段的唯一值，会与父组件的值进行匹配。",
+    "label": "此分段的无障碍标签。除非 isLabelHidden 为 true，否则渲染为可见文本。",
+    "isLabelHidden": "是否在视觉上隐藏标签。为 true 时只显示图标，并将 label 用作 aria-label。",
+    "icon": "显示在标签之前的图标元素。",
+    "isDisabled": "是否禁用此单项。被禁用的选中项仍保留控件的 Tab 停靠点。"
+  }
 };
 
 export const docsDense = {

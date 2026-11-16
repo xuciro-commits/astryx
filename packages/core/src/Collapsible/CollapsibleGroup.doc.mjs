@@ -96,56 +96,71 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'CollapsibleGroup',
-  isHiddenFromOverview: true,
-  displayName: 'Collapsible Group',
-  description: '协调多个 Collapsible 实例，使同一时间只有一个（single 模式）或任意数量（multiple 模式）可以展开。除非启用 dividers，否则不渲染包裹 DOM 元素。',
-  props: [
+  "name": "CollapsibleGroup",
+  "isHiddenFromOverview": true,
+  "displayName": "Collapsible Group",
+  "description": "协调多个 `Collapsible` 实例，使同一时间只能打开一个（单例模式）或任意数量（多例模式）。除非启用分隔线，否则不渲染包装 DOM 元素。",
+  "props": [
     {
-      name: 'type',
-      type: "'single' | 'multiple'",
-      description: '是否允许同时展开一个或多个项目。',
-      default: "'single'",
+      "name": "type",
+      "type": "'single' | 'multiple'",
+      "description": "是否可以同时打开一个或多个项目。",
+      "default": "'single'"
     },
     {
-      name: 'defaultValue',
-      type: 'string | string[]',
-      description: '非受控模式下默认展开的项目。single 模式使用字符串，multiple 模式使用数组。',
+      "name": "defaultValue",
+      "type": "string | string[]",
+      "description": "非受控用法下的默认打开项。单例模式使用字符串，多例模式使用数组。"
     },
     {
-      name: 'value',
-      type: 'string | string[]',
-      description: '受控展开的项目。',
+      "name": "value",
+      "type": "string | string[]",
+      "description": "受控的打开项。"
     },
     {
-      name: 'onChange',
-      type: '(value: string | string[]) => void',
-      description: '展开项目集合变更时调用的回调。',
+      "name": "onChange",
+      "type": "(value: string | string[]) => void",
+      "description": "打开项集合发生变化时调用的回调。"
     },
     {
-      name: 'hasDividers',
-      type: 'boolean',
-      description: "是否在组项目之间绘制细线分隔线。启用后组会渲染一个包裹 div，且项目默认使用 'balanced' 密度。适合搭配裸 Collapsible 子项使用；用 Card 包裹的项目自带视觉分隔。",
-      default: 'false',
+      "name": "hasDividers",
+      "type": "boolean",
+      "description": "是否在分组的项目之间绘制细线分隔线。设置后，分组会渲染一个包装 `div`，项目默认使用 `'balanced'` 密度。请搭配未包裹的 `Collapsible` 子元素；用 `Card` 包裹的项目自带分隔。",
+      "default": "false"
     },
     {
-      name: 'density',
-      type: "'compact' | 'balanced' | 'spacious'",
-      description: "控制组内项目触发器和内容块内边距的行密度。显示分隔线时默认为 'balanced'；否则项目保持默认的无内边距外观。",
+      "name": "density",
+      "type": "'compact' | 'balanced' | 'spacious'",
+      "description": "控制分组内项目触发器与内容块内边距的行密度。显示分隔线时默认为 `'balanced'`；否则项目保持默认的无内边距外观。"
     },
     {
-      name: 'chevronPosition',
-      type: "'start' | 'end'",
-      description: "组内直接 Collapsible 项目的逻辑箭头位置。`end` 是默认的尾随指示器；`start` 是前置展开箭头，折叠时指向内容（RTL 下镜像），展开时向下。单个 Collapsible 仍可覆盖此设置。",
-      default: "'end'",
+      "name": "chevronPosition",
+      "type": "'start' | 'end'",
+      "description": "分组直属 `Collapsible` 项目共享的逻辑位置。`end` 是默认的尾部指示器；`start` 是前导展开箭头，折叠时朝内（RTL 下镜像），展开时朝下。单个 `Collapsible` 仍可覆盖此设置。",
+      "default": "'end'"
     },
     {
-      name: 'children',
-      type: 'ReactNode',
-      description: '需要协调的 Collapsible 实例。',
-      required: true,
-    },
+      "name": "children",
+      "type": "ReactNode",
+      "description": "要协调的 `Collapsible` 实例。",
+      "required": true
+    }
   ],
+  "propDescriptions": {
+    "type": "是否可以同时打开一个或多个项目。",
+    "defaultValue": "非受控用法下的默认打开项。单例模式使用字符串，多例模式使用数组。",
+    "value": "受控的打开项。",
+    "onChange": "打开项集合发生变化时调用的回调。",
+    "hasDividers": "是否在分组的项目之间绘制细线分隔线。设置后，分组会渲染一个包装 `div`，项目默认使用 `'balanced'` 密度。请搭配未包裹的 `Collapsible` 子元素；用 `Card` 包裹的项目自带分隔。",
+    "density": "控制分组内项目触发器与内容块内边距的行密度。显示分隔线时默认为 `'balanced'`；否则项目保持默认的无内边距外观。",
+    "chevronPosition": "分组直属 `Collapsible` 项目共享的逻辑位置。`end` 是默认的尾部指示器；`start` 是前导展开箭头，折叠时朝内（RTL 下镜像），展开时朝下。单个 `Collapsible` 仍可覆盖此设置。",
+    "children": "要协调的 `Collapsible` 实例。",
+    "ref": "当 `hasDividers` 渲染包装元素时，转发给该包装元素的 ref。",
+    "xstyle": "当 `hasDividers` 渲染包装元素时，用于该包装元素的 StyleX 样式。必须是 `stylex.create()` 的值。",
+    "className": "当 `hasDividers` 渲染包装元素时，用于该包装元素的 CSS 类名。样式优先使用 `xstyle`。",
+    "style": "当 `hasDividers` 渲染包装元素时，用于该包装元素的内联样式。优先使用 `xstyle` 以获得经过 StyleX 优化的样式。",
+    "data-testid": "当 `hasDividers` 渲染包装元素时，转发给该包装元素的测试选择器。"
+  }
 };
 
 export const docsDense = {

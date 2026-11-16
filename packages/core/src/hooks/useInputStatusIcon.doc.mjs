@@ -140,3 +140,35 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useInputStatusIcon",
+  "usage": {
+    "description": "为带边框的输入框构建字段内状态提示及其可访问性接线，使该系列中的每个输入框在给定状态下行为一致。attached 变体渲染普通字形，将文本留给消息框；detached 变体在此不渲染任何内容，因为消息框已自带图标；tooltip 变体渲染真正的可聚焦按钮，其工具提示可通过键盘、指针、触摸和辅助技术访问。在构建带边框的输入框时使用它，不要用于字段级消息。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "在输入容器内渲染 statusIcon，并将 describedBy 合并到控件的 aria-describedby 列表中。"
+      },
+      {
+        "guidance": true,
+        "description": "让它决定何时不渲染任何内容；直接传入 isInGroup 和变体，而不是在调用处分支。"
+      },
+      {
+        "guidance": false,
+        "description": "仅用它通过图标传达状态；tooltip 变体是唯一携带消息的变体，其他变体仍需要消息框。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "配置对象。",
+    "options.status": "输入框的状态（类型加消息），没有状态时为 undefined。",
+    "options.statusVariant": "状态相对于输入框的呈现方式。",
+    "options.isInGroup": "输入框是否位于 InputGroup 内，InputGroup 会自行负责状态渲染。",
+    "options.size": "字段内图标的尺寸。"
+  },
+  "returnDescriptions": {
+    "statusIcon": "在输入容器内渲染的提示：普通图标，或带工具提示的可聚焦信息提示按钮。不应渲染图标时为 null。",
+    "describedBy": "要添加到输入框 aria-describedby 的 ID，仅在工具提示元素存在于 DOM 中时提供，因此绝不会出现悬空引用。"
+  }
+};

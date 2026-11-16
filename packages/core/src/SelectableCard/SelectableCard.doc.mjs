@@ -86,3 +86,59 @@ export const docsDense = {
     maxWidth: 'max card width',
   },
 };
+
+export const docsZh = {
+  "name": "SelectableCard",
+  "displayName": "Selectable Card",
+  "usage": {
+    "description": "在选中和未选中状态之间切换、带强调边框的卡片。导航请使用 ClickableCard。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "用于多选选项：筛选标签、功能附加项或可同时开启多个的选项网格。"
+      },
+      {
+        "guidance": true,
+        "description": "用于多选组；在 Set 中跟踪选中的 ID。"
+      },
+      {
+        "guidance": true,
+        "description": "聚焦时，使用 Space 或 Enter 切换选择。"
+      },
+      {
+        "guidance": false,
+        "description": "用于导航；请改用 ClickableCard。"
+      },
+      {
+        "guidance": false,
+        "description": "用于单选组：每张卡片都是复选框，因此辅助技术会将其播报为多选组，每张卡片各有一个 Tab 停靠点。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "容器",
+        "required": true,
+        "description": "交互式 div，选中时显示强调边框。"
+      },
+      {
+        "name": "内容",
+        "required": true,
+        "description": "在卡片内渲染的子元素。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "label": "无障碍标签。",
+    "isSelected": "受控选择状态。",
+    "onChange": "切换时调用。",
+    "isDisabled": "禁用卡片。",
+    "children": "卡片内容。",
+    "padding": "内部内边距。",
+    "variant": "背景颜色变体。",
+    "elevation": "静止阴影深度。选中环会叠加在上方，因此选中的卡片会保留其阴影。",
+    "width": "卡片宽度。",
+    "height": "卡片高度。",
+    "maxWidth": "卡片最大宽度。",
+    "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 值，而不是像 style={{}} 这样的内联样式对象。"
+  }
+};

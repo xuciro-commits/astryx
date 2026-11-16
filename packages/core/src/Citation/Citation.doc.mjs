@@ -127,3 +127,51 @@ export const docsDense = {
     variant: 'display style: label chip with source title or compact numbered badge.',
   },
 };
+
+export const docsZh = {
+  "name": "Citation",
+  "usage": {
+    "description": "Citation 显示对外部来源的行内引用。用于在 AI 生成的回复、文章或任何需要标明出处和来源链接的地方标注信息。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "当来源标题能为读者提供有意义的上下文时，使用标签变体。"
+      },
+      {
+        "guidance": true,
+        "description": "在正文中进行紧凑的行内引用（类似脚注）时，使用数字变体。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在同一段落中混用标签和数字变体。为保持视觉一致性，每个上下文只选择一种样式。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "容器",
+        "required": true,
+        "description": "根包装器。有效的来源 URL 会渲染为锚点；缺失或被拒绝的 URL 会渲染为不可交互的 span。"
+      },
+      {
+        "name": "图标",
+        "required": false,
+        "description": "显示在标签文本之前的可选来源图标。接受 favicon/logo 图片 URL（通过 source.src）或 React 节点，例如 Astryx <Icon>。仅在标签变体中可用。"
+      },
+      {
+        "name": "标签文本",
+        "required": false,
+        "description": "来源标题，超过最大宽度时以省略号截断。在标签变体中显示。"
+      },
+      {
+        "name": "数字",
+        "required": false,
+        "description": "以上标徽章形式显示的引用索引。在数字变体中显示。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "source": "引用来源对象，包含 title、url、可选的 image src 以及可选的 icon 节点。url 遵循 Link `href` 属性上描述的共享导航规则；被拒绝的目标会让引用保持可见但无法导航。图片 src 使用独立的资源处理。",
+    "number": "此引用的显示索引。",
+    "variant": "显示样式：带来源标题的标签，或紧凑的数字徽章。"
+  }
+};

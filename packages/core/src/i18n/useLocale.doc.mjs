@@ -68,3 +68,24 @@ export const docsDense = {
     locale: "active provider BCP 47 locale; 'en' without a provider.",
   },
 };
+
+export const docsZh = {
+  "name": "useLocale",
+  "usage": {
+    "description": "读取权威的 Astryx 区域设置。使用它将提供程序的区域设置传入纯格式化辅助函数和同级包 API；不要从 navigator.language 或硬编码字面量派生第二个区域设置。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将返回的区域设置传给需要显式区域设置的纯 Astryx 辅助函数或包 API。"
+      },
+      {
+        "guidance": false,
+        "description": "不要使用 navigator.language 或硬编码的显示区域设置作为回退；InternationalizationProvider 才是区域设置来源。"
+      }
+    ]
+  },
+  "paramDescriptions": {},
+  "returnDescriptions": {
+    "locale": "活动的 InternationalizationProvider BCP 47 区域设置。没有提供程序时回退到 'en'。"
+  }
+};

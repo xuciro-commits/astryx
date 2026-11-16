@@ -1,97 +1,62 @@
-# ChartV2 Stage 1 — Design & Correctness Research
+# ChartV2 阶段 1 — 设计与正确性研究
 
-Deep design work for the "make it correct + a genuinely good API" stage. This is the
-thinking behind Stage 1 of the plan (the package-extraction is a separate, mechanical
-stage). Goal: decide what a great, hard-to-regret chart API looks like before we lock
-it by publishing. Companion to `CHARTV2_PHASE1_PLAN.md` (findings/evidence) and the
-plan panel (sequencing).
+为“让它正确 + 真正好用的 API”阶段所做的深入设计工作。这是计划中 Stage 1 背后的思考（包抽取是另一个机械化的阶段）。目标：在通过发布把它锁定之前，先确定一个优秀、难以后悔的图表 API 应该是什么样。是 `CHARTV2_PHASE1_PLAN.md`（问题/证据）与计划面板（顺序安排）的配套文档。
 
-Status: research + proposals. Owner decisions needed in section 8.
+状态：研究 + 提案。第 8 节需要负责人决策。
 
 ---
 
-## 0. TL;DR
+## 0. 概要（TL;DR）
 
-- The core architecture — **marks are factory functions returning config; the chart
-  owns one x/y scale; marks resolve() then render()** — is the modern, correct choice.
-  It matches Observable Plot (the best-in-class "marks + shared scale" design) and the
-  series-array model of MUI X / Plotly / Highcharts. We should keep it.
-- The **API surface is inconsistent** in ~25 concrete ways (color has 5 shapes,
-  `size` vs `radius`, `upper/lower` vs `high/low`, positional vs options-only, label
-  only on 4 marks, GL marks can't take theme colors, etc.). This is where most of the
-  design effort goes.
-- The **single highest-leverage idea** is to adopt a **channel/encoding model** (a
-  visual property can be a constant, a field name, or an accessor) uniformly across
-  color/size/opacity. It collapses most inconsistencies into one coherent concept and
-  fixes the accessor-color + legend problems as a side effect.
-- The **color tokens are good** (10 categorical + 9 sequential ramps + neutral) and v1
-  already has a strong palette API to adopt. Real gaps: auto-assignment, GL can't use
-  tokens, categorical tokens are identical in light/dark, CVD-safety unverified.
-- The biggest **correctness** gaps are scale-related: no time scale, no log scale,
-  degenerate domains (single point / zero range / empty), and no honest baseline/clip
-  (already in the plan). Plus a long failure-mode matrix (section 5).
+- 核心架构——**标记是返回配置的工厂函数；图表拥有唯一的 x/y 尺度；标记先 resolve() 再 render()**——是现代且正确的选择。它与 Observable Plot（同类最佳的“标记 + 共享尺度”设计）以及 MUI X / Plotly / Highcharts 的 series 数组模型一致。我们应当保留它。
+- **API 表面在约 25 个具体方面不一致**（颜色有 5 种形态，`size` 与 `radius`，`upper/lower` 与 `high/low`，位置参数与仅选项，label 只在 4 个标记上有，GL 标记无法使用主题颜色，等等）。设计工作的主要精力就在这里。
+- **杠杆率最高的单一想法**是采用**通道/编码模型**（一个视觉属性可以是常量、字段名或 accessor），并统一应用于 color/size/opacity。它把大多数不一致收拢为一个连贯概念，并顺带修复 accessor 颜色 + 图例问题。
+- **颜色 token 很好**（10 个分类色 + 9 条连续色带 + 中性色），v1 已有强大的配色盘 API 可采用。真正的缺口：自动分配、GL 无法使用 token、分类 token 在浅色/深色下完全相同、色觉缺陷（CVD）安全性未验证。
+- 最大的**正确性**缺口与尺度有关：没有时间尺度、没有对数尺度、退化值域（单点 / 零范围 / 空），以及没有可靠的基线/裁剪（已在计划中）。此外还有一份很长的失败模式矩阵（第 5 节）。
 
 ---
 
-## 1. Where ChartV2 sits in the charting-library landscape
+## 1. ChartV2 在图表库版图中的位置
 
-There are four broad API families. Understanding them tells us which lessons to borrow.
+有四大 API 家族。理解它们能告诉我们该借鉴哪些经验。
 
-- **Compositional / JSX children** — Recharts, Victory, visx.
-  `<LineChart data><Line dataKey="x"/><XAxis/></LineChart>`. Discoverable and
-  React-idiomatic, but scales are hard to coordinate, perf suffers with many nodes,
-  and cross-mark consistency is manual. **This is exactly Chart v1's model** — and the
-  reason v2 exists.
-- **Per-chart-type config monolith** — Nivo, Chart.js, (partly) Tremor.
-  `<ResponsiveLine data={...} big-prop-bag/>`. Fast for the common case; poor at mixing
-  mark types (bar + line + band on one chart) and at composition.
-- **Grammar of graphics / marks** — Observable Plot, Vega-Lite, AntV G2.
-  `Plot.plot({marks:[Plot.barY(data,{x,y,fill}), Plot.lineY(...)]})`. Marks are
-  functions/objects; the plot owns scales; every visual property is a **channel**.
-  Best-in-class for correctness and composition; slightly higher concept count.
-- **Series array config** — MUI X Charts, Plotly, Highcharts, ECharts.
-  `series={[{type:'bar', data...}, {type:'line', ...}]}`, axes configured separately,
-  multiple named axes for dual-scale. Pragmatic, very common in dashboards.
+- **组合式 / JSX children** —— Recharts、Victory、visx。
+  `<LineChart data><Line dataKey="x"/><XAxis/></LineChart>`。易于发现且符合 React 习惯，但尺度难以协调，节点多时性能受损，跨标记一致性靠手工。**这正是 Chart v1 的模型**——也是 v2 存在的原因。
+- **按图表类型的一体化配置** —— Nivo、Chart.js、Tremor（部分）。
+  `<ResponsiveLine data={...} big-prop-bag/>`。常见场景下很快；但混合标记类型（同一图表中的 bar + line + band）和组合能力较差。
+- **图形语法 / 标记** —— Observable Plot、Vega-Lite、AntV G2。
+  `Plot.plot({marks:[Plot.barY(data,{x,y,fill}), Plot.lineY(...)]})`。标记是函数/对象；绘图拥有尺度；每个视觉属性都是一个**通道**。在正确性和组合性上同类最佳；概念数量稍多。
+- **Series 数组配置** —— MUI X Charts、Plotly、Highcharts、ECharts。
+  `series={[{type:'bar', data...}, {type:'line', ...}]}`，坐标轴单独配置，双尺度使用多个具名轴。务实，在仪表盘中非常常见。
 
-**ChartV2 is a hybrid of the best two:** Observable-Plot-style marks (`bar(...)`,
-`line(...)` returning config) fed through a MUI-style `series={[...]}` array, with a
-single shared scale. That is a strong, defensible foundation. Verdict: **keep the
-architecture; fix the API surface and add the missing scale capabilities.**
+**ChartV2 是前两者优点的混合体：** Observable-Plot 风格的标记（`bar(...)`、`line(...)` 返回配置）通过 MUI 风格的 `series={[...]}` 数组传入，并使用单一共享尺度。这是一个强大、站得住脚的基础。结论：**保留架构；修复 API 表面并补齐缺失的尺度能力。**
 
-What the best-in-class do that we currently don't:
+同类最佳做到了而我们目前没做的：
 
-1. **Uniform channels** (Plot/Vega-Lite): color/size/opacity accept constant | field |
-   accessor everywhere. (We do this only for `bar`/`dot` color.)
-2. **First-class, configurable scales** (all of MUI/ECharts/Plot): x/y (and color/size)
-   scale _type_ and options are explicit and overridable. We infer linear-or-band from
-   data and expose nothing.
-3. **Time scale** (everyone). We have none — financial/streaming fake it with band
-   strings or raw numbers. (`ScaleTime` is imported in the axis types but the root
-   never builds one.)
-4. **Multiple / secondary axes** (MUI/ECharts/Highcharts/Plotly/Chart.js) for dual-unit
-   charts (price vs volume). We force one shared y — which is why the financial
-   composite looks broken.
-5. **CVD-safe default categorical palette** (Vega/Plot ship tableau10-like sets). Ours
-   is close in spirit; needs verification.
-6. (Out of scope, noting for completeness) **faceting / small multiples**.
+1. **统一通道**（Plot/Vega-Lite）：color/size/opacity 在所有地方都接受 constant | field | accessor。（我们只在 `bar`/`dot` 的 color 上这样做。）
+2. **一等公民、可配置的尺度**（MUI/ECharts/Plot 都有）：x/y（以及 color/size）尺度的_类型_和选项都是显式且可覆盖的。我们从数据推断 linear 或 band，且不暴露任何配置。
+3. **时间尺度**（所有家都有）。我们没有——金融/流式用 band 字符串或原始数字来凑。（`ScaleTime` 已在轴类型中导入，但根从未构建它。）
+4. **多轴 / 次坐标轴**（MUI/ECharts/Highcharts/Plotly/Chart.js）用于双单位图表（价格 vs 成交量）。我们强制共享一个 y——这就是金融复合图看起来坏掉的原因。
+5. **CVD 安全的默认分类配色盘**（Vega/Plot 提供类似 tableau10 的色集）。我们的在精神上接近；需要验证。
+6. （范围之外，为完整性提及）**分面 / 小多图（small multiples）**。
 
 ---
 
-## 2. The encoding / channel model (the biggest single API decision)
+## 2. 编码 / 通道模型（最大的单一 API 决策）
 
-### The problem, concretely
+### 具体问题
 
-From the API audit, "how do I set a visual property" is spelled many ways:
+从 API 审计看，“如何设置一个视觉属性”有多种写法：
 
-- color: `ColorAccessor` (bar/dot) | `string` (line/area/band/errorBar/referenceLine)
-  | required `string` (dotGL/dotGLInteractive/streamGL) | `string[]` ramp (heatmapGL)
-  | `upColor/downColor` pair (candlestick). Five shapes.
-- "size of a point": `radius` (dot, a radius) vs `size` (dotGL, a diameter).
-- opacity: `opacity` (most) vs `bandOpacity` (referenceLine) vs none (line/candlestick).
+- color：`ColorAccessor`（bar/dot）| `string`（line/area/band/errorBar/referenceLine）
+  | 必填 `string`（dotGL/dotGLInteractive/streamGL）| `string[]` 色带（heatmapGL）
+  | `upColor/downColor` 对（candlestick）。五种形态。
+- “点的大小”：`radius`（dot，半径）与 `size`（dotGL，直径）。
+- opacity：`opacity`（大多数）与 `bandOpacity`（referenceLine）以及没有（line/candlestick）。
 
-### The proposal: one `Channel<T>` concept
+### 提案：一个 `Channel<T>` 概念
 
-Borrow Observable Plot's channels. A visual property accepts one of three things:
+借鉴 Observable Plot 的通道。一个视觉属性接受以下三种之一：
 
 ```ts
 type Channel<T> =
@@ -100,297 +65,185 @@ type Channel<T> =
   | ((datum: Row, index: number) => T); // accessor
 ```
 
-Apply it uniformly to the properties that vary per-datum or per-series: `color`
-(fill/stroke), `size`/`r`, `opacity`. Then:
+统一应用于按数据点或按系列变化的属性：`color`（fill/stroke）、`size`/`r`、`opacity`。于是：
 
-- `bar('rev', {color: '#...'})` still works (constant).
-- `bar('rev', {color: d => d.up ? green : red})` works (accessor) — and shows in the
-  legend (section 3).
-- `dot('y', {color: {field: 'category'}})` maps a column through the color scale
-  (categorical) — the thing you actually want for scatter-by-category, which is
-  currently impossible.
+- `bar('rev', {color: '#...'})` 仍然可用（常量）。
+- `bar('rev', {color: d => d.up ? green : red})` 可用（accessor）——并会显示在图例中（第 3 节）。
+- `dot('y', {color: {field: 'category'}})` 通过颜色尺度（分类）映射一列——这正是按类别散点图真正需要的，目前无法做到。
 
-This single concept replaces C3/C8/C9/C14 from the audit and unlocks
-color-by-field (a common, currently-missing capability). It is additive: constants
-(today's usage) keep working.
+这一单一概念取代了审计中的 C3/C8/C9/C14，并解锁按字段着色（一种常见但目前缺失的能力）。它是增量的：常量用法（今天的用法）继续有效。
 
-Scope note: we do NOT need the full Vega-Lite type system (quantitative/ordinal/
-temporal). Channels + a small set of explicit scales (section 4) is the right amount
-of power for this library.
+范围说明：我们*不*需要完整的 Vega-Lite 类型系统（定量/序数/时间）。通道 + 一小组显式尺度（第 4 节）对这个库来说就是恰当的能力范围。
 
 ---
 
-## 3. Color system (deep dive)
+## 3. 颜色系统（深入探讨）
 
-### What we have (good foundation)
+### 我们已有的（良好基础）
 
-Tokens (`packages/core/src/theme/domainTokens/dataTokens.ts`):
+Token（`packages/core/src/theme/domainTokens/dataTokens.ts`）：
 
-- **10 categorical**: blue, orange, purple, green, pink, cyan, red, teal, brown,
-  indigo. (Tableau10-like — distinct hues for distinct series.)
-- **9 sequential ramps × 5 steps** (5=darkest → 1=lightest): blue, shamrock, orange,
-  pink, purple, red, teal, yellow, gray. For ordered/quantitative (heatmaps, choropleth).
-- **1 neutral** (labels, reference lines, empty states).
+- **10 个分类色**：blue、orange、purple、green、pink、cyan、red、teal、brown、indigo。（类似 Tableau10——不同系列用不同色相。）
+- **9 条连续色带 × 5 级**（5=最深 → 1=最浅）：blue、shamrock、orange、pink、purple、red、teal、yellow、gray。用于有序/定量场景（热力图、分级统计图）。
+- **1 个中性色**（标签、参考线、空状态）。
 
-v1's palette API (`getChartColors`/`useChartColors`) already exposes: `categorical(n)`,
-`sequential[hue](n)`, `diverging.positiveNegative/coldHot/custom`, `semantic`
-(positive/negative/warning/neutral), `structural` (axis/grid/tick/label), `alpha()`.
-This is a genuinely good API — **adopt it wholesale** into the charts package.
+v1 的配色盘 API（`getChartColors`/`useChartColors`）已经暴露：`categorical(n)`、`sequential[hue](n)`、`diverging.positiveNegative/coldHot/custom`、`semantic`（positive/negative/warning/neutral）、`structural`（axis/grid/tick/label）、`alpha()`。这确实是一个好 API——**整体采用**到 charts 包中。
 
-### The problems to fix
+### 待修复的问题
 
-1. **Broken defaults.** Marks default to `--color-chart-1` / `--color-positive` /
-   `--color-negative`, none of which exist → black/invisible. Fix by **auto-assigning
-   the categorical palette by series index at the chart root** (mark default color =
-   "auto"; the root fills unset colors via `categorical(n)`). Candlestick up/down and
-   errorBar/referenceLine default to `semantic`/`structural` from the palette.
-2. **GL marks can't use tokens.** `hexToGL` does `parseInt(hex,16)` — a CSS var or
-   `rgb()` becomes `NaN` (silent mis-render), which is why GL color is required-hex.
-   Fix: resolve any CSS color (token/var/named/rgb) to concrete RGB before GL upload —
-   via the theme resolver (we already have `token(name)`) and/or a canvas
-   `getComputedStyle` fallback. Then GL marks accept the same colors as SVG marks and
-   can auto-assign from the palette too.
-3. **Accessor colors vanish from the legend.** `deriveLegendItems` drops any series
-   whose `color` isn't a static string. With channels, a series has a _resolved_
-   representative color (the assigned categorical slot, or the accessor sampled at a
-   stable point, or — for color-by-field — a small scale the legend can enumerate).
-   Legend should show it.
-4. **Dark mode.** The categorical tokens are identical in light and dark
-   (`light-dark(#0171E3, #0171E3)`). They're mid-tones chosen to read on both, and our
-   screenshot pass shows them working — but this is a deliberate design point to
-   confirm, not an accident. The **sequential ramps** include very dark steps
-   (`#02165E`) that will lose contrast on the dark body; heatmaps/areas using low ramp
-   steps need checking in dark mode.
-5. **CVD (color-blind) safety.** The 10 categorical are tableau10-like but not verified
-   for deuteranopia/protanopia/tritanopia. Add a verification task; document a
-   recommended max distinct series (~8) before hues get hard to distinguish.
-6. **Too many series.** Decide behavior past 10 categorical: recycle with a pattern/
-   opacity shift, or warn. (Plot warns; ECharts recycles.) Recommend: recycle + dev
-   warning.
+1. **损坏的默认值。** 标记默认使用 `--color-chart-1` / `--color-positive` / `--color-negative`，这些都不存在 → 黑色/不可见。修复方式：**在图表根按系列索引自动分配分类配色盘**（标记默认 color = “自动”；根通过 `categorical(n)` 填充未设置的颜色）。Candlestick 的上涨/下跌以及 errorBar/referenceLine 默认使用配色盘中的 `semantic`/`structural`。
+2. **GL 标记无法使用 token。** `hexToGL` 执行 `parseInt(hex,16)`——CSS var 或 `rgb()` 会变成 `NaN`（静默渲染错误），这就是 GL 颜色必须是十六进制的原因。修复：在 GL 上传前把任何 CSS 颜色（token/var/命名色/rgb）解析为具体 RGB——通过主题解析器（我们已有 `token(name)`）和/或 canvas 的 `getComputedStyle` 回退。这样 GL 标记就能接受与 SVG 标记相同的颜色，也能从配色盘自动分配。
+3. **Accessor 颜色从图例中消失。** `deriveLegendItems` 会丢弃 `color` 不是静态字符串的任何系列。使用通道后，系列有一个_解析后的_代表性颜色（分配的分类槽位，或在稳定点采样的 accessor，或——对于按字段着色——一个图例可以枚举的小尺度）。图例应显示它。
+4. **深色模式。** 分类 token 在浅色和深色下完全相同（`light-dark(#0171E3, #0171E3)`）。它们是选中以便在两种背景下都可读的中间调，我们的截图检查显示它们工作正常——但这是一个需要确认的刻意设计点，而不是意外。**连续色带**包含非常暗的档位（`#02165E`），在深色主体上会失去对比度；使用较低色带档位的热力图/面积图需要在深色模式下检查。
+5. **CVD（色盲）安全性。** 10 个分类色类似 tableau10，但未针对绿色盲/红色盲/蓝色盲验证。增加一个验证任务；记录建议的最大不同系列数（约 8），超过后色相难以区分。
+6. **系列过多。** 确定超过 10 个分类色后的行为：带图案/透明度变化地循环，或警告。（Plot 警告；ECharts 循环。）建议：循环 + 开发警告。
 
-### Color scale (new, small)
+### 颜色尺度（新增，小型）
 
-Introduce an explicit **color scale** at the root for `color: {field}` usage:
+在根引入一个显式**颜色尺度**用于 `color: {field}` 用法：
 
-- categorical field → `categorical(n)` by distinct value (ordinal color scale).
-- quantitative field → a sequential ramp (choose hue).
-- diverging → `diverging.*` around a midpoint.
-  This is what makes color-by-field coherent and legendable.
+- 分类字段 → 按不同值使用 `categorical(n)`（序数颜色尺度）。
+- 定量字段 → 连续色带（选择色相）。
+- 发散 → 围绕中点使用 `diverging.*`。
+  这正是让按字段着色连贯且可图例化的关键。
 
 ---
 
-## 4. Scales — the correctness foundation
+## 4. 尺度——正确性的基础
 
-### Current state
+### 当前状态
 
-`computeLayout` builds **either** `scaleLinear` (numeric x) **or** `scaleBand` (else)
-for x, and always `scaleLinear` for y with domain `[min,max].nice()` (+ zero-inclusion
-only if a bar/area is present). No configuration is exposed. Consequences:
+`computeLayout` 为 x 构建**要么** `scaleLinear`（数值 x）**要么** `scaleBand`（其他情况），y 始终是 `scaleLinear`，值域为 `[min,max].nice()`（仅当存在 bar/area 时才包含零）。不暴露任何配置。后果：
 
-- Endpoints glue to edges; monotone curves overshoot outside the plot (no clip).
-- Empty data → band branch → `NaN` positions → streaming renders nothing.
-- No time scale; no log scale; no per-axis control.
+- 端点贴边；monotone 曲线会过冲到绘图区外（无裁剪）。
+- 空数据 → band 分支 → `NaN` 位置 → 流式渲染什么也不显示。
+- 没有时间尺度；没有对数尺度；没有按轴控制。
 
-### Proposal
+### 提案
 
-1. **Domain/baseline parity** (already planned): `yBaseline: 'auto'|'zero'|'data'`,
-   `yDomain`, `xDomain` — authoritative when provided (no `.nice()`), mirroring v1.
-   Add a plot **clipPath** and small **headroom** for continuous-only charts.
-2. **Degenerate-domain handling** (correctness): single point / zero range / all-equal
-   → synthesize a sensible span (e.g., `v±1` or `[0, v*2]`) so the mark is visible and
-   ticks are sane; empty + explicit domain → honor the domain (fixes streaming).
-3. **Explicit scale config** (new, optional): allow the caller to set x/y scale _type_
-   and options rather than pure inference:
+1. **值域/基线对齐**（已计划）：`yBaseline: 'auto'|'zero'|'data'`、`yDomain`、`xDomain`——提供时即为权威（不调用 `.nice()`），与 v1 一致。为纯连续型图表添加绘图区 **clipPath** 和少量**留白**。
+2. **退化值域处理**（正确性）：单点 / 零范围 / 全部相等 → 合成一个合理的跨度（例如 `v±1` 或 `[0, v*2]`），使标记可见且刻度合理；空数据 + 显式值域 → 遵从该值域（修复流式）。
+3. **显式尺度配置**（新增，可选）：允许调用方设置 x/y 尺度的_类型_和选项，而不是纯粹推断：
    ```
    xScale={{type: 'time'}}   // or 'linear' | 'band' | 'log'
    yScale={{type: 'log', domain: [1, 1e6], nice: true}}
    ```
-   Inference stays the default. This is how MUI/ECharts/Plot all work and it removes a
-   class of "it guessed wrong" bugs.
-4. **Time scale** (fills a real gap): `scaleTime` for Date x-values; the axis already
-   references `ScaleTime`. Enables honest financial/streaming time axes and good tick
-   formatting (via the ported `shortDate`/`monthYear`).
-5. **Secondary y-axis** (resolves the financial-composite problem): allow a mark to
-   target a secondary y-scale (e.g., `bar('volume', {axis: 'y2'})`) with its own
-   domain, like MUI's `yAxisId` / Plotly's `y2`. This is the principled fix for
-   price-vs-volume rather than crushing one series. Decision needed (section 8) —
-   it's powerful but adds surface; could be deferred to a follow-on if we instead
-   document "don't mix incompatible units on one axis."
+   推断仍是默认。MUI/ECharts/Plot 都是这样工作的，这消除了一类“猜错了”的 bug。
+4. **时间尺度**（填补真正的缺口）：对 Date x 值使用 `scaleTime`；轴已经引用了 `ScaleTime`。可实现真正的金融/流式时间轴和良好的刻度格式化（通过移植的 `shortDate`/`monthYear`）。
+5. **次坐标轴 y**（解决金融复合图问题）：允许标记指向次 y 尺度（例如 `bar('volume', {axis: 'y2'})`）并拥有自己的值域，类似 MUI 的 `yAxisId` / Plotly 的 `y2`。这是价格对成交量问题的原则性修复，而不是压扁某个系列。需要决策（第 8 节）——它很强大但增加表面积；如果改为记录“不要在一根轴上混合不兼容单位”，也可以推迟到后续。
 
-Design tension to be explicit about: **one shared scale is the whole value prop**
-(marks can't disagree). Secondary axes are the _sanctioned_ exception, opt-in and
-explicit, not automatic — preserving the guarantee for the default case.
+需要明确的设计张力：**单一共享尺度就是全部价值主张**（标记之间不会互相矛盾）。次坐标轴是_被认可_的例外，需选择加入且显式，不是自动的——从而为默认情况保留这一保证。
 
 ---
 
-## 5. Everything that can go wrong (failure-mode matrix)
+## 5. 一切可能出错的地方（失败模式矩阵）
 
-For each: what happens today → what should happen. Drives Stage 1 fixes + Stage 2 tests.
+对每个条目：今天会发生什么 → 应该发生什么。驱动 Stage 1 修复 + Stage 2 测试。
 
-### Data pathologies
+### 数据病态
 
-- **Empty `data=[]`** → band scale, NaN, blank (breaks streaming). → honor explicit
-  domain; otherwise render an empty-state (axes + "no data").
-- **Single datum** → zero-width/near-degenerate domain. → synthesize span; center the point.
-- **All values equal / zero range** → flat domain, `nice()` may collapse ticks. → pad domain.
-- **All zero / all negative** → baseline handling (bars grow wrong way?). → verified by
-  new edge-case stories; `yBaseline` correctness.
-- **One huge outlier** → everything else squashed. → document log scale option; outlier
-  is legitimate but the story should show the log remedy.
-- **NaN / null / undefined / non-numeric in a numeric column** → currently coerced to 0
-  silently (misleading). → skip (gap in line/area path) vs 0; decide + document. Prefer
-  gap for line/area, skip point for dot.
-- **Missing dataKey** (typo) → silent 0/undefined everywhere. → dev warning.
-- **Duplicate x values** (band) / **unsorted x** (line) → band de-dupes silently; line
-  draws zig-zag. → dev warning for unsorted line x.
-- **Very large N** (10k+ SVG nodes) → jank. → GL marks exist; document thresholds;
-  (m4 downsampling is a tracked follow-on).
+- **空 `data=[]`** → band 尺度、NaN、空白（破坏流式）。→ 遵从显式值域；否则渲染空状态（坐标轴 + “无数据”）。
+- **单个数据点** → 零宽/接近退化的值域。→ 合成跨度；把点居中。
+- **所有值相等 / 零范围** → 平坦值域，`nice()` 可能使刻度塌缩。→ 给值域加余量。
+- **全零 / 全负** → 基线处理（柱子会不会朝错误方向生长？）。→ 由新的边界情况 story 验证；`yBaseline` 正确性。
+- **一个巨大离群值** → 其他一切被压扁。→ 记录对数尺度选项；离群值本身是合理的，但 story 应展示对数补救。
+- **数值列中的 NaN / null / undefined / 非数值** → 目前被静默强制为 0（有误导性）。→ 跳过（在 line/area 路径中留缺口）还是置 0；决定并记录。line/area 优先留缺口，dot 跳过该点。
+- **缺少 dataKey**（拼写错误）→ 到处静默变成 0/undefined。→ 开发警告。
+- **重复 x 值**（band）/ **未排序 x**（line）→ band 静默去重；line 画出锯齿。→ 对未排序的 line x 发出开发警告。
+- **非常大的 N**（1 万+ SVG 节点）→ 卡顿。→ 已有 GL 标记；记录阈值；（m4 降采样是跟踪中的后续项）。
 
-### Scale / rendering
+### 尺度 / 渲染
 
-- **Overshoot outside plot** (monotone/natural curves) → escapes into margins. → clipPath.
-- **Axis label overflow / overlap** (many band categories; long labels; big numbers) →
-  candlestick smear today. → width-aware auto-skip + rotation/truncation option.
-- **Tooltip at viewport edges** → can clip. → flip/clamp (partly handled; verify).
-- **Legend overflow** (many series) → wrap/scroll; `legend="end"` currently clips the plot.
-- **Reference-line label off-canvas** → clamp badge within plot.
+- **绘图区外的过冲**（monotone/natural 曲线）→ 溢出到边距。→ clipPath。
+- **轴标签溢出 / 重叠**（许多 band 类别；长标签；大数字）→ 今天的 candlestick 标签重叠。→ 按宽度自适应自动跳过 + 旋转/截断选项。
+- **视口边缘的 tooltip** → 可能被裁切。→ 翻转/钳制（部分已处理；验证）。
+- **图例溢出**（许多系列）→ 换行/滚动；`legend="end"` 目前会裁切绘图区。
+- **参考线标签跑出画布** → 把徽标钳制在绘图区内。
 
-### Runtime / platform
+### 运行时 / 平台
 
-- **SSR / no DOM** (Next.js) → ResizeObserver/canvas/`window` access. → guard; render
-  nothing or a placeholder until mounted. (Docsite is Next.js — this matters.)
-- **WebGL unavailable / context loss** → GL marks blank. → fallback message or SVG path;
-  handle `webglcontextlost`.
-- **Canvas / listener cleanup** (streaming rAF, ring buffer, ResizeObserver) → leaks. →
-  audit teardown.
-- **High-DPI** → blurriness. → DPR handling exists in webgl utils; verify across marks.
-- **Theme switch at runtime** → colors must re-resolve (esp. GL, which caches hex). →
-  re-upload on theme change.
-- **Reduced motion** → axis has `animated`; honor `prefers-reduced-motion`.
+- **SSR / 无 DOM**（Next.js）→ ResizeObserver/canvas/`window` 访问。→ 加守卫；挂载前什么都不渲染或渲染占位符。（文档站点是 Next.js——这很重要。）
+- **WebGL 不可用 / 上下文丢失** → GL 标记空白。→ 回退消息或 SVG 路径；处理 `webglcontextlost`。
+- **Canvas / 监听器清理**（流式 rAF、环形缓冲、ResizeObserver）→ 泄漏。→ 审计拆卸逻辑。
+- **高 DPI** → 模糊。→ webgl 工具中已有 DPR 处理；跨标记验证。
+- **运行时切换主题** → 颜色必须重新解析（尤其是 GL，它会缓存十六进制）。→ 主题变化时重新上传。
+- **减少动态效果** → 轴有 `animated`；遵从 `prefers-reduced-motion`。
 
-### Accessibility
+### 无障碍
 
-- **Screen readers** → SVG has title/desc on root only; series/points aren't described.
-  → at least role/aria-label; consider a data-table fallback (Highcharts/visx pattern).
-- **Keyboard** → no keyboard access to tooltip/points. → follow-on, but note it.
-- **Contrast** → structural (axis/grid/label) and series colors vs both backgrounds.
+- **屏幕阅读器** → SVG 只在根上有 title/desc；系列/点没有被描述。→ 至少加 role/aria-label；考虑数据表回退（Highcharts/visx 模式）。
+- **键盘** → 无法通过键盘访问 tooltip/点。→ 后续项，但要记录。
+- **对比度** → structural（axis/grid/label）和系列颜色在两种背景下的表现。
 
-### i18n / formatting
+### i18n / 格式化
 
-- **Number/date/locale** → formatters exist (`currency`/`percent`/`compactNumber`/
-  `shortDate`/`monthYear`); ensure locale-aware and ported into the package.
-- **RTL** → axis sides, legend order, tooltip placement.
+- **数字/日期/区域设置** → 已有格式化器（`currency`/`percent`/`compactNumber`/`shortDate`/`monthYear`）；确保感知区域设置并移植到包中。
+- **RTL** → 轴侧、图例顺序、tooltip 位置。
 
 ---
 
-## 6. Per-mark API consistency pass (proposed normalization)
+## 6. 按标记的 API 一致性梳理（提议的规范化）
 
-Target: a predictable surface where the same concept has the same name/shape everywhere.
-(Full current-state evidence in the audit; this is the proposed end-state.)
+目标：一个可预测的表面，让同一概念在各处都有相同的名称/形态。（完整现状证据在审计中；这是提议的终态。）
 
-- **Data input:** every data-bound mark takes a positional primary key where it has an
-  obvious "primary" (`bar/line/dot/area/dotGL/dotGLInteractive`); multi-field marks stay
-  options-only (`band/candlestick/errorBar/heatmapGL`) but use **consistent field
-  names**.
-- **Bounds naming:** unify the interval concept. Pick one vocabulary for
-  `band`/`errorBar` (they're twins): recommend `high`/`low` (matches candlestick/finance)
-  or `upper`/`lower` — one, not both. `referenceLine` keeps `y`/`y2` (they're values,
-  not fields) but document the distinction.
-- **Color:** one `Channel<Color>` everywhere (section 2); default = auto palette;
-  candlestick uses `{up, down}` as a documented special case (or `color:{up,down}`).
-- **Size:** standardize on one meaning. Recommend `radius` (SVG semantics) everywhere
-  points are round; if we keep GL `size` as diameter, document the 2× relationship or
-  convert so `radius` means radius for both.
-- **Stroke:** `strokeWidth` everywhere (retire `lineWidth` on streamGL); expose the
-  currently-hardcoded strokes (area top line, candlestick wick, line-dots radius).
-- **Opacity:** `opacity` everywhere (retire `bandOpacity`; referenceLine band uses
-  `fillOpacity` or nested `band:{opacity}`).
-- **Curve:** export one shared `CurveType`; expose `curve` on area (and band?) using it.
-- **label:** every non-utility mark accepts `label` and sets `SeriesDef.label` so legend/
-  tooltip are correct; referenceLine's `label` is the badge (document the difference).
-- **key/identity:** semantic `key` + layout-assigned `_uid` (planned) so duplicate
-  dataKeys and two streams/refs don't collide.
-- **x-scale requirements in types:** encode band-vs-linear-vs-time requirements so the
-  compiler catches "heatmap on a linear x" instead of a silent null (via typed mark
-  variants or a runtime dev warning at minimum).
-- **De-dupe:** share the `xPixel` helper (every mark reinvents the band/linear px math);
-  share `ColorAccessor`/`Channel` types (currently duplicated in bar/dot, unexported).
-- **Tooltip semantics:** fix value derivation (candlestick shows only `open`; streamGL
-  yields `undefined`; GL scatter creates chrome-tooltip rows). Decide per-mark what a
-  tooltip row means, or let marks declare their tooltip contribution.
+- **数据输入：** 每个数据绑定标记在有明显“主键”时接受一个位置主键（`bar/line/dot/area/dotGL/dotGLInteractive`）；多字段标记保持仅选项（`band/candlestick/errorBar/heatmapGL`），但使用**一致的字段名**。
+- **边界命名：** 统一区间概念。为 `band`/`errorBar`（两者是双胞胎）选一套词汇：建议 `high`/`low`（与 candlestick/金融一致）或 `upper`/`lower`——选一个，不要两个都用。`referenceLine` 保留 `y`/`y2`（它们是值，不是字段），但要记录这一区别。
+- **颜色：** 各处使用一个 `Channel<Color>`（第 2 节）；默认 = 自动配色盘；candlestick 使用 `{up, down}` 作为有文档的特例（或 `color:{up,down}`）。
+- **大小：** 统一为一个含义。建议凡是圆点都用 `radius`（SVG 语义）；如果保留 GL 的 `size` 作为直径，记录 2× 关系，或转换使 `radius` 在两者中都表示半径。
+- **描边：** 各处使用 `strokeWidth`（弃用 streamGL 的 `lineWidth`）；暴露目前硬编码的描边（面积顶线、candlestick 影线、line-dots 半径）。
+- **不透明度：** 各处使用 `opacity`（弃用 `bandOpacity`；referenceLine 的带使用 `fillOpacity` 或嵌套的 `band:{opacity}`）。
+- **曲线：** 导出一个共享的 `CurveType`；在 area（以及 band？）上暴露使用它的 `curve`。
+- **label：** 每个非工具型标记都接受 `label` 并设置 `SeriesDef.label`，使图例/tooltip 正确；referenceLine 的 `label` 是徽标（记录这一区别）。
+- **key/标识：** 语义 `key` + 布局分配的 `_uid`（已计划），使重复 dataKey 以及两个流/引用不冲突。
+- **类型中的 x 尺度要求：** 编码 band-vs-linear-vs-time 要求，使编译器能捕获“在线性 x 上使用热力图”，而不是静默为 null（通过有类型的标记变体，或至少运行时开发警告）。
+- **去重：** 共享 `xPixel` 辅助函数（每个标记都在重造 band/linear 像素数学）；共享 `ColorAccessor`/`Channel` 类型（目前在 bar/dot 中重复，未导出）。
+- **Tooltip 语义：** 修复值派生（candlestick 只显示 `open`；streamGL 产生 `undefined`；GL 散点会创建外框 tooltip 行）。逐个标记决定 tooltip 行的含义，或让标记声明自己的 tooltip 贡献。
 
 ---
 
-## 7. What is genuinely good (keep, don't churn)
+## 7. 真正好的部分（保留，不要折腾）
 
-- The marks + one-shared-scale architecture; `resolve()`/`render()` split; "root has
-  zero knowledge of mark types."
-- The `series={[...]}` config ergonomics; `legend`/`tooltip` as boolean-or-config props.
-- Composable chrome primitives (`ChartSwatch`, standalone `ChartLegend`, `ChartAxis`
-  toggles for line/ticks/grid).
-- The pointer-event model (single capture rect → subscribers; tooltip re-renders only
-  on index change).
-- v1's palette API design and the token set.
-- WebGL marks for scale (scatter/heatmap/stream) — a real differentiator vs Recharts/Nivo.
-- Dark mode already works across the SVG marks.
+- 标记 + 单一共享尺度的架构；`resolve()`/`render()` 拆分；“根对标记类型零知识”。
+- `series={[...]}` 配置的人体工学；`legend`/`tooltip` 作为布尔或配置属性。
+- 可组合的图表外框基础组件（`ChartSwatch`、独立 `ChartLegend`、`ChartAxis` 对线/刻度/网格的开关）。
+- 指针事件模型（单一捕获矩形 → 订阅者；tooltip 只在索引变化时重渲染）。
+- v1 的配色盘 API 设计与 token 集合。
+- 用于规模的 WebGL 标记（散点/热力图/流）——相对于 Recharts/Nivo 的真正差异化优势。
+- 深色模式在 SVG 标记中已经可用。
 
 ---
 
-## 8. Design decisions — DECIDED (recommended defaults; vetoable)
+## 8. 设计决策——已决定（推荐默认值；可否决）
 
-These meaningfully change scope/shape. Owner is new to charting and delegated these to
-the recommended, industry-standard calls; each is reversible and open to veto by the
-owner or by Ruby Cheung in the Stage-4 design review. Ranked by leverage.
+这些会实实在在地改变范围/形态。负责人刚接触图表，已把这些委托给推荐的、行业标准的选择；每项都可逆，且可由负责人或 Ruby Cheung 在 Stage-4 设计评审中否决。按杠杆率排序。
 
-1. **Channel model — ADOPTED.** `color`/`size`/`opacity` accept
-   `constant | {field} | accessor` uniformly across marks. It's the backbone that makes
-   the API coherent and unlocks color-by-field. (Bigger refactor of mark options, worth it.)
-2. **Secondary y-axis — DESIGN NOW, implement if time allows.** Provide an opt-in
-   `axis:'y2'` for dual-unit charts (price/volume); it also informs heatmap categorical-y.
-   If it slips, document "one scale — don't mix units" and defer implementation to a
-   follow-on. The default stays one shared scale (the core guarantee).
-3. **Scales — parity + time + degenerate now; log if cheap.** Do `yBaseline`/`yDomain`/
-   `xDomain` parity + clip + headroom + degenerate-domain handling + a time scale +
-   explicit scale config this stage. Add explicit `type:'log'` if inexpensive, else
-   follow-on.
-4. **Null/NaN policy — DECIDED: gap + skip + dev warning.** Line/area break the path at
-   null/NaN (gap); point marks skip the point; emit a dev-only warning. No silent
-   coerce-to-zero.
-5. **Bounds vocabulary — DECIDED: `high`/`low`.** Use `high`/`low` for both `band` and
-   `errorBar` (matches candlestick/finance). `referenceLine` keeps `y`/`y2` (values, not
-   fields), documented.
-6. **Beyond-10 series — DECIDED: recycle + dev warning.** Reuse the categorical palette
-   past 10 series and warn in dev; recommend a practical max of ~8 distinct hues.
-7. **A11y target — DECIDED: minimum now.** Root aria/title/desc + per-series labels this
-   stage; keyboard nav and a data-table fallback are a tracked follow-on.
+1. **通道模型——已采用。** `color`/`size`/`opacity` 在各标记中统一接受 `constant | {field} | accessor`。它是让 API 连贯并解锁按字段着色的骨架。（标记选项的重构较大，值得。）
+2. **次坐标轴 y——现在设计，时间允许就实现。** 为双单位图表（价格/成交量）提供选择加入的 `axis:'y2'`；它也为热力图分类 y 提供参考。如果滑期，记录“一个尺度——不要混合单位”并把实现推迟到后续。默认仍是一个共享尺度（核心保证）。
+3. **尺度——现在做对齐 + 时间 + 退化；对数若成本低就做。** 本阶段完成 `yBaseline`/`yDomain`/`xDomain` 对齐 + 裁剪 + 留白 + 退化值域处理 + 时间尺度 + 显式尺度配置。如果成本不高就加显式 `type:'log'`，否则后续。
+4. **Null/NaN 策略——已决定：缺口 + 跳过 + 开发警告。** Line/area 在 null/NaN 处断开路径（缺口）；点标记跳过该点；发出仅开发环境的警告。不静默强制为 0。
+5. **边界词汇——已决定：`high`/`low`。** 为 `band` 和 `errorBar` 都使用 `high`/`low`（与 candlestick/金融一致）。`referenceLine` 保留 `y`/`y2`（值，不是字段），并记录。
+6. **超过 10 个系列——已决定：循环 + 开发警告。** 超过 10 个系列后复用分类配色盘，并在开发环境警告；建议实际最多约 8 个不同色相。
+7. **无障碍目标——已决定：现在做最低限度。** 本阶段做根 aria/title/desc + 每个系列的标签；键盘导航和数据表回退是跟踪中的后续项。
 
-Additional call recorded here: 8. **CVD-safety — verify, don't redesign.** Keep the existing categorical tokens; add a
-verification pass (deuter/protan/tritan) and document findings rather than inventing a
-new palette this stage.
+此处记录的附加决定：8. **CVD 安全——验证，不改设计。** 保留现有分类 token；增加一轮验证（绿色盲/红色盲/蓝色盲）并记录发现，而不是在本阶段发明新配色盘。
 
 ---
 
-## 9. Testing implications (feeds Stage 2)
+## 9. 测试影响（输入 Stage 2）
 
-- **Unit**: scale/domain (auto, baseline modes, explicit, empty, single, zero-range,
-  time), channel resolution (constant/field/accessor), palette resolver + token→hex,
-  legend/tooltip derivation (incl. accessor + color-by-field), `_uid` uniqueness,
-  formatters, each mark factory's `SeriesDef` shape.
-- **Failure-mode fixtures**: one dataset per row in section 5, asserted to not throw and
-  to produce sane output.
-- **Export-surface test**: the barrel + package aliases export the full contract.
-- **Visual**: Playwright screenshots of every story in light + dark (existing harness),
-  including the new edge-case and channel/color-by-field stories.
-- **SSR smoke**: render to string without a DOM (guards Next.js/docsite usage).
+- **单元**：尺度/值域（auto、基线模式、显式、空、单点、零范围、时间）、通道解析（constant/field/accessor）、配色盘解析器 + token→hex、图例/tooltip 派生（含 accessor + 按字段着色）、`_uid` 唯一性、格式化器、每个标记工厂的 `SeriesDef` 形态。
+- **失败模式夹具**：第 5 节每一行一个数据集，断言不抛错且产生合理输出。
+- **导出面测试**：barrel + 包别名导出完整契约。
+- **视觉**：对每个 story 截取浅色 + 深色 Playwright 截图（现有工具），包括新的边界情况和通道/按字段着色 story。
+- **SSR 冒烟**：在没有 DOM 的情况下渲染为字符串（守护 Next.js/文档站点用法）。
 
 ---
 
-## Appendix — source references
+## 附录——来源参考
 
-- Tokens: `packages/core/src/theme/domainTokens/dataTokens.ts`
-- Palette API (to adopt): `packages/lab/src/Chart/getChartColors.ts`, `useChartColors.ts`
-- GL color (hex-only): `packages/lab/src/Chart/webgl.ts` `hexToGL`
-- Shared x helper (underused): `packages/lab/src/Chart/utils.ts` `xPixel`
-- Domain/baseline parity reference: `packages/lab/src/Chart/Chart.tsx`
-- Full API audit + inconsistency list: this session's catalog (mirrored into
-  `CHARTV2_PHASE1_PLAN.md` findings).
+- Token：`packages/core/src/theme/domainTokens/dataTokens.ts`
+- 配色盘 API（待采用）：`packages/lab/src/Chart/getChartColors.ts`、`useChartColors.ts`
+- GL 颜色（仅十六进制）：`packages/lab/src/Chart/webgl.ts` `hexToGL`
+- 共享 x 辅助函数（使用不足）：`packages/lab/src/Chart/utils.ts` `xPixel`
+- 值域/基线对齐参考：`packages/lab/src/Chart/Chart.tsx`
+- 完整 API 审计 + 不一致清单：本次会话的目录（已镜像到 `CHARTV2_PHASE1_PLAN.md` 的问题中）。

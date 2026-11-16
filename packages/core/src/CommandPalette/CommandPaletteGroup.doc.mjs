@@ -40,15 +40,15 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'CommandPaletteGroup',
-  isHiddenFromOverview: true,
-  displayName: 'Command Palette Group',
-  description: '带标题标签的视觉分组。放置在 CommandPaletteList 内。',
-  propDescriptions: {
-    heading: '分组标题文本。',
-    children: 'CommandPaletteItem 子元素。',
-    xstyle: 'StyleX 布局自定义样式。必须是 stylex.create() 的值。',
-  },
+  "name": "CommandPaletteGroup",
+  "isHiddenFromOverview": true,
+  "displayName": "Command Palette Group",
+  "description": "带标题标签的视觉分组。请放在 `CommandPaletteList` 内。",
+  "propDescriptions": {
+    "heading": "分组标题文本。",
+    "children": "`CommandPaletteItem` 子元素。",
+    "xstyle": "用于布局定制的 StyleX 样式。必须是 `stylex.create()` 的值。"
+  }
 };
 
 export const docsDense = {

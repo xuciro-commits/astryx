@@ -817,3 +817,164 @@ export const docsDense = {
     },
   ],
 };
+
+export const docsZh = {
+  "name": "TransferListSelector",
+  "displayName": "Transfer List Selector",
+  "description": "一个选择器字段，用于在已选和可用列表之间移动选项，并可选地对已选值排序。更改默认立即提交；暂存提交行为会增加内部草稿和 Apply/Cancel 页脚。TransferList 仍是自定义 ComplexSelector 表面的底层内容原语。",
+  "usage": {
+    "description": "默认使用 TransferListSelector 处理中到大型、可检查的集合，其中成员关系和已选顺序需要显式控制。立即行为会提交每次编辑并且不渲染页脚。当用户必须在应用前审查一组更改时，选择暂存行为。仅在特意自定义的 ComplexSelector 表面中直接使用 TransferList，例如带已保存视图和自定义页脚的表格列设置。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "从立即行为开始。添加、移除和批量更改在发生时调用 onChange，移动会调用可排序对象的 onReorder，关闭或取消浮层会保留这些已提交的更改。"
+      },
+      {
+        "guidance": true,
+        "description": "当完整选择应作为一次事务审查或持久化时，设置 commitBehavior=\"staged\"。Apply 提交更改后的草稿；Cancel、Escape 和轻触关闭会丢弃它。"
+      },
+      {
+        "guidance": true,
+        "description": "仅当表面需要自定义结构（如保存视图、预设、头部或页脚操作）时，才在 ComplexSelector 内直接使用 TransferList。保持已应用状态和草稿状态分离，并在表面每次打开时重置草稿。"
+      },
+      {
+        "guidance": true,
+        "description": "独立使用 isTransferDisabled 和可排序对象的 isReorderable：isTransferDisabled 将选项固定在其面板，isReorderable 将选项保持在原位。当转移不可用时提供 disabledMessage，使约束可被发现；保持原位的行不显示排序手柄，因此必要时在其内容中说明原因。"
+      },
+      {
+        "guidance": true,
+        "description": "没有 `reorderable` 时，TransferList 不再排序；请传入 `reorderable={createReorderable(…)}`。从 isReorderable 迁移：改为传入 reorderable={createReorderable({onReorder, isReorderable})}。isReorderable 属性和每个选项的 isReorderDisabled 已移除；对保持原位的选项，从对象的 isReorderable(value) 返回 false。"
+      },
+      {
+        "guidance": true,
+        "description": "保持行简洁且单行。将选项 description 用作可搜索元数据，或当需要更丰富的可见内容时使用 renderOption。"
+      },
+      {
+        "guidance": true,
+        "description": "立即提交添加、移除和批量更改。拖动时行保持静止：该行在原地变暗，其副本跟随手指或指针，插入线标记其将落到的位置；可排序对象的 onReorder 在释放时运行一次。"
+      },
+      {
+        "guidance": false,
+        "description": "将 commitBehavior 用作呈现或容器选择。两个值渲染相同的选择器浮层；需要不同外壳时使用显式组合。"
+      },
+      {
+        "guidance": false,
+        "description": "不要对少量简单选择使用转移列表；CheckboxInput 或 MultiSelector 更紧凑。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "字段标签和描述",
+        "required": true,
+        "description": "在浮层外命名并解释选择器，使位置不会随支持文本变化。"
+      },
+      {
+        "name": "选择器触发器",
+        "required": true,
+        "description": "汇总已提交的值并打开转移列表浮层。"
+      },
+      {
+        "name": "搜索",
+        "required": false,
+        "description": "过滤已选和可用列表而不更改其值，并使用统一的 12px 内边距。"
+      },
+      {
+        "name": "已选和可用区块",
+        "required": true,
+        "description": "在一个分隔线旁放置两个无边框的语义列表。窄容器会堆叠区块，在每个列头后使用正文背景，将两个区块扩展到其行，并将溢出委托给一个可滚动的包含表面。"
+      },
+      {
+        "name": "行操作",
+        "required": true,
+        "description": "使用方向中立的 X 移除，加号添加。启用排序时，已选行以排序手柄结尾；保持原位的行没有手柄，转移约束会禁用移除操作。"
+      },
+      {
+        "name": "排序提示",
+        "required": false,
+        "description": "当已选行处于排序模式时：手柄下方的提示，其 Move up、Move down 和 Done 是按钮。"
+      },
+      {
+        "name": "批量操作",
+        "required": false,
+        "description": "可选的 Clear 和 Add all 文本操作，会尊重转移禁用的选项。"
+      },
+      {
+        "name": "Apply 和 Cancel 页脚",
+        "required": false,
+        "description": "仅用于暂存行为。Apply 提交更改后的草稿；Cancel 关闭而不更改已提交的值。"
+      },
+      {
+        "name": "实时公告",
+        "required": true,
+        "description": "报告添加、移除、批量及排序结果，而不只依赖视觉位置。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "label": "在浮层外显示的可访问字段标签，除非 isLabelHidden 为 true。",
+    "options": "完整选项池。每个选项有 value 和 label，可选可搜索的 description 元数据、group、isTransferDisabled 约束和 disabledMessage。哪些选项保持原位由可排序对象的 isReorderable 决定。",
+    "value": "按显示顺序排列的已提交已选值。在暂存行为中，这是选择器打开时复制到本地草稿的已应用值。",
+    "onChange": "在立即行为中每次允许的列表编辑后调用，或在暂存行为中 Apply 提交更改后的草稿时调用一次。",
+    "commitBehavior": "控制更改何时提交。Immediate 在每次列表编辑时更新且无页脚；staged 等待 Apply 并支持 Cancel 或关闭。",
+    "triggerLabel": "显示在关闭的选择器触发器中的内容。",
+    "description": "与外部标签一起显示的支持性字段指导。",
+    "isLabelHidden": "视觉隐藏字段标签，同时保留其可访问名称。",
+    "selectedLabel": "已选列表的标题和可访问名称。",
+    "availableLabel": "可用列表的标题和可访问名称。",
+    "hasSearch": "显示共享搜索字段，按标签和描述过滤两个列表。",
+    "searchLabel": "共享搜索字段的可访问标签。",
+    "searchPlaceholder": "共享搜索字段中显示的占位符。",
+    "reorderable": "使已选选项可排序：传入 createReorderable 生成的对象。每个已选行以排序手柄结尾：在触摸屏上按住手柄片刻，然后拖动；鼠标可直接拖动；在手柄上点击、单击、Space 或 Enter 会为其行开启排序模式，在其中每个方向键（或手柄下方提示中的每次移动）将其移动一个位置，Escape、Done 或再次激活会结束模式并保留移动。对象的 isReorderable(value) 说明哪些值可移动：它拒绝的值没有手柄，并且在已选列表的任一端，它还会阻止其他值越过它。在立即行为中，每次移动都会传给对象的 onReorder({key, to})；在暂存行为中，选择器改为移动其草稿，因此 Cancel 会随草稿丢弃移动，Apply 通过 onChange 提交它。搜索过滤面板时排序暂停。没有它时，已选选项保持其顺序。",
+    "hasSelectAll": "显示 Add all，并将每个可转移的可用选项添加到当前选择。",
+    "hasClear": "显示 Clear，并从当前选择移除每个可转移的已选选项。",
+    "renderOption": "自定义行内容，同时保留内置标签、操作、约束和排序交互。",
+    "selectedEmptyText": "已选列表为空时显示的消息。",
+    "availableEmptyText": "所有选项都已选中时显示的消息。",
+    "noResultsText": "搜索在列表中无匹配时显示的消息。",
+    "applyLabel": "暂存 Apply 操作的标签。仅在与 commitBehavior=\"staged\" 搭配时有效。",
+    "cancelLabel": "暂存 Cancel 操作的标签。仅在与 commitBehavior=\"staged\" 搭配时有效。",
+    "size": "触发器和字段尺寸。",
+    "width": "字段及其弹出层的宽度；两者都跟随这一个值。",
+    "placement": "浮层相对于触发器的位置。",
+    "isOptional": "将字段标记为可选。",
+    "isRequired": "将字段标记为必填。",
+    "isDisabled": "禁用选择器触发器和转移交互。",
+    "isLoading": "在触发器上显示加载状态，并在忙碌时禁用转移交互。",
+    "status": "字段的验证状态。",
+    "statusVariant": "状态消息的放置处理。",
+    "labelTooltip": "显示在字段标签旁边的工具提示文本。",
+    "changeAction": "在每次立即提交或更改后的暂存 Apply 之后运行的可选异步操作；驱动乐观和忙碌状态。",
+    "controlXstyle": "外部选择器带边框控件盒的 StyleX 样式。",
+    "controlClassName": "应用于外部选择器控件盒的类名。",
+    "controlStyle": "应用于外部选择器控件盒的内联样式。",
+    "data-testid": "选择器触发器按钮的测试 ID。"
+  },
+  "components": [
+    {
+      "name": "TransferList",
+      "description": "用于高级选择器组合的底层受控内容原语，这些组合添加自定义头部、保存视图、预设或操作。其受控值的更改是立即的。",
+      "propDescriptions": {
+        "label": "完整转移控件的可访问名称。",
+        "isLabelHidden": "视觉隐藏控件标签，同时保留其可访问名称。",
+        "description": "显示在控件标签下方的支持性指导。",
+        "options": "完整选项池，带可选元数据、分组、转移约束和排序约束。",
+        "value": "按显示顺序排列的已选选项值。",
+        "onChange": "在允许的选项被添加、移除或批量更改后立即调用。移动会改为传给可排序对象的 onReorder。",
+        "selectedLabel": "已选列表的标题和可访问名称。",
+        "availableLabel": "可用列表的标题和可访问名称。",
+        "hasSearch": "显示共享搜索字段，按标签和描述过滤两个列表。",
+        "isDisabled": "禁用每个转移、排序、Clear、Add all 和搜索控件。行控件和搜索字段仍可聚焦。",
+        "searchLabel": "共享搜索字段的可访问标签。",
+        "searchPlaceholder": "共享搜索字段中显示的占位符。",
+        "reorderable": "通过每行末尾的手柄使已选选项可排序：传入 createReorderable 生成的对象。其 isReorderable(value) 决定哪些选项可移动（它在列表任一端拒绝的项还会阻止其他项越过它），每次移动都会传给其 onReorder({key, to})，其中 to 是移动后该值在 value 中的索引。没有它时，已选选项保持其顺序。",
+        "hasSelectAll": "为可转移的可用选项显示 Add all。",
+        "hasClear": "为可转移的已选选项显示 Clear；转移禁用的值保持选中。",
+        "renderOption": "自定义行内容，而不替换内置操作和约束。",
+        "selectedEmptyText": "已选列表为空时显示的消息。",
+        "availableEmptyText": "所有选项都已选中时显示的消息。",
+        "noResultsText": "搜索在列表中无匹配时显示的消息。",
+        "xstyle": "TransferList 根元素的 StyleX 样式。"
+      }
+    }
+  ]
+};

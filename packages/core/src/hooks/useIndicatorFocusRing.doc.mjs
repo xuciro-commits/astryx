@@ -102,3 +102,31 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useIndicatorFocusRing",
+  "usage": {
+    "description": "为真实输入在视觉上隐藏的控件指示器绘制标准焦点环；复选框或单选框聚焦的是 opacity-0 的输入，因此焦点环必须出现在旁边的图形上。焦点环以命令式方式绘制在指示器自身的元素上，这是唯一能通过其 border-radius 塑造焦点环的元素，并且仅在 :focus-visible 时绘制，因此指针点击不会显示。在此处负责焦点环意味着主题提供的指示器无法通过忽略属性来交付没有可见焦点（WCAG 2.4.7）的控件。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "只用 ref 引用的元素包裹指示器；包含标签文本的包装器会给整行绘制焦点环。"
+      },
+      {
+        "guidance": true,
+        "description": "将 focusProps 展开到包含隐藏输入的元素上，而不是输入本身。"
+      },
+      {
+        "guidance": false,
+        "description": "要求可主题化的指示器自行绘制焦点环；忽略该属性的替代品会让控件没有可见焦点。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "containerRef": "指向仅包裹指示器的元素的 ref，使其唯一的元素子节点明确就是需要绘制焦点环的对象。",
+    "isDisabled": "跳过焦点环；禁用的控件不可聚焦。"
+  },
+  "returnDescriptions": {
+    "focusProps": "展开到拥有可聚焦输入的元素上。"
+  }
+};

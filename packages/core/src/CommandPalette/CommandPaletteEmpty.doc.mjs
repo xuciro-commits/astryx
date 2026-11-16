@@ -25,14 +25,13 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'CommandPaletteEmpty',
-  isHiddenFromOverview: true,
-  displayName: 'Command Palette Empty',
-  description:
-    '结果区域的空状态展示。当搜索没有结果，或没有查询且 bootstrap() 未返回任何内容时，由 CommandPalette 自动渲染。',
-  propDescriptions: {
-    children: '要显示的消息或内容。',
-  },
+  "name": "CommandPaletteEmpty",
+  "isHiddenFromOverview": true,
+  "displayName": "Command Palette Empty",
+  "description": "结果区域的空状态展示。当搜索没有结果，或没有查询且 bootstrap() 未返回任何内容时，CommandPalette 会自动渲染它。",
+  "propDescriptions": {
+    "children": "要显示的消息或内容。"
+  }
 };
 
 export const docsDense = {

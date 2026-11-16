@@ -97,15 +97,57 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'ChatMessageMetadata',
-  displayName: 'Chat Message Metadata',
-  description:
-    '可组合的消息元数据行。渲染时间戳、页脚内容和发送状态。用户消息方向反转。',
-  propDescriptions: {
-    timestamp: '时间戳内容，字符串或 Timestamp 组件。',
-    footer: '页脚内容：模型信息、反应按钮、复制按钮。',
-    status: '消息发送状态。显示图标和标签。',
+  "name": "ChatMessageMetadata",
+  "displayName": "Chat Message Metadata",
+  "description": "聊天消息的可组合元数据行。在单行中渲染时间戳、页脚内容和送达状态。发送者为用户时方向反转。当两个插槽都省略或为非渲染标量且省略了状态时，不渲染该行。",
+  "propDescriptions": {
+    "timestamp": "时间戳内容：字符串或 Timestamp 组件。",
+    "footer": "页脚内容：模型信息、回应按钮、复制按钮。",
+    "status": "消息送达状态。显示图标 + 标签。"
   },
+  "usage": {
+    "description": "将 ChatMessageMetadata 放在消息下方或最后一个 ChatMessageBubble 的 metadata 插槽中，以显示时间戳、页脚内容和可选的送达状态。非渲染标量插槽（布尔值和空字符串）不会创建分隔符；数字零仍然可见。组合 React 内容仍由调用方负责。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "当消息使用气泡时，将元数据放在最后一个气泡的 metadata 插槽中，使其跟随气泡内容。"
+      },
+      {
+        "guidance": true,
+        "description": "独立传入时间戳和页脚内容；非渲染标量插槽会省略分隔符。组合 React 节点按原样使用。"
+      },
+      {
+        "guidance": false,
+        "description": "不要提供没有自身可访问名称和交互行为的页脚操作；元数据行不拥有这些控件。"
+      },
+      {
+        "guidance": false,
+        "description": "不要同时在气泡和包裹它的消息上放置相同的元数据。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "元数据行",
+        "required": true,
+        "description": "包含可见元数据项、感知发送者的一行。"
+      },
+      {
+        "name": "时间戳",
+        "required": false,
+        "description": "位于逻辑序列起始处、由调用方提供的时间内容。"
+      },
+      {
+        "name": "页脚",
+        "required": false,
+        "description": "位于时间和状态之间、由调用方提供的信息或操作。"
+      },
+      {
+        "name": "状态",
+        "required": false,
+        "description": "提供状态时本地化的送达图标和文本。"
+      }
+    ]
+  }
 };
 
 export const docsDense = {

@@ -136,17 +136,88 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  usage: {
-    description:
-      'Avatar displays a user or entity\'s profile picture with automatic fallback to initials or a default icon. Use it alongside user information to visually represent people, teams, or entities throughout the interface.',
-    bestPractices: [
-      {guidance: true, description: 'Always provide a name prop so the component can generate meaningful initials and alt text when the image fails to load.'},
-      {guidance: true, description: 'Use the status slot with AvatarStatusDot to indicate online presence or availability when relevant to the context.'},
-      {guidance: true, description: 'Give every interactive avatar (href or onClick) a name or alt. It is the control\'s accessible name, and it warns in development when it is missing.'},
-      {guidance: false, description: 'Use Avatar for decorative images or logos that aren\'t representing a person or entity. Use an image or icon component instead.'},
-      {guidance: false, description: 'Override the circular shape. Avatars are always round to maintain visual consistency across the system.'},
+  "usage": {
+    "description": "Avatar 用头像照片、首字母或默认图标来表示一个人或团队。可用于评论头部、联系人列表、聊天消息、用户卡片，以及任何需要通过视觉识别某人的地方。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "始终传入 name，这样照片加载失败时头像可以显示首字母，屏幕阅读器也能朗读出头像代表的是谁。"
+      },
+      {
+        "guidance": true,
+        "description": "选择与场景匹配的尺寸：行内提及时用 xsm 或 sm，列表和卡片用 md 或 lg，个人资料头部用 xl。"
+      },
+      {
+        "guidance": true,
+        "description": "当需要了解某人的可用状态时（例如聊天或团队视图中），添加状态圆点。"
+      },
+      {
+        "guidance": true,
+        "description": "如果用自定义的 Tooltip 或 HoverCard 包裹 Avatar，请设置 tooltip={false}，以免内置的姓名提示与自定义提示重叠。"
+      },
+      {
+        "guidance": true,
+        "description": "为每个可交互头像（href 或 onClick）提供 name 或 alt。它是控件的无障碍名称，缺失时开发环境会给出警告。"
+      },
+      {
+        "guidance": false,
+        "description": "不要依赖状态标签来命名可交互头像。“Online”并不能说明链接指向哪里。"
+      },
+      {
+        "guidance": false,
+        "description": "不要用 Avatar 表示徽标、产品图片或任何非个人或团队的内容，请改用图片或图标。"
+      },
+      {
+        "guidance": false,
+        "description": "不要用 xstyle 或 className 覆盖形状，请改用 shape 属性，以便主题全局控制。"
+      }
     ],
+    "anatomy": [
+      {
+        "name": "照片",
+        "required": false,
+        "description": "从 src URL 加载的个人资料图片。可用时显示。"
+      },
+      {
+        "name": "首字母",
+        "required": false,
+        "description": "姓名首尾单词的首字母、数字或 emoji；标点会被跳过。没有可用照片时显示。如果姓名中没有任何字母、数字或 emoji，则改为显示默认图标。与照片一样，首字母属于图片的一部分：辅助技术读取的是姓名，而不是这些字母。"
+      },
+      {
+        "name": "默认图标",
+        "required": false,
+        "description": "通用的用户剪影。没有照片或姓名时显示。"
+      },
+      {
+        "name": "状态圆点",
+        "required": false,
+        "description": "右下角的小型指示器，显示可用状态（在线、离开、忙碌）。每种变体都将颜色与独特的形状搭配，使状态不只依赖颜色传达。"
+      }
+    ]
   },
+  "name": "Avatar",
+  "description": "显示用户头像，支持图片、首字母回退和可选的状态指示器。",
+  "propDescriptions": {
+    "src": "主图片源 URL。",
+    "fallbackSrc": "主图片加载失败时使用的备用图片。",
+    "name": "用于生成首字母和替代文本的用户姓名。",
+    "alt": "替代文本（回退到 name）。",
+    "size": "头像尺寸：命名尺寸包括 'xsm'（20px）、'sm'（24px）、'md'（36px）、'lg'（48px）和 'xl'（128px）；数字尺寸必须是类型中列出的像素值之一。在 AvatarGroup 内，组的尺寸始终覆盖此属性，即使组使用默认尺寸也是如此。",
+    "shape": "头像的形状变体。'circle'（默认）保持完全圆形。'rounded' 使用元素圆角令牌，以便与 UI 的圆角保持一致，并可通过主题全局设置。'square' 没有圆角。状态圆点的定位会自动适配：圆形在 4 点钟方向，rounded 和 square 在右下角。",
+    "status": "状态指示器的角落内容。AvatarStatusDot 会向头像上报其 `label`，头像将其组合进无障碍名称（例如 “Jane Doe, Online”），以便屏幕阅读器朗读状态。上报通过 context 进行，因此即使圆点位于你自己封装的组件内也能生效。",
+    "tooltip": "悬停和键盘聚焦时显示的提示。省略或为 true 时显示头像的姓名；传入字符串则显示该文本；为 false 时不显示提示。用自定义 Tooltip 或 HoverCard 包裹时不会自动禁用。如果你自行提供浮层，请设置 tooltip={false}。当 tooltip 为 true 或省略且没有 name 时不显示提示。",
+    "href": "设置后，头像会渲染为指向此处的可交互链接（`<a>` 或自定义链接组件）。这遵循与 Button 相同的元素替换规则。需要通过 `alt` 或 `name` 提供有意义的无障碍名称：缺少名称的可交互头像在开发环境会给出警告。在 AvatarGroup 内，可交互头像共享一个 Tab 停靠点，并用方向键访问。",
+    "as": "设置 `href` 时使用的自定义链接组件（例如 `next/link`）。覆盖 provider 级别的 LinkProvider 默认值。仅在设置 `href` 时适用。",
+    "target": "链接的 target 属性。仅在设置 `href` 时适用。",
+    "rel": "链接的 rel 属性。仅在设置 `href` 时适用。",
+    "onClick": "点击处理函数。在未设置 `href` 时设置，头像会渲染为可聚焦的 `<button type=\"button\">`。需要通过 `alt` 或 `name` 提供有意义的无障碍名称：缺少名称的可交互头像在开发环境会给出警告。"
+  },
+  "components": [
+    {
+      "name": "AvatarStatusDot",
+      "description": ""
+    }
+  ]
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

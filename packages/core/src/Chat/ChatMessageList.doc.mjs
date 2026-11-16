@@ -94,19 +94,19 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'ChatMessageList',
-  isHiddenFromOverview: true,
-  displayName: 'Chat Message List',
-  description: '消息展示容器，支持密度上下文和无限滚动。自动滚动由 ChatLayout 管理。',
-  propDescriptions: {
-    children: '消息元素，通常是 ChatMessage 或 ChatSystemMessage。',
-    emptyState: '列表无消息时显示的内容。',
-    scrollToTopAction: '用户滚动到顶部时触发的异步操作。用于加载更早的消息。',
-    density: '视觉密度，通过上下文传递给子消息。',
-    gap: '顶层消息行之间的间距。默认跟随密度；当 LLM 事件流等独立行需要不同间距时可覆盖。',
-    align: "列表内容不足一屏时的垂直对齐方式。'bottom' 用占位块填满剩余空间，让简短对话贴近输入框；'top' 省略占位块，让消息从顶部开始。仅影响未填满的列表，溢出后两种模式滚动一致，保持自动滚动到底部。",
-    isStreaming: '是否有助手消息正在流式输出。标记日志为 aria-busy，让屏幕阅读器等待并在完成后一次性播报，而不是每个 token 都重复播报。',
-  },
+  "name": "ChatMessageList",
+  "isHiddenFromOverview": true,
+  "displayName": "Chat Message List",
+  "description": "带密度上下文和无限滚动支持的展示型消息容器。为无障碍提供 role=\"log\" 与 aria-live=\"polite\"。列表未占满时，一个弹性间隔元素会把消息推到底部；设置 align=\"top\" 可让消息从顶部开始排列。",
+  "propDescriptions": {
+    "children": "消息元素：通常是 ChatMessage 或 ChatSystemMessage。",
+    "emptyState": "列表没有消息时显示的内容。",
+    "scrollToTopAction": "用户滚动到顶部时触发的异步操作。用于加载更早的消息。该操作包裹在 useTransition 中：等待期间在顶部显示加载旋转图标。",
+    "density": "视觉密度：通过 context 传递给子消息。",
+    "gap": "顶层消息行之间的间距。默认为所选密度；对于 LLM 事件流或需要与密度不同间距的独立行，可覆盖此值。",
+    "align": "列表比容器短时的垂直对齐方式。'bottom' 用间隔元素填充空白，使简短对话位于输入区上方；'top' 省略间隔元素，让消息从顶部开始。仅影响未占满的列表；溢出列表的滚动行为相同，仍会保留自动滚动到底部。",
+    "isStreaming": "助手消息是否正在流式输出。会将日志标记为 aria-busy，让屏幕阅读器等待并在消息完成后只朗读一次，而不是每收到一个 token 就重新朗读部分文本。"
+  }
 };
 
 export const docsDense = {

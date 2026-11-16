@@ -200,77 +200,69 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  propDescriptions: {
-    body: '主要消息内容。',
-    type: 'Toast 类型，控制背景颜色。error toast 持续显示直到关闭。',
-    isAutoHide: '是否自动关闭。info 默认为 true，error 默认为 false。',
-    autoHideDuration:
-      '自动关闭前的持续时间（毫秒）。定时内容必须符合 WCAG 2.2.1。',
-    endContent: '尾部渲染的内容（如撤销按钮、链接）。操作标签应保持简短。',
-    uniqueID: '用于去重的唯一标识符。',
-    collisionBehavior: '当已存在相同 uniqueID 的 toast 时的行为。',
-    onHide: '当 toast 被移除时触发的回调。',
-    renderContent:
-      "用你自己的布局替换该 toast 卡片内部的内容。Astryx 保留卡片本身、astryx-toast 主题目标和自动关闭行为（在 ToastViewport 中由视口播报该 toast；当模态框承载视口时由卡片自行播报），并把消息、endContent、解析后的 toast 设置和 dismiss 回调交给渲染函数。自定义渲染函数完全拥有布局中的控件：请组合所需的控件并通过它调用 dismiss。Astryx 不会向自定义内容注入后备关闭按钮。按 toast 单独设置：应用可通过封装 useToast 并在每次调用时传入来共享同一套布局；而由库代码发起、从不传入该参数的 toast 会渲染为普通的 Astryx toast。传入参数为 {body, endContent, type, isAutoHide, autoHideDuration, dismiss}，其中 type 为 'info' | 'error'。",
+  "propDescriptions": {
+    "body": "主要消息内容。",
+    "type": "控制背景颜色的 Toast 类型。error Toast 会一直保留到被关闭。",
+    "isAutoHide": "Toast 是否自动消失。info 默认为 true，error 默认为 false。",
+    "autoHideDuration": "自动消失前的持续时间（毫秒）。定时内容必须满足 WCAG 2.2.1。",
+    "endContent": "在尾端渲染的内容（例如撤销按钮、链接）。保持操作标签简短。",
+    "uniqueID": "用于去重的唯一标识符。",
+    "collisionBehavior": "当具有匹配 uniqueID 的 Toast 已存在时的行为。",
+    "onHide": "Toast 被移除时触发的回调。",
+    "renderContent": "用你自己的布局替换此 Toast 卡片的内容。Astryx 保留卡片、其 astryx-toast 主题目标和自动隐藏行为（在 ToastViewport 内由视口播报 Toast，在模态框上方也是如此，卡片本身不是 live region），然后将消息、endContent、解析后的 Toast 设置和 dismiss 回调交给渲染器。自定义渲染器负责其布局中的每个控件：组合所需的控件，并从该控件调用 dismiss。Astryx 不会向自定义内容注入后备关闭按钮。按 Toast 生效：应用可以通过包装 useToast 并在每次调用时传入同一布局来共享布局，而库代码触发且从未传入该布局的 Toast 会渲染为普通的 Astryx Toast。参数为 {body, endContent, type, isAutoHide, autoHideDuration, dismiss}，其中 type 为 'info' | 'error'。",
+    "onDismiss": "Toast 被关闭时触发的回调。"
   },
-  usage: {
-    description:
-      'Toast 显示简短的非阻塞通知，用于确认操作或呈现临时信息。适用于用户需要反馈但不需要做决定的场景，如保存、删除或状态变更。\n\n生产环境中推荐使用 `useToast()` hook，它通过 `ToastViewport` 处理定位、堆叠、自动关闭和去重。Toast 会保持在视口和安全区域边距内，较长的消息会换行，并根据配置的顶部或底部边缘进入、退出或滑动关闭。垂直滑动与位置动效使用同一空间模型：顶部 Toast 向上离开，底部 Toast 向下离开。只有在动作明确朝向关闭边缘时才会接管原生触摸移动，滑动关闭继续报告现有的 manual 原因。触控笔属于直接接触输入，因此支持相同手势；鼠标拖动会与桌面文本选择冲突，所以不启用，关闭按钮始终可用。当操作或消息必须持续可用时，请显式设置 `isAutoHide: false`。`Toast` 组件以内联方式渲染 toast 视觉元素，适用于不需要视口生命周期的预览、文档和静态展示。',
-    bestPractices: [
+  "usage": {
+    "description": "Toast 显示简短的非阻塞通知，用于确认操作或呈现临时信息。适用于用户需要反馈但不需要做决定的情景，例如保存、删除或更改状态。\n\n生产环境中，优先使用 `useToast()` Hook；它通过 `ToastViewport` 处理定位、堆叠、自动消失和去重。Toast 会保持在视口和安全区间距内，长消息内容会换行，并朝其配置的顶部或底部边缘进入、退出或滑动消失。垂直滑动使用与放置动效相同的空间模型：顶部 Toast 向上离开，底部 Toast 向下离开。滑动会等待主导的边缘方向意图，然后才取消原生触摸移动，并报告现有的手动关闭原因。支持触控笔作为直接接触输入；鼠标拖动被排除，以避免与桌面文本选择冲突，此时仍可使用可见的关闭控件。当操作或消息必须保持可用时，请显式设置 `isAutoHide: false`。`Toast` 组件以内联方式渲染视觉 Toast 元素，适用于不需要视口生命周期的预览、文档和静态展示。`Toast` 上宿主传入的 `data-*` 属性会到达 Toast 元素；其 role、live-region 属性和主题属性仍由组件管理。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          '保持消息简短，只需几个词告诉用户发生了什么，如"更改已保存"或"消息已发送"。',
+        "guidance": true,
+        "description": "保持消息简短：只用几个词告诉用户发生了什么，例如 \"Changes saved\" 或 \"Message sent\"。"
       },
       {
-        guidance: true,
-        description:
-          '在 endContent 插槽中添加简短的撤销操作，用于可逆操作。当操作必须持续可用时，将 isAutoHide 设置为 false。',
+        "guidance": true,
+        "description": "对于可逆操作，在 endContent 槽中添加简短的撤销操作。当操作必须保持可用时，将 isAutoHide 设为 false。"
       },
       {
-        guidance: true,
-        description:
-          '使用 uniqueID 去重重复操作触发的 toast，如多次点击保存按钮。',
+        "guidance": true,
+        "description": "使用 uniqueID 对重复操作（如多次点击保存按钮）触发的 Toast 去重。"
       },
       {
-        guidance: true,
-        description:
-          '对需要关注但不需要立即操作的错误使用 error 类型，它会持续显示直到关闭。',
+        "guidance": true,
+        "description": "对于需要关注但无需立即处理的失败，使用 error 类型；它会一直保留到被关闭，因此用户不会错过。"
       },
       {
-        guidance: false,
-        description:
-          '不要对阻塞用户的严重错误使用 toast，使用 Banner 进行持久的上下文消息传递。',
+        "guidance": false,
+        "description": "不要将 Toast 用于阻塞用户的严重错误。需要用户确认的持续、上下文内消息请使用 Banner。"
       },
       {
-        guidance: false,
-        description:
-          '不要在 toast 中放置长内容或多行内容，它会在5秒后消失，用户可能来不及阅读。',
+        "guidance": false,
+        "description": "不要在 Toast 中放置过长或多行内容；它会在 5 秒后消失，用户可能读不完。"
       },
       {
-        guidance: false,
-        description:
-          '不要将表单验证错误显示为 toast，使用内联字段验证让用户看到具体哪个字段需要修复。',
-      },
+        "guidance": false,
+        "description": "不要将表单验证错误显示为 Toast。使用内联字段验证，让用户准确看到需要修正的字段。"
+      }
     ],
-    anatomy: [
+    "anatomy": [
       {
-        name: '正文',
-        required: true,
-        description: '描述发生了什么或用户应该知道什么的主要消息文本。',
+        "name": "正文",
+        "required": true,
+        "description": "描述发生了什么或用户需要知道什么的主要消息文本。"
       },
       {
-        name: '尾部内容',
-        required: false,
-        description: '正文后的尾随操作，如撤销按钮或链接。',
+        "name": "末端内容",
+        "required": false,
+        "description": "放置在正文之后的尾随操作，例如撤销按钮或链接。"
       },
       {
-        name: '关闭按钮',
-        required: true,
-        description: '让用户在自动隐藏前手动关闭 toast 的关闭按钮。',
-      },
-    ],
+        "name": "关闭按钮",
+        "required": true,
+        "description": "让用户在自动隐藏之前手动关闭 Toast 的关闭按钮。"
+      }
+    ]
   },
+  "name": "Toast"
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

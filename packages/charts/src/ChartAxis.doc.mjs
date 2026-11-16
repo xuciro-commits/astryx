@@ -160,3 +160,78 @@ export const docs = {
     },
   ],
 };
+
+export const docsZh = {
+  "name": "ChartAxis",
+  "displayName": "Chart Axis",
+  "usage": {
+    "description": "ChartAxis 从父级 Chart 拥有的比例尺渲染刻度标签以及可选的边缘线和刻度线。请在 Chart 的 `axes` 槽位中使用它，分别对应绘图区的顶部、右侧、底部或左侧物理边缘。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "在 Chart 内使用 ChartAxis，使其标签、刻度和边缘线与标记共享相同的比例尺和绘图区尺寸。"
+      },
+      {
+        "guidance": true,
+        "description": "使用 `tickFormat` 处理产品特定的单位或本地化格式；当密集的分类标签需要限制展示量时，使用 `maxTicks` 或 `truncate`。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将坐标轴标签或指针工具提示作为获取重要数值的唯一途径。应为 Chart 提供无障碍名称，并保留等效的数据视图或摘要。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在显示刻度线时隐藏边缘线。`showTicks` 会有意保持线条可见，使每个标记都有清晰的基准边缘。"
+      }
+    ],
+    "accessibility": [
+      {
+        "name": "图表替代内容",
+        "category": "Content",
+        "criterion": "1.1.1 Non-text Content",
+        "requirement": "Required on the parent Chart",
+        "states": [
+          "全部"
+        ],
+        "description": "Chart 负责无障碍图像名称和支持的小数据表。刻度标签只是对该图表级替代内容的补充，不能替代它。"
+      },
+      {
+        "name": "标签文本完整性",
+        "category": "Content",
+        "criterion": "Unicode grapheme clusters",
+        "requirement": "Required when truncate is set",
+        "states": [
+          "截断的标签"
+        ],
+        "description": "截断会保持 emoji、组合 emoji 序列、旗帜和组合字符完整，然后再追加省略号。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "坐标轴边缘线",
+        "required": false,
+        "description": "沿选定绘图区边缘绘制的线条。默认仅在底部边缘显示，以及在显示刻度线时显示。"
+      },
+      {
+        "name": "刻度线",
+        "required": false,
+        "description": "从每个保留的刻度位置向外延伸的短线。"
+      },
+      {
+        "name": "刻度标签",
+        "required": true,
+        "description": "位于选定绘图区边缘外侧的格式化比例尺数值或分类。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "position": "渲染坐标轴所在的物理绘图区边缘。",
+    "tickCount": "连续比例尺的大致刻度数量。最终值由 d3 决定。",
+    "maxTicks": "显示标签的最大数量。当生成的标签集合更大时，会均匀跳过标签。",
+    "tickFormat": "格式化每个保留的刻度。省略时，连续比例尺使用 d3 格式化，带状比例尺使用其分类字符串。",
+    "truncate": "追加省略号前保留的最大内容字符数。用户感知的字符会保持完整。",
+    "animated": "刻度位置和可见性变化是否使用内置过渡。",
+    "showAxisLine": "是否绘制边缘线。启用刻度线时会强制显示，使标记有清晰的基准边缘。",
+    "showTicks": "是否在每个保留的刻度处绘制向外标记。"
+  }
+};

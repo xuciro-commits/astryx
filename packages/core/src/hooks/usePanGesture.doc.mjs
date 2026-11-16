@@ -156,3 +156,59 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "usePanGesture",
+  "usage": {
+    "description": "将元素上的拖拽以数值形式报告，供产品自行移动的表面使用：跟随手指的卡片、通过手柄拉动的抽屉。手指、鼠标和触控笔都可驱动。从可选文本上开始的鼠标或触控笔拖拽会选中该文本，而平移不报告任何内容。请为该文本设置 `user-select: none`。该拖拽按 UIKit 的 10 pt 认领触摸，与 `UIPanGestureRecognizer` 一样，因此点按仍是点按，按压或长按绝不会被报告为平移。使用 `axis` 时，从该元素开始、跨该轴的滚动仍归属于页面；不使用它时，平移会接管任意方向的拖拽，因此从元素开始的手指滚动会移动元素而不是页面。触控板滚动仍会滚动页面。该 Hook 是 `createPanGesture` 之上的薄层，后者为不使用 React 的代码提供相同 API。拖拽本身没有键盘或辅助技术路径：拖拽所做的任何事都需要另一种方式来完成，例如按钮或方向键（WCAG 2.5.7）。平移本身不移动任何内容，因此“减少动态效果”适用于由它驱动的运动：在移动元素的动画中遵循用户的“减少动态效果”设置。如果组件已提供该行为，请改用其属性：BottomSheet 的 `snapPoints`、Carousel 的 `hasSnap`。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "从 `translation` 加上拖拽开始时的位置来移动元素，使其从拖拽被认领的那一刻起就跟随手指。"
+      },
+      {
+        "guidance": true,
+        "description": "在 `ended` 时，将 `velocity` 交给使元素停稳的动画，让轻扫以释放时的速度继续。"
+      },
+      {
+        "guidance": true,
+        "description": "为每次拖拽提供键盘和辅助技术的等价操作方式，例如按钮、方向键或菜单。"
+      },
+      {
+        "guidance": true,
+        "description": "当组件自身的属性可以完成工作时就使用它：BottomSheet 的 `snapPoints` 用于抽屉，Carousel 的 `hasSnap` 用于分页。"
+      },
+      {
+        "guidance": false,
+        "description": "将拖拽偏移保存在大型组件的 state 中：每个 `changed` 事件都会重新渲染持有它的组件。"
+      },
+      {
+        "guidance": false,
+        "description": "用它识别点按或长按；`useLongPress` 和组件自身的按压处理负责这些。"
+      }
+    ],
+    "accessibility": [
+      {
+        "name": "键盘与辅助技术",
+        "category": "Keyboard",
+        "criterion": "2.5.7 Dragging Movements",
+        "description": "拖拽本身没有键盘或辅助技术路径：拖拽所做的任何事都需要另一种方式来完成，例如按钮、方向键或菜单。"
+      },
+      {
+        "name": "减少动态效果",
+        "category": "Content",
+        "criterion": "2.3.3 Animation from Interactions",
+        "description": "平移本身不移动任何内容，因此“减少动态效果”适用于由它驱动的运动：当用户要求减少动态效果时，停稳或抛出动画会直接到达终点而不产生位移。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "ref": "要拖拽的元素。该 Hook 会为 ref 背后的元素创建一个平移手势；当 ref 移到另一个节点或 `axis` 变化时创建新的手势，并在卸载时销毁；此时进行中的拖拽会结束且不会触发 `cancelled` 事件，因为 effect 从不调用 `onPan`。",
+    "options": "配置对象。",
+    "options.axis": "将拖拽限制在一个轴上。沿另一个轴的拖拽不会被报告，且每个值中该轴的分量读取为 0。省略则报告两个轴。",
+    "options.onPan": "在拖拽开始、变化、释放结束或被取消时，以 `{state, translation, velocity}` 调用。`state` 为 'began'、'changed'、'ended' 或 'cancelled'。`translation` 是自拖拽开始以来的位移（像素）：拖拽启动所需的行程不包含在内，因此跟随它的元素不会跳动。`velocity` 单位为像素/秒；在 'ended' 时是释放速度（手指停留后抬起则为 0），在 'cancelled' 时为 0。通过 ref 读取：每次渲染都新建函数不会重新创建任何东西。"
+  },
+  "returnDescriptions": {
+    "void": "没有返回值：该 Hook 不发出识别器。不使用 React 时，`createPanGesture(element, options)` 接受相同选项并返回 `{destroy}`，它会移除添加的所有监听器并取消进行中的拖拽。"
+  }
+};

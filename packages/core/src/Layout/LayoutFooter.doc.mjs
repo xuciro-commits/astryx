@@ -69,50 +69,57 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'LayoutFooter',
-  isHiddenFromOverview: true,
-  displayName: 'Layout Footer',
-  description: '用于操作栏、分页和状态栏的底部栏。',
-  props: [
+  "name": "LayoutFooter",
+  "isHiddenFromOverview": true,
+  "displayName": "Layout Footer",
+  "description": "用于操作栏、分页和状态栏的底栏。",
+  "props": [
     {
-      name: 'children',
-      type: 'ReactNode',
-      description: '页脚内容。',
+      "name": "children",
+      "type": "ReactNode",
+      "description": "底栏内容。"
     },
     {
-      name: 'hasDivider',
-      type: 'boolean',
-      description:
-        '顶部边缘的边框。未设置时，由父级 Layout 的 defaultHasDividers 决定。',
-      default: 'false',
+      "name": "hasDivider",
+      "type": "boolean",
+      "description": "顶部边缘的边框。未设置时，由父级 Layout 的 defaultHasDividers 决定。",
+      "default": "false"
     },
     {
-      name: 'height',
-      type: 'SizeValue',
-      description: '页脚高度。数字类型会被解释为像素值，字符串类型按原样使用。',
+      "name": "height",
+      "type": "SizeValue",
+      "description": "底栏高度。数字按像素处理，字符串按原样使用。"
     },
     {
-      name: 'label',
-      type: 'string',
-      description: '地标元素的无障碍标签。',
+      "name": "label",
+      "type": "string",
+      "description": "地标元素的无障碍标签。"
     },
     {
-      name: 'padding',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description:
-        '所有边的内边距，使用间距刻度。替换布局提供的内边距；0 表示全出血。',
+      "name": "padding",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "每条边的内部内边距，使用间距刻度。会替换布局的内缩；0 表示全出血。"
     },
     {
-      name: 'role',
-      type: 'AriaRole',
-      description: 'ARIA 地标角色。',
+      "name": "role",
+      "type": "AriaRole",
+      "description": "ARIA 地标角色。"
     },
     {
-      name: 'ref',
-      type: 'React.Ref<HTMLDivElement>',
-      description: '转发到页脚元素的 ref。',
-    },
+      "name": "ref",
+      "type": "React.Ref<HTMLDivElement>",
+      "description": "转发到底栏元素的 ref。"
+    }
   ],
+  "propDescriptions": {
+    "children": "底栏内容。",
+    "hasDivider": "顶部边缘的边框。未设置时，由父级 Layout 的 defaultHasDividers 决定。",
+    "height": "底栏高度。数字按像素处理，字符串按原样使用。",
+    "label": "地标元素的无障碍标签。",
+    "padding": "每条边的内部内边距，使用间距刻度。会替换布局的内缩；0 表示全出血。",
+    "role": "ARIA 地标角色。",
+    "ref": "转发到底栏元素的 ref。"
+  }
 };
 
 export const docsDense = {

@@ -148,111 +148,162 @@ function Page({children}: {children: React.ReactNode}) {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'Section',
-  displayName: 'Section',
-  props: [
+  "name": "Section",
+  "displayName": "Section",
+  "props": [
     {
-      name: 'variant',
-      type: "'section' | 'transparent' | 'muted'",
-      description: '应用于区域容器的背景变体。',
-      default: "'section'",
+      "name": "variant",
+      "type": "'section' | 'transparent' | 'muted'",
+      "description": "应用于分区容器的背景变体。",
+      "default": "'section'"
     },
     {
-      name: 'width',
-      type: 'SizeValue',
-      description:
-        '区域的宽度；数字类型会被解释为像素值，字符串类型按原样使用。',
+      "name": "width",
+      "type": "SizeValue",
+      "description": "分区宽度；数字按像素解释，字符串按原样使用。"
     },
     {
-      name: 'height',
-      type: 'SizeValue',
-      description:
-        '区域的高度；数字类型会被解释为像素值，字符串类型按原样使用。',
+      "name": "height",
+      "type": "SizeValue",
+      "description": "分区高度；数字按像素解释，字符串按原样使用。"
     },
     {
-      name: 'maxWidth',
-      type: 'SizeValue',
-      description: '区域的最大宽度。',
+      "name": "maxWidth",
+      "type": "SizeValue",
+      "description": "分区的最大宽度。"
     },
     {
-      name: 'minHeight',
-      type: 'SizeValue',
-      description: '区域的最小高度。',
+      "name": "minHeight",
+      "type": "SizeValue",
+      "description": "分区的最小高度。"
     },
     {
-      name: 'children',
-      type: 'ReactNode',
-      description: '在区域内部渲染的内容。',
+      "name": "children",
+      "type": "ReactNode",
+      "description": "在分区内渲染的内容。"
     },
     {
-      name: 'dividers',
-      type: "Array<'top' | 'bottom' | 'start' | 'end'>",
-      description: '区域的哪些边具有分隔线边框。',
+      "name": "dividers",
+      "type": "Array<'top' | 'bottom' | 'start' | 'end'>",
+      "description": "分区哪些边具有分隔边框。"
     },
     {
-      name: 'padding',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description: '使用间距比例的内部内边距（0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10）。使用 padding={0} 实现全宽内容。',
-      default: '4',
+      "name": "padding",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "使用间距刻度的内部内边距（0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10）。边缘到边缘的内容使用 padding={0}。",
+      "default": "4"
     },
     {
-      name: 'paddingInline',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description: '行内（水平）方向内边距覆盖。仅覆盖行内轴内边距，同时保留来自 padding 或容器主题默认值的块内边距。使用间距比例（0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10）。',
+      "name": "paddingInline",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "行内（水平）内边距覆盖。仅覆盖行内轴内边距，同时保留来自 `padding` 或容器主题默认的块级内边距。接受间距刻度（0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10）。"
     },
     {
-      name: 'paddingInlineStart',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description: '行内起始内边距覆盖（LTR 中为左侧，RTL 中为右侧）。仅在该边上覆盖 paddingInline 和 padding。',
+      "name": "paddingInlineStart",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "行内起始内边距覆盖（LTR 中为左，RTL 中为右）。仅覆盖该边的 paddingInline 和 padding。"
     },
     {
-      name: 'paddingInlineEnd',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description: '行内结束内边距覆盖（LTR 中为右侧，RTL 中为左侧）。仅在该边上覆盖 paddingInline 和 padding。',
+      "name": "paddingInlineEnd",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "行内结束内边距覆盖（LTR 中为右，RTL 中为左）。仅覆盖该边的 paddingInline 和 padding。"
     },
     {
-      name: 'paddingBlock',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description: '块（垂直）方向内边距覆盖。仅覆盖块轴内边距，同时保留来自 padding 或容器主题默认值的行内内边距。使用间距比例（0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10）。',
+      "name": "paddingBlock",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "块级（垂直）内边距覆盖。仅覆盖块级轴内边距，同时保留来自 `padding` 或容器主题默认的行内内边距。接受间距刻度（0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10）。"
     },
     {
-      name: 'paddingBlockStart',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description: '块起始（顶部）内边距，使用间距刻度。仅在该边上覆盖 paddingBlock 和 padding。',
+      "name": "paddingBlockStart",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "块级起始（顶部）内边距，使用间距刻度。仅覆盖该边的 paddingBlock 和 padding。"
     },
     {
-      name: 'paddingBlockEnd',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description: '块结束（底部）内边距，使用间距刻度。仅在该边上覆盖 paddingBlock 和 padding。',
+      "name": "paddingBlockEnd",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "块级结束（底部）内边距，使用间距刻度。仅覆盖该边的 paddingBlock 和 padding。"
     },
     {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description: '用于布局自定义的 StyleX 样式（外边距、定位、尺寸）。必须是 stylex.create() 的值，不能是内联样式对象。',
-    },
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 值，而不是内联样式对象。"
+    }
   ],
-  theming: {
-    container: true,
-    targets: [
-      {className: 'astryx-section', visualProps: ['variant']},
+  "theming": {
+    "container": true,
+    "targets": [
+      {
+        "className": "astryx-section",
+        "visualProps": [
+          "variant"
+        ]
+      }
     ],
-    derived: [
-      {property: 'padding', expand: 'container'},
-    ],
+    "derived": [
+      {
+        "property": "padding",
+        "expand": "container"
+      }
+    ]
   },
-  usage: {
-    anatomy,
-    description:
-      'Section is the correct way to create page regions and group related content on a page. Use it for settings groups, form sections, sidebar areas, or any time you need visual separation between parts of a page. If you are tempted to use a Card for a page section, use Section instead.',
-    bestPractices: [
-      { guidance: true, description: 'Use Section for page-level grouping: settings panels, form groups, sidebar regions. These are sections of a page, not discrete items.' },
-      { guidance: true, description: 'Start with the default variant. Use muted only to call attention to a specific region.' },
-      { guidance: true, description: 'Add dividers between same-background sections that need separation.' },
-      { guidance: true, description: 'Combine with a heading + Stack for a typical page section pattern.' },
-      { guidance: false, description: 'Use Card when you mean Section. Cards are for discrete items (one notification, one profile). Sections are for page regions.' },
-      { guidance: true, description: '要让 Section 居中，在 xstyle 中把 marginInlineStart 和 marginInlineEnd 设为 \'auto\'。如果 Astryx 源码在你的应用自己的 StyleX 编译中处理，marginInline 简写会输给 Section 自身的行内外边距。' },
+  "usage": {
+    "anatomy": [
+      {
+        "name": "分区容器",
+        "required": true,
+        "description": "分组页面区域的绘制容器。"
+      },
+      {
+        "name": "调用方内容",
+        "required": false,
+        "description": "在分区容器内渲染的调用方提供的内容。"
+      }
     ],
+    "description": "Section 是创建页面区域并分组页面相关内容的标准方式。用于设置组、表单分区、侧边栏区域，或任何需要页面各部分之间视觉分隔的场景。如果你想用 Card 表示页面分区，请改用 Section。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将 Section 用于页面级分组：设置面板、表单组、侧边栏区域。这些是页面的分区，而不是离散项目。"
+      },
+      {
+        "guidance": true,
+        "description": "从默认变体开始。仅在需要引起对特定区域的注意时使用 muted。"
+      },
+      {
+        "guidance": true,
+        "description": "在需要分隔的同背景分区之间添加分隔线。"
+      },
+      {
+        "guidance": true,
+        "description": "搭配标题 + Stack，构成典型的页面分区模式。"
+      },
+      {
+        "guidance": false,
+        "description": "在本应使用 Section 时使用 Card。卡片用于离散项目（一条通知、一个资料）。分区用于页面区域。"
+      },
+      {
+        "guidance": true,
+        "description": "要使 Section 居中，请在 xstyle 中将 marginInlineStart 和 marginInlineEnd 设为 'auto'。如果 Astryx 源码在你的应用自己的 StyleX 编译过程中编译，marginInline 简写会输给 Section 自己的行内边距。"
+      }
+    ]
   },
+  "propDescriptions": {
+    "variant": "应用于分区容器的背景变体。",
+    "width": "分区宽度；数字按像素解释，字符串按原样使用。",
+    "height": "分区高度；数字按像素解释，字符串按原样使用。",
+    "maxWidth": "分区的最大宽度。",
+    "minHeight": "分区的最小高度。",
+    "children": "在分区内渲染的内容。",
+    "dividers": "分区哪些边具有分隔边框。",
+    "padding": "使用间距刻度的内部内边距（0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10）。边缘到边缘的内容使用 padding={0}。",
+    "paddingInline": "行内（水平）内边距覆盖。仅覆盖行内轴内边距，同时保留来自 `padding` 或容器主题默认的块级内边距。接受间距刻度（0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10）。",
+    "paddingInlineStart": "行内起始内边距覆盖（LTR 中为左，RTL 中为右）。仅覆盖该边的 paddingInline 和 padding。",
+    "paddingInlineEnd": "行内结束内边距覆盖（LTR 中为右，RTL 中为左）。仅覆盖该边的 paddingInline 和 padding。",
+    "paddingBlock": "块级（垂直）内边距覆盖。仅覆盖块级轴内边距，同时保留来自 `padding` 或容器主题默认的行内内边距。接受间距刻度（0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10）。",
+    "paddingBlockStart": "块级起始（顶部）内边距，使用间距刻度。仅覆盖该边的 paddingBlock 和 padding。",
+    "paddingBlockEnd": "块级结束（底部）内边距，使用间距刻度。仅覆盖该边的 paddingBlock 和 padding。",
+    "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 值，而不是内联样式对象。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

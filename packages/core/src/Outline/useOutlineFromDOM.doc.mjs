@@ -97,3 +97,34 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useOutlineFromDOM",
+  "usage": {
+    "description": "根据页面中已有的标题构建大纲项。当文章不是 Markdown 字符串时使用它，并将这些项传给 Outline。当标题被添加、删除、重命名或赋予新 id 时，列表会更新。null ref 返回空列表。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "为大纲应列出的每个标题设置 id。没有 id 或没有文本的标题会被省略。"
+      },
+      {
+        "guidance": true,
+        "description": "将 ref 指向文章，而不是页面，使文章外的标题不进入大纲。"
+      },
+      {
+        "guidance": false,
+        "description": "期望 Hook 自行生成 id。它只读取标题已有的 id。"
+      },
+      {
+        "guidance": false,
+        "description": "将其用于 Markdown 字符串。useOutlineFromMarkdown 遵循与 Markdown 相同的解析器和 slug。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "containerRef": "包含标题的元素。Hook 读取其中的 h1 到 h6。"
+  },
+  "returnDescriptions": {
+    "items": "每个同时具有 id 和文本的标题对应一个项，按文档顺序排列，可直接用于 Outline 的 items 属性。id 是标题的 id，label 是其修剪后的文本，level 是其深度（1 到 6）。"
+  }
+};

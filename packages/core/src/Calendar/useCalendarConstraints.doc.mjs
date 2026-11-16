@@ -149,3 +149,38 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useCalendarConstraints",
+  "usage": {
+    "description": "为日历视图和自定义范围选择器提供日期约束校验。它将边界日期、从进行中的范围起点开始衡量的跨度限制以及自定义规则（例如每周停业日或不可预约日期）合并为一个 `isDateDisabled` 谓词。Calendar 在内部使用它来禁用日期按钮；在构建定制排程界面或范围选择器时可直接使用。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "仅在用户选择初始范围起点后才传入 `rangeAnchor`，这样在第一次点击前所有符合条件的起始日期都保持可选。"
+      },
+      {
+        "guidance": true,
+        "description": "将 `dateConstraints` 用于重复性或动态规则，例如禁用停业的工作日、过去的节假日或售罄日期。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在 `dateConstraints` 谓词中执行缓慢的网络请求或繁重计算，因为 `isDateDisabled` 会针对网格中渲染的每一天同步求值。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "日期边界、范围跨度限制和自定义规则的配置。",
+    "options.min": "ISO 格式（YYYY-MM-DD）的最早可选日期。严格早于此日期的日期将被禁用。",
+    "options.max": "ISO 格式（YYYY-MM-DD）的最晚可选日期。严格晚于此日期的日期将被禁用。",
+    "options.dateConstraints": "自定义日期约束谓词。接收原生 `Date`；如果任一谓词返回 false，则该日期被禁用。",
+    "options.maxRangeSpan": "范围可跨越的最大天数，包含两端点（值为 7 时允许 7 天的窗口）。在设置 `rangeAnchor` 前不生效。",
+    "options.minRangeSpan": "范围必须跨越的最小天数，包含两端点。禁用会使范围短于 `minRangeSpan` 天的日期（`rangeAnchor` 本身除外，它保持启用，因此禁止单日选择的选择器必须拒绝在锚点上进行第二次点击）。",
+    "options.rangeAnchor": "进行中的范围起始日期。跨度约束从此日期开始衡量。未进行选择时为 null。"
+  },
+  "returnDescriptions": {
+    "isDateDisabled": "当 PlainDate 超出 `min`/`max` 边界、与 `rangeAnchor` 的距离小于 `minRangeSpan` 允许值（`rangeAnchor` 本身除外）、相对于 `rangeAnchor` 超过 `maxRangeSpan`，或未通过任何 `dateConstraints` 谓词时，返回 true 的谓词。",
+    "minDate": "解析后的最小日期，类型为 PlainDate 对象；如果未提供 `min`，则为 null。",
+    "maxDate": "解析后的最大日期，类型为 PlainDate 对象；如果未提供 `max`，则为 null。"
+  }
+};

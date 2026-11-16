@@ -119,97 +119,47 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'CircularProgress',
-  displayName: 'Circular Progress',
-  props: [
-    {
-      name: 'value',
-      type: 'number',
-      description: '当前值。当 isIndeterminate 为 true 时忽略。',
-      default: '0',
-    },
-    {
-      name: 'max',
-      type: 'number',
-      description: '最大值。',
-      default: '100',
-    },
-    {
-      name: 'label',
-      type: 'string',
-      description: '屏幕阅读器的无障碍标签（必填）。',
-      required: true,
-    },
-    {
-      name: 'isLabelHidden',
-      type: 'boolean',
-      description: '视觉上隐藏标签（仍保持无障碍可访问性）。默认为 true，因为圆形进度条通常显示中心内容。',
-      default: 'true',
-    },
-    {
-      name: 'hasValueLabel',
-      type: 'boolean',
-      description: '在环形中心显示格式化的值（如 "75%"）。当 isIndeterminate 为 true 或提供了 children 自定义中心内容时忽略。',
-      default: 'false',
-    },
-    {
-      name: 'formatValueLabel',
-      type: '(value: number, max: number) => string',
-      description: '自定义值标签格式化函数；默认为百分比字符串。',
-    },
-    {
-      name: 'children',
-      type: 'ReactNode',
-      description: '在环形中心显示的内容：百分比、图标或自定义内容。优先于 hasValueLabel。',
-    },
-    {
-      name: 'size',
-      type: "'sm' | 'md' | 'lg'",
-      description: '进度环的直径（32px、48px、64px）。',
-      default: "'md'",
-    },
-    {
-      name: 'variant',
-      type: "'accent' | 'success' | 'warning' | 'error' | 'neutral'",
-      description: '进度填充的语义颜色变体。',
-      default: "'accent'",
-    },
-    {
-      name: 'isIndeterminate',
-      type: 'boolean',
-      description: '用于未知进度的旋转动画指示器。遵循 prefers-reduced-motion，减速播放动画。',
-      default: 'false',
-    },
-    {
-      name: 'isDisabled',
-      type: 'boolean',
-      description: '视觉禁用：环形和文本变灰。用于已取消或非活动的操作。',
-      default: 'false',
-    },
-    {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description: '用于布局自定义的 StyleX 样式。必须是 stylex.create() 的值。',
-    },
-  ],
-  theming: {
-    targets: [
-      {className: 'astryx-circular-progress', visualProps: ['variant', 'size']},
-      {className: 'astryx-circular-progress-track'},
-      {className: 'astryx-circular-progress-fill', visualProps: ['variant']},
-    ],
+  "name": "CircularProgress",
+  "displayName": "Circular Progress",
+  "usage": {
+    "description": "以圆环或弧形显示完成度的圆形进度指示器。用于上传进度、分数展示、仪表盘量表，或水平空间有限的紧凑进度。它是 ProgressBar 在径向布局中的补充。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "确定性进度请传入 value；当持续时间未知时设置 isIndeterminate。"
+      },
+      {
+        "guidance": true,
+        "description": "用 hasValueLabel 显示值，或传入 children 作为自定义中心内容：图标或短标签。"
+      },
+      {
+        "guidance": true,
+        "description": "始终提供标签，即使它默认在视觉上隐藏；屏幕阅读器需要它。"
+      },
+      {
+        "guidance": false,
+        "description": "将圆形进度用于长文本标签；请改用 ProgressBar，它为标签和值显示留出更多空间。"
+      },
+      {
+        "guidance": false,
+        "description": "将不确定的 CircularProgress 用于小型行内加载状态；Spinner 才是行内指示器。"
+      }
+    ]
   },
-  usage: {
-    description:
-      'A circular progress indicator that shows completion as a ring or arc. Use it for upload progress, score displays, dashboard gauges, or compact progress where horizontal space is limited. Complements ProgressBar for radial layouts.',
-    bestPractices: [
-      { guidance: true, description: 'Pass a value for determinate progress; set isIndeterminate when the duration is unknown.' },
-      { guidance: true, description: 'Show the value with hasValueLabel, or pass children for custom center content: an icon or short label.' },
-      { guidance: true, description: 'Always provide a label, even though it is visually hidden by default; screen readers need it.' },
-      { guidance: false, description: 'Use circular progress for long text labels; use ProgressBar instead, which has more room for label and value display.' },
-      { guidance: false, description: 'Use an indeterminate CircularProgress for small inline loading states; Spinner is the inline indicator.' },
-    ],
-  },
+  "propDescriptions": {
+    "value": "当前值。isIndeterminate 为 true 时忽略。",
+    "max": "最大值。",
+    "label": "供屏幕阅读器使用的可访问标签。",
+    "isLabelHidden": "在视觉上隐藏标签（仍可访问）。默认值为 true，因为圆形进度通常改为显示中心内容。",
+    "hasValueLabel": "在圆环中心显示格式化后的值（例如 \"75%\"）。isIndeterminate 为 true 或 children 提供自定义中心内容时忽略。",
+    "formatValueLabel": "自定义值标签格式化函数；默认为百分比字符串。",
+    "children": "显示在圆环中心的内容：百分比、图标或自定义内容。优先于 hasValueLabel。",
+    "size": "进度圆环的直径（32px、48px、64px）。",
+    "variant": "进度填充的语义颜色变体。",
+    "isIndeterminate": "用于未知进度的动画旋转指示器。遵循 prefers-reduced-motion，通过减慢动画来响应。",
+    "isDisabled": "视觉上禁用：将圆环和文本置灰。用于已取消或不活跃的操作。",
+    "xstyle": "用于布局自定义（外边距、定位）的 StyleX 样式。必须是 stylex.create() 值。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

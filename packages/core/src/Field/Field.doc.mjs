@@ -277,18 +277,135 @@ function CustomSliderField() {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  usage: {
-    description: 'Field is a low-level wrapper for custom, native, or third-party controls that do not already provide field label, description, and status UI. Use it when you need the Field shell around a control you own; use styled Astryx inputs like TextInput, Typeahead, and Select directly when they already expose label, description, and validation props.',
-    bestPractices: [
-      { guidance: true, description: 'Wrap custom controls, native inputs, or third-party widgets that need labeling, helper text, optional/required indicators, or validation status.' },
-      { guidance: true, description: 'Always provide a label for accessibility, even if visually hidden with isLabelHidden.' },
-      { guidance: true, description: 'Use inputID and descriptionID to connect the label and description to the inner control with htmlFor and aria-describedby.' },
-      { guidance: false, description: 'Nest Field around styled inputs such as TextInput, Typeahead, Select, DateInput, or TextArea; those components already render their own Field shell.' },
-      { guidance: true, description: 'Use attached status only when the wrapped control is opaque, bordered, and fixed-height; use detached for custom, tall, translucent, or non-bordered controls.' },
-      { guidance: false, description: 'Set both isOptional and isRequired on the same field.' },
-      { guidance: false, description: 'Hide the label without providing an alternative way for the user to understand the field purpose.' },
+  "usage": {
+    "description": "`Field` 是用于自定义、原生或第三方控件的底层包装组件，这些控件本身不提供字段标签、描述和状态 UI。当你需要为自己掌控的控件套用 `Field` 外壳时使用它；如果 `TextInput`、`Typeahead`、`Select` 等带样式的 Astryx 输入组件已经提供标签、描述和校验属性，请直接使用这些组件。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "包裹需要标签、辅助文本、可选/必填指示器或校验状态的自定义控件、原生输入或第三方组件。"
+      },
+      {
+        "guidance": true,
+        "description": "始终提供标签以满足无障碍要求，即使通过 `isLabelHidden` 在视觉上隐藏。"
+      },
+      {
+        "guidance": true,
+        "description": "使用 `inputID` 和 `descriptionID`，通过 `htmlFor` 和 `aria-describedby` 将标签和描述关联到内部控件。"
+      },
+      {
+        "guidance": false,
+        "description": "在 `TextInput`、`Typeahead`、`Select`、`DateInput` 或 `TextArea` 等带样式的输入组件外再嵌套 `Field`；这些组件已经渲染了自己的 `Field` 外壳。"
+      },
+      {
+        "guidance": true,
+        "description": "仅当被包裹控件不透明、有边框且高度固定时使用附着式状态；自定义、较高、半透明或无边框的控件请使用分离式状态。"
+      },
+      {
+        "guidance": false,
+        "description": "在同一字段上同时设置 `isOptional` 和 `isRequired`。"
+      },
+      {
+        "guidance": false,
+        "description": "隐藏标签，且不提供其他方式让用户理解字段用途。"
+      }
     ],
+    "anatomy": [
+      {
+        "name": "容器",
+        "required": true,
+        "description": "根字段盒，负责标签、控件和状态的布局、宽度及局部层叠。"
+      },
+      {
+        "name": "标签",
+        "required": true,
+        "description": "标识字段的文本。始终为无障碍而渲染，也可选择在视觉上隐藏。"
+      },
+      {
+        "name": "普通描述",
+        "required": false,
+        "description": "普通字段布局中位于标签下方的辅助文本。"
+      },
+      {
+        "name": "水平标签描述",
+        "required": false,
+        "description": "当 `FormLayout` 使用水平标签时，位于控件列中的辅助文本。"
+      },
+      {
+        "name": "控件插槽",
+        "required": true,
+        "description": "尚未渲染字段外壳的自定义、原生或第三方控件。"
+      },
+      {
+        "name": "状态消息",
+        "required": false,
+        "description": "内联校验反馈，显示错误、警告或成功状态及消息。"
+      },
+      {
+        "name": "输入状态图标",
+        "required": false,
+        "description": "由 `Field` 组合的输入控件使用的共享状态提示。"
+      },
+      {
+        "name": "输入清除按钮",
+        "required": false,
+        "description": "由 `Field` 组合的输入控件使用的共享清除操作。"
+      },
+      {
+        "name": "输入清除图标",
+        "required": false,
+        "description": "共享输入清除操作内的图标。"
+      },
+      {
+        "name": "可选/必填指示器",
+        "required": false,
+        "description": "标签旁的徽标，显示字段是可选还是必填。"
+      },
+      {
+        "name": "标签工具提示触发器",
+        "required": false,
+        "description": "标签旁的信息图标，用于打开说明内容。"
+      },
+      {
+        "name": "标签工具提示表面",
+        "required": false,
+        "description": "由层承载的标签工具提示说明内容。"
+      }
+    ]
   },
+  "name": "Field",
+  "description": "底层表单字段包装组件，用于需要标签、描述以及可选/必填指示器的自定义控件。",
+  "propDescriptions": {
+    "label": "字段的标签文本（始终为无障碍而渲染）。",
+    "inputID": "输入元素的 ID（用于标签的 `htmlFor` 属性）。",
+    "labelID": "应用于标签元素本身的 ID，用于分组无障碍。",
+    "isGroupLabel": "为控件组（radiogroup、复选框列表）将标签渲染为 `span`。",
+    "children": "要渲染的输入或控件。",
+    "isLabelHidden": "在视觉上隐藏标签（屏幕阅读器仍可访问）。",
+    "isDisabled": "关联输入是否禁用。会将禁用样式传播到标签。",
+    "description": "显示在标签和输入之间的描述文本。",
+    "descriptionID": "描述元素的 ID（用于输入上的 `aria-describedby`）。",
+    "isOptional": "字段是否为可选（与 `isRequired` 互斥）。",
+    "isRequired": "字段是否为必填（与 `isOptional` 互斥）。",
+    "labelIcon": "显示在标签文本之前的图标。有效语义名称参见 `astryx docs icons`。",
+    "labelTooltip": "标签后信息按钮的帮助文本，名称为“关于 {label}”。悬停和键盘聚焦会预览它；点按、点击、Enter 或 Space 会打开它，且绝不会聚焦或切换控件。",
+    "status": "包含类型和可选消息的状态指示器。设置 `message` 时，显示带颜色的状态框。`messageID` 用于在输入上关联 `aria-describedby`。",
+    "statusVariant": "状态反馈的放置方式。`attached` 叠加在符合条件的不透明、有边框、固定高度控件上；`detached` 在自定义或无边框控件下方渲染消息；`tooltip` 将可见提示留给被包裹的输入，并在没有 `FieldStatus` 框的情况下朗读其消息。",
+    "width": "字段宽度（数字表示像素，字符串原样使用，例如 `\"100%\"`）。会调整整个字段（标签、控件和状态）的尺寸，使其保持对齐。优先使用此属性，而不是通过 `xstyle`/`className`/`style` 设置宽度，后者只会调整内部控件盒的尺寸。未设置宽度时，一行可能将整个字段压缩到小于其控件自然宽度，导致筛选栏收缩而不是溢出。",
+    "ref": "转发到根元素的 ref。",
+    "xstyle": "用于布局定制（外边距、定位、尺寸）的 StyleX 样式。必须是 `stylex.create()` 的值，而不是 `style={{}}` 这类内联样式对象。",
+    "className": "追加到根元素的 CSS 类名。优先使用 `xstyle` 以进行 StyleX 去重。",
+    "style": "应用于根元素的内联样式。优先于 StyleX 内联样式。"
+  },
+  "components": [
+    {
+      "name": "FieldLabel",
+      "description": ""
+    },
+    {
+      "name": "FieldStatus",
+      "description": ""
+    }
+  ]
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

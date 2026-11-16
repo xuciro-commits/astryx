@@ -150,92 +150,106 @@ import {Badge} from '@astryxdesign/core/Badge';
 };
 
 export const docsZh = {
-  name: 'DrawerHeader',
-  isHiddenFromOverview: true,
-  displayName: 'Drawer Header',
-  description:
-    '抽屉头部，包含标题、可选副标题、关闭按钮以及首尾内容插槽；API 与 DialogHeader 相同。',
-  usage: {
-    description:
-      '像 Dialog 中的 DialogHeader 一样，把 DrawerHeader 放在 Drawer 内 Layout 的 header 插槽，提供标题行；传入 onOpenChange 时显示关闭按钮。Layout 让页眉对齐抽屉的内边距，而不是重复缩进。Drawer 本身不渲染关闭按钮。与 DialogHeader 不同，它不会在打开时获得焦点（Drawer 使用 data-autofocus），也不为抽屉命名（由 Drawer 的 label 命名）。',
-    anatomy: [
+  "name": "DrawerHeader",
+  "isHiddenFromOverview": true,
+  "displayName": "Drawer Header",
+  "description": "抽屉的头部，包含标题、可选副标题、关闭按钮以及起始/尾部内容插槽。API 与 `DialogHeader` 相同。",
+  "usage": {
+    "description": "在 `Drawer` 内 `Layout` 的头部插槽中组合 `DrawerHeader`，就像在 `Dialog` 中组合 `DialogHeader` 一样，以获得标题行，并在传入 `onOpenChange` 时获得关闭按钮。`Layout` 会让头部对齐抽屉内边距，避免重复添加内边距。`Drawer` 本身不渲染关闭按钮。与 `DialogHeader` 不同，它不会在打开时获取焦点（`Drawer` 使用 `data-autofocus`），也不会为抽屉命名（由 `Drawer` 的 `label` 完成）。",
+    "anatomy": [
       {
-        name: 'Header row',
-        required: true,
-        description: '排列标题区、可选的首尾内容和关闭控件。',
+        "name": "头部行",
+        "required": true,
+        "description": "排列标题块、可选的起始/尾部内容以及关闭控件。"
       },
       {
-        name: 'Start content',
-        required: false,
-        description: '包装可选的首部内容。',
+        "name": "起始内容",
+        "required": false,
+        "description": "包裹可选的前置内容。"
       },
       {
-        name: 'Title block',
-        required: true,
-        description: '组合标题和可选副标题。',
+        "name": "标题块",
+        "required": true,
+        "description": "将标题和可选副标题分组。"
       },
       {
-        name: 'End content',
-        required: false,
-        description: '组合可选尾部内容和可选关闭控件。',
+        "name": "尾部内容",
+        "required": false,
+        "description": "将可选的尾部内容与可选关闭控件分组。"
       },
       {
-        name: 'Close icon',
-        required: false,
-        description: '关闭按钮内的关闭图标。',
-      },
-    ],
+        "name": "关闭图标",
+        "required": false,
+        "description": "关闭按钮内的可视关闭图标。"
+      }
+    ]
   },
-  props: [
+  "props": [
     {
-      name: 'title',
-      type: 'ReactNode',
-      description:
-        '抽屉标题，渲染为 h2。请使用非交互的行内内容。它不为抽屉命名；请为 Drawer 传入 label。',
-      required: true,
+      "name": "title",
+      "type": "ReactNode",
+      "description": "抽屉标题，渲染为 `h2`。保持其为内联且不可交互。它不会为抽屉命名；请为 `Drawer` 传入 `label`。",
+      "required": true
     },
     {
-      name: 'subtitle',
-      type: 'ReactNode',
-      description: '标题下方的副标题，可包含链接等行内内容；避免使用块级元素。',
+      "name": "subtitle",
+      "type": "ReactNode",
+      "description": "标题下方的副标题。接受 `Link` 等内联内容；避免使用块级元素。"
     },
     {
-      name: 'onOpenChange',
-      type: '(isOpen: boolean) => unknown',
-      description:
-        '关闭按钮的回调，以 false 调用（省略时不显示按钮）。传入 Drawer 自己的 onOpenChange。',
+      "name": "onOpenChange",
+      "type": "(isOpen: boolean) => unknown",
+      "description": "关闭按钮回调，调用时传入 `false`（省略时不显示按钮）。请传入 `Drawer` 自身的 `onOpenChange`。"
     },
     {
-      name: 'startContent',
-      type: 'ReactNode',
-      description: '标题之前的内容（例如返回按钮）。',
+      "name": "startContent",
+      "type": "ReactNode",
+      "description": "标题之前的内容（例如返回按钮）。"
     },
     {
-      name: 'endContent',
-      type: 'ReactNode',
-      description: '标题之后、关闭按钮之前的内容。',
+      "name": "endContent",
+      "type": "ReactNode",
+      "description": "标题之后、关闭按钮之前的内容。"
     },
     {
-      name: 'endContentEdgeCompensation',
-      type: "'inline' | 'block' | 'all'",
-      description: '选择尾部内容插槽的补偿轴；省略时保留关闭操作的自动补偿。',
+      "name": "endContentEdgeCompensation",
+      "type": "'inline' | 'block' | 'all'",
+      "description": "选择尾部内容插槽的补偿轴。省略时保留自动的关闭操作补偿。"
     },
     {
-      name: 'hasDivider',
-      type: 'boolean',
-      description:
-        '在底部边缘添加分隔线。默认取父级 Layout 的 defaultHasDividers。',
-    },
+      "name": "hasDivider",
+      "type": "boolean",
+      "description": "在底部边缘添加边框。默认使用父级 `Layout` 的 `defaultHasDividers`。"
+    }
   ],
-  theming: {
-    targets: [
-      {className: 'astryx-drawer-header'},
-      {className: 'astryx-drawer-header-start-content'},
-      {className: 'astryx-drawer-header-title-block'},
-      {className: 'astryx-drawer-header-end-content'},
-      {className: 'astryx-drawer-header-close-icon'},
-    ],
+  "theming": {
+    "targets": [
+      {
+        "className": "astryx-drawer-header"
+      },
+      {
+        "className": "astryx-drawer-header-start-content"
+      },
+      {
+        "className": "astryx-drawer-header-title-block"
+      },
+      {
+        "className": "astryx-drawer-header-end-content"
+      },
+      {
+        "className": "astryx-drawer-header-close-icon"
+      }
+    ]
   },
+  "propDescriptions": {
+    "title": "抽屉标题，渲染为 `h2`。保持其为内联且不可交互。它不会为抽屉命名；请为 `Drawer` 传入 `label`。",
+    "subtitle": "标题下方的副标题。接受 `Link` 等内联内容；避免使用块级元素。",
+    "onOpenChange": "关闭按钮回调，调用时传入 `false`（省略时不显示按钮）。请传入 `Drawer` 自身的 `onOpenChange`。",
+    "startContent": "标题之前的内容（例如返回按钮）。",
+    "endContent": "标题之后、关闭按钮之前的内容。",
+    "endContentEdgeCompensation": "选择尾部内容插槽的补偿轴。省略时保留自动的关闭操作补偿。",
+    "hasDivider": "在底部边缘添加边框。默认使用父级 `Layout` 的 `defaultHasDividers`。"
+  }
 };
 
 export const docsDense = {

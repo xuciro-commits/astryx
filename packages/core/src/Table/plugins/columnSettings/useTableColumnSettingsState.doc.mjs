@@ -173,3 +173,41 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useTableColumnSettingsState",
+  "usage": {
+    "description": "用于 Table 的无头列可见性和排序状态管理。管理哪些列处于活动状态，提供切换和重置操作，并生成可直接传入 useTableColumnSettings 的配置对象。与渲染器无关，可搭配任意列选择器 UI。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将 columnSettingsConfig 直接传给 useTableColumnSettings，并将生成的插件提供给 Table。"
+      },
+      {
+        "guidance": true,
+        "description": "使用 isAlwaysVisible: true 标记关键的标识列（如 name 或 ID），以免用户意外隐藏它们。"
+      },
+      {
+        "guidance": false,
+        "description": "直接修改 activeColumnKeys 数组；应使用 toggleColumn、showAllColumns 或 resetToDefault。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "config": "要配置的列以及活动键的状态管理。",
+    "config.columns": "所有可用列及其元数据（key、label、isAlwaysVisible、group），供设置 UI 使用。",
+    "config.activeColumnKeys": "当前活动的列键，按显示顺序排列。只有此列表中的列会在表格中渲染。",
+    "config.onChangeActiveColumnKeys": "活动列变化时（通过切换、显示全部或重置）调用，以更新使用方状态。",
+    "config.defaultColumnKeys": "由 resetToDefault 恢复的默认列集合。省略时，resetToDefault 会激活所有列。"
+  },
+  "returnDescriptions": {
+    "columnSettingsConfig": "可直接传给 useTableColumnSettings(columnSettingsConfig) 的即用配置。",
+    "activeColumnKeys": "按显示顺序原样返回的当前活动列键。",
+    "toggleColumn": "切换列可见性：移除活动列或追加非活动列。对 isAlwaysVisible 列是空操作。",
+    "isColumnActive": "特定列当前是否在活动列键列表中。",
+    "isColumnToggleable": "特定列是否可切换（如果 isAlwaysVisible 为 true 则返回 false）。",
+    "showAllColumns": "激活表格中所有已配置的列。",
+    "resetToDefault": "将活动列键重置为 defaultColumnKeys（如果省略 defaultColumnKeys，则为所有列）。",
+    "setActiveColumnKeys": "从键字符串列表设置活动列键，并强制 isAlwaysVisible 列保持活动。"
+  }
+};

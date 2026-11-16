@@ -268,3 +268,100 @@ export const docsDense = {
     rel: 'HTML rel when rendered as a link',
   },
 };
+
+export const docsZh = {
+  "name": "IconButton",
+  "displayName": "Icon Button",
+  "usage": {
+    "description": "只显示图标、没有可见文本的按钮。在工具栏、表格行和空间紧张且图标含义广为人知的紧凑 UI 中使用 IconButton。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "让 `aria-label` 具体明确：标为“Delete conversation”的垃圾桶图标比仅“Delete”对屏幕阅读器更清晰。"
+      },
+      {
+        "guidance": true,
+        "description": "添加 Tooltip：即使是齿轮图标也可能表示 Settings、Preferences 或 Configure。"
+      },
+      {
+        "guidance": true,
+        "description": "在工具栏和密集区域使用 `ghost` 以减少视觉杂乱。"
+      },
+      {
+        "guidance": false,
+        "description": "如果仅凭图标无法明确操作，请使用带文本的 Button，而不是 IconButton。"
+      },
+      {
+        "guidance": false,
+        "description": "不要跳过 Tooltip；`label` 只会传达给屏幕阅读器，视力正常的用户需要悬停提示。"
+      }
+    ],
+    "accessibility": [
+      {
+        "name": "必要图标或加载弧线",
+        "category": "Color contrast",
+        "criterion": "1.4.11 Non-text Contrast",
+        "requirement": "3:1",
+        "states": [
+          "静止",
+          "悬停",
+          "指针按下",
+          "加载中"
+        ],
+        "description": "IconButton 没有可见标签。其图标在静止、悬停和指针按下状态下与按钮背景的对比度必须至少为 3:1。加载时，旋转的加载弧线也必须达到 3:1。"
+      },
+      {
+        "name": "可见控件边界",
+        "category": "Color contrast",
+        "criterion": "1.4.11 Non-text Contrast",
+        "requirement": "3:1 if needed",
+        "states": [
+          "静止"
+        ],
+        "description": "只有当用户需要靠按钮边缘识别控件时，边缘才需要 3:1 的对比度。"
+      },
+      {
+        "name": "键盘焦点指示器",
+        "category": "Color contrast",
+        "criterion": "1.4.11 Non-text Contrast",
+        "requirement": "3:1",
+        "states": [
+          "焦点可见"
+        ],
+        "description": "焦点轮廓与按钮周围区域的对比度必须至少为 3:1。还要检查 destructive 按钮上的红色轮廓。"
+      },
+      {
+        "name": "禁用外观",
+        "category": "Color contrast",
+        "criterion": "1.4.3 and 1.4.11 exceptions",
+        "requirement": "Not required",
+        "states": [
+          "禁用"
+        ],
+        "description": "禁用控件无需满足这些对比度比例。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "label": "无障碍标签。用作 aria-label（不会渲染为可见文本）。",
+    "icon": "在按钮内渲染的图标元素。未指定尺寸的 Astryx Icon 在 sm/md 按钮中默认为 sm，在 lg 按钮中默认为 md。",
+    "variant": "视觉样式变体。",
+    "size": "尺寸变体。",
+    "elevation": "静止阴影深度。最常见的 FAB 形态就是纯图标按钮，因此对于浮动操作按钮，使用 `low`/`med`/`high` 抬高它。`none` 是默认的扁平按钮。",
+    "isLoading": "显示加载转圈并阻止重复激活，同时保持可聚焦（aria-busy + aria-disabled，而非原生 disabled）。",
+    "isDisabled": "禁用按钮。使用 aria-disabled 而非原生 disabled，使按钮保持可聚焦。",
+    "tooltip": "悬停和键盘焦点时显示的 Tooltip 文本。它还会描述按钮，除非其内容与按钮的无障碍名称重复。",
+    "onClick": "标准点击处理函数。",
+    "clickAction": "异步点击处理函数，带自动加载状态。",
+    "isInterruptible": "在 `clickAction` 挂起期间保持按钮可点击：仍显示加载转圈和 aria-busy，但按钮不会被禁用，操作也不会被去重，因此再次点击会生效，并用新操作中断正在进行的操作。适用于可中断的操作，不适用于一次性触发的操作（提交、保存、支付）。",
+    "width": "按钮的宽度。数字按像素处理，字符串按原样使用。不指定时，按钮保持纯图标的长宽比，默认为方形；指定后，按钮采用该宽度。",
+    "type": "HTML button 的 type 属性。",
+    "name": "用于表单提交的 HTML name 属性。",
+    "value": "用于表单提交的 HTML value 属性。",
+    "form": "通过 ID 将按钮与 form 元素关联。",
+    "href": "提供后，将按钮渲染为链接元素（<a> 或自定义链接组件）。禁用的 IconButton 仍渲染为 <button>。",
+    "as": "提供 href 时使用的自定义链接组件（例如 Next.js Link）。",
+    "target": "作为链接渲染时的 HTML target 属性（例如 \"_blank\"）。",
+    "rel": "作为链接渲染时的 HTML rel 属性（例如 \"noopener noreferrer\"）。"
+  }
+};

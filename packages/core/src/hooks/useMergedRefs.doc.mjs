@@ -77,3 +77,26 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useMergedRefs",
+  "usage": {
+    "description": "将多个对象 ref 或回调 ref 合并为一个稳定的回调 ref。当组件必须转发使用方 ref 同时还要附加内部 ref 时使用。与在渲染期间调用 mergeRefs 不同，回调标识在无关的重新渲染之间保持稳定，因此 React 不会分离并重新附加元素。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "当一个元素必须同时接收转发 ref 和一个或多个内部 ref 时，使用 useMergedRefs。"
+      },
+      {
+        "guidance": false,
+        "description": "在 JSX 的 ref 属性中直接调用 mergeRefs；这会在每次渲染时创建新回调，并强制进行不必要的分离和附加工作。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "refs": "最多六个 ref，它们都应接收同一个元素。"
+  },
+  "returnDescriptions": {
+    "ref": "合并后的回调 ref，在输入 ref 变化之前保持稳定。"
+  }
+};

@@ -72,68 +72,41 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'Stat',
-  displayName: 'Stat',
-  props: [
-    {
-      name: 'label',
-      type: 'string',
-      description: '显示在数值上方的指标名称，例如 "Total requests"。',
-      required: true,
-    },
-    {
-      name: 'value',
-      type: 'ReactNode',
-      description:
-        '大号显示的核心指标，使用等宽数字。请传入预先格式化的字符串，如 "1.2M"。',
-      required: true,
-    },
-    {
-      name: 'delta',
-      type: "{value: string, direction: 'up' | 'down' | 'flat', sentiment?: 'positive' | 'negative' | 'neutral'}",
-      description:
-        '数值旁的变化指示：上升/下降/持平图标加彩色文本。sentiment 可覆盖默认的方向颜色映射（up=positive、down=negative、flat=neutral），用于错误率等反向指标。',
-    },
-    {
-      name: 'description',
-      type: 'string',
-      description: '数值下方的弱化辅助说明，例如 "vs. previous 30 days"。',
-    },
-    {
-      name: 'media',
-      type: 'ReactNode',
-      description:
-        '渲染在文本内容下方的趋势插槽，例如迷你折线图。Stat 本身不渲染图表。',
-    },
-    {
-      name: 'size',
-      type: "'sm' | 'md' | 'lg'",
-      description: '控制数值字号的尺寸变体。',
-      default: "'md'",
-    },
-    {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description:
-        '用于布局自定义的 StyleX 样式（外边距、定位、尺寸）。必须是 stylex.create() 的值，而非内联样式对象如 style={{}}。',
-    },
-  ],
-  theming: {
-    targets: [
-      {className: 'astryx-stat', visualProps: ['size']},
-    ],
+  "name": "Stat",
+  "usage": {
+    "description": "用于仪表盘和摘要行的 KPI/指标显示：指标名称、大型 tabular-nums 数值、可选的情感感知差值、支持性描述，以及用于迷你走势图或小型图表的媒体槽位。在 Grid 中组合多个 Stat 以形成 KPI 行。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "为 value 和 delta 传递预格式化的字符串（\"1.2M\"、\"+12.4%\"）；Stat 不格式化数字。"
+      },
+      {
+        "guidance": true,
+        "description": "对于下降为好的反向指标（如错误率或延迟），显式设置 `sentiment`。"
+      },
+      {
+        "guidance": true,
+        "description": "将 Stat 包裹在 Card 中，并使用 Grid columns={{minWidth: 240, max: 4}} 布局 KPI 行。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在媒体槽位中放置全尺寸图表；它旨在用于紧凑的迷你走势图或趋势字形。"
+      },
+      {
+        "guidance": false,
+        "description": "不要仅依赖差值颜色来传达含义；方向字形和屏幕阅读器文本也会传达。"
+      }
+    ]
   },
-  usage: {
-    description:
-      'A KPI/metric display for dashboards and summary rows: metric name, large tabular-nums value, an optional sentiment-aware delta, a supporting description, and a media slot for a sparkline or mini chart. Compose several in a Grid for a KPI row.',
-    bestPractices: [
-      { guidance: true, description: 'Pass pre-formatted strings for value and delta ("1.2M", "+12.4%"); Stat does not format numbers.' },
-      { guidance: true, description: 'Set `sentiment` explicitly for inverted metrics where down is good, like error rate or latency.' },
-      { guidance: true, description: 'Wrap Stat in a Card and lay out KPI rows with Grid columns={{minWidth: 240, max: 4}}.' },
-      { guidance: false, description: 'Put a full-size chart in the media slot; it is meant for compact sparklines or trend glyphs.' },
-      { guidance: false, description: 'Rely on delta color alone to convey meaning; the direction glyph and screen-reader text carry it too.' },
-    ],
-  },
+  "propDescriptions": {
+    "label": "显示在数值上方的指标名称，例如 \"Total requests\"。",
+    "value": "以 tabular 数字大号渲染的头条指标。传递预格式化字符串，如 \"1.2M\"。",
+    "delta": "数值旁的变化指示器：上/下/持平字形加上彩色文本。对于错误率等反向指标，sentiment 会覆盖方向颜色映射（up=positive、down=negative、flat=neutral）。",
+    "description": "数值下方的弱化支持性文本，例如 \"vs. previous 30 days\"。",
+    "media": "渲染在文本内容下方的趋势槽位，例如迷你走势图或小型图表。Stat 本身不渲染图表。",
+    "size": "控制数值字号的尺寸变体。",
+    "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 的值，而不是 style={{}} 这类内联样式对象。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

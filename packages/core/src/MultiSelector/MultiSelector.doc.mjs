@@ -519,110 +519,202 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  components: [
+  "components": [
     {
-      name: 'MultiSelector',
-      displayName: 'Multi Selector',
-      description: '带复选框的多选下拉框，用于从列表中选择多项。',
-      propDescriptions: {
-        label: '无障碍标签文本。',
-        options:
-          '项目数组——字符串、带 value/label/icon/disabled 的对象、分隔线或分组。',
-        value: '当前选中的值。',
-        onChange: '选择变化时触发的回调。',
-        changeAction: '变化时的异步操作，在 onChange 之后触发。',
-        placeholder: '未选择值时显示的占位文本。',
-        size: '选择器的尺寸变体。',
-        triggerDisplay: '在触发器中显示选中项的方式。',
-        formatValue:
-          '格式化 triggerDisplay="count" 或 "labels" 时的触发器文本。接收选中项（value 及解析后的 label），数量为 items.length。triggerDisplay="badges" 不使用此属性。',
-        maxBadges:
-          '显示"+N"之前的最大徽章数。仅适用于 triggerDisplay="badges"。',
-        hasSelectAll: '是否显示全选复选框。',
-        selectAllLabel: '全选复选框的标签。',
-        hasSearch: '是否显示用于过滤选项的搜索输入。',
-        searchPlaceholder: '搜索输入的占位文本。',
-        emptyText: '没有可显示的选项时，下拉面板中显示的内容。',
-        emptySearchText: '搜索查询未匹配到任何选项时，下拉面板中显示的内容。',
-        hasCreate:
-          '配合 hasSearch：当输入的文本与任何选项标签都不匹配时，在列表首行提供“创建 "<query>"”行；选中后通过 onChange 以 {type: "create", query} 描述符报告，调用方需在同一次更新中添加该选项。',
-        isDisabled: '禁用选择器。',
-        isReadOnly:
-          '将选择器设为只读：保留当前值、焦点顺序和表单提交，但移除选择面板、清除操作和展开指示器。与 isDisabled 不同，只读控件不会变暗；两者同时设置时 isDisabled 优先。',
-        htmlName:
-          '用于表单提交的 HTML name 属性。为每个已选值渲染一个隐藏输入，类似原生多选。',
-        disabledMessage:
-          '解释选择器被禁用的原因。与 isDisabled 一起使用时，悬停/键盘聚焦时显示工具提示，触发器与所有被禁用的选择器一样通过 aria-disabled 保持可聚焦（仍无法激活）。请使用此属性，而不是用 Tooltip 包裹被禁用的选择器。',
-        isLabelHidden: '视觉上隐藏标签同时保持其可访问性。',
-        description: '标签下方显示的辅助文本。',
-        isOptional: '将字段标记为可选。',
-        isRequired: '将字段标记为必填。',
-        isLoading: '在触发器中显示加载旋转器。',
-        status: '带可选消息的验证状态。',
-        statusVariant:
-          '状态消息的放置方式：attached 直接叠加在输入框下方；detached 作为独立元素浮于下方并留有间距。',
-        renderOption:
-          '每个可选选项的自定义渲染函数。不会用于分隔线、分组或全选行。',
-        renderTrigger:
-          '由调用方渲染面板的触发控件（替代选择器自带的字段和按钮）；将传入的属性展开到该控件上，列表框将锚定于它并由 label 命名。',
-        handleRef: '命令式句柄：open()、close()、toggle()、isOpen()。',
-        onOpenChange: '面板每次打开或关闭时触发，无论由何种方式引起。',
-        presentation:
-          '选项列表的呈现方式：锚定弹出框、底部抽屉，或根据紧凑触控屏自适应。',
-        onClick: '触发器的点击处理函数，在内置开关之后运行，无法取消它。',
-        onFocus: '触发器的焦点处理函数，在选择器自身的焦点处理之前运行。',
-        onKeyDown:
-          '触发器的按键处理函数，在内置键盘模型之后运行；该模型处理并取消的按键不会传给它。',
-        containerXstyle:
-          '字段容器（标签、控件和状态整体）的 StyleX 样式。在 InputGroup 内或 `horizontal-labels` FormLayout 中无效。不接受根级 xstyle、className 和 style。',
-        containerClassName: '字段容器的类名，作用目标同 containerXstyle。',
-        containerStyle: '字段容器的内联样式，作用目标同 containerXstyle。',
-        controlXstyle:
-          '可视控件框的 StyleX 样式：绘制边框和背景并包含值、图标与尾部控件的元素，而非触发按钮本身。',
-        controlClassName: '可视控件框的类名。',
-        controlStyle: '可视控件框的内联样式。',
-      },
-    },
+      "name": "MultiSelector",
+      "displayName": "Multi Selector",
+      "description": "带复选框的多选下拉框，用于选择多个项目。",
+      "propDescriptions": {
+        "label": "用于无障碍的标签文本。",
+        "options": "项目数组：字符串、带 `value`/`label`/`icon`/`disabled` 的对象、分隔线或分区。选项可以携带 `action`：一个节点——IconButton、Button、菜单触发器——由调用方渲染并命名。一旦任何选项这样设置，弹出层就是网格布局，其行将选项与其操作配对：Up/Down 移动行，行内末端箭头进入操作，Enter 触发操作，指针和触摸可直接按下，且按下它绝不会改变选择。",
+        "value": "当前选中的值。",
+        "onChange": "选择变化时调用。创建操作（`hasCreate`）会以 `{type: \"create\", query}` 作为第二个参数传入，并将查询追加到 `value`；调用方需在同一次更新中添加匹配的选项。其他所有变更不传描述符，因此单参数处理器仍可正常工作。",
+        "changeAction": "变更时的异步操作。在 `onChange` 之后触发。",
+        "placeholder": "未选择任何值时的占位文本。",
+        "size": "选择器的尺寸变体。",
+        "triggerDisplay": "如何在触发器中显示选中项。",
+        "formatValue": "当 `triggerDisplay=\"count\"` 或 `\"labels\"` 时格式化触发器文本。接收选中项（`value` 加解析后的标签）；计数为 `items.length`。`triggerDisplay=\"badges\"` 不使用此项。",
+        "maxBadges": "在显示“+N”之前最多显示多少个徽章。仅用于 `triggerDisplay=\"badges\"`。",
+        "hasSelectAll": "是否显示全选复选框。",
+        "selectAllLabel": "全选复选框的标签。",
+        "hasSearch": "是否显示用于筛选选项的搜索输入框。用户输入时，匹配数量（或“未找到结果”）会通过礼貌的实时区域播报给屏幕阅读器。搜索字段具有内置辅助功能：前置放大镜图标，以及输入查询后出现的尾部清除（✕）按钮，用于重置查询并将焦点返回输入框。",
+        "searchPlaceholder": "搜索输入框的占位文本。",
+        "emptyText": "下拉面板没有可显示选项时显示的内容，并在面板打开时通过礼貌的实时区域播报。播报内容是该内容渲染出的文本，从 DOM 读取，因此元素会按其书写内容播报，`aria-hidden` 的部分会在两者中排除。`isLoading` 期间不显示。",
+        "emptySearchText": "搜索查询没有匹配选项时在下拉面板中显示的内容，并同时通过礼貌的实时区域播报。播报内容是该内容渲染出的文本，从 DOM 读取，因此元素会按其书写内容播报，`aria-hidden` 的部分会在两者中排除。",
+        "hasCreate": "与 `hasSearch` 一起使用时，如果输入的文本在搜索的不区分大小写匹配下不等于任何选项标签，会在列表最前面提供 `Create \"<query>\"` 行。选择该行，或在没有高亮项时按 Enter，会调用 `onChange`，将查询追加到 `value` 并附带 `{type: \"create\", query}` 描述符，然后清空搜索；调用方必须在同一次更新中为新值添加选项。`isLoading` 期间不提供任何内容。没有 `hasSearch` 时会在开发环境警告并且不提供任何内容。",
+        "isDisabled": "禁用选择器。",
+        "isReadOnly": "使选择器变为只读：选中值保持可见、可聚焦并包含在表单提交中，并通过 `aria-readonly` 保留其组合框身份。选择表面、清除操作和展开指示符会被移除。与 `isDisabled` 不同，控件不会变暗。两者同时设置时 `isDisabled` 优先。",
+        "htmlName": "用于表单提交的 HTML `name` 属性。为每个选中值渲染一个隐藏输入框，类似原生多选。",
+        "disabledMessage": "说明选择器为何被禁用。与 `isDisabled` 一起使用时，在触发器悬停和键盘聚焦时以工具提示显示原因；触发器仍可聚焦（`aria-disabled`），与所有禁用的选择器一样；激活仍被阻止。请使用此属性，而不是用 Tooltip 包裹已禁用的 MultiSelector。",
+        "isLabelHidden": "在视觉上隐藏标签，同时保持其可访问。",
+        "description": "显示在标签下方的辅助文本。",
+        "isOptional": "将字段标记为可选。",
+        "isRequired": "将字段标记为必填。",
+        "isLoading": "在触发器中显示加载指示器。",
+        "status": "带可选消息的校验状态。",
+        "statusVariant": "状态消息相对于输入框的放置方式。`attached` 直接重叠在带边框输入框下方，且仅对 `input` 变体有效；`secondary` 和 `ghost` 选择器默认会将附加状态消息分离。对于紧凑的工具栏控件，请使用 `tooltip`。",
+        "renderOption": "用于下拉框中每个可选项的自定义渲染函数。分隔线、分区或全选行不会调用。",
+        "renderTrigger": "渲染面板所依附的控件——列表行中的字形、标签片、图标按钮——而不是选择器自身的字段和按钮。将给定的属性（`{ref, id, onClick, onKeyDown, onFocus, aria-haspopup, aria-expanded, aria-controls, aria-busy}`）展开到该控件上；列表框会锚定到该控件，并由 `label` 命名。字段外观（Field、状态、清除、加载指示器）不会渲染。与 `handleRef` 搭配，可从其他位置的按键打开。",
+        "handleRef": "包含 `open()`、`close()`、`toggle()` 和 `isOpen()` 的命令式句柄。优先使用它，而不是在父组件中镜像打开状态；选择器自行管理可见性。",
+        "onOpenChange": "面板每次打开或关闭时调用，无论原因如何：触发器、键盘、轻触关闭、Escape 或句柄。",
+        "presentation": "选项列表的呈现方式。`adaptive` 在紧凑触摸屏上使用底部抽屉，否则使用锚定弹出层。",
+        "onClick": "触发器（或 `renderTrigger` 控件）上的点击处理器。在内置切换逻辑之后运行，且无法取消它。",
+        "onFocus": "触发器上的聚焦处理器。在选择器自身的聚焦处理之前运行。",
+        "onKeyDown": "触发器按钮上的按键处理器。在内置键盘模型之后运行；对于它已处理并取消的按键会跳过。",
+        "containerXstyle": "用于字段容器（标签、控件和状态整体）的 StyleX 样式。在 InputGroup 内（请改为设置 InputGroup 样式）或 `horizontal-labels` FormLayout 中无效。不接受根级 `xstyle`、`className` 和 `style`。",
+        "containerClassName": "字段容器的类名。定位范围与 `containerXstyle` 相同。",
+        "containerStyle": "字段容器的内联样式。定位范围与 `containerXstyle` 相同。",
+        "controlXstyle": "用于视觉控件盒子的 StyleX 样式：绘制边框和背景并承载值、图标和末端控件的元素，绝不是触发按钮本身。",
+        "controlClassName": "视觉控件盒子的类名。",
+        "controlStyle": "视觉控件盒子的内联样式。",
+        "variant": "视觉触发器样式。`input` 是用于表单的带边框输入处理；`secondary` 匹配当前主题的次要按钮（默认无边框且为中性填充），用于导航和工具栏；`ghost` 无边框且透明，匹配工具栏场景中的幽灵按钮。",
+        "indicatorPosition": "选项行的哪一侧承载复选框。`end` 将其推到行的最远端，包括全选行。",
+        "width": "字段宽度（数字 = 像素，字符串按原样使用，例如 `\"100%\"`）。用于设置整个字段（标签、控件和状态）的尺寸，使它们保持对齐。",
+        "startIcon": "显示在选择器触发器起始位置的图标。",
+        "hasClear": "选中值后显示清除按钮。",
+        "isDefaultOpen": "挂载时下拉框是否默认打开。"
+      }
+    }
   ],
-  usage: {
-    description:
-      'A checkbox dropdown for selecting multiple values from a list. Selected items can display as a count, labels, or badges. Use it for filtering or when presenting a finite set of options where multiple choices are needed.',
-    bestPractices: [
+  "usage": {
+    "description": "用于从列表中选择多个值的复选框下拉框。选中项可以显示为计数、标签或徽章。用于筛选，或呈现需要多选的有限选项集合。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          'Use for a moderate, finite set of options where multiple choices are needed.',
+        "guidance": true,
+        "description": "用于规模适中、有限的选项集合，且需要多选。"
       },
       {
-        guidance: true,
-        description:
-          'Enable search filtering when the list exceeds ~15 options.',
+        "guidance": true,
+        "description": "当列表超过约 15 个选项时，启用搜索筛选。"
       },
       {
-        guidance: true,
-        description:
-          'Use renderOption for custom option rows; the checkbox affordance remains owned by MultiSelector.',
+        "guidance": true,
+        "description": "使用 `renderOption` 自定义选项行；复选框交互仍由 MultiSelector 负责。"
       },
       {
-        guidance: true,
-        description:
-          'Enable select-all when most users will want all or nearly all options selected.',
+        "guidance": true,
+        "description": "当大多数用户希望选中全部或几乎全部选项时，启用全选。"
       },
       {
-        guidance: false,
-        description: 'Use for single-value selection; use Selector instead.',
+        "guidance": true,
+        "description": "仅当控件需要简短的前缀或后缀附加内容、作为同一个装饰输入表面的一部分时，才在 InputGroup 内使用；优先使用计数或标签触发器显示，以保持组为单行。"
       },
       {
-        guidance: false,
-        description: 'Show more than ~20 options without enabling search.',
+        "guidance": true,
+        "description": "当多选控件与次要按钮或分段控件并排时，使用 `variant=\"secondary\"`；当它与幽灵按钮并排时，使用 `variant=\"ghost\"`。如果此处需要校验状态，优先使用 `statusVariant=\"tooltip\"`，以保持工具栏高度紧凑。"
       },
       {
-        guidance: false,
-        description:
-          'Wrap a disabled MultiSelector in Tooltip to explain why it is disabled. Use the disabledMessage prop, which attaches the reason to the trigger itself.',
+        "guidance": true,
+        "description": "当多选控件在紧凑触摸屏上应变为底部抽屉时，使用 `presentation=\"adaptive\"`。"
       },
+      {
+        "guidance": false,
+        "description": "用于单值选择；请改用 Selector。"
+      },
+      {
+        "guidance": false,
+        "description": "在未启用搜索的情况下显示超过约 20 个选项。"
+      },
+      {
+        "guidance": false,
+        "description": "用 Tooltip 包裹已禁用的 MultiSelector 来解释禁用原因。请使用 `disabledMessage` 属性，它会把原因附加到触发器本身。"
+      }
     ],
+    "anatomy": [
+      {
+        "name": "字段",
+        "required": false,
+        "description": "独立的 Field 外壳，提供标签和可选的支持内容；在 InputGroup 内省略。"
+      },
+      {
+        "name": "触发器",
+        "required": true,
+        "description": "绘制样式的控件，显示当前选择或占位符，并在可编辑时打开选择表面。"
+      },
+      {
+        "name": "通过 Icon 渲染的起始图标",
+        "required": false,
+        "description": "可选的语义前置图标或通过 Icon 渲染的图标组件。"
+      },
+      {
+        "name": "调用方渲染的起始内容",
+        "required": false,
+        "description": "可选的自定义 React 内容，直接渲染在触发器起始位置。"
+      },
+      {
+        "name": "触发器清除按钮",
+        "required": false,
+        "description": "共享的清除操作，在启用 `hasClear` 时移除所有选中值。"
+      },
+      {
+        "name": "状态图标",
+        "required": false,
+        "description": "在附加或工具提示状态下替代展开指示符显示的状态字形。"
+      },
+      {
+        "name": "指示符图标",
+        "required": false,
+        "description": "当状态呈现不替代它时显示的尾部尖角；反映折叠或展开状态。"
+      },
+      {
+        "name": "搜索行",
+        "required": false,
+        "description": "面板标题栏，包含无边框搜索输入框和可选的清除操作。"
+      },
+      {
+        "name": "搜索图标",
+        "required": false,
+        "description": "在搜索行内通过 Icon 渲染的前置放大镜。"
+      },
+      {
+        "name": "搜索清除按钮",
+        "required": false,
+        "description": "存在查询时显示在搜索行中的共享清除操作。"
+      },
+      {
+        "name": "选项行",
+        "required": false,
+        "description": "用于某个选项或可选全选项的可选择行。"
+      },
+      {
+        "name": "选项复选框指示符",
+        "required": false,
+        "description": "CheckboxInput 指示符，呈现每行的选中、未选中或不确定状态。"
+      },
+      {
+        "name": "选项分隔线",
+        "required": false,
+        "description": "公共选项数据中提供的分隔线，用于分隔相邻的选项组。"
+      },
+      {
+        "name": "分区标题",
+        "required": false,
+        "description": "带标签的选项行组的可见标题。"
+      },
+      {
+        "name": "空状态",
+        "required": false,
+        "description": "共享面板内容没有选项或没有搜索结果时显示的消息。"
+      },
+      {
+        "name": "指针弹出层",
+        "required": false,
+        "description": "锚定的绘制表面，在弹出层呈现方式中承载共享面板内容。"
+      },
+      {
+        "name": "触摸抽屉标题",
+        "required": false,
+        "description": "底部抽屉呈现方式中，共享面板内容上方的标题。"
+      },
+      {
+        "name": "触摸抽屉",
+        "required": false,
+        "description": "BottomSheet 表面，在底部抽屉呈现方式中承载同一面板内容。"
+      }
+    ]
   },
+  "name": "MultiSelector",
+  "displayName": "Multi Selector"
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

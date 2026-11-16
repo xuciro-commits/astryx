@@ -20,12 +20,12 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'ChatUnreadDivider',
-  displayName: 'Chat Unread Divider',
-  description: '错误色横线加末尾标签，标记聊天线程中未读消息的起点。渲染为带无障碍标签的 aria separator。与 ChatSystemMessage 的 divider 变体不同，后者用于中性的日期分隔。',
-  propDescriptions: {
-    label: '横线末尾显示的标签，同时用于无障碍名称。',
-  },
+  "name": "ChatUnreadDivider",
+  "displayName": "Chat Unread Divider",
+  "description": "使用错误色的分隔线，带有尾随标签，标记聊天线程中未读消息开始的位置。渲染为带有可访问标签的 aria 分隔符。与 ChatSystemMessage 的分隔线变体不同，后者用于中性日期分隔。",
+  "propDescriptions": {
+    "label": "显示在分隔线末尾的分隔线标签，也用于可访问名称（\"New messages below\"）。"
+  }
 };
 
 export const docsDense = {

@@ -1,178 +1,22 @@
-# On-screen keyboard
+# 屏幕键盘
 
-Core's one source for the on-screen keyboard (`spec:AST-099`,
-`architecture:react-component-runtime` INV11), and the keyboard layout guide
-that times motion with it. Everything here is internal to
-`@astryxdesign/core`: components import it from its defining file, such as
-`../keyboard/keyboardHeight`, and nothing is exported from the package entry.
+Core 中屏幕键盘的唯一来源（`spec:AST-099`、`architecture:react-component-runtime` INV11），以及据此为动效计时的键盘布局指南。这里的一切都只属于 `@astryxdesign/core` 内部：组件从其定义文件导入，例如 `../keyboard/keyboardHeight`，包入口不导出任何内容。
 
-## The keyboard module (`keyboardHeight.ts`)
+## 键盘模块（`keyboardHeight.ts`）
 
-- **The height (FR2):** `measureKeyboardHeight(window)` is the layout
-  viewport's height minus the visual viewport's height times its scale, in CSS
-  px. A page pan is not a smaller keyboard, and a pinch zoom is not a keyboard.
-  The layout viewport's height is `layoutViewportHeight(window)`
-  (`../utils/layoutViewport.ts`), in layout px in every engine: WebKit reports
-  `innerHeight` and `innerWidth` in the zoomed visual viewport's px, which
-  `innerWidth` matching the visual viewport's width tells apart. A classic
-  horizontal scrollbar, which `innerHeight` counts and the visual viewport
-  does not, is taken out, so a desktop page wider than its window reads no
-  keyboard. BottomSheet's obstruction reads it too.
-- **Where it measures (FR6, FR7, DEC-4):** `isKeyboardMeasurable(window)` is
-  true for a top-level document with a visual viewport, a browser with its own
-  keyboard geometry API (`navigator.virtualKeyboard`, Chrome on Android)
-  included, whose visual viewport shrinks for the keyboard as everywhere
-  else. It is decided from capabilities, never from the user agent or the
-  pointer. A desktop browser's visual viewport never shrinks for a keyboard,
-  so it reads 0; inside an iframe the height is 0. Where the app sets
-  `interactive-widget=resizes-content`, Chrome shrinks the layout viewport
-  with the keyboard, so the height is 0 there too and nothing rides: the
-  browser has made the inset (FR8).
-- **One set of listeners (FR1, INV11):** `subscribeKeyboardHeight(window, fn)`
-  delivers every report (the visual viewport's resize and scroll, the window's
-  resize, and with `{focus: true}` focus moves, whose input-stream
-  subscriptions exist only while such a subscriber does) from one set of listeners per window,
-  however many components subscribe, and `getKeyboardHeight(window)` gives a reader the
-  height that report measured. No other code in core listens to the visual
-  viewport for the keyboard.
-- **Focus (FR4):** `refuseFocusReveal(document, {claim, park, isActive})`
-  delivers every focus move a surface claims with `preventScroll`, on the
-  capture-phase `blur` before the browser's own focus step, so the browser
-  never reveals a field by scrolling the document. Focus that leaves for
-  nothing (the keyboard's Done) can be parked so the next tap is a transition
-  again. Every caller in a document shares one listener, which lives only
-  while a caller does; BottomSheet's hook installs it only under a coarse
-  primary pointer.
-- **The tap route (FR4):** a first tap moves focus from nothing, so no
-  `blur` claims it. `claimTapFocus(region, {claim, deliver})` takes a
-  one-finger tap the browser would turn into focus, cancels the tap's
-  default, lets the click guard (utils/clickGuard.ts) take the mouse events
-  Safari may still send, and lets `deliver` focus the field.
-  `focusAtPoint(field, x, y)` focuses it with `preventScroll` and puts the
-  caret under the finger. `deliverTap` (`keyboardTarget.ts`) does that and
-  raises the tap's click once, since the cancelled tap raises none; the
-  module's targets and ChatLayout's composer deliver with it.
-  `followsKeyboard(win)` (`keyboardTarget.ts`) is the gate for all of it: a
-  top-level document whose visual viewport shrinks for the keyboard, under
-  a coarse primary pointer. A touch past
-  10 px is the browser's to scroll.
-- **The browser's own reveal pan (FR4):** `watchRevealPan(window, {owns})`
-  is the one building block every keyboard-aware surface uses for a browser
-  that pans the visual viewport to a focused field after the keyboard's
-  report. The surface calls `report()` on each report that changes the
-  height; on a later report, `isRevealPan(height)` says the visual viewport
-  has moved down with no touch, document scroll or zoom since, while a text
-  field the surface owns has focus, and `putBack()` pans it back without
-  scrolling the document, by scrolling into view a probe fixed where the
-  visual viewport sat at the report (or the element given, such as a
-  full-viewport dialog). Every watch in a document shares one passive
-  `touchstart` subscription on the window's input stream, which lives only
-  while a surface watches. BottomSheet's hook watches while its sheet is presented
-  under a coarse primary pointer; under a fine one it registers no touch
-  listener. `watchPans(win, owns)` (`keyboardTarget.ts`) runs that loop on
-  each height the module reports: the keyboard targets and ChatLayout's
-  composer watch with it.
-- **Keyboard targets (`keyboardTarget.ts`):** a target keeps the focused field
-  inside it above the keyboard, and registers so a field inside moves nothing
-  itself (`registerKeyboardTarget`, `isInsideKeyboardTarget`).
-  `followKeyboard(target, {move, offset})` is a target that moves no inset:
-  `'ride'` moves the target with the keyboard, on the guide's slide where one is
-  published and at each report elsewhere; `'reveal'` scrolls the field into
-  place in the target, a scroller. A reveal comes when the keyboard's height
-  changes or focus moves, so a pan or a scroll leaves the field where the person
-  put it. `keepFieldAboveKeyboard(field)` is a field's own path. When the field
-  gains focus it decides where it is from its nearest
-  fixed-position ancestor (`fixedContainerOf`). Docked at the viewport's bottom
-  edge by its layout, without any transform, that container moves up by the part
-  of it the keyboard still covers; one taller than the room above the keyboard,
-  such as a full-height drawer, never rides its whole overlap: its scroller
-  there reveals the field instead, and with none it rides only as far as the
-  focused field needs to clear the keyboard, so a field near its top stays on
-  screen. In a fixed container that fills the viewport, the field's scroller
-  there reveals it. In scrolling content, the field's nearest scroller, the
-  document included, brings it into view on both edges (`distanceIntoBand`,
-  shared with the Tall sheet's reveal), `FIELD_OFFSET` (10 px) above the
-  keyboard while one shows. Nothing else moves. A scroller does not gain the
-  missing scroll range at its end yet (`spec:AST-099` Gap 11), so a field it
-  cannot scroll far enough stays partly covered, and an element with nothing to
-  scroll yet, the document included, does not count as a scroller: the browser's
-  own reveal stays there. In a fixed container the app positions (one that
-  fills the viewport, floats above the bottom edge, or sets its own `translate`,
-  which the ride would replace), a scroller between the field and the container
-  reveals the field. Inside a keyboard target, or in such a container with no
-  scroller around the field, the path does nothing and the browser's own reveal
-  stays. A
-  ride places its target on the frame after each report, slide or focus move,
-  once every listener of that event has run, and measures what the keyboard
-  still covers after any move the app makes itself: a bar the app already moves
-  with the keyboard is not moved, one the app lifts part of the way moves the
-  rest, and one the app is moving itself at that moment (a running CSS
-  transition or animation on its position) is left to the app; a script
-  animation is not seen, so an app that moves its bar from script keeps it clear
-  with its own `translate`. The ride writes the CSS `translate`, which adds to
-  an app's `transform`, writes nothing on an element it never moved, and on an
-  app's element only while that element stays docked. A Core host's ride moves
-  its own element and keeps its focused field `offset` above the keyboard. A
-  target lifts only while a field inside it has focus, and rides back down once
-  focus leaves; one ride moves a target at a time. Where the path places the
-  field, focus moves and first taps arrive without the browser's reveal; a
-  claimed tap raises the tap's click on the field afterwards, a synthetic touch
-  `PointerEvent` (a `MouseEvent` where none exists), so a caller's `onClick`
-  still runs once. A pan the browser makes on its own after a report, as after a
-  script's `focus()` that no claim saw, is put back (`watchRevealPan`).
-- **The surface hook (FR4, FR5):** `useMobileKeyboard(targetRef, options)`
-  (`useMobileKeyboard.ts`) keeps a focused field in a target above the
-  keyboard. BottomSheet passes its panel with `{move: 'ride', inset: true}`
-  and its suggestion clearance as `offset`, and enables it for a presented
-  Tall sheet. The inset goes at the end of the panel's scroll area, its body,
-  which `useScrollableArea` marks. The hook gives a fully expanded sheet its
-  keyboard scroll range, claims focus moves into it, and puts back a document
-  scroll while the page is locked. It attaches through `useAttachment`. It
-  returns the inset the keyboard takes at the end of the body's content, and
-  `dismiss`, which BottomSheet calls from the drag that starts to move the sheet. The hook itself dismisses the keyboard as its target closes. The sheet lays the inset out after its
-  content box's children through a functional style (FR3), committed before
-  the reveal scrolls into it. Under a coarse primary pointer, where the
-  guide publishes the keyboard's own slide (Gboard's, in Chrome on Android),
-  the sheet rides it (FR8). A reveal during the show scrolls the body at once.
-  In the same commit it sets the content box so the field sits 4 px above the
-  keyboard's top, and the content box then rides the rest of the show's
-  curve. Through the hide the inset stays and the content box rides down to
-  where the body's scroll rests. At rest the inset drops, the scroll is put
-  back and the translate clears in one commit. A busy page reads Chrome's
-  report of the keyboard gone after the slide. Until then the content box
-  stays where the slide leaves it, and that report commits. Under a fine
-  pointer nothing of
-  the ride attaches: no guide subscription, and the inset follows the
-  reports. A browser without the VirtualKeyboard API (iOS Safari, Firefox for
-  Android) publishes no slide: iOS Safari reports the keyboard gone about half
-  a second after a blur, once it is down. There, under a coarse pointer, a
-  blur that takes the keyboard down rides the content box to where the body's
-  scroll rests, on UIKit's keyboard spring (`KEYBOARD_SPRING`) from the blur,
-  while the inset stays. The report then drops the inset and puts the scroll
-  back in one commit with the translate, so nothing moves. A report of the
-  keyboard gone with no ride under way, as after a downward dismissal, glides
-  the content to its place on the same spring. A field focused before the
-  keyboard is down rides it back up. Focus moving to a select starts no ride:
-  iOS puts the select's picker where the keyboard was. Nor does focus moving
-  to a field inside an open shadow root, or into a frame or a custom element
-  whose field the page cannot see. A plain control inside an open shadow root
-  rides as any control does. Firefox for Android takes the same path, but
-  reports the hide once, at its end, and the content moves at that report
-  (AST-099 Gap 12). Safari's and Firefox's reveals are unchanged.
-- **When the keyboard goes:** the body's scroll goes back to where it was
-  when the keyboard came up, within the range left once the inset drops. A
-  field that keeps focus, as after iOS's downward keyboard dismissal, is then
-  brought into the body's view. Where that dismissal leaves the accessory bar
-  up, the visual viewport grows short of full height: the scroll goes back as
-  soon as it grows, and a low field is still kept clear of the bar.
+- **高度（FR2）：** `measureKeyboardHeight(window)` 等于布局视口高度减去视觉视口高度乘以其缩放比例，单位为 CSS px。页面的平移不代表键盘变小，双指缩放也不代表键盘。布局视口的高度由 `layoutViewportHeight(window)` 提供（`../utils/layoutViewport.ts`），在所有引擎中都以布局 px 表示：WebKit 上报的 `innerHeight` 和 `innerWidth` 使用缩放后视觉视口的 px，可通过 `innerWidth` 是否与视觉视口宽度一致来区分。经典水平滚动条会被 `innerHeight` 计入而视觉视口不计，这里将其扣除，因此桌面页面若比窗口更宽，读到的键盘高度为 0。BottomSheet 的遮挡检测也读取它。
+- **在哪里测量（FR6、FR7、DEC-4）：** 对于具有视觉视口的顶层文档，`isKeyboardMeasurable(window)` 为 true；自带键盘几何 API 的浏览器（`navigator.virtualKeyboard`，Android 上的 Chrome）也包含在内，其视觉视口与其他地方一样会因键盘而收缩。该判断基于能力，绝不基于用户代理或指针类型。桌面浏览器的视觉视口不会因键盘收缩，因此读到 0；在 iframe 内高度为 0。当应用设置 `interactive-widget=resizes-content` 时，Chrome 会随键盘收缩布局视口，因此那里高度也是 0，什么都不会随动：浏览器已经自行处理了内嵌区（FR8）。
+- **单一组监听器（FR1、INV11）：** `subscribeKeyboardHeight(window, fn)` 会把每一份上报（视觉视口的 resize 和 scroll、窗口的 resize，以及启用 `{focus: true}` 时的焦点移动；后者的输入流订阅仅在此类订阅者存在时存在）通过每个窗口唯一的一组监听器派发出去，无论有多少组件订阅；`getKeyboardHeight(window)` 则向读取方提供该次上报测得的高度。Core 中没有任何其他代码为键盘而监听视觉视口。
+- **焦点（FR4）：** `refuseFocusReveal(document, {claim, park, isActive})` 会让某个表面所主张的每次焦点移动都以 `preventScroll` 执行，且发生在浏览器自身焦点步骤之前的捕获阶段 `blur` 上，因此浏览器永远不会通过滚动文档来显露输入框。如果焦点是移向空无（键盘的“完成”），可以将其暂存，让下一次点击重新成为一次过渡。文档中的每个调用方共享一个监听器，且仅当有调用方存在时才存活；BottomSheet 的 hook 只在粗略主指针下安装它。
+- **点击路径（FR4）：** 首次点击是从空无中移动焦点，因此没有 `blur` 来主张它。`claimTapFocus(region, {claim, deliver})` 接管浏览器本会转成焦点的单指点击，取消该点击的默认行为，让点击守卫（utils/clickGuard.ts）接住 Safari 可能仍会发送的鼠标事件，并让 `deliver` 聚焦输入框。`focusAtPoint(field, x, y)` 以 `preventScroll` 聚焦该输入框，并把光标放到手指下方。`deliverTap`（`keyboardTarget.ts`）执行这一操作，并补发一次该点击的 click，因为被取消的点击不会产生 click；模块的各目标与 ChatLayout 的输入区都通过它来交付。`followsKeyboard(win)`（`keyboardTarget.ts`）是这一切的前置条件：顶层文档、视觉视口会因键盘而收缩、且处于粗略主指针下。超过 10 px 的触摸交由浏览器滚动。
+- **浏览器自身的显露平移（FR4）：** `watchRevealPan(window, {owns})` 是每个键盘感知表面都会使用的单一构件，用于应对浏览器在键盘上报之后把视觉视口平移到聚焦输入框的行为。表面在每次改变高度的上报时调用 `report()`；在后续的某次上报中，如果自那以后没有触摸、文档滚动或缩放，且该表面拥有的文本输入框持有焦点，`isRevealPan(height)` 就表明视觉视口已经下移，而 `putBack()` 会在不滚动文档的情况下将其平移回去：把固定在报告时视觉视口所在位置的探针（或传入的元素，例如全视口对话框）滚动到视野内。文档中的每个 watch 共享窗口输入流上的一个被动 `touchstart` 订阅，且仅在某个表面处于 watch 状态时存活。BottomSheet 的 hook 在其面板于粗略主指针下展示期间进行 watch；在精细指针下则不注册任何触摸监听器。`watchPans(win, owns)`（`keyboardTarget.ts`）在模块上报的每个高度上运行该循环：键盘目标与 ChatLayout 的输入区都用它来 watch。
+- **键盘目标（`keyboardTarget.ts`）：** 目标会让其内部的聚焦输入框保持在键盘上方，并通过注册使内部的输入框自身不再移动任何东西（`registerKeyboardTarget`、`isInsideKeyboardTarget`）。`followKeyboard(target, {move, offset})` 是一个不移动任何内嵌区的目标：`'ride'` 让目标随键盘移动——若指南发布了键盘自身的滑动，则跟随该滑动；否则在每次上报时移动；`'reveal'` 则在目标（一个滚动容器）内把输入框滚动到合适位置。显露发生在键盘高度变化或焦点移动时，因此平移或滚动会让输入框留在使用者放置的位置。`keepFieldAboveKeyboard(field)` 是输入框自身的路径。输入框获得焦点时，会从最近的 fixed 定位祖先（`fixedContainerOf`）判断自己的位置。若该容器由布局停靠在视口底边且没有任何 transform，它会向上移动键盘仍然覆盖的那部分；若容器比键盘上方的空间更高（例如全高抽屉），则永远不会整体随动其全部重叠部分：此时其中的滚动容器会显露输入框；若没有滚动容器，则只随动到聚焦输入框恰好脱离键盘所需的距离，因此靠近顶部的输入框仍留在屏幕上。在填满视口的 fixed 容器中，输入框所在的滚动容器会显露它。在滚动内容中，输入框最近的滚动容器（包括文档）会从两端将其带入视野（`distanceIntoBand`，与 Tall 面板的显露共用），在键盘显示时保持在键盘上方 `FIELD_OFFSET`（10 px）处。其他任何东西都不移动。滚动容器目前不会在末端获得缺失的滚动范围（`spec:AST-099` Gap 11），因此无法滚动到足够远的输入框会有一部分被遮挡；而尚无可滚动内容的元素（包括文档）不算滚动容器：那里仍由浏览器自身的显露机制处理。在由应用定位的 fixed 容器中（填满视口、浮在底边之上，或设置了自己的 `translate`——随动会替换它），输入框与容器之间的滚动容器会显露输入框。在键盘目标内部，或在此类容器中且输入框周围没有滚动容器时，该路径什么都不做，浏览器自身的显露保持原样。随动会在每次上报、滑动或焦点移动后的下一帧放置目标，且在该事件的所有监听器执行完毕之后；并在应用自身做出任何移动后，测量键盘仍然覆盖的部分：应用已经随键盘移动的横条不再移动，应用抬升了一部分的横条则移动剩余部分，而应用当时正自行移动的横条（其位置上正在运行的 CSS transition 或 animation）则留给应用处理；脚本动画不会被感知，因此通过脚本移动横条的应用需用自己的 `translate` 使其避开键盘。随动写入 CSS `translate`，它会叠加到应用的 `transform` 上；对从未移动过的元素不写入，对应用的元素仅在该元素保持停靠时写入。Core 宿主的随动会移动自己的元素，并让其聚焦输入框保持在键盘上方 `offset` 处。目标仅在内部有输入框聚焦时抬升，焦点离开后便降回；一次随动只移动一个目标。在路径放置输入框的位置，焦点移动与首次点击都不会触发浏览器显露；被主张的点击会在之后向输入框补发该点击的 click，即一个合成的触摸 `PointerEvent`（不存在时则用 `MouseEvent`），因此调用方的 `onClick` 仍会执行一次。浏览器在上报之后自行做出的平移（例如脚本调用 `focus()` 而无人主张之后），会被放回（`watchRevealPan`）。
+- **表面 hook（FR4、FR5）：** `useMobileKeyboard(targetRef, options)`（`useMobileKeyboard.ts`）让目标中的聚焦输入框保持在键盘上方。BottomSheet 传入其面板及 `{move: 'ride', inset: true}`，并以建议的间隙作为 `offset`，且仅在展示 Tall 面板时启用。内嵌区放在面板滚动区域（即其 body，由 `useScrollableArea` 标记）的末尾。该 hook 为完全展开的面板提供键盘滚动范围，主张进入其中的焦点移动，并在页面锁定时恢复文档滚动。它通过 `useAttachment` 挂载。它返回键盘在 body 内容末尾占据的内嵌区，以及 `dismiss`——BottomSheet 在开始拖动面板的手势中调用它。hook 自身会在目标关闭时收起键盘。面板通过函数式样式（FR3）把内嵌区排在内容盒的子元素之后，并在显露滚动进入之前提交。在粗略主指针下，如果指南发布了键盘自身的滑动（Android 上 Chrome 中的 Gboard），面板会随动它（FR8）。展示期间的显露会立即滚动 body。在同一次提交中，它设置内容盒，使输入框位于键盘顶部上方 4 px，随后内容盒随动展示曲线余下的部分。隐藏过程中内嵌区保留，内容盒随动下降到 body 滚动停歇的位置。静止时，内嵌区落下、滚动被恢复、translate 清空，这些都在一次提交中完成。繁忙页面会在滑动结束后才读到 Chrome 关于键盘消失的上报。在此之前，内容盒停留在滑动结束的位置，随后该上报提交。在精细指针下，随动的任何部分都不挂载：没有指南订阅，内嵌区只跟随上报。没有 VirtualKeyboard API 的浏览器（iOS Safari、Android 上的 Firefox）不发布滑动：iOS Safari 在失焦后约半秒、键盘落下后才上报键盘消失。在那里，粗略指针下，使键盘落下的失焦会在 UIKit 的键盘弹簧（`KEYBOARD_SPRING`）上，自失焦起把内容盒随动到 body 滚动停歇的位置，同时内嵌区保留。随后该上报在一次提交中落下内嵌区并恢复滚动与 translate，因此没有任何东西移动。若键盘消失的上报发生时没有正在进行的随动（例如向下收起之后），内容会在同一弹簧上滑回其位置。在键盘落下之前获得焦点的输入框会随键盘回升。焦点移到 select 不会启动随动：iOS 会把 select 的选择器放在键盘原来的位置。焦点移入打开的 shadow root 内的输入框，或移入 frame 或自定义元素中页面无法看到的输入框，也不会启动。打开的 shadow root 内的普通控件会像任何控件一样随动。Android 上的 Firefox 走同一路径，但只在结束时上报一次隐藏，内容在该次上报时移动（AST-099 Gap 12）。Safari 与 Firefox 的显露行为不变。
+- **键盘消失时：** body 的滚动会回到键盘弹起时的位置，范围以落下内嵌区后剩余的范围为限。保持焦点的输入框（例如 iOS 向下收起键盘之后）随后会被带入 body 的视野。若该次收起让附件栏仍然留在上方，视觉视口不会增长到全高：视觉视口一增长就恢复滚动，同时较低的输入框仍会避开该栏。
 
-## Riding the keyboard
+## 随动键盘
 
-Layout follows the height (FR3), through a functional style on your own
-element, so it is right with no animation running; for an element docked at
-the bottom, `lift = height > 0 ? max(0, restingBottom − (innerHeight − height)) : 0`.
-An animation that rides the keyboard is optional polish on top, timed by the
-guide:
+布局跟随高度（FR3），通过对你自己元素使用函数式样式实现，因此即使没有动画在运行也是正确的；对于停靠在底部的元素，`lift = height > 0 ? max(0, restingBottom − (innerHeight − height)) : 0`。随键盘的动画是可选的额外润色，由指南计时：
 
 ```ts
 const guide = getKeyboardLayoutGuide(window);
@@ -181,111 +25,39 @@ const unsubscribe = guide.subscribe(t => {
 });
 ```
 
-Each transition is
-`{kind, from, to, start, velocity, animated, predicted, curve}`: heights in
-CSS px, `start` on the document timeline (dated back to Gboard's start for a
-slide Chrome reported, slightly ahead for a hide that starts after a blur),
-and the curve the keyboard moves on: `curve`, Gboard's slide in Chrome on
-Android, values and no motion role (architecture:react-component-runtime
-INV11). `rideKeyboard` moves your element on the compositor from `start` on
-that curve. It lands the element at once when the transition is not animated,
-or when its slide has ended by the call. Hand the translate back to the layout
-once the ride ends (BottomSheet's hook does, in one commit at rest). Under Reduce Motion
-nothing travels with the keyboard
-(design:reduced-motion): the animator's default cross-fades on a touch screen
-and moves at once otherwise. `presentation(time)` gives the height presented
-at any time, for something that appears while the keyboard moves.
+每个过渡为 `{kind, from, to, start, velocity, animated, predicted, curve}`：高度以 CSS px 表示，`start` 在文档时间线上（对于 Chrome 上报的滑动，回溯到 Gboard 的起始时间；对于失焦后才开始的隐藏，则略微提前），以及键盘移动所依据的曲线：`curve`，Android 上 Chrome 中 Gboard 的滑动，只提供数值、没有 motion role（architecture:react-component-runtime INV11）。`rideKeyboard` 会从 `start` 起在该曲线上于合成器上移动你的元素。若过渡没有动画，或调用时其滑动已经结束，则立即落位。随动结束后把 translate 交还给布局（BottomSheet 的 hook 会在静止时的一次提交中完成）。在减弱动态效果下，没有任何东西随键盘移动（design:reduced-motion）：动画器的默认行为在触摸屏上交叉淡化，否则立即移动。`presentation(time)` 给出任意时刻呈现的高度，供在键盘移动期间出现的内容使用。
 
-## What the page sees
+## 页面看到什么
 
-- Safari reveals a focused field by scrolling the whole page, so a layout that
-  keeps its own content above the keyboard focuses its field with
-  `preventScroll` (`refuseFocusReveal`).
-- Firefox for Android reports the keyboard once it is up, and 54 to 143 ms
-  later pans the visual viewport to a focused field the keyboard still
-  covers. So BottomSheet reveals in the report's own event, and where a
-  browser has panned to the field after a report (`watchRevealPan`), it
-  lands the field with its own scroller, leaving a smooth reveal under way to
-  land it, and only then scrolls the dialog's top back into view; a field it
-  cannot bring up keeps the browser's reveal. Every later reveal lands at
-  once in the report's frame. Until a browser pans once, the sheet keeps the
-  smooth reveal.
-- Chrome on Android (Gboard) animates its own pan to a focused field the
-  keyboard still covers, by the keyboard's whole height. It starts about
-  150 ms after the report in Chrome 124, and 100 to 170 ms after it in
-  Chrome 133. The page gets no frame until that pan ends, so `watchRevealPan`
-  puts it back then. A Tall BottomSheet sets its field 4 px above the
-  keyboard's top in the report's own commit, so the field is never covered
-  when Chrome checks. Chromium 158 pans the same way when the field stays
-  covered, by 312 px with the sheet's reveal on the next frame.
+- Safari 通过滚动整个页面来显露聚焦输入框，因此自行把内容保持在键盘上方的布局会用 `preventScroll`（`refuseFocusReveal`）来聚焦其输入框。
+- Android 上的 Firefox 在键盘弹起后上报一次，并在 54 到 143 ms 后把视觉视口平移到仍被键盘覆盖的聚焦输入框。因此 BottomSheet 在该上报自身的事件中显露，而当浏览器在上报后已平移到输入框（`watchRevealPan`），它会用自己的滚动容器让输入框落位，让正在进行的平滑显露完成落位，然后才把对话框顶部滚回视野；无法带出的输入框保留浏览器的显露。之后的每次显露都在上报的帧内立即落位。在浏览器首次平移之前，面板保持平滑显露。
+- Android 上的 Chrome（Gboard）会以键盘的整个高度，自行动画平移到仍被键盘覆盖的聚焦输入框。Chrome 124 中约在上报后 150 ms 开始，Chrome 133 中在上报后 100 到 170 ms 开始。在该平移结束之前页面得不到任何帧，因此 `watchRevealPan` 在此时将其放回。Tall 面板会在上报自身的提交中把输入框置于键盘顶部上方 4 px，因此 Chrome 检查时输入框永远不会被覆盖。Chromium 158 在输入框仍被覆盖时会以同样方式平移，位移 312 px，面板的显露在下一帧发生。
 
-## What the page sees (Chromium 158 with Gboard, Android 15)
+## 页面看到什么（Chromium 158 搭配 Gboard，Android 15）
 
-Measured frame by frame on the emulator, with a marker the page paints on each
-report and Gboard's top read from every recorded frame (`../motion/android/
-keyboard.ts` has the numbers and their sources). The guide reads these reports
-in a browser with the VirtualKeyboard API (`keyboardProfileOf`), and the
-keyboard module measures them from the visual viewport, as in every browser
-(`spec:AST-099` FR8, DEC-4).
+在模拟器上逐帧测量，页面在每次上报时绘制一个标记，并从每个录制的帧中读取 Gboard 的顶部位置（`../motion/android/keyboard.ts` 包含这些数值及其来源）。指南在具有 VirtualKeyboard API 的浏览器中读取这些上报（`keyboardProfileOf`），键盘模块则像在所有浏览器中一样从视觉视口测量它们（`spec:AST-099` FR8、DEC-4）。
 
-- Show: Gboard slides up over the page in about 267 ms. Chrome's one `resize`
-  of the visual viewport comes just after the slide starts: its first painted
-  frame trails Gboard's first moved frame by 14 to 35 ms. The guide dates the
-  show back by `androidKeyboard.showReportLagMs` and rides Gboard's show
-  curve, joining the slide where it is, so content riding it stays on top of
-  the keyboard instead of being covered until the report.
-- Hide: Gboard starts down about `androidKeyboard.hideAfterBlurMs` after the
-  blur and leaves in about 167 ms; the `resize` comes mid-slide. The guide
-  starts the hide at the blur and takes the `resize` as its confirmation. A
-  busy page reads that `resize` after the slide. Until the report of the
-  keyboard gone, a report of it partway down, or still up, starts nothing.
-  Focus that comes back still turns the hide around. Focus in a frame, an
-  open shadow host or a custom element, whose field the guide cannot see,
-  leaves the viewport to decide. A hide nothing predicted (Back, which keeps
-  the focus) rides from its report,
-  dated back `hideReportLagMs`, the lag measured on blurs. Chrome can report
-  Back later in the slide, so on Back the content starts down after the
-  keyboard does.
-- Under Remove animations (`prefers-reduced-motion: reduce`), Chrome reports
-  a hide in steps: lower keyboards that are still up, then none. There, the
-  keyboard module holds such a step and keeps reporting the shown height. The
-  report of none, a report back up, or 300 ms without a new height ends the
-  hold, and it lasts 1 s at most. A pan reports the same height and leaves it
-  as it is. So every reader lays out once, after the keyboard has gone, and its
-  Reduce Motion cross-fade plays once.
-- When focus moves from one field to another through something that brings up
-  no keyboard (a popover's container), Chrome reports the keyboard gone and
-  back within about 50 ms. A hide reported while a field that gained focus less
-  than 150 ms ago still has it waits for the move to settle.
-- `navigator.virtualKeyboard` with `overlaysContent`, the keyboard's own
-  geometry, was measured and not used: in 12 shows its `geometrychange` was
-  painted 0 to 67 ms after Gboard started (against 14 to 35 ms for the
-  visual viewport), it failed to show the keyboard in 4 of 12 shows when set
-  on focus (1 of 24 when set as the touch lands), and it hides Chromium's bottom
-  toolbar on the keyboard's frame (+56 px of layout).
+- 显示：Gboard 在大约 267 ms 内从页面上方滑入。Chrome 对视觉视口的唯一一次 `resize` 在滑动开始后不久到来：其首个绘制帧比 Gboard 首个移动帧晚 14 到 35 ms。指南把显示的起始时间按 `androidKeyboard.showReportLagMs` 回溯，并随动 Gboard 的显示曲线，在滑动当前位置接入，因此随动的内容会保持在键盘上方，而不是直到上报前都被覆盖。
+- 隐藏：Gboard 在失焦后约 `androidKeyboard.hideAfterBlurMs` 开始下落，约 167 ms 后离开；`resize` 在滑动中途到来。指南在失焦时开始隐藏，并以 `resize` 作为确认。繁忙页面会在滑动结束后才读到该 `resize`。在键盘消失的上报到来之前，部分下落或仍然弹起的上报都不会启动任何东西。重新回来的焦点仍会使隐藏转向。位于 frame、打开的 shadow 宿主或自定义元素中的焦点（指南无法看到其输入框）交给视口决定。没有任何预测的隐藏（Back，它保留焦点）从其上报开始随动，起始时间按 `hideReportLagMs` 回溯，该延迟是在失焦上测得的。Chrome 可能在滑动较晚时才上报 Back，因此在 Back 上，内容会比键盘更晚开始下落。
+- 在“移除动画”（`prefers-reduced-motion: reduce`）下，Chrome 会分步上报隐藏：先是仍在弹起的较矮键盘，然后是没有。在那里，键盘模块会保持这样的步骤并继续上报显示高度。上报没有、上报重新弹起，或 300 ms 内没有新的高度，都会结束保持，且最多持续 1 s。平移上报相同高度时保持不变。因此每个读取方只在键盘消失后布局一次，其减弱动态效果交叉淡化只播放一次。
+- 当焦点通过不会唤起键盘的东西（例如 popover 的容器）从一个输入框移到另一个时，Chrome 会在约 50 ms 内先上报键盘消失再上报回来。若上报隐藏时，不到 150 ms 前获得焦点的输入框仍持有焦点，则等待该移动稳定。
+- 对带 `overlaysContent` 的 `navigator.virtualKeyboard`（键盘自身的几何信息）进行了测量，但未采用：在 12 次显示中，其 `geometrychange` 在 Gboard 开始后 0 到 67 ms 才被绘制（视觉视口为 14 到 35 ms）；在聚焦时设置，它在 12 次显示中有 4 次未能显示键盘（在触摸落下时设置为 24 次中 1 次）；并且它会在键盘所在帧隐藏 Chromium 的底部工具栏（布局增加 56 px）。
 
-## Consumers
+## 使用方
 
-- BottomSheet (`BottomSheet/BottomSheetPanel.tsx`): `useMobileKeyboard`, whose
-  inset the content box's `keyboardInset` functional style lays out as the
-  content's last box (after its own children, so it adds scroll range in
-  Firefox too, which keeps the content box at the body's height); it reveals the
-  focused field in the keyboard report's own event, and in Chrome rides the
-  content box on Gboard's slides (`rideKeyboard`, from the guide's
-  transitions).
+- BottomSheet（`BottomSheet/BottomSheetPanel.tsx`）：使用 `useMobileKeyboard`，其内嵌区由内容盒的 `keyboardInset` 函数式样式排为内容的最后一个盒子（位于其自身子元素之后，因此在 Firefox 中也会增加滚动范围——Firefox 会让内容盒保持 body 的高度）；它在键盘上报自身的事件中显露聚焦输入框，并在 Chrome 中随动 Gboard 的滑动来移动内容盒（`rideKeyboard`，数据来自指南的过渡）。
 
-## Files
+## 文件
 
-| File                     | What it holds                                                                                                         |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| `keyboardHeight.ts`      | The keyboard module: the height, its listeners, the focus routes.                                                     |
-| `useMobileKeyboard.ts`   | Keeps a focused field in a target above the keyboard: the inset, the reveal, the ride and the dismiss.                |
-| `keyboardTarget.ts`      | The targets: their registry, a docked or scrolling target, and a field's own path.                                    |
-| `revealBand.ts`          | `distanceIntoBand`: the scroll that brings a box inside a band, shared by the field's and the sheet's reveals.        |
-| `keyboardModel.ts`       | The clock-free core of the guide: transitions from keyboard reports and focus changes.                                |
-| `keyboardLayoutGuide.ts` | One guide per window, fed by the keyboard module: the verification timer, the focus handoff.                          |
-| `rideKeyboard.ts`        | Moves an element with the keyboard on the curve its transition publishes, or at once (tests: `rideKeyboard.test.ts`). |
-| `index.ts`               | Entry point.                                                                                                          |
+| 文件                     | 内容                                                                         |
+| ------------------------ | ---------------------------------------------------------------------------- |
+| `keyboardHeight.ts`      | 键盘模块：高度、监听器、焦点路径。                                           |
+| `useMobileKeyboard.ts`   | 让目标中的聚焦输入框保持在键盘上方：内嵌区、显露、随动与收起。               |
+| `keyboardTarget.ts`      | 各目标：注册表、停靠或滚动目标，以及输入框自身的路径。                       |
+| `revealBand.ts`          | `distanceIntoBand`：把盒子带入某个区带的滚动量，由输入框与面板的显露共用。   |
+| `keyboardModel.ts`       | 指南中不依赖时钟的核心：根据键盘上报与焦点变化生成过渡。                     |
+| `keyboardLayoutGuide.ts` | 每个窗口一个指南，由键盘模块供给：校验计时器、焦点交接。                     |
+| `rideKeyboard.ts`        | 按过渡发布的曲线随键盘移动元素，或立即移动（测试：`rideKeyboard.test.ts`）。 |
+| `index.ts`               | 入口。                                                                       |
 
-The timing constants live in `../motion/android/keyboard.ts` (Chrome with
-Gboard).
+计时常量位于 `../motion/android/keyboard.ts`（Chrome 搭配 Gboard）。

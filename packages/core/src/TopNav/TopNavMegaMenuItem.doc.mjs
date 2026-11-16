@@ -53,43 +53,51 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'TopNavMegaMenuItem',
-  isHiddenFromOverview: true,
-  displayName: 'Top Nav Mega Menu Item',
-  description: '超级菜单中的单个项目。在桌面端（弹出层网格）和移动抽屉模式中都会自行渲染。',
-  props: [
+  "name": "TopNavMegaMenuItem",
+  "isHiddenFromOverview": true,
+  "displayName": "Top Nav Mega Menu Item",
+  "description": "TopNavMegaMenu 中的单个项。通过渲染模式上下文，在桌面（弹出层网格）和移动抽屉两种模式下渲染自身。",
+  "props": [
     {
-      name: 'title',
-      type: 'string',
-      description: '菜单项的显示标题。',
-      required: true,
+      "name": "title",
+      "type": "string",
+      "description": "菜单项的显示标题。",
+      "required": true
     },
     {
-      name: 'description',
-      type: 'string',
-      description: '标题下方的可选描述文本。',
+      "name": "description",
+      "type": "string",
+      "description": "显示在标题下方的可选描述文本。"
     },
     {
-      name: 'icon',
-      type: 'ReactNode',
-      description: '左侧显示的可选图标元素。',
+      "name": "icon",
+      "type": "ReactNode",
+      "description": "显示在左侧的可选图标元素。"
     },
     {
-      name: 'href',
-      type: 'string',
-      description: '点击时导航的 URL。',
+      "name": "href",
+      "type": "string",
+      "description": "点击时要导航到的 URL。"
     },
     {
-      name: 'onClick',
-      type: '() => void',
-      description: '点击项目时的回调。',
+      "name": "onClick",
+      "type": "() => void",
+      "description": "点击项时的回调。"
     },
     {
-      name: 'as',
-      type: 'LinkComponentType',
-      description: '用于替代 <a> 的自定义链接组件。覆盖 LinkProvider 设置的默认组件。',
-    },
+      "name": "as",
+      "type": "LinkComponentType",
+      "description": "用于替代 <a> 渲染链接项的自定义组件。覆盖由 LinkProvider 设置的 Provider 级默认值。"
+    }
   ],
+  "propDescriptions": {
+    "title": "菜单项的显示标题。",
+    "description": "显示在标题下方的可选描述文本。",
+    "icon": "显示在左侧的可选图标元素。",
+    "href": "点击时要导航到的 URL。",
+    "onClick": "点击项时的回调。",
+    "as": "用于替代 <a> 渲染链接项的自定义组件。覆盖由 LinkProvider 设置的 Provider 级默认值。"
+  }
 };
 
 export const docsDense = {

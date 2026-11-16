@@ -24,13 +24,13 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'ChatComposerTokenElement',
-  isHiddenFromOverview: true,
-  displayName: 'Chat Composer Token Element',
-  description: '在 contentEditable 外部渲染标记芯片。',
-  propDescriptions: {
-    token: '徽章配置或自定义渲染。',
-  },
+  "name": "ChatComposerTokenElement",
+  "isHiddenFromOverview": true,
+  "displayName": "Chat Composer Token Element",
+  "description": "在 contentEditable 输入框之外渲染单个令牌芯片。将徽章配置或自定义渲染函数包裹在正确的 `data-astryx-token` span 中，使令牌正确序列化，并与编辑器内的令牌保持视觉一致。",
+  "propDescriptions": {
+    "token": "要渲染的令牌。常见情况传入徽章配置（`{ value, label, variant?, icon? }`），或传入自定义渲染（`{ value, render }`）以获得完全控制。"
+  }
 };
 
 export const docsDense = {

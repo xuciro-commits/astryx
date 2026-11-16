@@ -77,3 +77,37 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useFocusTrap",
+  "usage": {
+    "description": "按照 WAI-ARIA 对话框焦点陷阱模式，将焦点限制在容器元素内。监听文档上的焦点事件，如果从容器内部按 Tab 使焦点移出，则将焦点重定向回容器。同时处理 Tab 和 Shift+Tab 的循环。焦点在容器外时按下的 Tab 会交给页面处理，因此打开的非模态表面绝不会接管页面的焦点顺序。陷阱停用或卸载时，焦点会恢复到激活前聚焦的元素，除非焦点已被移到别处或从未进入陷阱（因此像组合框这类将焦点保留在触发器上的弹出层不受影响）。容器外的鼠标点击不会被拦截；请为此使用轻量关闭处理器。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "打开对话框/模态框时调用 `focusFirst()`，将焦点移入陷阱区域。"
+      },
+      {
+        "guidance": true,
+        "description": "提供 `onEscape` 回调，在按下 Escape 时关闭对话框。"
+      },
+      {
+        "guidance": true,
+        "description": "关闭时依赖内置的焦点恢复；仅当需要将焦点发送到先前聚焦元素以外的位置时，才添加自己的 `onHide` 焦点处理。"
+      },
+      {
+        "guidance": false,
+        "description": "用于工具提示或下拉菜单等非模态内容；这些内容需要轻量关闭，而不是焦点陷阱。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "焦点陷阱的配置对象。",
+    "options.isActive": "焦点陷阱当前是否激活。",
+    "options.onEscape": "在陷阱容器内按下 Escape 键时的回调。"
+  },
+  "returnDescriptions": {
+    "containerRef": "要附加到应捕获焦点的容器元素的 ref。",
+    "focusFirst": "将焦点移到容器内第一个可聚焦元素。"
+  }
+};

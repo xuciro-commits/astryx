@@ -83,3 +83,34 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useInputContainer",
+  "usage": {
+    "description": "使输入框容器包装元素可点击，当用户点击非交互区域（图标、内边距、状态指示器）时，将焦点委托给内部 input/textarea。构建在 useClickableContainer 之上，因此嵌套的交互式元素（清除按钮、日历切换按钮、链接）会被安全处理；点击它们不会从输入框抢走焦点。自动检测输入类型：类文本输入框接收 .focus()，其他类型（checkbox、radio、file）接收 .click()。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "在输入框包装组件（TextInput、NumberInput、TimeInput、TextArea）内使用，使整个容器区域可点击。"
+      },
+      {
+        "guidance": true,
+        "description": "将 onClick 和 onMouseUp 都附加到包装 div，以获得完整的交互处理。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在没有包装层的裸输入框上使用；如果输入框已经填满整个可点击区域，则没有收益。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "输入框容器的配置对象。",
+    "options.containerRef": "指向外部容器/包装元素的 ref。",
+    "options.inputRef": "指向内部 input 或 textarea 元素的 ref。",
+    "options.disabled": "输入框是否禁用。"
+  },
+  "returnDescriptions": {
+    "onClick": "要附加到容器包装层的点击处理函数。",
+    "onMouseUp": "要附加到容器包装层的鼠标抬起处理函数。"
+  }
+};

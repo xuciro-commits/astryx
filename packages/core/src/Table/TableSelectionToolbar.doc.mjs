@@ -178,3 +178,36 @@ export const docsDense = {
     xstyle: 'caller-owned layout/positioning styles',
   },
 };
+
+export const docsZh = {
+  "name": "TableSelectionToolbar",
+  "displayName": "Table Selection Toolbar",
+  "description": "基于 Toolbar 构建、感知选择状态的批量操作界面。传入来自 useTableSelectionState 的 selectionState，使计数、可见性和完整清除与 Table 选择插件保持同步。当应用维护自己的选择（例如跨服务端页面匹配查询的每一行）时，改为传入自己的 TableSelectionState（参见示例）。该组件不负责表格或粘性布局：将其放入常规流，或通过 xstyle 应用调用方自有的定位。",
+  "usage": {
+    "description": "将 useTableSelectionState 的两个输出分别传给对应的使用方：selectionConfig 传给 useTableSelection，selectionState 传给 TableSelectionToolbar。维护自己选择状态的应用（例如跨服务端页面匹配查询的每一行）改为传入自己的配置和状态。通过 startContent 渲染产品操作。固定或浮动定位交由周围布局处理。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "直接传入 useTableSelectionState 的 selectionState，使计数和清除操作与行选择保持同步，除非应用跨服务端页面维护自己的选择。"
+      },
+      {
+        "guidance": true,
+        "description": "以 startContent 提供产品操作，而不是将其编码为配置对象。"
+      },
+      {
+        "guidance": false,
+        "description": "通过 Table 插件或其水平滚动包装器注入工具栏。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "selection": "共享的选择状态：selectedKeys、selectedCount、hasSelection 和 clearSelection。通常由 useTableSelectionState 返回；维护自己选择状态的应用自行构建。",
+    "startContent": "对齐到逻辑起点的产品自有操作控件。子控件继承工具栏尺寸。",
+    "label": "操作界面的可访问名称。",
+    "renderSelectionLabel": "为本地化或领域特定文案覆盖可见的计数文本。",
+    "clearLabel": "清除整个受控选择的命令的可见标签。",
+    "size": "工具栏尺寸。会级联到产品操作控件和清除操作。",
+    "variant": "工具栏表面变体。",
+    "xstyle": "调用方自有的布局样式，包括浮动组合的粘性定位。"
+  }
+};

@@ -41,3 +41,14 @@ export const docsDense = {
     element: 'dialog element: render in JSX tree',
   },
 };
+
+export const docsZh = {
+  "name": "useImperativeAlertDialog",
+  "description": "用于显示警告对话框而无需管理打开状态的 Hook。调用 alert.show(options) 打开，调用 alert.hide() 关闭。在 JSX 树中渲染 alert.element。",
+  "propDescriptions": {
+    "show": "使用给定选项显示警告对话框。选项与 AlertDialog 的属性相同，但去掉 isOpen/onOpenChange。",
+    "hide": "隐藏警告对话框。",
+    "isOpen": "对话框当前是否打开。",
+    "element": "对话框元素：在 JSX 树中渲染它。"
+  }
+};

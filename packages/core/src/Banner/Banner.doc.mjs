@@ -184,92 +184,229 @@ function SaveSettings() {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'Banner',
-  displayName: 'Banner',
-  usage: {
-    description:
-      'Banner shows a persistent message at the top of a page or section. Use it for form errors, system updates, maintenance notices, or success confirmations that the user needs to see until they act on it.',
-    bestPractices: [
-      {guidance: true, description: 'Pick a status that matches the message: info for updates, warning for caution, error for problems, success for confirmations.'},
-      {guidance: true, description: 'Use the card container inside page content and the section container for full-width messages that span the entire page.'},
-      {guidance: true, description: 'Make info and success banners dismissable. Keep error banners visible until the user fixes the issue.'},
-      {guidance: true, description: 'Keep titles short and scannable: "Payment failed" not "There was a problem processing your most recent payment."'},
-      {guidance: false, description: 'Use Banner for short-lived messages that disappear on their own; use Toast instead.'},
-      {guidance: false, description: 'Stack multiple banners with the same status; combine related messages into one banner.'},
-      {guidance: true, description: 'Banner 的 status 仅控制颜色和图标，不创建实时区域。异步结果应在实际的状态转换处理函数中调用 useAnnounce。仅当消息紧急、用户必须立即处理时才传入 role="alert"：Banner 会把它放在标题和描述上，因此控件、endContent 和补充内容不会作为警报的一部分被朗读。不要再用 useAnnounce 重复播报同一条消息。'},
-      {guidance: false, description: '不要只依赖 status 的颜色或图标传达含义；请在标题文本中明确说明状态，因为屏幕阅读器会忽略这个装饰性图标。'},
+  "name": "Banner",
+  "displayName": "Banner",
+  "usage": {
+    "description": "Banner 在页面或区块顶部显示一条常驻消息。用于表单错误、系统更新、维护通知或用户需要看到并处理后才消失的成功确认。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "选择与消息匹配的状态：更新用 info，警告用 warning，问题用 error，确认用 success。"
+      },
+      {
+        "guidance": true,
+        "description": "页面内容内部使用 card 容器，需要横跨整个页面的全宽消息使用 section 容器。"
+      },
+      {
+        "guidance": true,
+        "description": "让 info 和 success 横幅可关闭。错误横幅应保持可见，直到用户解决问题。"
+      },
+      {
+        "guidance": true,
+        "description": "保持标题简短易扫读：用“付款失败”，而不是“处理您最近一笔付款时出现问题”。"
+      },
+      {
+        "guidance": false,
+        "description": "将 Banner 用于会自动消失的短暂消息；请改用 Toast。"
+      },
+      {
+        "guidance": false,
+        "description": "堆叠多个相同状态的横幅；将相关消息合并到一个横幅中。"
+      },
+      {
+        "guidance": true,
+        "description": "当用户需要内容来处理消息（例如验证失败的字段列表）时，设置 collapsible={false}。当详情长到会淹没横幅自身消息时，保留默认切换。"
+      },
+      {
+        "guidance": true,
+        "description": "Banner 的状态仅控制颜色和图标；它不会创建实时区域。在过渡处理函数中使用 useAnnounce 宣布异步结果。仅对用户必须立即处理的紧急消息传入 role=\"alert\"：Banner 会将其放在标题和描述上，因此控件、endContent 和辅助内容不会被作为警报的一部分朗读。也不要再用 useAnnounce 宣布该消息。"
+      },
+      {
+        "guidance": false,
+        "description": "仅依赖状态颜色或图标来传达含义；请在标题文本中说明状态，因为图标对屏幕阅读器是装饰性的。"
+      }
     ],
-    anatomy: [
-      {name: 'Banner frame', required: true, description: 'Outer frame that groups the status surface and optional content surface. It carries whole-banner elevation and, for elevated card banners, the radius that shapes that silhouette.'},
-      {name: 'Status surface', required: true, description: 'The primary painted surface. It communicates status and contains the icon, title, description, actions, and controls.'},
-      {name: 'Icon', required: true, description: 'Automatically set based on the status (info, warning, error, success).'},
-      {name: 'Title', required: true, description: 'The main message. Always required.'},
-      {name: 'Description', required: false, description: 'Additional detail below the title.'},
-      {name: 'Action button', required: false, description: 'A button for the user to act on the message, like "Review" or "Retry".'},
-      {name: 'Dismiss button', required: false, description: 'Lets the user close the banner. Enabled by setting isDismissable.'},
-      {name: 'Content surface', required: false, description: 'Secondary surface for extra detail below the status surface, like a list of errors. Sits behind an expand/collapse toggle by default; set collapsible={false} to keep it visible.'},
-    ],
+    "anatomy": [
+      {
+        "name": "Banner 框架",
+        "required": true,
+        "description": "外层框架，用于组合状态表面和可选的内容表面。它承载整个横幅的阴影，对于带高度的卡片横幅，还承载塑造该轮廓的圆角。"
+      },
+      {
+        "name": "状态表面",
+        "required": true,
+        "description": "主要绘制表面。它传达状态，并包含图标、标题、描述、操作和控件。"
+      },
+      {
+        "name": "图标",
+        "required": true,
+        "description": "根据状态（info、warning、error、success）自动设置。"
+      },
+      {
+        "name": "标题",
+        "required": true,
+        "description": "主要消息。始终必需。"
+      },
+      {
+        "name": "描述",
+        "required": false,
+        "description": "标题下方的附加详情。"
+      },
+      {
+        "name": "操作按钮",
+        "required": false,
+        "description": "供用户针对消息执行操作的按钮，例如“查看”或“重试”。"
+      },
+      {
+        "name": "关闭按钮",
+        "required": false,
+        "description": "让用户关闭横幅。通过设置 isDismissable 启用。"
+      },
+      {
+        "name": "内容表面",
+        "required": false,
+        "description": "状态表面下方的次要表面，用于显示额外详情，例如错误列表。默认位于展开/折叠切换之后；设置 collapsible={false} 使其保持可见。"
+      }
+    ]
   },
-  props: [
-    {name: 'status', type: "'info' | 'warning' | 'error' | 'success'", description: '状态类型，控制图标和颜色。', required: true},
-    {name: 'title', type: 'ReactNode', description: '显示在头部的标题文本或 ReactNode。', required: true},
-    {name: 'description', type: 'ReactNode', description: '渲染在头部标题下方的描述文本。'},
-    {name: 'icon', type: 'ReactNode', description: '覆盖默认的状态图标。'},
-    {name: 'isDismissable', type: 'boolean', description: '横幅是否可被用户关闭。', default: 'false'},
-    {name: 'onDismiss', type: '() => void', description: '点击关闭按钮时调用；无论是否提供此回调，横幅都会自动隐藏。'},
-    {name: 'dismissLabel', type: 'string', description: '关闭按钮的无障碍名称和可见工具提示（请传入已翻译的字符串）。字符串标题默认生成“关闭 <标题>”；富文本标题请设置此属性。'},
-    {name: 'endContent', type: 'ReactNode', description: '渲染在头部区域末端对齐的操作内容，通常是按钮或链接。头部过窄时会整体换行到文本下方，自成一行。'},
-    {name: 'container', type: "'card' | 'section'", description: '视觉变体：card 带圆角；section 无圆角全宽，适用于页面级场景。', default: "'card'"},
-    {name: 'elevation', type: "'none' | 'low' | 'med' | 'high'", description: '静止阴影深度。用于悬浮于内容之上的浮动横幅；none 为默认内联横幅。', default: "'none'"},
-    {name: 'children', type: 'ReactNode', description: '渲染在彩色头部下方卡片背景区域的内容。默认位于展开/折叠开关之后，除非设置 collapsible={false}。'},
-    {name: 'collapsible', type: 'boolean | {defaultIsOpen?: boolean; isOpen?: boolean; onOpenChange?: (isOpen: boolean) => void}', description: '内容区域（children）是否位于头部的展开/折叠开关之后。默认开启，且初始为折叠状态。false 表示关闭：内容始终可见且没有开关。{defaultIsOpen: true} 表示初始展开；{isOpen, onOpenChange} 为受控模式。与 Collapsible 使用同一套 CollapsibleConfig。', default: 'true'},
+  "props": [
     {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description:
-        '用于布局自定义的 StyleX 样式（外边距、定位、尺寸）。必须是 stylex.create() 的值，而非内联样式对象如 style={{}}。',
+      "name": "status",
+      "type": "'info' | 'warning' | 'error' | 'success'",
+      "description": "控制图标和颜色的状态类型。",
+      "required": true
     },
+    {
+      "name": "title",
+      "type": "ReactNode",
+      "description": "在标题栏中显示的标题文本或 ReactNode。",
+      "required": true
+    },
+    {
+      "name": "description",
+      "type": "ReactNode",
+      "description": "在标题栏中标题下方渲染的描述文本。"
+    },
+    {
+      "name": "icon",
+      "type": "ReactNode",
+      "description": "覆盖默认状态图标。"
+    },
+    {
+      "name": "isDismissable",
+      "type": "boolean",
+      "description": "用户是否可以关闭横幅。",
+      "default": "false"
+    },
+    {
+      "name": "onDismiss",
+      "type": "() => void",
+      "description": "点击关闭按钮时调用；无论是否提供此回调，横幅都会自行隐藏。"
+    },
+    {
+      "name": "dismissLabel",
+      "type": "string",
+      "description": "关闭按钮的无障碍名称和可见工具提示（请传入已翻译的文本）。默认对字符串标题使用“关闭 <title>”，以便区分堆叠的横幅；当标题是 ReactNode 时请设置此项。"
+    },
+    {
+      "name": "endContent",
+      "type": "ReactNode",
+      "description": "在标题栏区域中渲染、末端对齐的操作内容。当标题栏太窄无法同时容纳两者时，会换行到文本下方的独立行。"
+    },
+    {
+      "name": "container",
+      "type": "'card' | 'section'",
+      "description": "容器类型：card 带圆角；section 为全宽且无圆角，适用于页面级用途。",
+      "default": "'card'"
+    },
+    {
+      "name": "elevation",
+      "type": "'none' | 'low' | 'med' | 'high'",
+      "description": "静止阴影深度。用于悬浮在内容上方的浮动横幅；`none` 是默认的内联横幅。`card` 容器的横幅会相应调整阴影圆角。",
+      "default": "'none'"
+    },
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "description": "在彩色标题下方卡片背景区域中渲染的内容。除非 `collapsible={false}`，否则位于展开/折叠切换之后。"
+    },
+    {
+      "name": "collapsible",
+      "type": "boolean | {defaultIsOpen?: boolean; isOpen?: boolean; onOpenChange?: (isOpen: boolean) => void}",
+      "description": "内容区域（children）是否位于标题栏中的展开/折叠切换之后。默认开启，初始为折叠。`false` 表示退出：children 始终可见且无切换。`{defaultIsOpen: true}` 初始为展开；`{isOpen, onOpenChange}` 为受控模式。接受与 Collapsible 相同的 CollapsibleConfig。",
+      "default": "true"
+    },
+    {
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 的值，不能是 style={{}} 这样的内联样式对象。"
+    }
   ],
-  theming: {
-    targets: [
+  "theming": {
+    "targets": [
       {
-        className: 'astryx-banner-frame',
-        visualProps: [
-          'container',
-          'elevation',
-        ],
+        "className": "astryx-banner-frame",
+        "visualProps": [
+          "container",
+          "elevation"
+        ]
       },
       {
-        className: 'astryx-banner',
-        visualProps: [
-          'container',
-          'status',
-        ],
+        "className": "astryx-banner",
+        "visualProps": [
+          "container",
+          "status"
+        ]
       },
       {
-        className: 'astryx-banner-icon',
-        visualProps: [
-          'status',
-        ],
+        "className": "astryx-banner-icon",
+        "visualProps": [
+          "status"
+        ]
       },
       {
-        className: 'astryx-banner-description',
+        "className": "astryx-banner-description"
       },
       {
-        className: 'astryx-banner-content',
-        visualProps: [
-          'container',
-          'status',
-        ],
-      },
+        "className": "astryx-banner-content",
+        "visualProps": [
+          "container",
+          "status"
+        ]
+      }
     ],
-    vars: [
-      {name: '--_banner-radius', description: 'Border radius of the card container (header, content area and the elevated root silhouette)', default: 'var(--radius-container)', private: true},
+    "vars": [
+      {
+        "name": "--_banner-radius",
+        "description": "Border radius of the card container (header, content area and the elevated root silhouette)",
+        "default": "var(--radius-container)",
+        "private": true
+      }
     ],
-    derived: [
-      {property: 'borderRadius', vars: ['--_banner-radius']},
-    ],
+    "derived": [
+      {
+        "property": "borderRadius",
+        "vars": [
+          "--_banner-radius"
+        ]
+      }
+    ]
   },
+  "propDescriptions": {
+    "status": "控制图标和颜色的状态类型。",
+    "title": "在标题栏中显示的标题文本或 ReactNode。",
+    "description": "在标题栏中标题下方渲染的描述文本。",
+    "icon": "覆盖默认状态图标。",
+    "isDismissable": "用户是否可以关闭横幅。",
+    "onDismiss": "点击关闭按钮时调用；无论是否提供此回调，横幅都会自行隐藏。",
+    "dismissLabel": "关闭按钮的无障碍名称和可见工具提示（请传入已翻译的文本）。默认对字符串标题使用“关闭 <title>”，以便区分堆叠的横幅；当标题是 ReactNode 时请设置此项。",
+    "endContent": "在标题栏区域中渲染、末端对齐的操作内容。当标题栏太窄无法同时容纳两者时，会换行到文本下方的独立行。",
+    "container": "容器类型：card 带圆角；section 为全宽且无圆角，适用于页面级用途。",
+    "elevation": "静止阴影深度。用于悬浮在内容上方的浮动横幅；`none` 是默认的内联横幅。`card` 容器的横幅会相应调整阴影圆角。",
+    "children": "在彩色标题下方卡片背景区域中渲染的内容。除非 `collapsible={false}`，否则位于展开/折叠切换之后。",
+    "collapsible": "内容区域（children）是否位于标题栏中的展开/折叠切换之后。默认开启，初始为折叠。`false` 表示退出：children 始终可见且无切换。`{defaultIsOpen: true}` 初始为展开；`{isOpen, onOpenChange}` 为受控模式。接受与 Collapsible 相同的 CollapsibleConfig。",
+    "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 的值，不能是 style={{}} 这样的内联样式对象。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

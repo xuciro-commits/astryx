@@ -142,86 +142,125 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'DropdownMenuItem',
-  isHiddenFromOverview: true,
-  displayName: 'Dropdown Menu Item',
-  description:
-    'DropdownMenu 指针呈现中的一个操作或目标行。父菜单负责键盘导航；该行负责激活、禁用状态、目标行为、内容布局和主题目标。支持的宿主属性、DOM 处理程序、className、style、xstyle 和 ref 会落在或组合到 role="menuitem" 根元素上。',
-  props: [
+  "name": "DropdownMenuItem",
+  "isHiddenFromOverview": true,
+  "displayName": "Dropdown Menu Item",
+  "description": "DropdownMenu 指针呈现中的一个操作或目标行。键盘导航由父菜单负责；该行负责激活、禁用状态、目标行为、内容布局及其主题目标。受支持的宿主属性、DOM 处理函数、className、style、xstyle 和 ref 会传递或组合到 role=\"menuitem\" 根元素上。",
+  "props": [
     {
-      name: 'icon',
-      type: 'IconType',
-      description: '显示在标签前的图标。',
+      "name": "icon",
+      "type": "IconType",
+      "description": "显示在标签之前的图标。有效语义名称见 `astryx docs icons`。"
     },
     {
-      name: 'label',
-      type: 'ReactNode',
-      description: '主标签文本。',
-      required: true,
+      "name": "label",
+      "type": "ReactNode",
+      "description": "主标签文本。",
+      "required": true
     },
     {
-      name: 'description',
-      type: 'ReactNode',
-      description: '显示在标签下方的次要描述文本。',
+      "name": "description",
+      "type": "ReactNode",
+      "description": "显示在标签下方的辅助描述文本。"
     },
     {
-      name: 'onClick',
-      type: '(event: MouseEvent) => void',
-      description:
-        '选中该项时的回调。键盘激活会以携带修饰键的合成点击到达；带 href 的行会在浏览器导航前运行，带修饰键的点击则交给浏览器处理。',
+      "name": "onClick",
+      "type": "(event: MouseEvent) => void",
+      "description": "选中该项时的回调。键盘激活会以携带按键修饰符的合成点击形式到达。在带 `href` 的行上，它会在浏览器导航前运行，并在带修饰键的点击（⌘、Ctrl、Shift、Alt、中键）时跳过，交由浏览器处理。"
     },
     {
-      name: 'href',
-      type: 'string',
-      description:
-        '该行导航到的地址。此时该行渲染为带 role="menuitem" 的真实链接，带修饰键的点击或中键点击保留浏览器语义（新标签页）。',
+      "name": "href",
+      "type": "string",
+      "description": "该行导航到的地址。此时该行会（通过 LinkProvider）渲染为带 role=\"menuitem\" 的真实锚点，因此带修饰键的点击或中键点击会保留浏览器的语义——在新标签页打开——而不会运行 onClick。"
     },
     {
-      name: 'target',
-      type: "'_blank' | '_self'",
-      description: '链接目标。仅与 href 一起使用。',
+      "name": "target",
+      "type": "'_blank' | '_self'",
+      "description": "链接目标。仅与 href 一起使用。"
     },
     {
-      name: 'rel',
-      type: 'string',
-      description: '链接关系。target="_blank" 时自动加入 noopener noreferrer。',
+      "name": "rel",
+      "type": "string",
+      "description": "链接关系。当 target=\"_blank\" 时会添加 noopener noreferrer。仅与 href 一起使用。"
     },
     {
-      name: 'isDisabled',
-      type: 'boolean',
-      description: '该行是否不可用；不可用的行不会激活或导航。',
-      default: 'false',
+      "name": "isDisabled",
+      "type": "boolean",
+      "description": "该行是否不可用。禁用的行会暴露 aria-disabled、移除链接目标并抑制激活。",
+      "default": "false"
     },
     {
-      name: 'endContent',
-      type: 'ReactNode',
-      description: '在标签和描述之后渲染的非交互式附加内容。',
+      "name": "endContent",
+      "type": "ReactNode",
+      "description": "在标签和描述之后渲染的非交互内容。"
     },
     {
-      name: 'hasCloseOnSelect',
-      type: 'boolean',
-      description:
-        '激活该项时是否关闭菜单。若操作要在该项上就地反馈结果，请设为 false。',
-      default: 'true',
+      "name": "hasCloseOnSelect",
+      "type": "boolean",
+      "description": "激活该项是否关闭菜单。对于在项自身就地报告结果的操作，请设为 false。",
+      "default": "true"
     },
     {
-      name: 'variant',
-      type: "'default' | 'destructive'",
-      description:
-        "视觉变体。'destructive' 会以错误色渲染标签、描述和图标，用于危险操作（如删除）。",
-      default: "'default'",
+      "name": "variant",
+      "type": "'default' | 'destructive'",
+      "description": "视觉变体。'destructive' 会以错误色渲染标签、描述和图标，用于危险操作（例如删除）。",
+      "default": "'default'"
     },
     {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description: '根容器的 StyleX 样式。',
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 `stylex.create()` 的值：不能是 `style={{}}` 这样的内联样式对象。"
     },
     {
-      name: 'ref',
-      type: 'React.Ref<HTMLElement>',
-      description: '转发到行根元素（带 role="menuitem" 的元素）的 ref。',
-    },
+      "name": "ref",
+      "type": "React.Ref<HTMLElement>",
+      "description": "转发到行根元素的 ref，即携带 role=\"menuitem\" 的元素。可使用以元素为键的观察器或浮层注册该行。"
+    }
   ],
+  "usage": {
+    "description": "在 DropdownMenu 复合模式中使用 DropdownMenuItem 表示一个操作或目标。保持 label、description、icon 和 endContent 非交互；控件应放在单独的行或菜单页眉/页脚中。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "为目标使用 href，以便保留 LinkProvider、带修饰键的点击、中键点击和浏览器链接能力。"
+      },
+      {
+        "guidance": true,
+        "description": "仅当激活后在同一行就地报告结果时，才使用 hasCloseOnSelect=false。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将按钮、链接或其他可聚焦控件放入 label、description 或 endContent。每个菜单行都是一个交互目标。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "行",
+        "required": true,
+        "description": "role=\"menuitem\" 根元素，负责激活、禁用状态、目标行为和主题状态。"
+      },
+      {
+        "name": "内容",
+        "required": true,
+        "description": "非交互标签，以及可选的图标、描述和末端内容。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "icon": "显示在标签之前的图标。有效语义名称见 `astryx docs icons`。",
+    "label": "主标签文本。",
+    "description": "显示在标签下方的辅助描述文本。",
+    "onClick": "选中该项时的回调。键盘激活会以携带按键修饰符的合成点击形式到达。在带 `href` 的行上，它会在浏览器导航前运行，并在带修饰键的点击（⌘、Ctrl、Shift、Alt、中键）时跳过，交由浏览器处理。",
+    "href": "该行导航到的地址。此时该行会（通过 LinkProvider）渲染为带 role=\"menuitem\" 的真实锚点，因此带修饰键的点击或中键点击会保留浏览器的语义——在新标签页打开——而不会运行 onClick。",
+    "target": "链接目标。仅与 href 一起使用。",
+    "rel": "链接关系。当 target=\"_blank\" 时会添加 noopener noreferrer。仅与 href 一起使用。",
+    "isDisabled": "该行是否不可用。禁用的行会暴露 aria-disabled、移除链接目标并抑制激活。",
+    "endContent": "在标签和描述之后渲染的非交互内容。",
+    "hasCloseOnSelect": "激活该项是否关闭菜单。对于在项自身就地报告结果的操作，请设为 false。",
+    "variant": "视觉变体。'destructive' 会以错误色渲染标签、描述和图标，用于危险操作（例如删除）。",
+    "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 `stylex.create()` 的值：不能是 `style={{}}` 这样的内联样式对象。",
+    "ref": "转发到行根元素的 ref，即携带 role=\"menuitem\" 的元素。可使用以元素为键的观察器或浮层注册该行。"
+  }
 };
 
 export const docsDense = {

@@ -59,47 +59,81 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'Blockquote',
-  displayName: 'Blockquote',
-  props: [
+  "name": "Blockquote",
+  "displayName": "Blockquote",
+  "props": [
     {
-      name: 'children',
-      type: 'ReactNode',
-      description: '引用块的内容。',
-      required: true,
+      "name": "children",
+      "type": "ReactNode",
+      "description": "引用块的内容。",
+      "required": true
     },
     {
-      name: 'cite',
-      type: 'ReactNode',
-      description: '引用的可选出处。在引用内容之后以 <cite> 元素渲染。',
+      "name": "cite",
+      "type": "ReactNode",
+      "description": "引文的可选署名。在引用内容之后渲染于 `<cite>` 元素中。"
     },
     {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description:
-        '用于布局自定义的 StyleX 样式（边距、定位、尺寸）。必须是 stylex.create() 的值，不能是 style={{}} 这样的内联样式对象。',
-    },
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 `stylex.create()` 的值，而不是 `style={{}}` 这样的内联样式对象。"
+    }
   ],
-  theming: {
-    targets: [
-      {className: 'astryx-blockquote', visualProps: []},
-    ],
+  "theming": {
+    "targets": [
+      {
+        "className": "astryx-blockquote",
+        "visualProps": []
+      }
+    ]
   },
-  usage: {
-    description: '带有行首边框和次要文本颜色的引用块。用于突出显示引用内容、推荐语或摘录。边框和内边距使用逻辑属性，因此在从右到左的语言环境中会移到右侧。',
-    anatomy: [
-      {name: '边框', required: true, description: '行首边缘的边框，使用 --color-border-emphasized 绘制。'},
-      {name: '引用内容', required: true, description: '通过 children 传入的引用内容，渲染在 <blockquote> 元素内。'},
-      {name: '出处', required: false, description: '通过 cite 传入的来源，在引用内容下方以 <cite> 元素渲染。'},
+  "usage": {
+    "description": "带内联起始侧规则线和次要文字颜色的引用块。用于突出显示引用内容、证言或节选。规则线和内边距采用逻辑属性，因此在从右到左的语言环境中会移到右侧边缘。",
+    "anatomy": [
+      {
+        "name": "规则线",
+        "required": true,
+        "description": "内联起始侧边缘的边框，使用 `--color-border-emphasized` 绘制。"
+      },
+      {
+        "name": "引用内容",
+        "required": true,
+        "description": "作为 `children` 传入的引用内容，在 `<blockquote>` 元素内渲染。"
+      },
+      {
+        "name": "署名",
+        "required": false,
+        "description": "作为 `cite` 传入的来源，在引用内容下方渲染为 `<cite>` 元素。"
+      }
     ],
-    bestPractices: [
-      { guidance: true, description: '用于引用文本、推荐语或来自外部来源的高亮摘录。' },
-      { guidance: true, description: '当引用来源已知时，提供 cite 属性。' },
-      { guidance: true, description: '通过 cite 传入来源，而不是写在 children 里，这样它会渲染为语义化的 <cite> 元素，辅助技术可以将其与引用内容区分开。' },
-      { guidance: false, description: '用于提示框或信息说明，应使用 Banner。' },
-      { guidance: false, description: '自行用 <footer> 包裹出处。<blockquote> 内的 <footer> 会成为 contentinfo 文档地标，页面上有多个引用时就会报告多个页脚。' },
-    ],
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "用于引用文本、证言或来自外部来源的突出节选。"
+      },
+      {
+        "guidance": true,
+        "description": "当引文来源已知时，提供 `cite` 属性。"
+      },
+      {
+        "guidance": true,
+        "description": "通过 `cite` 传入来源，而不是直接输入到 `children` 中，这样它会渲染为语义化的 `<cite>` 元素，辅助技术可将其与引文区分开。"
+      },
+      {
+        "guidance": false,
+        "description": "用于标注框或信息性提示；这些场景请改用 Banner。"
+      },
+      {
+        "guidance": false,
+        "description": "将署名包裹在自己的 `<footer>` 中。`<blockquote>` 内的 `<footer>` 会成为 contentinfo 文档地标，含有多处引用的页面会因此报告多个页面页脚。"
+      }
+    ]
   },
+  "propDescriptions": {
+    "children": "引用块的内容。",
+    "cite": "引文的可选署名。在引用内容之后渲染于 `<cite>` 元素中。",
+    "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 `stylex.create()` 的值，而不是 `style={{}}` 这样的内联样式对象。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

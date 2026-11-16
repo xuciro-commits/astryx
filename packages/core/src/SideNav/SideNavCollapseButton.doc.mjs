@@ -46,37 +46,44 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'SideNavCollapseButton',
-  isHiddenFromOverview: true,
-  displayName: 'Side Nav Collapse Button',
-  description: '侧边栏折叠切换按钮。放置在 SideNav 内部（自动读取上下文）或外部（向两者传入同一个受控 collapsible 配置）。默认渲染为仅图标的 ghost 按钮。',
-  props: [
+  "name": "SideNavCollapseButton",
+  "isHiddenFromOverview": true,
+  "displayName": "Side Nav Collapse Button",
+  "description": "用于侧边导航折叠的切换按钮。可放在 SideNav 内（自动读取 context），也可放在其外（向两者传入相同的受控 collapsible 配置）。默认渲染为纯图标幽灵按钮。",
+  "props": [
     {
-      name: 'collapsible',
-      type: '{isCollapsed: boolean, onCollapsedChange: (isCollapsed: boolean) => void, defaultIsCollapsed?: boolean, hasButton?: boolean, buttonLabel?: string}',
-      description: '与 SideNav 相同的受控 collapsible 配置，包含其全部键。仅在按钮渲染在侧边栏外部、无法读取折叠上下文时需要。',
+      "name": "collapsible",
+      "type": "{isCollapsed: boolean, onCollapsedChange: (isCollapsed: boolean) => void, defaultIsCollapsed?: boolean, hasButton?: boolean, buttonLabel?: string}",
+      "description": "传给 SideNav 的同一个受控 collapsible 配置，包含其全部键。仅在按钮渲染于侧边导航之外、折叠 context 无法触达它时才需要。"
     },
     {
-      name: 'handleRef',
-      type: 'RefObject<SideNavImperativeCollapseHandle | null>',
-      description: '已废弃。来自 SideNav 的命令式折叠句柄；请改用 collapsible。',
+      "name": "handleRef",
+      "type": "RefObject<SideNavImperativeCollapseHandle | null>",
+      "description": "已废弃。来自 SideNav 的命令式折叠句柄；请改用 collapsible。"
     },
     {
-      name: 'label',
-      type: 'string',
-      description: '自定义按钮标签。提供时渲染为带箭头的文本按钮。省略时渲染为仅图标按钮。',
+      "name": "label",
+      "type": "string",
+      "description": "自定义按钮标签。提供时渲染为带箭头的文本按钮；省略时渲染为纯图标按钮。"
     },
     {
-      name: 'size',
-      type: "'sm' | 'md' | 'lg'",
-      description: "按钮尺寸。默认使用容器级联的尺寸（SideNav 页脚内为 'sm'），无容器时为 'md'。当按钮位于已设定尺寸的容器之外且需要与相邻元素保持一致时显式设置。",
+      "name": "size",
+      "type": "'sm' | 'md' | 'lg'",
+      "description": "按钮尺寸。默认使用容器级联的尺寸（SideNav 页脚内为 'sm'），无容器时为 'md'。当按钮位于有尺寸的容器之外且需要与相邻元素匹配时，请显式设置。"
     },
     {
-      name: 'children',
-      type: 'ReactNode',
-      description: '自定义按钮内容。覆盖默认的箭头图标和标签。',
-    },
+      "name": "children",
+      "type": "ReactNode",
+      "description": "自定义按钮内容。覆盖默认的箭头图标和标签。"
+    }
   ],
+  "propDescriptions": {
+    "collapsible": "传给 SideNav 的同一个受控 collapsible 配置，包含其全部键。仅在按钮渲染于侧边导航之外、折叠 context 无法触达它时才需要。",
+    "handleRef": "已废弃。来自 SideNav 的命令式折叠句柄；请改用 collapsible。",
+    "label": "自定义按钮标签。提供时渲染为带箭头的文本按钮；省略时渲染为纯图标按钮。",
+    "size": "按钮尺寸。默认使用容器级联的尺寸（SideNav 页脚内为 'sm'），无容器时为 'md'。当按钮位于有尺寸的容器之外且需要与相邻元素匹配时，请显式设置。",
+    "children": "自定义按钮内容。覆盖默认的箭头图标和标签。"
+  }
 };
 
 export const docsDense = {

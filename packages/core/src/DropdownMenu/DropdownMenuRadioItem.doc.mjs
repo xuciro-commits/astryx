@@ -70,20 +70,19 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'DropdownMenuRadioItem',
-  isHiddenFromOverview: true,
-  displayName: 'Dropdown Menu Radio Item',
-  description:
-    'DropdownMenuRadioGroup 中的单个选项（role="menuitemradio"）。必须在 DropdownMenuRadioGroup 内使用。',
-  propDescriptions: {
-    value: '该项在组内代表的值。组的 value 与之匹配以确定勾选状态。',
-    label: '标识该选项的主标签文本。',
-    description: '显示在标签下方的次要描述文本。',
-    icon: '显示在标签前的图标。',
-    isDisabled: '该单选项是否禁用。',
-    endContent: '在标签和描述之后渲染的内容。',
-    ref: '转发到行根元素（带 role="menuitemradio" 的元素）的 ref。',
-  },
+  "name": "DropdownMenuRadioItem",
+  "isHiddenFromOverview": true,
+  "displayName": "Dropdown Menu Radio Item",
+  "description": "DropdownMenuRadioGroup 中的单个选项（role=\"menuitemradio\"）。必须在 DropdownMenuRadioGroup 内使用。",
+  "propDescriptions": {
+    "value": "此选项在其组内代表的值。组的值与它匹配以确定选中状态。",
+    "label": "标识该选项的主标签文本。",
+    "description": "显示在标签下方的辅助描述文本。",
+    "icon": "显示在标签前的图标。有效语义名称见 `astryx docs icons`。",
+    "isDisabled": "是否禁用此单选选项。禁用项仍以禁用状态（aria-disabled）保留在无障碍树中，方向键和输入预选可达，因此键盘用户能找到它。指针高亮会跳过它，选择会被阻止。",
+    "endContent": "在标签和描述之后渲染的内容，例如徽标或元数据。",
+    "ref": "转发到行根元素的 ref，即承载 role=\"menuitemradio\" 的元素。可使用以元素为键的观察器或覆盖层注册该行。"
+  }
 };
 
 export const docsDense = {

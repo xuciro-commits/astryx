@@ -83,18 +83,68 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  usage: {
-    description:
-      'AvatarGroup 以重叠排列方式显示多个头像，并可选择显示溢出指示器。使用组合式 API：直接传入 Avatar 子元素，每个头像可携带自己的属性。',
-    bestPractices: [
-      {guidance: true, description: '自行切分列表，只传入需要显示的头像，通常 3-5 个为佳。组件只渲染传入的子元素，不会自动切分。'},
-      {guidance: true, description: '使用 AvatarGroupOverflow 自定义溢出内容，如弹出触发器或"添加成员"按钮。'},
-      {guidance: true, description: '直接在每个 Avatar 子元素上传递状态点、点击处理器或工具提示。'},
-      {guidance: true, description: '可以用 HoverCard 或 Tooltip 包裹 Avatar 子元素以在悬停时显示更多信息，头像仍会重叠。请在被包裹的 Avatar 上设置 tooltip={false}，避免与内置的名称提示冲突。'},
-      {guidance: false, description: '不要嵌套 AvatarGroup，使用单个组包含所有头像。'},
-      {guidance: false, description: '不要在子头像上设置 size。分组的 size 会覆盖每个子 Avatar 自身的 size，即使分组使用默认值也是如此。'},
+  "usage": {
+    "description": "AvatarGroup 以重叠排列显示多个头像，并可选显示溢出指示器。它采用组合式 API：直接传入 Avatar 子元素，让每个头像携带自己的属性（状态点、点击处理函数等）。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "自行对列表进行切片，只传入希望显示的头像；通常为 3-5 个。该组件严格渲染收到的子元素，绝不会替你切片。"
+      },
+      {
+        "guidance": true,
+        "description": "使用 AvatarGroupOverflow 承载自定义溢出内容，例如弹出层触发按钮或“添加成员”按钮。"
+      },
+      {
+        "guidance": true,
+        "description": "直接在每个 Avatar 子元素上传入状态点、点击处理函数或工具提示。"
+      },
+      {
+        "guidance": true,
+        "description": "将 Avatar 子元素包裹在 HoverCard 或 Tooltip 中，以便悬停时显示更多信息；头像仍会重叠。在被包裹的 Avatar 上设置 tooltip={false}，避免其内置的姓名工具提示发生冲突。"
+      },
+      {
+        "guidance": true,
+        "description": "通过 href 或 onClick 让头像可交互，以链接到个人资料。可交互头像共享单一 Tab 停靠点；方向键可在它们之间移动，组件还会向辅助技术播报键盘提示。这遵循 WAI-ARIA APG 的 roving tabindex 技术来管理复合组件中的焦点：https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#kbd_roving_tabindex"
+      },
+      {
+        "guidance": false,
+        "description": "不要嵌套 AvatarGroup；使用单一组包含所有头像。"
+      },
+      {
+        "guidance": false,
+        "description": "不要为子头像设置 size。组的 size 会覆盖每个子元素自身的 size 属性，即使组保持默认 size 也是如此，因此子元素的 size 在组内会被静默忽略。"
+      }
     ],
+    "anatomy": [
+      {
+        "name": "Avatar 子元素",
+        "required": true,
+        "description": "构成重叠排列的 Avatar 元素。每个元素都可以拥有自己的属性。"
+      },
+      {
+        "name": "溢出指示器",
+        "required": false,
+        "description": "位于末尾的“+N”圆形标记，显示隐藏数量，或自定义的 AvatarGroupOverflow 插槽。"
+      }
+    ]
   },
+  "name": "AvatarGroup",
+  "displayName": "Avatar Group",
+  "description": "堆叠头像展示，采用重叠布局，可选溢出指示器。子元素为 Avatar 元素。",
+  "propDescriptions": {
+    "children": "Avatar 子元素，可选地后跟一个 AvatarGroupOverflow。由使用方负责切片到所需的可见数量。",
+    "size": "应用于所有头像的尺寸：命名尺寸包括 'xsm'（20px）、'sm'（24px）、'md'（36px）、'lg'（48px）和 'xl'（128px）；数值尺寸必须是类型中列出的像素值之一。组的尺寸始终覆盖每个子 Avatar 的尺寸，包括组使用默认尺寸的情况。",
+    "shape": "通过上下文应用于所有头像的形状，会覆盖每个头像自身的 shape 属性。也应用于 AvatarGroupOverflow 的“+N”指示器。",
+    "ref": "转发到根元素的 Ref。",
+    "xstyle": "用于布局自定义的 StyleX 样式。",
+    "data-testid": "供自动化测试框架使用的测试选择器。"
+  },
+  "components": [
+    {
+      "name": "AvatarGroupOverflow",
+      "description": ""
+    }
+  ]
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

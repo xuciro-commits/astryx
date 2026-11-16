@@ -121,3 +121,34 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useLongPress",
+  "usage": {
+    "description": "检测单指长按并报告发生位置，让触屏用户也能使用指针用户通过右键获得的交互能力。iOS Safari 从不因长按合成 contextmenu 事件，因此这是进入 ContextMenu 这类光标定位浮层的唯一触屏途径。移动、抬起、多指触摸或卸载都会取消按压。长按时长依据触摸事件自身的时间戳计时：当繁忙页面延迟处理抬起时，按满延时的手指仍会先报告长按，随后才执行抬起动作。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "使用报告的位置来定位要打开的浮层，使其出现在手指下方。"
+      },
+      {
+        "guidance": true,
+        "description": "将其与指针的 contextmenu 处理函数配合使用，而不是替换它；此 Hook 只覆盖触摸。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将其用于控件的主要操作；长按作为完成某事的唯一方式难以被发现。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "配置对象。",
+    "options.onLongPress": "按压持续 delayMs 后触发，并传入触摸起点。",
+    "options.disabled": "为 true 时，返回的触摸处理函数不起作用。",
+    "options.delayMs": "触发长按前的按住时长，以毫秒为单位。",
+    "options.moveCancelPx": "在任一轴上移动超过此距离会取消按压，将其视为滚动或拖动。"
+  },
+  "returnDescriptions": {
+    "handlers": "可展开到目标元素上的 onTouchStart、onTouchMove、onTouchEnd 和 onTouchCancel。"
+  }
+};

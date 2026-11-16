@@ -305,181 +305,276 @@ export const docsDense = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'Stepper',
-  displayName: 'Stepper',
-  group: 'Stepper',
-  usage: {
-    description:
-      '步骤器显示通过一系列逻辑编号步骤的进度。用于多步骤工作流程，如表单、入职流程或结账流程。',
-    bestPractices: [
-      {guidance: true, description: '保持步骤标签简短和描述性。'},
+  "name": "Stepper",
+  "displayName": "Stepper",
+  "group": "Stepper",
+  "usage": {
+    "description": "Stepper 显示在有逻辑、有编号的步骤序列中的进度。用于表单、引导流程或结账流程等多步骤工作流，让用户看到当前位置和后续步骤。以有序列表渲染（不是导航地标）。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          '当步骤有较长描述时使用垂直方向。水平步骤器会自行处理窄容器：当每个步骤的可用宽度不足 horizontalOptions.minimumStepWidth（默认为 112px）时，它会收起标签，并按 collapsedVariant 显示紧凑内容。',
+        "guidance": true,
+        "description": "保持步骤标签简短且具描述性：用 \"Payment\"，而不是 \"Enter your payment information\"。"
       },
       {
-        guidance: true,
-        description:
-          "当页面已有返回/继续控件时，将 horizontalOptions.collapsedVariant 设为 'withLabel'；当周围界面同时提供当前步骤标题和导航、只需要裸进度轨道时，将其设为 'hiddenLabel'。",
+        "guidance": true,
+        "description": "当步骤带有较长描述时使用垂直方向。水平 Stepper 会自行处理窄容器：一旦框架为每个步骤分配的空间小于 horizontalOptions.minimumStepWidth（默认 112px），它就会舍弃标签，改用分段轨道，并在其下方使用配置的 collapsedVariant。"
       },
-      {guidance: true, description: '为非线性工作流程提供 onStepClick。'},
-      {guidance: false, description: '少于3个步骤时使用步骤器。'},
-      {guidance: false, description: '超过7个步骤时使用步骤器。'},
+      {
+        "guidance": true,
+        "description": "当页面已提供 Back/Continue 时，将 horizontalOptions.collapsedVariant 设为 'withLabel'；当周围 UI 同时负责当前步骤标题和导航、只需要一条纯进度轨道时，设为 'hiddenLabel'。"
+      },
+      {
+        "guidance": true,
+        "description": "对于用户可能需要返回之前步骤的非线性工作流，提供 onStepClick。"
+      },
+      {
+        "guidance": true,
+        "description": "仅使用 status 来应用语义颜色（accent/success/warning/error）；更丰富的指示器请传入自定义图标。"
+      },
+      {
+        "guidance": false,
+        "description": "步骤少于 3 个时使用 Stepper；简单的标题或进度条效果更好。"
+      },
+      {
+        "guidance": false,
+        "description": "步骤超过 7 个时使用 Stepper；考虑将相关步骤分组或改用其他模式。"
+      }
     ],
+    "anatomy": [
+      {
+        "name": "步进器",
+        "required": true,
+        "description": "承载步骤的有序列表。负责方向以及整个流程所依据的指示器放置方式。"
+      },
+      {
+        "name": "框架",
+        "required": true,
+        "description": "将有序步骤与窄宽度下显示的可选紧凑摘要组合在一起的布局框架。"
+      },
+      {
+        "name": "紧凑摘要",
+        "required": false,
+        "description": "水平 Stepper 在轨道下方直接添加的可选行，当轨道过窄而无法标注每个步骤时出现。horizontalOptions.collapsedVariant 可选择带 Previous/Next 控件的标签、仅标签，或纯进度轨道时不显示行。轨道内布局将指示器保留在轨道上，而不是在标签旁重复活动指示器。无论宽度如何，每个步骤都会在可访问序列中保留其名称。"
+      },
+      {
+        "name": "步骤",
+        "required": true,
+        "description": "流程中的一个步骤，也是承载其状态的元素。包裹指示器、标签、描述以及属于它的轨道段。"
+      },
+      {
+        "name": "进度条",
+        "required": true,
+        "description": "每个步骤一条 4px 的分段条。已完成和活动步骤填充。前进一个步骤时，填充沿刚经过的轨道增长，因此这一运动读起来是进度，而不是条形改变颜色。其他所有变化都会立即生效：后退、向前跳跃多个步骤、在流程中途挂载，以及 prefers-reduced-motion 下的任何变化。当一段跨度由多个分段绘制时（轨道内布局会将其分给两个步骤，若两者之间存在内容槽则分给三个），各分段按轨道顺序以恒定速度运行，使填充看起来像一条连续增长的线，而不是逐块点亮。"
+      },
+      {
+        "name": "连接线",
+        "required": false,
+        "description": "轨道内布局中绘制在指示器之间的轨道。每条连接线绘制一条未填充的线，并在其上绘制覆盖已完成进度的强调色填充。连接线由多少段组成是布局的实现细节，不是可主题化的部件；使用 --step-connector-gap 让轨道与指示器保持距离。"
+      },
+      {
+        "name": "指示器",
+        "required": false,
+        "description": "带编号的徽章、勾选标记或任意自定义图标。通过 indicator 属性控制。"
+      },
+      {
+        "name": "标签",
+        "required": true,
+        "description": "标识步骤的文本。"
+      },
+      {
+        "name": "描述",
+        "required": false,
+        "description": "标签下方提供额外上下文的辅助文本。"
+      }
+    ]
   },
-  theming: {
-    targets: [
+  "theming": {
+    "targets": [
       {
-        className: 'astryx-stepper',
-        visualProps: ['orientation', 'indicatorPosition'],
-      },
-      {className: 'astryx-stepper-frame'},
-      {className: 'astryx-stepper-summary'},
-      {className: 'astryx-step', visualProps: ['progress', 'status']},
-      {
-        className: 'astryx-step-indicator',
-        visualProps: ['progress', 'status', 'disabled'],
+        "className": "astryx-stepper",
+        "visualProps": [
+          "orientation",
+          "indicatorPosition"
+        ]
       },
       {
-        className: 'astryx-step-label',
-        visualProps: ['progress', 'status', 'disabled'],
+        "className": "astryx-stepper-frame"
       },
       {
-        className: 'astryx-step-description',
-        visualProps: ['progress', 'status'],
+        "className": "astryx-stepper-summary"
       },
-      {className: 'astryx-step-bar'},
-      {className: 'astryx-step-connector'},
+      {
+        "className": "astryx-step",
+        "visualProps": [
+          "progress",
+          "status"
+        ]
+      },
+      {
+        "className": "astryx-step-indicator",
+        "visualProps": [
+          "progress",
+          "status",
+          "disabled"
+        ]
+      },
+      {
+        "className": "astryx-step-label",
+        "visualProps": [
+          "progress",
+          "status",
+          "disabled"
+        ]
+      },
+      {
+        "className": "astryx-step-description",
+        "visualProps": [
+          "progress",
+          "status"
+        ]
+      },
+      {
+        "className": "astryx-step-bar"
+      },
+      {
+        "className": "astryx-step-connector"
+      }
     ],
-    vars: [
+    "vars": [
       {
-        name: '--step-connector-gap',
-        description:
-          '连接线与指示器相接处留出的间隙，落在朝向指示器的一侧。适用于 on-track 布局——其连接线由节点两侧各一段绘制；取 0 时轨道将不间断地穿过节点。',
-        default: '0px',
-      },
-    ],
+        "name": "--step-connector-gap",
+        "description": "连接线与指示器相接处留出的间隙，落在朝向指示器的一侧。适用于 on-track 布局——其连接线由节点两侧各一段绘制；取 0 时轨道将不间断地穿过节点。",
+        "default": "0px"
+      }
+    ]
   },
-  components: [
+  "components": [
     {
-      name: 'Stepper',
-      displayName: 'Stepper',
-      description: '容器组件，管理步骤状态并以水平或垂直方向渲染步骤。',
-      props: [
+      "name": "Stepper",
+      "displayName": "Stepper",
+      "description": "管理步骤状态，并以有序列表按水平或垂直方向渲染步骤的容器组件。",
+      "props": [
         {
-          name: 'activeStep',
-          type: 'number',
-          description: '当前活动步骤的从零开始的索引。',
-          required: true,
+          "name": "activeStep",
+          "type": "number",
+          "description": "当前活动步骤的从零开始的索引。",
+          "required": true
         },
         {
-          name: 'children',
-          type: 'ReactNode',
-          description: '要在步骤器中渲染的 Step 元素。',
-          required: true,
+          "name": "children",
+          "type": "ReactNode",
+          "description": "要在步骤器中渲染的 Step 元素。",
+          "required": true
         },
         {
-          name: 'orientation',
-          type: "'horizontal' | 'vertical'",
-          description: '步骤器的布局方向。',
-          default: "'horizontal'",
+          "name": "orientation",
+          "type": "'horizontal' | 'vertical'",
+          "description": "步骤器的布局方向。",
+          "default": "'horizontal'"
         },
         {
-          name: 'onStepClick',
-          type: '(index: number) => void',
-          description:
-            '点击步骤或紧凑摘要控件时调用。启用非线性导航；水平步骤器折叠后，导航转移到会跳过已禁用步骤的摘要控件。',
+          "name": "onStepClick",
+          "type": "(index: number) => void",
+          "description": "点击步骤或紧凑摘要控件时调用。启用非线性导航；水平步骤器折叠后，导航转移到会跳过已禁用步骤的摘要控件。"
         },
         {
-          name: 'label',
-          type: 'string',
-          description: '有序列表的无障碍标签。',
-          default: "'Progress'（本地化）",
+          "name": "label",
+          "type": "string",
+          "description": "有序列表的无障碍标签。",
+          "default": "'Progress'（本地化）"
         },
         {
-          name: 'density',
-          type: "'compact' | 'balanced' | 'spacious'",
-          description: '控制所有步骤的内边距。',
-          default: "'balanced'",
+          "name": "density",
+          "type": "'compact' | 'balanced' | 'spacious'",
+          "description": "控制所有步骤的内边距。",
+          "default": "'balanced'"
         },
         {
-          name: 'indicatorPosition',
-          type: "'separated' | 'on-track'",
-          description: '步骤指示器相对于连接轨道的位置。',
-          default: "'separated'",
+          "name": "indicatorPosition",
+          "type": "'separated' | 'on-track'",
+          "description": "步骤指示器相对于连接轨道的位置。",
+          "default": "'separated'"
         },
         {
-          name: 'horizontalOptions',
-          type: "{ minimumStepWidth: number; collapsedVariant: 'withLabelAndControls' | 'withLabel' | 'hiddenLabel' }",
-          description:
-            '水平布局的收起选项。minimumStepWidth 是每个步骤的像素阈值。collapsedVariant 可选择显示标签和控件、仅显示标签，或只显示裸进度轨道而不显示紧凑行。仅当 collapsedVariant 为 withLabelAndControls 且设置 onStepClick 时显示控件，每个步骤始终保留无障碍名称。',
-          default:
-            "{ minimumStepWidth: 112, collapsedVariant: 'withLabelAndControls' }",
+          "name": "horizontalOptions",
+          "type": "{ minimumStepWidth: number; collapsedVariant: 'withLabelAndControls' | 'withLabel' | 'hiddenLabel' }",
+          "description": "水平布局的收起选项。minimumStepWidth 是每个步骤的像素阈值。collapsedVariant 可选择显示标签和控件、仅显示标签，或只显示裸进度轨道而不显示紧凑行。仅当 collapsedVariant 为 withLabelAndControls 且设置 onStepClick 时显示控件，每个步骤始终保留无障碍名称。",
+          "default": "{ minimumStepWidth: 112, collapsedVariant: 'withLabelAndControls' }"
         },
         {
-          name: 'xstyle',
-          type: 'StyleXStyles',
-          description: '用于布局自定义的 StyleX 样式。',
-        },
+          "name": "xstyle",
+          "type": "StyleXStyles",
+          "description": "用于布局自定义的 StyleX 样式。"
+        }
       ],
+      "propDescriptions": {
+        "activeStep": "当前活动步骤的索引（从 0 开始）。此索引之前的步骤标记为已完成。",
+        "children": "要在 Stepper 中渲染的步骤元素。",
+        "orientation": "Stepper 的布局方向。",
+        "onStepClick": "点击步骤或使用紧凑摘要控件时调用。启用非线性导航。在水平 Stepper 折叠之前，每个步骤都是按钮：启用的步骤可激活，禁用的步骤仍可聚焦并会被播报为不可用，但不会激活。折叠后，导航移至摘要控件，并会跳过禁用步骤。",
+        "label": "描述步骤集合的可访问标签（应用于有序列表）。默认为本地化的 \"Progress\"。",
+        "density": "控制所有步骤的内边距。",
+        "indicatorPosition": "步骤指示器相对于连接线轨道的位置。",
+        "horizontalOptions": "水平折叠选项。minimumStepWidth 是每个步骤的阈值（像素）。collapsedVariant 选择带控件的标签、仅标签，或没有紧凑行的纯进度轨道。仅当设置了 onStepClick 时，withLabelAndControls 才会显示控件，并且每个步骤都会保留其可访问名称。",
+        "xstyle": "用于布局自定义的 StyleX 样式。必须是 stylex.create() 的值。"
+      }
     },
     {
-      name: 'Step',
-      displayName: 'Step',
-      description: '步骤器中的单个步骤。渲染进度条、指示器和带可选描述的标签。',
-      props: [
+      "name": "Step",
+      "displayName": "Step",
+      "description": "步骤器中的单个步骤。渲染进度条、指示器和带可选描述的标签。",
+      "props": [
         {
-          name: 'step',
-          type: 'number',
-          description: '此步骤的从零开始的索引。',
-          required: true,
+          "name": "step",
+          "type": "number",
+          "description": "此步骤的从零开始的索引。",
+          "required": true
         },
         {
-          name: 'label',
-          type: 'string',
-          description: '步骤标签文本。',
-          required: true,
+          "name": "label",
+          "type": "string",
+          "description": "步骤标签文本。",
+          "required": true
         },
         {
-          name: 'description',
-          type: 'string',
-          description: '标签下方的可选描述。',
+          "name": "description",
+          "type": "string",
+          "description": "标签下方的可选描述。"
         },
         {
-          name: 'status',
-          type: "'accent' | 'success' | 'warning' | 'error'",
-          description: '步骤的语义颜色，仅控制颜色。',
+          "name": "status",
+          "type": "'accent' | 'success' | 'warning' | 'error'",
+          "description": "步骤的语义颜色，仅控制颜色。"
         },
         {
-          name: 'indicator',
-          type: "'auto' | 'number' | 'none' | ReactNode",
-          description: '指示器显示内容。',
-          default: "'auto'",
+          "name": "indicator",
+          "type": "'auto' | 'number' | 'none' | ReactNode",
+          "description": "指示器显示内容。",
+          "default": "'auto'"
         },
         {
-          name: 'isDisabled',
-          type: 'boolean',
-          description: '禁用交互并使步骤指示器和标签变暗。',
-          default: 'false',
+          "name": "isDisabled",
+          "type": "boolean",
+          "description": "禁用交互并使步骤指示器和标签变暗。",
+          "default": "false"
         },
         {
-          name: 'isOptional',
-          type: 'boolean',
-          description: '标记步骤为可选。',
-          default: 'false',
+          "name": "isOptional",
+          "type": "boolean",
+          "description": "标记步骤为可选。",
+          "default": "false"
         },
         {
-          name: 'endContent',
-          type: 'ReactNode',
-          description: '标签行末尾的尾随内容。',
+          "name": "endContent",
+          "type": "ReactNode",
+          "description": "标签行末尾的尾随内容。"
         },
         {
-          name: 'density',
-          type: "'compact' | 'balanced' | 'spacious'",
-          description: '步骤的内边距覆盖。',
-        },
-      ],
-    },
-  ],
+          "name": "density",
+          "type": "'compact' | 'balanced' | 'spacious'",
+          "description": "步骤的内边距覆盖。"
+        }
+      ]
+    }
+  ]
 };

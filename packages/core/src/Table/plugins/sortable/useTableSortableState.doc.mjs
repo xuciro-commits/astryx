@@ -171,3 +171,40 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useTableSortableState",
+  "usage": {
+    "description": "负责 Table 的排序状态并在本地对行排序，是 useTableSortable 之上的便利层。传入行数据，渲染 `sortedData`，并将 `sortConfig` 交给 useTableSortable。该 Hook 保存状态（受控时从 `sort` 和 `onSortChange` 读取），因此表头点击会重新排序行，组件中无需任何排序代码。启用 `isMultiSortEnabled` 时，Shift+点击会添加次级排序列。对于在服务器上排序的数据，请直接使用 useTableSortable 并在数据所在处排序。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "当完整数据集在内存中时使用它，并将 `sortedData` 传给 Table。"
+      },
+      {
+        "guidance": true,
+        "description": "为顺序不等于其字符串或数值的值添加比较器，例如状态等级。"
+      },
+      {
+        "guidance": false,
+        "description": "不要用于服务器端数据或服务器端分页数据；该 Hook 只对传入的行排序。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "config": "要排序的行以及排序状态的归属方式。",
+    "config.data": "要排序的行。该 Hook 返回排序后的副本，绝不会修改原数组。",
+    "config.defaultSort": "当 Hook 自己持有状态时的初始排序状态。传入 `sort` 时忽略。",
+    "config.sort": "受控排序状态。与 `onSortChange` 一起传入以自行持有状态。",
+    "config.onSortChange": "以下一个排序状态调用。传入 `sort` 时必填。",
+    "config.comparators": "每个排序键的升序比较器；降序时 Hook 会翻转结果。没有比较器的键会按数字比较数字，其他值按字符串比较（使用活动 InternationalizationProvider 区域设置的数字排序器），并将 null、undefined 和 NaN 在升序中排在最后、降序中排在最前。",
+    "config.allowUnsortedState": "传给 useTableSortable：第三次点击表头会使该列回到未排序状态，而不是 'ascending'。",
+    "config.isMultiSortEnabled": "传给 useTableSortable：Shift+点击表头会将该列添加为下一个排序键，或在其已排序时切换方向，而不是替换排序。"
+  },
+  "returnDescriptions": {
+    "sortedData": "`data` 的排序副本，基于 `data` 和排序状态进行记忆化。并列项保持它们在 `data` 中的顺序。",
+    "sort": "当前排序状态，首项在前。",
+    "sortConfig": "传给 `useTableSortable(sortConfig)`，并将生成的插件交给 Table。",
+    "applySort": "使用当前排序状态和比较器对另一个数组排序，适用于第二个数据源或子集。"
+  }
+};

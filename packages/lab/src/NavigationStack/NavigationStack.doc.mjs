@@ -137,3 +137,52 @@ export const docs = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "NavigationStack",
+  "displayName": "Navigation Stack",
+  "description": "面向手机布局的逐层下钻导航：每个屏幕将下一个屏幕压入顶部，Back、从屏幕边缘或内容任意位置开始的返回滑动都会回到上一个屏幕。压入、弹出和返回滑动的动作与 iOS 一致：新屏幕从尾随边缘滑入并覆盖旧屏幕，旧屏幕在轻微变暗下移动三分之一距离，释放的滑动会根据距离和速度完成或弹回。压入从不等待其动画：新屏幕一开始滑入即可使用。开启减少动态效果时，屏幕改为交叉淡化。实验性：先进入 lab。",
+  "usage": {
+    "description": "在手机上为层级式下钻使用 NavigationStack：设置列表、文件夹、列表及其详情。在屏幕内的行中通过 useNavigationStack 调用 push。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将路径保存在应用状态（或 URL）中，并为条目提供稳定键，使屏幕在栈变化时保持其状态。"
+      },
+      {
+        "guidance": true,
+        "description": "从用户激活的控件（行的 onClick）发起 push：屏幕弹出时焦点会返回该控件。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将其用于人们在顶级区块之间切换；那些是选项卡或侧边栏，它们各自保留区块自己的栈。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "NavigationStack",
+      "description": "导航器。你拥有路径：传入压入根屏幕的条目，并在 onPathChange 中更新它们。栈渲染根屏幕和每个条目对应的一个屏幕，最上面的最后渲染，保持被覆盖屏幕及其滚动位置存活，并使其惰性。栏显示顶部屏幕的标题、其 endContent 和一个带尖角符号的圆形 Back 按钮，按钮以它返回的屏幕命名。压入会将焦点移到新屏幕的标题；弹出会将其返回到压入该屏幕的控件。手指操作时，栏不绘制背景和细线，就像 iOS 26 那样。一旦屏幕内容在栏下移动 10px，该屏幕顶部会淡入一层正文颜色面纱。每个屏幕在压入、弹出或返回滑动期间都保留自己的面纱。使用鼠标时，栏保留其表面和细线。",
+      "propDescriptions": {
+        "root": "根屏幕，一个 NavigationScreen。它没有 Back 按钮。",
+        "path": "压入根屏幕的条目，底部在前。在末尾添加一个会压入其屏幕；移除最后一个会弹出它；移除多个会直接弹回到新的顶部。",
+        "onPathChange": "当屏幕压入或弹出（useNavigationStack）、按下 Back，或返回滑动在越过不可返回点后释放时，以新路径调用。",
+        "renderScreen": "为条目渲染屏幕：一个 NavigationScreen。",
+        "getKey": "每个条目的稳定键，使屏幕在其他屏幕压入其上时保持其状态。默认为条目的位置。",
+        "isInteractivePopEnabled": "返回滑动是否弹出：在内容任意位置横向拖动，适用于任何指针（手指、笔或鼠标拖动），在从主屏幕打开的 Web 应用中，还包括手指从起始屏幕边缘的滑动。在浏览器标签页中，该边缘保留给浏览器自己的返回滑动；在 Android 上，系统返回拥有两个屏幕边缘。",
+        "label": "导航器区域的无障碍名称。"
+      }
+    },
+    {
+      "name": "NavigationScreen",
+      "description": "NavigationStack 的一个屏幕：其标题、Back 在压入其上的屏幕上显示的标题、其 endContent 及其内容。由 NavigationStack 的 root 和 renderScreen 返回；它本身不渲染任何内容。",
+      "propDescriptions": {
+        "title": "屏幕位于顶部时显示在栏中，并在其到达时首先被朗读。",
+        "backTitle": "在压入此屏幕之上的屏幕上，Back 所朗读的内容。默认为 title。",
+        "titleDisplayMode": "标题如何显示。'large' 将标题以大号粗体字放在内容上方，并随内容滚动；一旦标题滚动到栏下，栏会改为显示标题。像 iOS 那样，将其用于顶级屏幕。",
+        "endContent": "屏幕位于顶部时栏末端的内容。",
+        "children": "屏幕内容。它自行滚动，并在被覆盖时保持其滚动位置。"
+      }
+    }
+  ]
+};

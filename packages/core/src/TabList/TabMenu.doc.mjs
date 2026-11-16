@@ -39,24 +39,28 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'TabMenu',
-  isHiddenFromOverview: true,
-  displayName: 'Tab Menu',
-  description: '溢出菜单触发器，打开包含额外标签选项的下拉菜单，将选中选项的标签显示为触发器文本。宿主属性和 DOM 事件处理器（id、aria-*、data-*、拖放）传递给触发按钮，而不是弹出菜单或选项。按钮保留自己的角色、Tab 停靠点及菜单展开属性。',
-  props: [
+  "name": "TabMenu",
+  "isHiddenFromOverview": true,
+  "displayName": "Tab Menu",
+  "description": "溢出菜单触发器，打开一个包含更多选项卡选项的下拉菜单，并将选中选项的标签显示为触发文本。宿主属性和 DOM 事件处理器（id、aria-*、data-*、拖放）会传到触发按钮，而不是弹窗或其选项。按钮保留其角色、Tab 停靠点和菜单展开属性。",
+  "props": [
     {
-      name: 'label',
-      type: 'string',
-      description: '触发器按钮的标签（无选项选中时显示）以及下拉菜单标题分隔线的文本。',
-      required: true,
+      "name": "label",
+      "type": "string",
+      "description": "触发按钮的标签（未选择任何选项时显示）以及下拉菜单标题分隔线。",
+      "required": true
     },
     {
-      name: 'options',
-      type: 'TabMenuOption[]',
-      description: '在下拉菜单中渲染的菜单选项数组。',
-      required: true,
-    },
+      "name": "options",
+      "type": "TabMenuOption[]",
+      "description": "在下拉菜单中渲染的菜单选项数组。",
+      "required": true
+    }
   ],
+  "propDescriptions": {
+    "label": "触发按钮的标签（未选择任何选项时显示）以及下拉菜单标题分隔线。",
+    "options": "在下拉菜单中渲染的菜单选项数组。"
+  }
 };
 
 export const docsDense = {

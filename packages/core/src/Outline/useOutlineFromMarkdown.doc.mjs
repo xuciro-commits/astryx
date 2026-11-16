@@ -155,3 +155,49 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useOutlineFromMarkdown",
+  "usage": {
+    "description": "提取 Markdown 字符串的标题，供渲染文档旁的 Outline 使用。它使用与 Markdown 相同的解析器和标题 slug，因此在完整文档中每个条目都链接到其标题，且围栏代码绝不会被算作标题。结果会基于源字符串和选项进行记忆化。在 React 之外，请使用 parseOutlineFromMarkdown。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将相同的字符串、插件列表和最终性状态传给 Markdown 和此 Hook，使条目在内容完整后与渲染的标题一致。"
+      },
+      {
+        "guidance": true,
+        "description": "在组件外声明插件列表或对其进行记忆化。每次渲染都新建数组会重新计算大纲。"
+      },
+      {
+        "guidance": true,
+        "description": "对于同一页面上的多个文档，为每个文档安装一个带 headingIdPrefix 的 createMarkdownHeadingLinks，以免它们的 id 冲突。"
+      },
+      {
+        "guidance": false,
+        "description": "手工编写条目或用正则表达式查找标题。它们会与渲染后的 id 漂移。"
+      },
+      {
+        "guidance": false,
+        "description": "期望内容流式传输时每个条目都有目标。Markdown 会逐步显示文本并裁剪未完成的语法，因此在内容完整前，标题可能不存在或具有另一个 id。"
+      },
+      {
+        "guidance": false,
+        "description": "期望条目链接到引用了 Markdown sources 条目的标题。该 Hook 不接收 sources，因此 id 不同：对于 '# Intro [ref]'，Markdown 渲染 intro，而该 Hook 返回 intro-ref。"
+      },
+      {
+        "guidance": false,
+        "description": "期望为嵌套标题（例如引用块中的标题）生成条目。只有根级标题会成为条目。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "markdown": "Markdown 源字符串。传入与传给 Markdown 渲染的相同字符串。",
+    "options": "解析选项。对于 Markdown 在不使用插件的情况下渲染的文档，可省略。",
+    "options.plugins": "有序的 Markdown 插件列表。将同一个列表传给 Markdown，使转换、标签和 id 保持一致。当列表引用变化时会重新计算大纲。",
+    "options.isFinal": "源内容是否完整。当 Markdown 的 isStreaming 为 true 时传入 false，使两者应用相同的转换。"
+  },
+  "returnDescriptions": {
+    "items": "每个根级标题一个条目，按文档顺序排列，可直接用于 Outline 的 items 属性。id 是在无 sources 的完整文档中 Markdown 渲染到标题上的 id，label 是标题文本，level 是其 1 到 6 的深度。"
+  }
+};

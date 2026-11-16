@@ -99,3 +99,90 @@ export const docsDense = {
     xstyle: 'viewport sizing and native scrollbar presentation overrides',
   },
 };
+
+export const docsZh = {
+  "name": "ScrollableArea",
+  "displayName": "Scrollable Area",
+  "usage": {
+    "description": "提供原生滚动视口和真实的可观察内容盒。只有当所请求的逻辑轴实际可滚动时，视口才会进入 Tab 顺序；包含约束也只应用于实际可滚动的轴。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "为每个区域提供一个简洁的标签，说明键盘用户将要滚动的内容。"
+      },
+      {
+        "guidance": true,
+        "description": "对于普通滚动容器，保持 `role` 未设置（会渲染 `group`）。仅当区域重要到应出现在屏幕阅读器地标导航中时，才选择 `role=\"region\"`；每个 `region` 都会向该列表添加一个条目。"
+      },
+      {
+        "guidance": true,
+        "description": "根据内容意图选择 `inline`、`block` 或 `both`；组件会通过书写模式和方向映射逻辑轴。"
+      },
+      {
+        "guidance": true,
+        "description": "对于嵌套区域，除非交互确实需要包含约束，否则保持默认的 `overscroll=\"allow\"`。"
+      },
+      {
+        "guidance": true,
+        "description": "当组件已经同时拥有视口和合适的内容盒，或子元素必须保持为直接 flex/grid 项，或需要保留确定的百分比块尺寸基准时，请改用 `useScrollableArea`。"
+      },
+      {
+        "guidance": true,
+        "description": "ScrollableArea 拥有一个普通的块级内容盒，最小尺寸为 100%。行内和双轴模式使用 max-content 行内尺寸，因此固有行内布局会有意宽于视口。"
+      },
+      {
+        "guidance": true,
+        "description": "在内容盒上使用逻辑内边距属性，以便嵌套的通栏组件获得相同的内缩几何。"
+      },
+      {
+        "guidance": true,
+        "description": "仅当视口本身应到达祖先容器边缘时，才设置 `isFullBleed`；默认关闭。"
+      },
+      {
+        "guidance": true,
+        "description": "仅当合适的视口应有意保持为 Sticky 边界时，才设置 `stickyContainment=\"always\"`。"
+      },
+      {
+        "guidance": false,
+        "description": "在没有其他可见且可操作的溢出提示的情况下隐藏原生滚动条。"
+      },
+      {
+        "guidance": false,
+        "description": "在 ScrollableArea 外再添加一个溢出包裹层；应只由一个原生视口负责滚动。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "视口",
+        "required": true,
+        "description": "根原生滚动容器、无障碍名称的拥有者、生效时的焦点目标，以及 `astryx-scrollable-area` 主题目标。"
+      },
+      {
+        "name": "内容盒",
+        "required": true,
+        "description": "与视口一起观察的真实内部布局盒。对于行内滚动，它使用 max-content 行内尺寸，最小值为 100%。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "axis": "允许原生滚动的逻辑轴或轴组。",
+    "label": "视口在成为键盘可滚动时的无障碍名称。",
+    "role": "命名视口的语义；仅对属于地标导航的区域使用 `region`。",
+    "overscroll": "实际可滚动的轴到达边缘时是否继续滚动祖先元素。",
+    "width": "视口宽度；数字按像素解释，字符串按原样使用。",
+    "height": "视口高度；数字按像素解释，字符串按原样使用。",
+    "maxWidth": "视口的最大宽度。",
+    "minHeight": "视口的最小高度。",
+    "stickyContainment": "合适的内容是将 Sticky 所有权传递给外层容器，还是有意保持此视口作为 CSS Sticky 边界。",
+    "padding": "每个逻辑边的内容内边距；会发布匹配的内缩几何。",
+    "paddingInline": "行内逻辑轴的内容内边距；在该轴上覆盖 `padding`。",
+    "paddingInlineStart": "行内起始逻辑内容内边距；覆盖更宽泛的内边距值。",
+    "paddingInlineEnd": "行内末端逻辑内容内边距；覆盖更宽泛的内边距值。",
+    "paddingBlock": "块级逻辑轴的内容内边距；在该轴上覆盖 `padding`。",
+    "paddingBlockStart": "块级起始逻辑内容内边距；覆盖更宽泛的内边距值。",
+    "paddingBlockEnd": "块级末端逻辑内容内边距；覆盖更宽泛的内边距值。",
+    "isFullBleed": "让视口突破继承的容器内边距，而不改变内容内边距。",
+    "children": "在可观察内容盒内渲染的内容。",
+    "xstyle": "视口的 StyleX 尺寸和原生滚动条呈现覆盖。必须是 `stylex.create()` 的值，而不是内联样式对象。"
+  }
+};

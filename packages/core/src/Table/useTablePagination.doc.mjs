@@ -82,46 +82,63 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'useTablePagination',
-  displayName: 'useTablePagination',
-  description: '无头分页插件。支持客户端切片、服务器端分页和游标分页。自动渲染 Pagination 控件。',
-  props: [
+  "name": "useTablePagination",
+  "displayName": "useTablePagination",
+  "description": "用于 Table 的无头分页插件。使用配置对象调用：`useTablePagination({ page, onPageChange, totalItems })`。返回可传给 `<Table plugins={{ pagination: paginationPlugin }} />` 的 TablePlugin。",
+  "props": [
     {
-      name: 'page',
-      type: 'number',
-      description: '当前页码（从 1 开始）。',
-      required: true,
+      "name": "page",
+      "type": "number",
+      "description": "当前页码（从 1 开始）。",
+      "required": true
     },
     {
-      name: 'onPageChange',
-      type: '(page: number) => void',
-      description: '页面更改时调用。',
-      required: true,
+      "name": "onPageChange",
+      "type": "(page: number) => void",
+      "description": "页码变化时调用。",
+      "required": true
     },
     {
-      name: 'totalItems',
-      type: 'number',
-      description: '所有页面的总项目数。用于计算总页数。',
+      "name": "totalItems",
+      "type": "number",
+      "description": "所有页面的项目总数。用于计算总页数。"
     },
     {
-      name: 'pageSize',
-      type: 'number',
-      description: '每页项目数。',
-      default: '10',
+      "name": "pageSize",
+      "type": "number",
+      "description": "每页项目数。",
+      "default": "10"
     },
     {
-      name: 'variant',
-      type: "'pages' | 'count' | 'compact' | 'dots' | 'none'",
-      description: '分页控件的视觉变体。',
-      default: "'pages'",
+      "name": "variant",
+      "type": "'pages' | 'count' | 'compact' | 'dots' | 'none'",
+      "description": "分页控件的视觉变体。",
+      "default": "'pages'"
     },
     {
-      name: 'position',
-      type: "'below' | 'above' | 'both' | 'none'",
-      description: '分页控件相对于表格的渲染位置。',
-      default: "'below'",
-    },
+      "name": "position",
+      "type": "'below' | 'above' | 'both' | 'none'",
+      "description": "分页控件相对于表格的渲染位置。",
+      "default": "'below'"
+    }
   ],
+  "usage": {
+    "description": "使用包含页码状态和回调的配置对象调用 useTablePagination。通过 plugins 属性将返回的插件传给 Table。"
+  },
+  "propDescriptions": {
+    "page": "当前页码（从 1 开始）。",
+    "onPageChange": "页码变化时调用。",
+    "totalItems": "所有页面的项目总数。用于计算总页数。",
+    "totalPages": "总页数。已知页数但不知道项目数时使用。",
+    "hasMore": "是否还有更多页。用于总数未知的基于游标的分页。",
+    "pageSize": "每页项目数。",
+    "onPageSizeChange": "用户更改每页条数时调用。与 pageSizeOptions 一起提供时显示每页条数下拉菜单。",
+    "pageSizeOptions": "可用的每页条数选项。提供时显示每页条数选择器。",
+    "variant": "分页控件的视觉变体。",
+    "position": "分页控件相对于表格的渲染位置。",
+    "align": "分页控件的水平对齐方式。",
+    "label": "分页导航地标的可访问名称。position='both' 时，两个导航会获得不同的名称（标签分别附加 '(top)' 和 '(bottom)'），使同类型地标保持唯一（axe landmark-unique）。"
+  }
 };
 
 export const docsDense = {

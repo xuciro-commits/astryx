@@ -58,49 +58,56 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'GridSpan',
-  isHiddenFromOverview: true,
-  displayName: 'Grid Span',
-  description: '可跨越多列或多行的网格项。',
-  props: [
+  "name": "GridSpan",
+  "isHiddenFromOverview": true,
+  "displayName": "Grid Span",
+  "description": "跨多列或多行的网格项目。",
+  "props": [
     {
-      name: 'columns',
-      type: "number | 'full'",
-      description: "要跨越的列数；使用 `'full'` 跨越所有显式列。",
+      "name": "columns",
+      "type": "number | 'full'",
+      "description": "要跨的列数；使用 `'full'` 跨所有显式列。"
     },
     {
-      name: 'rows',
-      type: 'number',
-      description: '要跨越的行数。',
+      "name": "rows",
+      "type": "number",
+      "description": "要跨的行数。"
     },
     {
-      name: 'children',
-      type: 'ReactNode',
-      description: '内容。',
+      "name": "children",
+      "type": "ReactNode",
+      "description": "内容。"
     },
     {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description:
-        '应用于跨度包装元素的 StyleX 样式。必须是 stylex.create() 的值，而不是 style={{}} 这样的内联样式对象。',
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "应用于跨度包装器的 StyleX 样式。必须是 stylex.create() 值：不是像 style={{}} 这样的内联样式对象。"
     },
     {
-      name: 'className',
-      type: 'string',
-      description: '应用于跨度包装元素的 CSS 类名。',
+      "name": "className",
+      "type": "string",
+      "description": "应用于跨度包装器的 CSS 类名。"
     },
     {
-      name: 'style',
-      type: 'React.CSSProperties',
-      description:
-        '应用于跨度包装元素的内联样式。设置 `columns` 或 `rows` 时，其 `grid-column` 或 `grid-row` 会替换 `style` 中的同名属性。',
+      "name": "style",
+      "type": "React.CSSProperties",
+      "description": "应用于跨度包装器的内联样式。设置 `columns` 或 `rows` 时，其 `grid-column` 或 `grid-row` 会替换 `style` 中的同名属性。"
     },
     {
-      name: 'ref',
-      type: 'React.Ref<HTMLDivElement>',
-      description: '转发到跨度包装元素的 Ref。',
-    },
+      "name": "ref",
+      "type": "React.Ref<HTMLDivElement>",
+      "description": "转发到跨度包装器的 ref。"
+    }
   ],
+  "propDescriptions": {
+    "columns": "要跨的列数；使用 `'full'` 跨所有显式列。",
+    "rows": "要跨的行数。",
+    "children": "内容。",
+    "xstyle": "应用于跨度包装器的 StyleX 样式。必须是 stylex.create() 值：不是像 style={{}} 这样的内联样式对象。",
+    "className": "应用于跨度包装器的 CSS 类名。",
+    "style": "应用于跨度包装器的内联样式。设置 `columns` 或 `rows` 时，其 `grid-column` 或 `grid-row` 会替换 `style` 中的同名属性。",
+    "ref": "转发到跨度包装器的 ref。"
+  }
 };
 
 export const docsDense = {

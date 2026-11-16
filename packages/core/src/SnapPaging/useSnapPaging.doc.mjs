@@ -84,3 +84,30 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useSnapPaging",
+  "usage": {
+    "description": "在原生吸附停靠点上为 Carousel 提供 iOS 式分页：将该值作为 hasSnap={useSnapPaging()} 传入。在手指操作和触控板滑动下，一次轻扫移动一个视图，或使用 {pages: 'item'} 时移动一个项，行会停在项的起始边缘。鼠标滚轮保持原生吸附。只有传入该值的 Carousel 才会加载分页代码。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "用于一次阅读一个视图的行，例如引导页或照片条，此时快速轻扫不能跳过下一个视图。"
+      },
+      {
+        "guidance": true,
+        "description": "当同时显示多个项且每次轻扫只应移动其中一项时，传入 {pages: 'item'}。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将它用于人们快速浏览的行；普通的 hasSnap 会保留原生惯性，一次滑动可能越过多个项。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "一次轻扫移动的内容。'view' 移动一个视图，并停在距一个视口最近的项起始边缘；'item' 移动一个项。新值从下一次轻扫开始生效。"
+  },
+  "returnDescriptions": {
+    "paging": "供 Carousel 的 hasSnap 使用的吸附分页。该值在组件生命周期内保持不变，Carousel 会保留其首次附加的值。"
+  }
+};

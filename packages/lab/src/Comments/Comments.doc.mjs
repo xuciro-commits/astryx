@@ -646,3 +646,197 @@ import {Comments} from '@astryxdesign/lab';
     },
   ],
 };
+
+export const docsZh = {
+  "name": "Comments",
+  "description": "单个项目上的评论：支持一级回复的评论线程、表情回应、编辑历史、受控的输入中状态和已读元数据、行内评论引用，以及按时间顺序排列的活动事件，并提供用于新评论的撰写器。受控：你的应用持有数据和每次变更；面板负责展示、选择和焦点。",
+  "usage": {
+    "description": "Comments 面板显示关于文档、任务或记录的对话：评论线程和活动，以及用于新评论的撰写器。可将其用作填充有尺寸容器的侧面板或分区，也可嵌入卡片或弹出层中并按其内容高度显示。使用 CommentThread 渲染单个线程，使用 CommentComposer 渲染独立撰写器。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "保持数据受控：每次回调后更新 `comments`。返回 Promise，以便面板显示等待状态，并在拒绝时显示带 Retry 的错误。"
+      },
+      {
+        "guidance": true,
+        "description": "匹配表面：为面板指定明确高度，在卡片或弹出层内使用 `layout=\"embedded\"`，并在卡片父级上设置 `container=\"card\"`，以免卡片嵌套。"
+      },
+      {
+        "guidance": true,
+        "description": "对于行内评论，将锚定逻辑保留在你的应用中：为每个线程传入 `anchor`，当它无法再解析时标记为 `orphaned`，并让 `selectedThreadId` 与你高亮的段落同步。"
+      },
+      {
+        "guidance": true,
+        "description": "保持实时状态受控且与传输无关：将你的协作层映射到 `typingUsers` 和 `seenBy`，并使用 `onComposerDraftChange` 发布本地活动。除非评论渲染回调呈现，否则 `seenBy` 保持隐藏。在你的应用中对瞬时活动做防抖和过期处理。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在渲染槽中放置数据获取、授权或遥测逻辑。将它们保留在你的应用中，并以数据形式传入结果。"
+      },
+      {
+        "guidance": false,
+        "description": "不要假设 `selectedThreadId` 会移动焦点或打开撰写器。它会显示并滚动到受控线程，而不会打断查看者；只有其 Reply 操作才会打开回复撰写器。"
+      }
+    ],
+    "accessibility": [
+      {
+        "name": "评论列表",
+        "category": "Semantics",
+        "criterion": "",
+        "description": "线程位于一个按区域命名的 log 中，例如 “Threads in Launch plan”，因此屏幕阅读器会以礼貌方式朗读新评论。每条评论是一个以其作者命名的 article，区域会在评论加载时报告繁忙。"
+      },
+      {
+        "name": "实时更新",
+        "category": "Content",
+        "criterion": "4.1.3 Status Messages",
+        "description": "输入中状态是一条礼貌的状态消息，带有对减少动态效果安全的圆点。`seenBy` 元数据没有默认呈现方式，也不引入额外的 live region。"
+      },
+      {
+        "name": "线程切换按钮",
+        "category": "Keyboard",
+        "criterion": "2.1.1 Keyboard",
+        "description": "每个线程有一个切换按钮（WAI-ARIA Button 模式，带 aria-pressed），名称为 “Thread by” 加上作者。按 Enter 或 Space 可打开或关闭它，并将焦点保持在它上面；用指针按下线程会打开它，并将焦点放入回复撰写器。当切换按钮拥有焦点时，整个表面会采用系统焦点环。"
+      },
+      {
+        "name": "回复和操作",
+        "category": "Keyboard",
+        "criterion": "",
+        "description": "View replies 是一个带 aria-expanded 和 aria-controls 的展开按钮（WAI-ARIA Disclosure 模式）。更多菜单遵循 Menu Button 模式；保存或取消编辑，或删除对话框关闭后，焦点会返回到它。"
+      },
+      {
+        "name": "变更后的焦点",
+        "category": "Keyboard",
+        "criterion": "2.4.3 Focus Order",
+        "description": "焦点永远不会掉到页面上。删除后，焦点会移到下一个线程；如果删除的是回复，则移到该线程。Load earlier comments 会将焦点保持在自身，或在加载失败时保持在替代它的 Retry 上。面板挂载时选中的线程会打开，但不会夺取焦点。"
+      },
+      {
+        "name": "忙碌操作",
+        "category": "Keyboard",
+        "criterion": "",
+        "description": "Post 和表情回应在请求进行期间保持可聚焦，并拒绝第二次按下，因此请求进行中焦点不会掉到页面上。"
+      },
+      {
+        "name": "错误",
+        "category": "Content",
+        "criterion": "4.1.3 Status Messages",
+        "description": "失败会显示在出错对象旁边的错误 Banner 中，每个都带有 Retry（当操作可重复时）。Banner 自身没有 live 角色：其失败会通过共享播报通道以 assertive 方式朗读一次，除非它位于聊天日志内（由日志负责送达）。仍在撰写的评论的进度标签遵循相同规则，但使用礼貌方式。编辑历史对话框会通过对话框内的 alert 区域朗读其失败。删除失败会在确认对话框更改文本时以 assertive 方式朗读一次。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "线程",
+        "required": true,
+        "description": "在 section 父级上是一个带轮廓的 Card，在 card 父级上则是带 1px 分隔线的通栏 Section。选中它会打开线程：正文取消截断，回复显示，回复撰写器打开，并在指针按下时获得焦点。"
+      },
+      {
+        "name": "头像",
+        "required": true,
+        "description": "28×28 的图片或首字母：人员为圆形，代理为圆角方形。在线程打开时，一条 2px 的轨道会将各段头像连接起来。"
+      },
+      {
+        "name": "头部",
+        "required": true,
+        "description": "高度与一个头像相当：姓名、相对时间、Edited（打开编辑历史）和 Resolved。当指针或焦点位于线程上时，会显示 Mark as resolved 或 Reopen、Add reaction、Reply、Copy link 以及更多菜单（Edit、Delete），空间不足时会折叠进更多菜单。"
+      },
+      {
+        "name": "引用段落",
+        "required": false,
+        "description": "行内评论会以斜体 blockquote 引用其段落，其标线采用高亮颜色。被编辑掉的段落会保留中性标线并显示 Outdated 徽章。"
+      },
+      {
+        "name": "正文",
+        "required": true,
+        "description": "Markdown，在线程打开前截断为三行。图片在 Lightbox 中打开。仍在撰写的评论会改为显示其进度。"
+      },
+      {
+        "name": "表情回应",
+        "required": false,
+        "description": "每个表情回应都有一个切换按钮，查看者已回应时为按下状态；其提示会说明回应者是谁。"
+      },
+      {
+        "name": "回复",
+        "required": false,
+        "description": "只有一级，位于 View replies 之后。宿主标记的未读回复会在不选中线程、不移动焦点、也不打开回复撰写器的情况下显示。回复某条回复会发布到线程中。"
+      },
+      {
+        "name": "实时状态",
+        "required": false,
+        "description": "受控的输入中状态会显示在打开的线程末尾，其脉动圆点在头像列中，标签在评论文本行上。受控的 `seenBy` 元数据可供评论渲染回调使用，但没有默认呈现方式。"
+      },
+      {
+        "name": "活动事件",
+        "required": false,
+        "description": "用于状态变化或其他事件的时间线行，按时间与线程交错排列。"
+      },
+      {
+        "name": "撰写器",
+        "required": false,
+        "description": "停靠在底部（或顶部）的两行 CommentComposer：输入框在上方，附件和表情按钮以及 Post 在下方。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Comments",
+      "description": "按时间顺序排列的评论线程和活动事件，以及用于新评论的撰写器和线程打开的对话框。",
+      "propDescriptions": {
+        "comments": "线程：每个线程的第一条评论，携带 `replies`（一级）、`reactions`、瞬时的 `typingUsers`、每条评论隐藏的 `seenBy` 元数据、行内评论的 `anchor`、`isResolved`、`status`、`progress` 以及每条评论的权限。`seenBy` 仍可供评论渲染回调使用。与 `events` 一起按时间顺序显示。",
+        "events": "项目上的活动，按 `createdAt` 以紧凑时间线行的形式与线程交错。",
+        "currentUser": "查看者：其自己的评论会获得 Edit 和 Delete，其头像位于回复撰写器旁。授权仍由你的应用负责。",
+        "mode": "`interactive` 启用所有允许的操作；`non-editable` 保留创建、回复和表情回应，但移除编辑和删除；`read-only` 移除所有会更改数据的控件。",
+        "label": "Comments 区域的无障碍名称。默认为本地化的 “Comments”。",
+        "composerPosition": "新评论撰写器的渲染位置。",
+        "density": "线程之间以及列表周围的间距。",
+        "container": "父级表面。`section` 会将每个线程渲染为带轮廓的 Card；`card` 会渲染由分隔线界定、且分隔线重叠为单线的 Section。",
+        "layout": "`pane` 填满其容器并滚动，撰写器停靠。`embedded` 在宿主表面内按内容高度显示：没有滚动区域或停靠，在卡片父级上也没有外框线。",
+        "composerPlaceholder": "新评论撰写器的占位文本。默认为本地化的 “Write a comment…”，回复时显示 “Reply to <name>…”；自定义值会同时替换两者。",
+        "selectedThreadId": "受控的打开线程，供将线程与文档同步的宿主使用。宿主选中的线程会打开其正文和回复并滚动到可见位置，但不会移动焦点或打开回复撰写器。",
+        "onSelectedThreadChange": "查看者打开线程或关闭已打开线程时调用。",
+        "composerAnchor": "新评论将附加的段落，会引用在撰写器中。面板显示期间出现的锚点会将焦点移到撰写器。",
+        "onComposerAnchorDismiss": "为撰写器的引用添加 Remove quoted text；调用时应清除 `composerAnchor`。",
+        "composerControls": "新评论撰写器页脚中由产品拥有的控件，位于附件和表情按钮之后。",
+        "highlightColor": "你的应用用于高亮段落的调色板颜色。引用会使用其 `--color-border-<color>` 令牌绘制标线。",
+        "isLoading": "显示评论形状的占位符，并将区域报告为繁忙。",
+        "loadError": "在线程上方显示错误 Banner，用于加载失败的评论。",
+        "onRetryLoad": "为 `loadError` Banner 添加 Retry；Promise 会让 Retry 保持忙碌直到其完成。",
+        "hasOlderComments": "在线程上方显示 Load earlier comments。",
+        "isLoadingOlder": "在你的应用获取页面时让 Load earlier comments 保持忙碌。来自 `onLoadOlder` 的 Promise 也会自动如此。",
+        "onLoadOlder": "加载上一页：将其前插到 `comments`。被拒绝的 Promise 会显示错误 Banner，其 Retry 会取代按钮的位置。",
+        "isSubmitting": "宿主控制的撰写器等待状态。Promise 回调也会获得内置的等待状态。",
+        "onComposerDraftChange": "报告 Comments 内部拥有的草稿：新评论、回复和编辑。它包括程序化种子，并在提交、取消或切换目标后报告空值。按 `context` 路由每次更新；在你的应用中对输入中状态做防抖和过期处理。",
+        "composerError": "宿主控制的新评论撰写器上方错误。被拒绝的 `onSubmit` 会显示自己的错误并带 Retry。",
+        "reactionOptions": "Add reaction 提供的表情回应：默认包括 Like、Love、Haha、Wow、Sad 和 Celebrate，以查看者的语言命名。为你自己的选项提供 `description` 来命名它们。",
+        "onSubmit": "发布评论或回复。回复始终以线程的第一条评论作为父级。被拒绝的 Promise 会恢复草稿并显示带 Retry 的错误。",
+        "onSaveEdit": "为查看者自己的评论添加 Edit，并保存新的 Markdown。被拒绝的 Promise 会显示带 Retry 的错误 Banner。",
+        "onDelete": "为查看者自己的评论添加 Delete，并先通过对话框确认。被拒绝的 Promise 会保持对话框打开并显示错误。",
+        "onRetryComment": "为 `status` 为 `error` 的评论添加 Retry。",
+        "onReact": "按稳定键切换查看者的表情回应。",
+        "onResolveThread": "为打开的线程添加 Mark as resolved。调用成功时设置 `isResolved`，并在不应显示已解决线程的地方过滤它们。",
+        "onReopenThread": "为已解决的线程添加 Reopen。调用成功时清除 `isResolved`。",
+        "loadVersions": "加载评论的编辑历史，按最新优先。`previousVersions` 在数据已加载时可用。",
+        "onUploadImages": "上传在撰写器中附加、粘贴或拖放的图片，并将其作为 Markdown 图片追加。你的端点负责授权查看者并校验文件。",
+        "composerTriggers": "每个撰写器的输入联想触发器，例如由你的 Markdown 插件渲染令牌的 `@` 人员搜索。",
+        "agentCommands": "评论可以面向的代理：输入 `/` 会列出它们，已发布的评论会将该命令显示为代理的 chip。你的应用负责运行代理。",
+        "markdownPlugins": "评论正文的块级 Markdown 插件，例如为自有实体提供嵌入。",
+        "markdownInlinePlugins": "评论正文的行内 Markdown 插件，例如触发器插入的提及。",
+        "getReplyMention": "在你的提及格式中用作者提及为对回复的回复提供种子。",
+        "hasEmojiPicker": "撰写器是否提供表情选择器。",
+        "emptyState": "替换默认的无评论状态。",
+        "renderAnchor": "替换线程的引用段落，例如将其链接回文档。",
+        "renderBody": "替换评论的 Markdown 正文。",
+        "renderVersionBody": "替换编辑历史中某个版本的正文。",
+        "renderEvent": "替换活动事件的时间线行。",
+        "renderAdditionalActions": "在内置操作之后，为评论头部添加产品操作。",
+        "renderComposer": "替换每个撰写器的输入框，同时面板保留其草稿、等待、错误和上下文状态。你的撰写器负责自己的焦点和键盘处理。"
+      }
+    },
+    {
+      "name": "CommentThread",
+      "description": ""
+    },
+    {
+      "name": "CommentComposer",
+      "description": ""
+    }
+  ]
+};

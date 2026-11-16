@@ -354,3 +354,77 @@ export const docsDense = {
     },
   ],
 };
+
+export const docsZh = {
+  "name": "Resizable",
+  "usage": {
+    "description": "基于 Hook 的可调整大小面板系统。useResizable() 管理尺寸状态，ResizeHandle 提供可交互的胶囊握柄分隔条。将 Hook 的输出通过 resizable 属性传给现有布局组件。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "当百分比需要恰好一个像素下限或上限时，使用 percent(value, {min: pixel(value)}) 或 percent(value, {max: pixel(value)})。复用 Table 的 pixel() 辅助函数；数字、精确的 Npx 和 pixel(value) 仍然是像素。状态、持久化、回调、绘制和 ARIA 仍使用解析后的像素。"
+      },
+      {
+        "guidance": true,
+        "description": "将 useResizable() 与现有 Astryx 布局组件配合使用。将其输出传给 LayoutPanel、ResizeHandle 或 SideNav 上的 resizable 属性；其他任何元素都可以使用其 size。"
+      },
+      {
+        "guidance": true,
+        "description": "存在多个手柄时，为每个 ResizeHandle 提供无障碍标签（例如 \"Resize sidebar\"、\"Resize terminal\"）。"
+      },
+      {
+        "guidance": false,
+        "description": "为实现调整大小而将面板包裹在额外的容器组件中。Hook 优先的架构避免了额外 DOM；请直接在现有组件上使用它。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "手柄",
+        "required": true,
+        "description": "可聚焦的分隔条，负责指针和键盘调整大小交互。"
+      },
+      {
+        "name": "握柄胶囊",
+        "required": false,
+        "description": "默认可见的握柄指示器；无论它位于何处，拖动它都能调整大小。自定义手柄内容可以替换它。"
+      },
+      {
+        "name": "抓取区域",
+        "required": true,
+        "description": "以分隔线为中心、不可见的放大指针区域。内联区域在比它矮的窗格中最多占一半；覆盖式手柄最多占其窗格的一半。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "useResizable",
+      "description": "管理一个或多个面板区域调整大小状态的 Hook。返回 size、isCollapsed、collapse/expand/resize 方法，以及传给手柄的属性。",
+      "propDescriptions": {
+        "defaultSize": "初始尺寸。数字、精确的 Npx 和 pixel(value) 都是像素；精确的 N% 没有额外的像素界限；percent(value, {min: pixel(value)}) 或 percent(value, {max: pixel(value)}) 会恰好添加一个像素界限并解析一次。",
+        "minSize": "实时最小值。数字、精确的 Npx 和 pixel(value) 仍为像素；精确的 N% 没有额外的像素界限；percent(value, {min: pixel(value)}) 或 percent(value, {max: pixel(value)}) 会恰好添加一个。",
+        "maxSize": "实时最大值。数字、精确的 Npx 和 pixel(value) 仍为像素；精确的 N% 没有额外的像素界限；percent(value, {min: pixel(value)}) 或 percent(value, {max: pixel(value)}) 会恰好添加一个。",
+        "collapsible": "区域是否可以折叠到尺寸 0。",
+        "collapsedSize": "低于该像素阈值时，提升或按键步进会使区域折叠。",
+        "snaps": "调整大小时要吸附到的像素值。",
+        "shrinkOrder": "级联优先级：数字越小越先收缩。",
+        "autoSaveId": "将尺寸和折叠状态持久化到 localStorage 的键。"
+      }
+    },
+    {
+      "name": "ResizeHandle",
+      "description": "面板之间的可拖拽分隔条。胶囊握柄设计：静止时不可见，悬停时可见（0.6 不透明度），拖动时完全不透明（1.0）。支持键盘访问。",
+      "propDescriptions": {
+        "direction": "布局方向：决定光标和指示器方向。",
+        "isReversed": "反转拖动方向。当手柄控制末端/右侧/底部面板时使用。",
+        "isDisabled": "手柄是否可交互。",
+        "hasDivider": "在手柄中显示贯穿全长的 1px 分隔线。相邻面板共享相同背景时使用。",
+        "isAlwaysVisible": "静止时也显示胶囊握柄，而不只在悬停时显示。可发现性重要时使用。",
+        "pillPlacement": "胶囊位于分隔线的哪一侧。auto = 内容侧（由 isReversed 推导），折叠时翻转。start = 左/上，end = 右/下，center = 分隔线居中。它只移动胶囊，拖动仍可把它带到任意位置；抓取区域始终以分隔线为中心。",
+        "label": "分隔条的无障碍标签。",
+        "resizable": "useResizable 的输出，或其属性：将手柄连接到面板。携带区域的轴（'horizontal' | 'vertical'），必须与此手柄的 direction 匹配。",
+        "children": "自定义手柄内容。覆盖默认的胶囊 + 分隔线。",
+        "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 值，而不是像 style={{}} 这样的内联样式对象。"
+      }
+    }
+  ]
+};

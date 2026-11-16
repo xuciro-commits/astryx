@@ -114,103 +114,117 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'FieldLabel',
-  isHiddenFromOverview: true,
-  displayName: 'Field Label',
-  description:
-    '独立标签组，可标记单个控件或调用方命名的控件组，并支持说明文本、可选/必填指示器、图标和工具提示。',
-  props: [
+  "name": "FieldLabel",
+  "isHiddenFromOverview": true,
+  "displayName": "Field Label",
+  "description": "独立的标签组，用于单个控件或调用方标注的组，可包含支持文本、可选性指示器、图标和工具提示。",
+  "props": [
     {
-      name: 'label',
-      type: 'string',
-      description: '标签文本，始终为辅助技术保留。',
-      required: true,
+      "name": "label",
+      "type": "string",
+      "description": "标签文本，始终为无障碍而渲染。",
+      "required": true
     },
     {
-      name: 'inputID',
-      type: 'string',
-      description: '此标签关联的输入框 ID。',
-      required: true,
+      "name": "inputID",
+      "type": "string",
+      "description": "此标签所对应输入框的 ID。",
+      "required": true
     },
     {
-      name: 'labelID',
-      type: 'string',
-      description:
-        '应用到标签元素本身的 ID。isGroupLabel 为 true 时用于 aria-labelledby。',
+      "name": "labelID",
+      "type": "string",
+      "description": "应用于标签元素本身的 ID。当 `isGroupLabel` 为 true 时，与 `aria-labelledby` 搭配使用。"
     },
     {
-      name: 'isGroupLabel',
-      type: 'boolean',
-      description:
-        '渲染用于命名控件组的 span，而不是关联单个控件的原生 label。',
-      default: 'false',
+      "name": "isGroupLabel",
+      "type": "boolean",
+      "description": "渲染一个可为组命名的 span，而不是为单个控件渲染原生 label。",
+      "default": "false"
     },
     {
-      name: 'isLabelHidden',
-      type: 'boolean',
-      description: '视觉隐藏标签和说明，同时为辅助技术保留。',
-      default: 'false',
+      "name": "isLabelHidden",
+      "type": "boolean",
+      "description": "在视觉上隐藏标签和描述，同时保持两者对辅助技术可用。",
+      "default": "false"
     },
     {
-      name: 'isDisabled',
-      type: 'boolean',
-      description: '使用关联控件的禁用标签样式。',
-      default: 'false',
+      "name": "isDisabled",
+      "type": "boolean",
+      "description": "为关联控件使用禁用状态的标签呈现。",
+      "default": "false"
     },
     {
-      name: 'isOptional',
-      type: 'boolean',
-      description: '当其不匹配 FormLayout 默认值时显示本地化的可选指示器。',
-      default: 'false',
+      "name": "isOptional",
+      "type": "boolean",
+      "description": "显示本地化的可选指示器，除非它与 FormLayout 的默认可选性一致。",
+      "default": "false"
     },
     {
-      name: 'isRequired',
-      type: 'boolean',
-      description: '当其不匹配 FormLayout 默认值时显示本地化的必填指示器。',
-      default: 'false',
+      "name": "isRequired",
+      "type": "boolean",
+      "description": "显示本地化的必填指示器，除非它与 FormLayout 的默认可选性一致。",
+      "default": "false"
     },
     {
-      name: 'labelIcon',
-      type: 'ReactNode | IconType',
-      description: '标签文本前的图标或已渲染图标内容。',
+      "name": "labelIcon",
+      "type": "ReactNode | IconType",
+      "description": "标签文本之前的图标或渲染的图标内容。语义名称参见 `astryx docs icons`。"
     },
     {
-      name: 'labelTooltip',
-      type: 'string',
-      description:
-        '标签后信息图标的工具提示文本。悬停即可显示；在触摸屏上点按图标即可打开，不会聚焦字段或切换控件；用鼠标点击图标则与点击标签其他部分一样激活控件。',
+      "name": "labelTooltip",
+      "type": "string",
+      "description": "标签后信息按钮的帮助文本，名称为 \"About {label}\"。悬停和键盘聚焦会预览它；轻触、单击、Enter 或 Space 会打开它，且绝不会聚焦或切换控件。"
     },
     {
-      name: 'description',
-      type: 'ReactNode',
-      description: '标签下方的说明内容，与控件的无障碍名称保持分离。',
+      "name": "description",
+      "type": "ReactNode",
+      "description": "显示在标签下方的支持内容，与控件的可访问名称保持分离。"
     },
     {
-      name: 'descriptionID',
-      type: 'string',
-      description: '应用到说明内容的 ID，供调用方连接 aria-describedby。',
+      "name": "descriptionID",
+      "type": "string",
+      "description": "应用于支持描述的 ID，供调用方自行连接 `aria-describedby`。"
     },
     {
-      name: 'ref',
-      type: 'React.Ref<HTMLLabelElement>',
-      description: '转发到标签元素的 ref。控件组模式当前渲染 span。',
+      "name": "ref",
+      "type": "React.Ref<HTMLLabelElement>",
+      "description": "转发到标签元素的 Ref。组模式当前渲染 span。"
     },
     {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description: '在基础和状态样式之后应用到标签元素的 StyleX 样式。',
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "在基础样式和状态样式之后应用于标签元素的 StyleX 样式。"
     },
     {
-      name: 'className',
-      type: 'string',
-      description: '追加到标签元素的 CSS 类名。',
+      "name": "className",
+      "type": "string",
+      "description": "追加到标签元素的 CSS 类名。"
     },
     {
-      name: 'style',
-      type: 'React.CSSProperties',
-      description: '在 StyleX 内联样式之后应用到标签元素的内联样式。',
-    },
+      "name": "style",
+      "type": "React.CSSProperties",
+      "description": "在 StyleX 内联样式之后应用于标签元素的内联样式。"
+    }
   ],
+  "propDescriptions": {
+    "label": "标签文本，始终为无障碍而渲染。",
+    "inputID": "此标签所对应输入框的 ID。",
+    "labelID": "应用于标签元素本身的 ID。当 `isGroupLabel` 为 true 时，与 `aria-labelledby` 搭配使用。",
+    "isGroupLabel": "渲染一个可为组命名的 span，而不是为单个控件渲染原生 label。",
+    "isLabelHidden": "在视觉上隐藏标签和描述，同时保持两者对辅助技术可用。",
+    "isDisabled": "为关联控件使用禁用状态的标签呈现。",
+    "isOptional": "显示本地化的可选指示器，除非它与 FormLayout 的默认可选性一致。",
+    "isRequired": "显示本地化的必填指示器，除非它与 FormLayout 的默认可选性一致。",
+    "labelIcon": "标签文本之前的图标或渲染的图标内容。语义名称参见 `astryx docs icons`。",
+    "labelTooltip": "标签后信息按钮的帮助文本，名称为 \"About {label}\"。悬停和键盘聚焦会预览它；轻触、单击、Enter 或 Space 会打开它，且绝不会聚焦或切换控件。",
+    "description": "显示在标签下方的支持内容，与控件的可访问名称保持分离。",
+    "descriptionID": "应用于支持描述的 ID，供调用方自行连接 `aria-describedby`。",
+    "ref": "转发到标签元素的 Ref。组模式当前渲染 span。",
+    "xstyle": "在基础样式和状态样式之后应用于标签元素的 StyleX 样式。",
+    "className": "追加到标签元素的 CSS 类名。",
+    "style": "在 StyleX 内联样式之后应用于标签元素的内联样式。"
+  }
 };
 
 export const docsDense = {

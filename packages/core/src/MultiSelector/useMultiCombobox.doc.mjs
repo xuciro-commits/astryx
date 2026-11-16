@@ -265,3 +265,55 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useMultiCombobox",
+  "usage": {
+    "description": "跟踪多选组合框的当前活动选项并处理其按键，同时 DOM 焦点保持在控件上。它为 MultiSelector 提供支持；与 useCombobox 不同，切换选项后列表保持打开，并且行可以带有操作单元格。它不渲染任何内容，也不设置任何属性：调用方负责渲染控件和列表，并根据返回值连接 ARIA 属性。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "使用 `id={getItemId(index)}` 渲染每个选项，并将 `activeDescendantId` 作为控件的 `aria-activedescendant` 传入。"
+      },
+      {
+        "guidance": true,
+        "description": "仅当行在选项旁边带有控件时才使用 `isGrid`；为每个操作单元格设置 `id={getActionCellId(index)}`。"
+      },
+      {
+        "guidance": true,
+        "description": "当选项因新查询而变化时，通过 useAnnounce 宣布结果数量。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在每次切换后关闭列表；多选列表会保持打开，以便连续选择多个选项。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "配置对象。",
+    "options.selectableItems": "与渲染顺序相同的选项。带有 `disabled` 的选项无法切换，在浏览打开的列表时会被跳过。打开时绝不会落在禁用的选项上：ArrowUp 落在最后一个启用选项上，ArrowDown、按下、Enter 或 Space 落在第一个启用选项上。",
+    "options.isOpen": "列表是否显示。此状态由调用方管理。",
+    "options.onOpen": "在显示列表时调用。返回 `false` 表示拒绝；此时 Hook 不会移动高亮。",
+    "options.onClose": "在隐藏列表时调用。高亮会先重置。",
+    "options.onToggle": "使用要添加或移除的选项值调用。切换后列表保持打开。",
+    "options.listboxId": "listbox（或 grid）元素的 id。选项和操作单元格的 id 由它派生。",
+    "options.hasSearch": "列表是否有自己的搜索字段。此时 Space 用于输入而不是切换，按下或按 Enter 打开时不会预先高亮（ArrowDown 和 ArrowUp 仍会落在第一个和最后一个启用选项上），Delete 和 Backspace 用于编辑查询，类型选择被关闭。Home 和 End 仍会跳转到第一个和最后一个选项，因此要为光标保留这些按键的搜索输入应在该处理程序之前阻止它们，并依赖 PageUp 和 PageDown。",
+    "options.onClear": "清除所有已选值。提供后，在处于关闭状态的控件上按 Delete 或 Backspace 会清除它们，因此清除操作不仅限于指针操作。在列表打开或设置了 `hasSearch` 时忽略。",
+    "options.hasValue": "是否有任何选中项。为 false 时跳过 Delete 和 Backspace 清除。",
+    "options.isGrid": "每一行是否将一个选项单元格与一个操作单元格配对。此时行内末端箭头会将高亮移动到该行的操作上，行内起始箭头则移回，并遵循从右到左布局中的视觉方向；在操作上按 Enter 会运行 `onActivateAction`，而不是切换选项。",
+    "options.rowHasAction": "在网格中，`index` 处的行是否有可移动到的操作单元格。",
+    "options.onActivateAction": "在网格中，运行高亮行操作单元格中的控件。选择不会改变。",
+    "options.isDisabled": "控件是否忽略点击和按键。"
+  },
+  "returnDescriptions": {
+    "highlightedIndex": "活动行的索引；没有活动行时为 -1。",
+    "setHighlightedIndex": "设置活动行，例如在过滤之后。高亮会落在该行的选项单元格上。",
+    "highlightedCell": "活动行中高亮的是哪个单元格；仅在网格中为 `'action'`。",
+    "activeDescendantId": "要作为控件 `aria-activedescendant` 传入的 id：活动选项，或在网格中其操作单元格。列表关闭或没有活动项时为 undefined。",
+    "getItemId": "要渲染在 `index` 处选项上的 id。",
+    "getActionCellId": "在网格中，要渲染在 `index` 行操作单元格上的 id。",
+    "onTriggerClick": "通过在控件上按下切换列表。",
+    "onKeyDown": "用于保持焦点的控件的按键处理程序。ArrowDown 和 ArrowUp 打开列表或移动活动行；Enter（以及无搜索时的 Space）切换活动选项并保持列表打开；Escape 和 Tab 关闭列表；Home、End、PageUp 和 PageDown 跳转到第一个或最后一个选项；无搜索时，键入的字符会移动到标签以该字符开头的下一个选项，与 Selector 中一致（重复的字母会循环，单个字母会从活动选项之后开始搜索），Space 仍会切换。",
+    "onItemMouseEnter": "将悬停的选项或其操作单元格设为活动，而不滚动列表或移动焦点。"
+  }
+};

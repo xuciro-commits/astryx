@@ -234,3 +234,50 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useListFocus",
+  "usage": {
+    "description": "按照 WAI-ARIA menu/listbox/toolbar 模式管理线性列表内的键盘导航。支持方向键导航（垂直、水平或两者）、Home/End 边界、可选环绕、RTL 以及 Escape 关闭。为拥有单个 Tab 停靠点的复合组件（工具栏、分段控件、标签条）启用 hasRovingTabIndex。适用于下拉菜单、工具栏以及任何一维可聚焦列表。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "对于工具栏和标签栏，将 orientation 设为 'horizontal'；对于下拉菜单，设为 'vertical'。"
+      },
+      {
+        "guidance": true,
+        "description": "为菜单/下拉菜单提供 onEscape 回调，将焦点返回触发器。"
+      },
+      {
+        "guidance": true,
+        "description": "对于应作为单个 Tab 停靠点的工具栏式复合组件，启用 hasRovingTabIndex（当组件可能包含文本输入时，同时启用 hasCaretGuard）。"
+      },
+      {
+        "guidance": false,
+        "description": "不要用它进行二维网格导航；网格和日历请优先使用 useGridFocus。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "列表聚焦行为的配置对象。所有字段都是可选的。",
+    "options.itemSelector": "列表中可聚焦项的选择器。",
+    "options.boundarySelector": "标识列表边界的选择器，适用于包含同类型嵌套列表的列表（例如带子菜单浮层的菜单）。设置后，项收集和按键处理会限定在此层级自己的容器内。通常为 '[role=\"menu\"]'。",
+    "options.wrap": "方向键导航是否在两端环绕。",
+    "options.onEscape": "按下 Escape 键时的回调（例如关闭菜单）。提供它同时会消费该按键（preventDefault）；没有它时，Escape 会传递给外层。",
+    "options.orientation": "导航方向。'horizontal' 使用 ArrowLeft/ArrowRight，'vertical' 使用 ArrowUp/ArrowDown，'both' 接受全部四个方向键。",
+    "options.hasHomeEnd": "Home/End 是否跳转到第一个/最后一个已启用项。",
+    "options.hasPaging": "PageDown/PageUp 是否在可滚动列表中翻页：PageDown 移动到容器中完全可见的最后一个已启用项，再次按下则再移动一个视口；PageUp 与之对应。两者都不环绕；在不滚动的列表中，它们的作用相当于 End/Home。",
+    "options.hasRovingTabIndex": "启用 roving-tabindex 所有权：该 Hook 会打上单个 Tab 停靠点（一个项 tabindex=\"0\"，其余为 -1），在项挂载/卸载或切换禁用时修复它，并随方向键导航移动它。为 false 时，该 Hook 只移动焦点，绝不触碰 tabindex。",
+    "options.hasCaretGuard": "为 true 时，如果嵌套的文本输入框/文本域的光标不在行进方向的边界上（或存在选区），方向键不会被抢占；也永远不会从嵌套的 contenteditable（富文本编辑器/聊天编辑器）中抢占。保留列表内的行内文本编辑。"
+  },
+  "returnDescriptions": {
+    "listRef": "附加到列表容器元素的 ref。",
+    "handleKeyDown": "附加到列表容器的按键处理函数。",
+    "handleFocus": "容器的聚焦处理函数。启用 hasRovingTabIndex 时保持 roving Tab 停靠点同步；否则为无操作，因此始终可以安全附加。",
+    "focusItem": "按索引聚焦特定项（会钳制到有效范围）。",
+    "focusFirst": "聚焦第一个已启用项。当有项被聚焦时返回 true。",
+    "focusLast": "聚焦最后一个已启用项。当有项被聚焦时返回 true。",
+    "ownsEvent": "某个按键事件是否属于此列表层级，而不是共享同一 boundarySelector 的嵌套列表。未设置 boundarySelector 时始终为 true。用于保护消费方添加的按键处理（Enter/Space、typeahead）。",
+    "getItems": "此层级的可聚焦项，按 DOM 顺序（已按 boundarySelector 限定）。从这里构建 typeahead 目标，而不是重新查询。"
+  }
+};

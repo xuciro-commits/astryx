@@ -70,3 +70,17 @@ export const docsDense = {
     groupOrder: 'Pin these group keys first; others keep first-seen order.',
   },
 };
+
+export const docsZh = {
+  "name": "useTableGroupedRows",
+  "description": "将扁平数据数组分组为可折叠区块行的 Hook。每个不同的 groupBy 值都会变成一个全宽的分区标题行，包含尖角符号切换按钮、分组标签和成员数量；折叠会隐藏该分组的数据行，同时保持标题可见。展开状态保存在尖角按钮上，而不是原生表格行上。与 useTableTreeState 类似：使用方拥有 collapsedGroups 集合，该 Hook 返回 {data, plugin, idKey}：分别作为 data、plugins 和 idKey 传给 Table。分组只对传入的行运行，因此在分页时顺序是筛选、排序、切片，然后分组：先按分组键排序，再按用户指定的键排序，使一个分区的行保持连续，每页追加到表格底部，而不是在读者上方拼接行。按行数截断的页面仍会从分区中间切断，此时标题统计的是已加载的数量而非实际存在的数量：\"6\" 会悄悄变成 \"10\"。如果可以拿到完整结果集，请将截断位置顺延到所在分区的末尾：这样每个渲染的分区都是完整的，其计数也是总数。",
+  "propDescriptions": {
+    "data": "要分组的扁平数据。",
+    "groupBy": "为行推导分组键。键相同的行共享一个分区。",
+    "collapsedGroups": "当前已折叠的分组键集合。",
+    "onToggleGroup": "切换分组标题时以该分组键调用。",
+    "renderGroupHeader": "分组标题内容（尖角符号右侧）的自定义渲染器。默认为 `<groupKey> (<count>)`。",
+    "getRowKey": "真实行的稳定键。省略时回退为位置键。",
+    "groupOrder": "显式分组顺序；未列出的分组按首次出现的顺序排在这些之后。"
+  }
+};

@@ -43,40 +43,44 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'useTableColumnResize',
-  displayName: 'useTableColumnResize',
-  description:
-    '返回 TablePlugin 的 Hook，为列表头边框添加可拖动的调整手柄。支持指针 + 键盘（WAI-ARIA 窗口分隔符）调整、RTL、每列最小/最大宽度，以及比例列保留（调整相邻列以保持表格全宽）。在释放时提交宽度。',
-  props: [
+  "name": "useTableColumnResize",
+  "displayName": "useTableColumnResize",
+  "description": "返回 `TablePlugin` 的 Hook，为列标题边框添加可拖动的调整大小手柄。支持指针和键盘（WAI-ARIA window splitter）调整大小、RTL、按列的最小/最大宽度，以及比例列保持（调整相邻列，使表格保持全宽）。释放时提交宽度。",
+  "props": [
     {
-      name: 'columnWidths',
-      type: 'Record<string, number>',
-      description: '受控的像素宽度覆盖，按列键索引。存在某键时会覆盖该列声明的宽度。',
+      "name": "columnWidths",
+      "type": "Record<string, number>",
+      "description": "按列键索引的受控像素宽度覆盖值。存在对应键时，会覆盖该列声明的宽度。"
     },
     {
-      name: 'onColumnResizeEnd',
-      type: '(updates: Record<string, number>) => void',
-      description:
-        '调整完成时（pointerup / Enter）调用。接收所有宽度发生变化的列键的映射——将其合并到你的 columnWidths 状态中。',
+      "name": "onColumnResizeEnd",
+      "type": "(updates: Record<string, number>) => void",
+      "description": "调整大小完成时（`pointerup` / `Enter`）调用。接收所有宽度发生变化的列键映射；将其合并到 `columnWidths` 状态中。"
     },
     {
-      name: 'minWidth',
-      type: 'number',
-      description: '调整期间的全局最小列宽（像素）。设置后覆盖每列默认值。',
+      "name": "minWidth",
+      "type": "number",
+      "description": "调整大小期间的全局最小列宽（像素）。设置后会覆盖按列默认值。"
     },
     {
-      name: 'maxWidth',
-      type: 'number',
-      description: '调整期间的全局最大列宽（像素）。',
-      default: 'Infinity',
+      "name": "maxWidth",
+      "type": "number",
+      "description": "调整大小期间的全局最大列宽（像素）。",
+      "default": "Infinity"
     },
     {
-      name: 'columns',
-      type: 'TableColumn<T>[]',
-      description:
-        '列定义——用于推导每列最小宽度，并区分比例列与像素列以确定相邻列/末列的调整行为。',
-    },
+      "name": "columns",
+      "type": "TableColumn<T>[]",
+      "description": "列定义，用于推导各列最小宽度，并识别比例列与像素列，以便处理相邻列/最后一列的调整行为。"
+    }
   ],
+  "propDescriptions": {
+    "columnWidths": "按列键索引的受控像素宽度覆盖值。存在对应键时，会覆盖该列声明的宽度。",
+    "onColumnResizeEnd": "调整大小完成时（`pointerup` / `Enter`）调用。接收所有宽度发生变化的列键映射；将其合并到 `columnWidths` 状态中。",
+    "minWidth": "调整大小期间的全局最小列宽（像素）。设置后会覆盖按列默认值。",
+    "maxWidth": "调整大小期间的全局最大列宽（像素）。",
+    "columns": "列定义，用于推导各列最小宽度，并识别比例列与像素列，以便处理相邻列/最后一列的调整行为。"
+  }
 };
 
 export const docsDense = {

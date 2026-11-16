@@ -83,64 +83,70 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'LayoutPanel',
-  isHiddenFromOverview: true,
-  displayName: 'Layout Panel',
-  description: '用于导航、设置或检查器面板的侧边栏。',
-  props: [
+  "name": "LayoutPanel",
+  "isHiddenFromOverview": true,
+  "displayName": "Layout Panel",
+  "description": "用于导航、设置或检查器面板的侧栏。",
+  "props": [
     {
-      name: 'children',
-      type: 'ReactNode',
-      description: '面板内容。',
+      "name": "children",
+      "type": "ReactNode",
+      "description": "面板内容。"
     },
     {
-      name: 'hasDivider',
-      type: 'boolean',
-      description:
-        '朝向内容一侧边缘的分隔线：在 start 插槽中位于行内结束边，在 end 插槽中位于行内起始边。不设置此项且未设置 padding 时，面板与内容共用一个间距。Layout 的 defaultHasDividers 不适用。旁边的 ResizeHandle 自带分隔线时，请保持为 false。',
-      default: 'false',
+      "name": "hasDivider",
+      "type": "boolean",
+      "description": "朝向内容一侧的边缘线：在起始槽中为行内末端，在结束槽中为行内起始端。若没有此线且没有内边距，面板与内容共享一个间隙。Layout 的 `defaultHasDividers` 不适用。在带有自带线条的 ResizeHandle 旁边时，请保持为 `false`。",
+      "default": "false"
     },
     {
-      name: 'padding',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description:
-        '使用间距比例设置四边的内边距，替换自动内边距以及与内容共用的间距。0 表示全出血。',
+      "name": "padding",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "使用间距比例设置各边的内部内边距。它会替代自动内缩以及与内容共享的间隙。`0` 表示通栏。"
     },
     {
-      name: 'isScrollable',
-      type: 'boolean',
-      description: '启用可滚动溢出。',
-      default: 'true',
+      "name": "isScrollable",
+      "type": "boolean",
+      "description": "启用可滚动溢出。",
+      "default": "true"
     },
     {
-      name: 'label',
-      type: 'string',
-      description:
-        '地标元素的无障碍标签。区域滚动时，它也为滚动区域命名；未提供时使用已翻译的“Content”（内容）。',
+      "name": "label",
+      "type": "string",
+      "description": "地标元素的无障碍标签。当区域滚动时，它也为滚动区域命名，否则该区域会采用翻译后的“Content”。"
     },
     {
-      name: 'role',
-      type: 'AriaRole',
-      description: 'ARIA 地标角色。',
+      "name": "role",
+      "type": "AriaRole",
+      "description": "ARIA 地标角色。"
     },
     {
-      name: 'width',
-      type: 'number | string',
-      description:
-        '面板宽度。数字按像素处理，字符串按原样使用。提供 resizable 时忽略，宽度由 hook 控制。放在接收 useResizable 区域 props 的 ResizeHandle 旁边、以 width={region.size} 渲染时，区域折叠期间面板为 inert，折叠时面板内的焦点移到手柄上。',
+      "name": "width",
+      "type": "number | string",
+      "description": "面板宽度。数字按像素处理，字符串按原样使用。提供 `resizable` 时忽略此项；由 Hook 控制宽度。在带有 `useResizable` 区域属性的 ResizeHandle 旁边，`width={region.size}` 的面板在区域折叠时处于惰性状态，折叠时其内部焦点会移到句柄上。"
     },
     {
-      name: 'resizable',
-      type: 'ResizableRegion | ResizableProps',
-      description:
-        "useResizable() 的返回值或其 props。提供时面板宽度由 hook 驱动，应在面板旁放置 ResizeHandle。其中携带区域的轴向（'horizontal' | 'vertical'），必须与相邻 ResizeHandle 的 direction 一致。使用 hook 自身返回的值时，面板从朝向其 ResizeHandle 的边缘滑动关闭和打开；手动构造的对象不会滑动。两种情况下，折叠时面板内的焦点都会移到其 ResizeHandle 上，折叠期间面板为 inert。",
+      "name": "resizable",
+      "type": "ResizableRegion | ResizableProps",
+      "description": "`useResizable()` 的输出或其属性。提供时，Hook 驱动面板宽度，并且应将 ResizeHandle 放在面板旁边。它携带区域的轴向（`'horizontal'` | `'vertical'`），必须与相邻 ResizeHandle 的方向匹配。使用 Hook 自身的值时，面板会从朝向其 ResizeHandle 的边缘滑入滑出；手动构造的对象不会滑动。无论哪种方式，面板折叠时其内部焦点都会移到对应的 ResizeHandle，且折叠期间面板处于惰性状态。"
     },
     {
-      name: 'ref',
-      type: 'React.Ref<HTMLDivElement>',
-      description: '转发到面板元素的 ref。',
-    },
+      "name": "ref",
+      "type": "React.Ref<HTMLDivElement>",
+      "description": "转发到面板元素的 ref。"
+    }
   ],
+  "propDescriptions": {
+    "children": "面板内容。",
+    "hasDivider": "朝向内容一侧的边缘线：在起始槽中为行内末端，在结束槽中为行内起始端。若没有此线且没有内边距，面板与内容共享一个间隙。Layout 的 `defaultHasDividers` 不适用。在带有自带线条的 ResizeHandle 旁边时，请保持为 `false`。",
+    "padding": "使用间距比例设置各边的内部内边距。它会替代自动内缩以及与内容共享的间隙。`0` 表示通栏。",
+    "isScrollable": "启用可滚动溢出。",
+    "label": "地标元素的无障碍标签。当区域滚动时，它也为滚动区域命名，否则该区域会采用翻译后的“Content”。",
+    "role": "ARIA 地标角色。",
+    "width": "面板宽度。数字按像素处理，字符串按原样使用。提供 `resizable` 时忽略此项；由 Hook 控制宽度。在带有 `useResizable` 区域属性的 ResizeHandle 旁边，`width={region.size}` 的面板在区域折叠时处于惰性状态，折叠时其内部焦点会移到句柄上。",
+    "resizable": "`useResizable()` 的输出或其属性。提供时，Hook 驱动面板宽度，并且应将 ResizeHandle 放在面板旁边。它携带区域的轴向（`'horizontal'` | `'vertical'`），必须与相邻 ResizeHandle 的方向匹配。使用 Hook 自身的值时，面板会从朝向其 ResizeHandle 的边缘滑入滑出；手动构造的对象不会滑动。无论哪种方式，面板折叠时其内部焦点都会移到对应的 ResizeHandle，且折叠期间面板处于惰性状态。",
+    "ref": "转发到面板元素的 ref。"
+  }
 };
 
 export const docsDense = {

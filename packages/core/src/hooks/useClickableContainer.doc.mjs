@@ -112,3 +112,42 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useClickableContainer",
+  "usage": {
+    "description": "使容器元素可点击，同时保留嵌套交互元素的行为。解决“嵌套交互元素”问题：当卡片可点击但包含按钮/链接时，点击这些元素不应触发卡片的操作。检测点击目标与容器之间的交互祖先，并忽略文本选择。支持 href 导航（包括中键点击和 Ctrl/Cmd+点击以打开新标签页）。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将 `onClick`、`onMouseUp` 和 `onPointerDown` 挂到容器元素上：完整的点击处理（包括中键点击），并且按下嵌套控件时不会出现触摸按下状态。"
+      },
+      {
+        "guidance": true,
+        "description": "在 ClickableCard 或 SelectableCard 内使用，以实现标准的卡片交互模式。"
+      },
+      {
+        "guidance": true,
+        "description": "对于没有 Card 外观的可按压表面（例如按下即跳转的引用消息），请自行组合：在此表面上使用该 Hook；在同一元素上使用 `usePressFeedback()` 和 `interactionOverlayStyles.backgroundColor`（来自 `@astryxdesign/core/utils`）实现悬停色调和触摸按下；在 `VisuallyHidden` 内放置原生 `<button>`（或用于目标地址的 `<a>`）作为具名控件和 `interactiveRef`；并在表面上使用 `focusOutlineStyles.focusWithin`（来自 `@astryxdesign/core/utils`）实现共享焦点环，即 ClickableCard 绘制的那个。`Core/Hooks/useClickableContainer` story 包含完整配方。"
+      },
+      {
+        "guidance": false,
+        "description": "当整个容器就是一个交互元素时不要使用它；直接使用 <button> 或 <a> 即可。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "可点击容器的配置对象。",
+    "options.containerRef": "指向外部容器元素的 ref。",
+    "options.interactiveRef": "指向内部主要交互元素（链接、按钮）的 ref。如果未提供 `onClick` 或 `href`，点击会被代理到该元素。",
+    "options.onClick": "点击容器表面（而非嵌套交互元素）时触发的点击处理器。",
+    "options.href": "导航 URL。提供后，点击容器会导航到该 URL。",
+    "options.target": "链接目标（例如 '_blank'）。与 `href` 一起用于导航行为。",
+    "options.disabled": "容器是否被禁用。"
+  },
+  "returnDescriptions": {
+    "onClick": "要挂到容器元素上的点击处理器。",
+    "onMouseUp": "要挂到容器上的鼠标抬起处理器（处理 `href` 的中键点击导航）。",
+    "onPointerDown": "要挂到容器上的指针按下处理器。对于使用 usePressFeedback 绘制按压效果的容器，它会丢弃从嵌套交互元素开始的触摸按下，因为该按下不会激活容器。鼠标 `:active` 按压绘制保持不变。不使用它时，容器会保留其点击规则以及每次按下的按下状态。"
+  }
+};

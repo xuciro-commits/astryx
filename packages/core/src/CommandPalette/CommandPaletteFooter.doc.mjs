@@ -47,15 +47,29 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'CommandPaletteFooter',
-  isHiddenFromOverview: true,
-  displayName: 'Command Palette Footer',
-  description:
-    '显示键盘导航提示的页脚。未提供子元素时渲染默认方向键/Enter/Escape 提示。',
-  propDescriptions: {
-    children: '自定义页脚内容。省略时通过 Kbd 渲染默认键盘提示。',
-    xstyle: 'StyleX 布局自定义样式。必须是 stylex.create() 的值。',
+  "name": "CommandPaletteFooter",
+  "isHiddenFromOverview": true,
+  "displayName": "Command Palette Footer",
+  "description": "带键盘操作指引的页脚。CommandPalette 会自动渲染默认的方向键、Enter 和 Escape 提示。",
+  "propDescriptions": {
+    "children": "自定义页脚内容。省略时，通过 Kbd 渲染默认键盘提示。",
+    "xstyle": "用于布局自定义的 StyleX 样式。必须是 stylex.create() 的值。"
   },
+  "usage": {
+    "description": "CommandPalette 会自动渲染 CommandPaletteFooter。只有在需要替换默认指引时，才向 footer 插槽传入 CommandPaletteFooter。",
+    "anatomy": [
+      {
+        "name": "页脚",
+        "required": true,
+        "description": "呈现默认指引或调用方提供的页脚内容的辅助区域。"
+      },
+      {
+        "name": "键盘快捷键",
+        "required": false,
+        "description": "用于导航、选择和关闭的默认 Kbd 徽标。"
+      }
+    ]
+  }
 };
 
 export const docsDense = {

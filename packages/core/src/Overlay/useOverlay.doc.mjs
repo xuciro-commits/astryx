@@ -174,3 +174,43 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useOverlay",
+  "usage": {
+    "description": "为已经渲染的容器（例如 Card 或自定义媒体框架）添加覆盖层行为，而无需 Overlay 所添加的包装器。将 containerRef 和 containerProps 展开到容器上，然后在容器内渲染一次 element（或 renderOverlay(children)）。遮罩采用绝对定位，因此会覆盖最近的已定位祖先：容器本身，或其中已定位的区域（如图像区域）。可见性由容器的 :hover 和 :focus-within 通过 CSS 驱动，因此在 showOn 为 'hover' 时，键盘用户将焦点移入容器即可显示内容。隐藏内容不可聚焦，因此容器需要在 Tab 顺序中位于覆盖层内容之前有一个可聚焦元素。已显示的遮罩会接管其覆盖区域的指针输入，因此请将该元素放在遮罩之外，或使用顶部或底部条带，并将其保留在条带未覆盖的部分中。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "对媒体卡片上的操作使用 showOn 'hover'：它也会在容器内获得键盘焦点时显示。"
+      },
+      {
+        "guidance": true,
+        "description": "在容器中把可聚焦元素（链接或卡片标题）放在覆盖层内容之前，这样 Tab 会显示内容，下一次 Tab 会到达内容。"
+      },
+      {
+        "guidance": true,
+        "description": "当你还没有可附加的容器元素时，使用 Overlay 组件。"
+      },
+      {
+        "guidance": false,
+        "description": "不要把到达某个操作的唯一途径放在悬停之后且其前没有可聚焦元素；键盘用户无法聚焦隐藏的内容。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "Overlay 配置。每个字段都是可选的。",
+    "options.content": "在遮罩内渲染的内容。设置后，Hook 会将其预渲染为 element 返回。",
+    "options.showOn": "可见性触发方式，通过 CSS 从容器读取。'hover' 也会在容器内获得焦点时为键盘用户显示；'hover-or-focus' 是它的别名。在触摸设备（hover: none）上，悬停覆盖层改为在点击容器时切换。",
+    "options.isOpen": "受控可见性。设置后，它优先于 showOn 和触摸切换。",
+    "options.scrim": "遮罩背景。false 渲染内容且不带遮罩背景。",
+    "options.position": "遮罩的位置：覆盖整个已定位区域，或作为沿其底部或顶部边缘的条带。",
+    "options.align": "内容在遮罩内的对齐方式。"
+  },
+  "returnDescriptions": {
+    "containerRef": "附加到容器元素。",
+    "containerProps": "展开到同一容器：className 和 style 将其标记为覆盖层作用域（已定位、已裁剪），在带悬停覆盖层的触摸设备上，onClick 和 onMouseUp 会在点击时切换它。",
+    "element": "带有 options.content 的遮罩，可在容器内渲染一次。未设置 content 时为 null。",
+    "renderOverlay": "围绕传入的子元素渲染遮罩，适用于内容会变化或你自行挂载遮罩的情况。使用它或 element，不要同时使用两者。"
+  }
+};

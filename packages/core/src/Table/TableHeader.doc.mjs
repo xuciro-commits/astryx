@@ -38,3 +38,13 @@ export const docsDense = {
     xstyle: 'StyleX styles for layout customization',
   },
 };
+
+export const docsZh = {
+  "name": "TableHeader",
+  "displayName": "Table Header",
+  "description": "children 模式的 <thead> 包装器。它持有表头行，其单元格为 TableHeaderCell。行必须位于 section 内：<table> 不能直接包含 <tr>，因为 HTML 解析器在解析服务端渲染的标记时会插入隐含的 <tbody>，而 React 在客户端渲染时不会，导致两棵树在水合时不一致。数据驱动的 data={...} 模式在提供 columns 时会自行渲染此元素；在 children 模式下则由你提供。",
+  "propDescriptions": {
+    "children": "<thead> 的行。",
+    "xstyle": "用于布局自定义的 StyleX 样式。必须是 stylex.create() 值：不是 style={{}} 这样的内联样式对象。"
+  }
+};

@@ -64,32 +64,90 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  usage: {
-    description:
-      'Carousel 在项目超出可用宽度时将一行项目水平滚动。适用于卡片网格、图片画廊、产品列表，或任何希望无需占据整页即可浏览的项目集合。',
-    bestPractices: [
-      {guidance: true, description: '当每个项目应精确对齐到起始边缘时启用滚动吸附，例如画廊或产品列表。'},
-      {guidance: true, description: '在小型可循环的集合（如照片画廊）上使用 hasLoop，此时从最后一项绕回第一项的滚动更自然。'},
-      {guidance: true, description: '始终提供描述轮播内容的 aria-label，例如"精选产品"或"团队成员"。'},
-      {guidance: true, description: 'Carousel 实现不含自动轮播的 WAI-ARIA APG carousel 模式（https://www.w3.org/WAI/ARIA/apg/patterns/carousel/）：区域带有标签和 aria-roledescription="carousel"，每个项目是名为“第 N 张，共 M 张”的 group，滚动容器可获得焦点，键盘用户可用方向键平移。'},
-      {guidance: true, description: '使用一致的间距和项目宽度，让轮播看起来是有意为之，而不是内容意外溢出。'},
-      {guidance: true, description: '信任内置导航：触控板用户可水平滑动，鼠标用户可按住 Shift 滚动滚轮来浏览项目。'},
-      {guidance: false, description: '将每位用户都必须看到的内容放入轮播。并非所有人都会水平滚动，关键内容应放在首屏。'},
-      {guidance: false, description: '自动轮播项目。让用户按自己的节奏滚动。'},
-      {guidance: false, description: '嵌套轮播。轮播中嵌套轮播会造成困惑并破坏键盘导航。'},
+  "usage": {
+    "description": "`Carousel` 在项目超出可用宽度时，将一行项目水平滚动。适用于卡片网格、图片画廊、产品列表，或任何需要可浏览但不占满整个页面的项目集合。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "当每个项目都应精确停在起始边缘时（例如画廊或产品列表），启用 scroll-snap。"
+      },
+      {
+        "guidance": true,
+        "description": "若要在手指拖动和触控板轻扫时实现 iOS 分页，请传入来自 `@astryxdesign/core/SnapPaging` 的 `hasSnap={useSnapPaging()}`。轻扫一次移动一屏，使用 `useSnapPaging({pages: 'item'})` 时移动一个项目。鼠标滚轮保持原生吸附。只有传入该值的轮播才会加载分页代码。"
+      },
+      {
+        "guidance": true,
+        "description": "对于小型可循环集合（例如照片画廊），使用 `hasLoop`；在这种场景下，从最后一项绕回第一项会更自然。"
+      },
+      {
+        "guidance": true,
+        "description": "始终提供描述轮播内容的 `aria-label`，例如“精选产品”或“团队成员”。"
+      },
+      {
+        "guidance": true,
+        "description": "`Carousel` 实现 WAI-ARIA APG 轮播模式（https://www.w3.org/WAI/ARIA/apg/patterns/carousel/），但不自动轮播：区域带有标签和 `aria-roledescription=\"carousel\"`，每个项目是名为“第 N 张，共 M 张”的分组，滚动容器在内容溢出时作为 Tab 停靠点，键盘用户可以用方向键平移；内容完全放得下时，它不会进入 Tab 顺序。"
+      },
+      {
+        "guidance": true,
+        "description": "使用一致的间距和项目宽度，让轮播看起来是有意设计的，而不是内容意外溢出。"
+      },
+      {
+        "guidance": true,
+        "description": "信赖内置导航：触控板用户可以水平轻扫，鼠标用户可以按住 Shift 滚动滚轮来浏览项目。"
+      },
+      {
+        "guidance": false,
+        "description": "将轮播用于每个用户都必须看到的内容。并非所有人都会水平滚动，因此请将关键内容放在首屏。"
+      },
+      {
+        "guidance": false,
+        "description": "自动切换项目。让用户按自己的节奏滚动。"
+      },
+      {
+        "guidance": false,
+        "description": "嵌套轮播。轮播内再放轮播会令人困惑，并破坏键盘导航。"
+      }
     ],
+    "anatomy": [
+      {
+        "name": "滚动容器",
+        "required": true,
+        "description": "存放所有项目的水平溢出区域。"
+      },
+      {
+        "name": "项目",
+        "required": true,
+        "description": "在滚动容器内以一行渲染的子元素。启用 `hasSnap` 时，每个项目会吸附到起始边缘。"
+      },
+      {
+        "name": "边缘渐隐",
+        "required": false,
+        "description": "左右边缘的渐变淡出效果，表示还有更多内容。默认启用，可通过 `hasEdgeFade={false}` 禁用。"
+      },
+      {
+        "name": "导航按钮",
+        "required": false,
+        "description": "当内容可以朝某个方向滚动时出现的上一页/下一页按钮。默认启用，可通过 `hasButtons={false}` 禁用。"
+      }
+    ]
   },
-  propDescriptions: {
-    children: '在水平滚动容器中渲染的轮播项目。',
-    gap: '使用间距令牌比例的项目间距。',
-    hasButtons: '内容可滚动时显示上一个/下一个导航按钮。',
-    hasEdgeFade: '内容溢出时显示渐变边缘遮罩，提示屏幕外还有更多项目。',
-    hasLoop: '环绕滚动：在末尾按"下一个"回到开头，在开头按"上一个"跳到末尾。按钮在两端始终可见。仅在内容溢出时生效。',
-    hasSnap: "使每个子元素吸附到起始边缘。hasSnap 使用原生 CSS 滚动吸附。hasSnap={useSnapPaging()} 在相同吸附点上增加手指和触控板轻扫下的 iOS 分页：一次轻扫移动一屏，或用 useSnapPaging({pages: 'item'}) 移动一项。只有该值会加载分页代码。",
-    padding: '滚动容器内的内联内边距，并设置匹配的 scroll-padding，使吸附点与内容边缘对齐。',
-    'aria-label': '轮播区域的无障碍标签。',
-    handleRef: '命令式句柄，暴露 scrollNext()、scrollPrev()、scrollTo(index)、canScrollNext() 和 canScrollPrev() 以进行编程式滚动控制。',
+  "propDescriptions": {
+    "children": "在水平滚动容器中渲染的轮播项目。",
+    "gap": "项目之间的间距，使用间距令牌刻度。",
+    "hasButtons": "内容可滚动时显示上一页/下一页导航按钮。",
+    "hasEdgeFade": "内容溢出时显示渐变边缘遮罩，提示屏幕外还有更多项目。",
+    "hasLoop": "循环滚动：在末尾点击下一页会滚动到开头，在开头点击上一页会滚动到末尾。按钮在两个边缘都保持可见。仅在内容溢出时生效。",
+    "hasSnap": "将每个子元素吸附到起始边缘。`hasSnap` 使用原生 CSS scroll snap。`hasSnap={useSnapPaging()}` 会在手指拖动和触控板轻扫时添加 iOS 分页，并沿用相同的停靠点：轻扫一次移动一屏，使用 `useSnapPaging({pages: 'item'})` 时移动一个项目。只有该值会加载分页代码。",
+    "padding": "滚动容器内部的内联内边距，并匹配 `scroll-padding`，使吸附点对齐到内容边缘。",
+    "aria-label": "轮播区域的无障碍标签。",
+    "handleRef": "命令式句柄，暴露 `scrollNext()`、`scrollPrev()`、`scrollTo(index)`、`canScrollNext()` 和 `canScrollPrev()`，用于以编程方式控制滚动。",
+    "ref": "转发到根元素的 ref。",
+    "xstyle": "用于布局定制（外边距、定位、尺寸）的 StyleX 样式。必须是 `stylex.create()` 的值。",
+    "className": "根元素的 CSS 类名。样式优先使用 `xstyle`。",
+    "style": "根元素的内联样式。优先使用 `xstyle`。",
+    "data-testid": "用于自动化测试框架的测试选择器。"
   },
+  "name": "Carousel"
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

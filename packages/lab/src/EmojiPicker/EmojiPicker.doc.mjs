@@ -184,3 +184,88 @@ export default function Example() {
     },
   ],
 };
+
+export const docsZh = {
+  "name": "EmojiPicker",
+  "displayName": "Emoji Picker",
+  "description": "独立的 emoji 面板：一个按分组搜索所有 emoji 的搜索框，常用的 emoji 排在前面。可以内联放置或放在 Popover 内；选择 emoji 会调用 onSelect。",
+  "usage": {
+    "description": "emoji 选择器将 emoji 插入查看者正在编写的内容中，例如评论或消息。将其放在由 emoji 按钮打开的 Popover 中，或在 emoji 本身就是内容时内联放置。若要从固定的短集合中添加回应，请直接提供该集合。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将查看者最近使用的 emoji 作为 `frequentEmojis` 传入，使他们最常用的排在前面。"
+      },
+      {
+        "guidance": true,
+        "description": "在 Popover 中通过按钮打开它，并保持 Popover 的自动聚焦开启，以便直接输入搜索。内联或在 Dialog 中时，改为设置 `hasAutoFocus`。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将其用于固定小词库的回应；请直接提供这些选项。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将其压缩到约 280 像素宽以下。每行保持八个 emoji，因此窄选择器会缩小每个目标。"
+      }
+    ],
+    "accessibility": [
+      {
+        "name": "Emoji 网格",
+        "category": "Keyboard",
+        "criterion": "2.1.1 Keyboard",
+        "description": "每个分组都是一个以其标题命名的 WAI-ARIA 网格，每行八个单元格。一个漫游制表位跨越所有分组：从搜索框按 Tab 会落到它上面，再按 Tab 离开选择器。方向键遵循布局，并在从右到左的文本中镜像。"
+      },
+      {
+        "name": "搜索框",
+        "category": "Keyboard",
+        "criterion": "",
+        "description": "向下键移动到第一个 emoji，从第一行按向上键返回。Enter 选择第一个匹配项。输入法正在组合时，Enter 和方向键留在输入法中。"
+      },
+      {
+        "name": "Emoji 名称",
+        "category": "Content",
+        "criterion": "",
+        "description": "每个 emoji 按钮以其 CLDR 名称命名，例如 \"Party popper\"；字形本身对辅助技术隐藏。内置名称是英文：其他语言请传入带本地化名称的 `categories` 和 `frequentEmojis`。"
+      },
+      {
+        "name": "焦点环",
+        "category": "Color contrast",
+        "criterion": "1.4.11 Non-text Contrast",
+        "requirement": "3:1",
+        "description": "聚焦的 emoji 以内嵌方式绘制系统焦点环，因此绝不会与相邻项重叠；焦点环与 Popover 表面的对比度必须保持 3:1。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "搜索",
+        "required": true,
+        "description": "将搜索中的每个词与 emoji 名称或关键词的开头进行匹配。Enter 选择第一个匹配项；向下键进入 emoji 网格。"
+      },
+      {
+        "name": "分组",
+        "required": true,
+        "description": "先显示常用项，然后按 CLDR 分组显示所有 emoji，分组标题在其 emoji 滚动时保持在顶部。"
+      },
+      {
+        "name": "表情符号",
+        "required": true,
+        "description": "每行八个，每个分组是一个网格，所有分组共用一个制表位。方向键在行内和跨分组移动，Home 和 End 在行内移动，Ctrl+Home 和 Ctrl+End 跳到第一个和最后一个 emoji，Enter 选择。"
+      },
+      {
+        "name": "预览",
+        "required": true,
+        "description": "显示指针下或焦点处 emoji 的名称。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "onSelect": "以所选 emoji 及其选项调用。",
+    "frequentEmojis": "先列出的 emoji，位于“常用”下。空数组会省略该行。",
+    "categories": "按分组提供的 emoji。省略时，选择器首次挂载会加载内置集合（截至 Emoji 15 的所有 emoji，带有英文 CLDR 名称）；要获得本地化或自定义集合，请传入自己的数据。",
+    "height": "滚动 emoji 列表的高度。",
+    "hasAutoFocus": "选择器挂载时聚焦搜索框，无论内联还是在 Dialog 中。在 Popover 内，请依赖 Popover 自身的自动聚焦。",
+    "label": "emoji 列表的无障碍名称。默认为本地化的 \"Emoji\"。",
+    "searchLabel": "搜索框的占位符和隐藏标签。默认为本地化的 \"Search emoji\"。"
+  }
+};

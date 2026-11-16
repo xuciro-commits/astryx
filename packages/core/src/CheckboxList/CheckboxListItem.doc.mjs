@@ -101,75 +101,78 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'CheckboxListItem',
-  isHiddenFromOverview: true,
-  displayName: 'Checkbox List Item',
-  description:
-    '单个复选框选项，包含标签、描述和尾部内容插槽。可在集合模式（位于带 value 数组的 CheckboxList 内）或独立模式（位于 List 内，或位于不带 value 的 CheckboxList 内，例如“全选”选项）下使用。在触摸屏上，可切换的行是一个整体的按压目标：手指按在标签、描述或复选框本身上，行与其复选框会一起显示按下状态。主指针为精细指针时，复选框保留自己的按下效果。',
-  props: [
+  "name": "CheckboxListItem",
+  "isHiddenFromOverview": true,
+  "displayName": "Checkbox List Item",
+  "description": "单个复选框项目，包含标签、描述和尾部内容插槽。可用于集合模式（位于带 `value` 数组的 `CheckboxList` 内）或独立模式（位于 `List` 内，或位于不带 `value` 的 `CheckboxList` 内，例如全选项）。在触摸屏（粗略主指针）上，可切换行是一个按压目标：触摸标签、描述或复选框本身时，行及其复选框会一起显示按压状态。主指针为精细指针时，复选框保留自己的按压行为。",
+  "props": [
     {
-      name: 'label',
-      type: 'ReactNode',
-      description:
-        '选项的主标签。富内容标签可包含链接或按钮，它们保留自身行为且不会切换该选项。ReactNode 标签会以其可见文本为复选框命名；仅当可见文本缺失时使用 aria-label，否则覆盖值必须保留全部可见文字。',
-      required: true,
+      "name": "label",
+      "type": "ReactNode",
+      "description": "项目的主文本标签。富标签可以包含链接或按钮，它们会保留自身行为，不会切换该项目。`ReactNode` 标签会根据其可见文本为复选框命名；仅当没有可见文本时才传入 `aria-label`，或者让覆盖值包含所有可见的标签文字。",
+      "required": true
     },
     {
-      name: 'aria-label',
-      type: 'string',
-      description:
-        '复选框的纯文本无障碍名称，会替换由 label 推导出的名称。仅当富标签没有可见文本时才完全替代；否则必须保留全部可见文字。',
+      "name": "aria-label",
+      "type": "string",
+      "description": "复选框的纯文本无障碍名称，替代根据 `label` 推导的名称。应用于复选框控件。当富标签没有可见文本时使用；否则该值必须保留所有可见的标签文字。"
     },
     {
-      name: 'value',
-      type: 'string',
-      description:
-        '标识键。当父级 CheckboxList 带有 value 数组时为必填；缺少时该选项会抛出错误。',
+      "name": "value",
+      "type": "string",
+      "description": "标识键。父级 `CheckboxList` 带有 `value` 数组时为必填；此时缺少该键会抛出异常。"
     },
     {
-      name: 'description',
-      type: 'ReactNode',
-      description:
-        '标签下方的辅助内容。可为字符串或 ReactNode。会通过 aria-describedby 作为复选框的无障碍描述暴露，便于辅助技术识别它是该选项的说明。',
+      "name": "description",
+      "type": "ReactNode",
+      "description": "标签下方的次要内容。字符串或 `ReactNode`。通过 `aria-describedby` 作为复选框的无障碍描述暴露，使辅助技术能够识别它是对该选项的说明。"
     },
     {
-      name: 'endContent',
-      type: 'ReactNode',
-      description: '在标签区域后渲染的内容。',
+      "name": "endContent",
+      "type": "ReactNode",
+      "description": "在标签区域之后渲染的内容。"
     },
     {
-      name: 'align',
-      type: "'center' | 'start' | 'first-line'",
-      description:
-        '起始和结束内容相对于标签的垂直对齐方式，原样传递给 Item。`first-line` 让小标记（复选框）与换行标签的第一行保持水平。参见 Item.align。',
-      default: "'center'",
+      "name": "align",
+      "type": "'center' | 'start' | 'first-line'",
+      "description": "起始和尾部内容相对于标签的垂直对齐方式，原样传递给 `Item`。`first-line` 使小标记（复选框）与换行标签的第一行保持水平。参见 `Item.align`。",
+      "default": "'center'"
     },
     {
-      name: 'isDisabled',
-      type: 'boolean',
-      description: '是否禁用此单个选项。',
-      default: 'false',
+      "name": "isDisabled",
+      "type": "boolean",
+      "description": "此单个项目是否禁用。",
+      "default": "false"
     },
     {
-      name: 'isLoading',
-      type: 'boolean',
-      description:
-        '此选项是否处于加载状态。在复选框内显示加载旋转器并阻止该选项的交互。在集合模式下，当父级 changeAction 处于待定状态时，被切换的选项会自动显示此状态。',
-      default: 'false',
+      "name": "isLoading",
+      "type": "boolean",
+      "description": "此项目是否处于加载状态。在复选框内显示加载指示器，并阻止与此项目交互。在集合模式下，当父级 `changeAction` 处于待处理状态时，被切换的项目也会自动显示此状态。",
+      "default": "false"
     },
     {
-      name: 'isChecked',
-      type: "boolean | 'indeterminate'",
-      description:
-        '独立模式下的直接选中状态：位于 List 内，或位于不带 value 的 CheckboxList 内（例如“全选”选项）。当父级 CheckboxList 带有 value 数组时忽略。',
+      "name": "isChecked",
+      "type": "boolean | 'indeterminate'",
+      "description": "独立模式下的直接选中状态：位于 `List` 内，或位于不带 `value` 的 `CheckboxList` 内（例如全选项）。当父级 `CheckboxList` 带有 `value` 数组时忽略。"
     },
     {
-      name: 'onCheck',
-      type: '(checked: boolean) => void',
-      description:
-        '独立模式下的直接选中处理函数：位于 List 内，或位于不带 value 的 CheckboxList 内。当父级 CheckboxList 带有 value 数组时忽略，改由该列表的 onChange 接收变更。',
-    },
+      "name": "onCheck",
+      "type": "(checked: boolean) => void",
+      "description": "独立模式下的直接选中处理函数：位于 `List` 内，或位于不带 `value` 的 `CheckboxList` 内。当父级 `CheckboxList` 带有 `value` 数组时忽略；变化由该列表的 `onChange` 接收。"
+    }
   ],
+  "propDescriptions": {
+    "label": "项目的主文本标签。富标签可以包含链接或按钮，它们会保留自身行为，不会切换该项目。`ReactNode` 标签会根据其可见文本为复选框命名；仅当没有可见文本时才传入 `aria-label`，或者让覆盖值包含所有可见的标签文字。",
+    "aria-label": "复选框的纯文本无障碍名称，替代根据 `label` 推导的名称。应用于复选框控件。当富标签没有可见文本时使用；否则该值必须保留所有可见的标签文字。",
+    "value": "标识键。父级 `CheckboxList` 带有 `value` 数组时为必填；此时缺少该键会抛出异常。",
+    "description": "标签下方的次要内容。字符串或 `ReactNode`。通过 `aria-describedby` 作为复选框的无障碍描述暴露，使辅助技术能够识别它是对该选项的说明。",
+    "endContent": "在标签区域之后渲染的内容。",
+    "align": "起始和尾部内容相对于标签的垂直对齐方式，原样传递给 `Item`。`first-line` 使小标记（复选框）与换行标签的第一行保持水平。参见 `Item.align`。",
+    "isDisabled": "此单个项目是否禁用。",
+    "isLoading": "此项目是否处于加载状态。在复选框内显示加载指示器，并阻止与此项目交互。在集合模式下，当父级 `changeAction` 处于待处理状态时，被切换的项目也会自动显示此状态。",
+    "isChecked": "独立模式下的直接选中状态：位于 `List` 内，或位于不带 `value` 的 `CheckboxList` 内（例如全选项）。当父级 `CheckboxList` 带有 `value` 数组时忽略。",
+    "onCheck": "独立模式下的直接选中处理函数：位于 `List` 内，或位于不带 `value` 的 `CheckboxList` 内。当父级 `CheckboxList` 带有 `value` 数组时忽略；变化由该列表的 `onChange` 接收。"
+  }
 };
 
 export const docsDense = {

@@ -68,20 +68,20 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'MetadataListItem',
-  isHiddenFromOverview: true,
-  displayName: 'Metadata List Item',
-  description: 'MetadataList 中的单个带标签元数据值。',
-  propDescriptions: {
-    children: '此元数据项的内容值。',
-    label: '此元数据项的标签文本。',
-    icon: '标签文本前渲染的图标。',
-    xstyle: '条目元素的 StyleX 样式：并排时为标签 `dt`，堆叠时为包裹标签和值的容器。必须是 stylex.create() 的值。',
-    className: '条目元素的 CSS 类名（并排时为标签 `dt`，堆叠时为容器）。优先使用 xstyle。',
-    style: '条目元素的内联样式（并排时为标签 `dt`，堆叠时为容器）。优先使用 xstyle。',
-    ref: '转发到条目元素的 ref：并排时为标签 `dt`，堆叠时为容器。',
-    'data-testid': '测试选择器。并排时标签为 `<id>-label`，值为 `<id>-value`；堆叠时容器为 `<id>`。',
-  },
+  "name": "MetadataListItem",
+  "isHiddenFromOverview": true,
+  "displayName": "Metadata List Item",
+  "description": "MetadataList 中的单个带标签元数据值。",
+  "propDescriptions": {
+    "children": "此元数据项的内容值。",
+    "label": "此元数据项的标签文本。",
+    "icon": "在标签文本之前渲染的图标。",
+    "xstyle": "用于项元素的 StyleX 样式：并排布局时为标签 `dt`，堆叠布局时为包含标签和值的包装器。必须是 stylex.create() 值。",
+    "className": "项元素的 CSS 类名（并排布局时为标签 `dt`，堆叠布局时为包装器）。样式优先使用 xstyle；className 用于与非 StyleX 系统集成。",
+    "style": "项元素的内联样式（并排布局时为标签 `dt`，堆叠布局时为包装器）。样式优先使用 xstyle；内联样式会绕过 StyleX 优化。",
+    "ref": "转发到项元素的 Ref：并排布局时为标签 `dt`，堆叠布局时为包装器。",
+    "data-testid": "测试选择器。并排布局时，标签获得 `<id>-label`，值获得 `<id>-value`；堆叠布局时，包装器获得 `<id>`。"
+  }
 };
 
 export const docsDense = {

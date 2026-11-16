@@ -171,3 +171,41 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useCalendarNavigation",
+  "usage": {
+    "description": "为日历组件管理可见月份状态和分页。它提供上一月/下一月步进、本地化的月-年标题字符串以及待处理焦点跟踪，使键盘方向键导航能够无缝跨越月份边界将焦点移入相邻月份。在组合自定义日历标题、翻页控件或双月可用性选择器时可直接使用。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将 navigateMonth(-1) 和 navigateMonth(1) 连接到 Previous/Next 图标按钮，以实现月份分页。"
+      },
+      {
+        "guidance": true,
+        "description": "将 focusedDate 和 offset（例如水平方向键为 1，垂直方向键为 7）传递给 navigateMonth，使 pendingFocus 在月份切换后将键盘焦点导向正确的日期单元格。"
+      },
+      {
+        "guidance": false,
+        "description": "不要手动硬编码月-年标题字符串；请使用 monthYearLabel，它会根据当前活动区域设置和日历系统自动格式化。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "可见月份、日历系统和导航回调的配置。",
+    "options.initialValue": "初始 ISO 日期字符串（YYYY-MM-DD），在非受控模式下用于确定起始焦点月份。",
+    "options.focusDate": "受控 ISO 日期字符串（YYYY-MM-DD），确定当前显示哪个月份。与 onFocusDateChange 作为受控对使用。",
+    "options.onFocusDateChange": "用户导航更改可见焦点月份时调用的回调。与 focusDate 作为受控对使用。",
+    "options.numberOfMonths": "同时显示的连续月份数（1 或 2）。默认值为 1。",
+    "options.calendar": "Hook 用于步进和格式化月份的日历系统（例如 'gregory'、'persian'、'hebrew'）。除 gregory、iso8601、buddhist、roc 和 japanese 之外的日历需要 Temporal。永远不会读取 Provider 的日历。默认值为 'gregory'。"
+  },
+  "returnDescriptions": {
+    "baseMonth": "主焦点月份的格里高利历第一天。",
+    "visibleMonths": "每个当前可见月份的格里高利历第一天 PlainDate 对象数组。",
+    "visibleCalendarMonths": "活动日历系统中每个可见月份的年/月对数组，与 useCalendarDays 的选项兼容。",
+    "monthYearLabel": "可见月份或月份范围的本地化格式化标题标签（例如 \"June 2026\"）。",
+    "navigateMonth": "将可见月份向前（+1）或向后（-1）步进。传入 focusedDate 时，使用 offset（默认为 7）计算跨月边界的目标日期的 pendingFocus。",
+    "pendingFocus": "月份导航步骤后要聚焦的目标 ISO 日期；没有待处理的跨月键盘焦点时为 null。",
+    "clearPendingFocus": "在目标日期单元格获得键盘焦点后清除 pendingFocus。"
+  }
+};

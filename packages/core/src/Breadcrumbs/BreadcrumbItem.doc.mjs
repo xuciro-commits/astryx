@@ -70,56 +70,66 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'BreadcrumbItem',
-  isHiddenFromOverview: true,
-  displayName: 'Breadcrumb Item',
-  description: '单个面包屑项，提供 href 时渲染为链接，当前页面渲染为纯文本。',
-  props: [
+  "name": "BreadcrumbItem",
+  "isHiddenFromOverview": true,
+  "displayName": "Breadcrumb Item",
+  "description": "单个面包屑项：提供 href 时渲染为链接，当前页则渲染为纯文本。",
+  "props": [
     {
-      name: 'children',
-      type: 'ReactNode',
-      description: '面包屑项的标签内容。',
-      required: true,
+      "name": "children",
+      "type": "ReactNode",
+      "description": "面包屑项的标签内容。",
+      "required": true
     },
     {
-      name: 'href',
-      type: 'string',
-      description: '面包屑链接的 URL；不可导航的项目请省略。',
+      "name": "href",
+      "type": "string",
+      "description": "面包屑链接指向的 URL；不可导航的项请省略。"
     },
     {
-      name: 'onClick',
-      type: '(e: MouseEvent) => void',
-      description: '面包屑项的点击处理函数。',
+      "name": "onClick",
+      "type": "(e: MouseEvent) => void",
+      "description": "面包屑项的点击处理函数。"
     },
     {
-      name: 'isCurrent',
-      type: 'boolean',
-      description:
-        '将此项标记为当前页面，应用 aria-current="page"。省略时，如果没有显式的当前项，则自动将最后一项标记为当前项；传入 false 可退出自动检测。',
+      "name": "isCurrent",
+      "type": "boolean",
+      "description": "将此标记为当前页面，并应用 aria-current=\"page\"。省略时，若没有显式标记为当前项的项，则自动检测最后一项；传入 false 可退出该行为。"
     },
     {
-      name: 'startIcon',
-      type: 'ReactNode',
-      description: '在项目标签前渲染的图标。',
+      "name": "startIcon",
+      "type": "ReactNode",
+      "description": "渲染在项标签之前的图标。"
     },
     {
-      name: 'menu',
-      type: 'DropdownMenuOption[] | ReactNode',
-      description:
-        '激活项目时打开的菜单，使用与 DropdownMenu/MoreMenu/ContextMenu 相同的项目 API（DropdownMenuOption[] 数组或组合的 DropdownMenuItem 子元素）。渲染为带 chevron 和 aria-haspopup="menu" 的链接样式触发器。优先于 href/onClick。',
+      "name": "menu",
+      "type": "DropdownMenuOption[] | ReactNode",
+      "description": "在项被激活时打开的菜单，使用与 DropdownMenu/MoreMenu/ContextMenu 相同的项 API（DropdownMenuOption[] 数组或组合的 DropdownMenuItem 子元素）。渲染带 chevron 和 aria-haspopup=\"menu\" 的链接样式菜单触发器。优先于 href/onClick。"
     },
     {
-      name: 'menuSize',
-      type: "'sm' | 'md' | 'lg'",
-      description:
-        "传递给菜单项的尺寸。默认根据面包屑变体推断（'supporting' → 'sm'，否则 'md'）。",
+      "name": "menuSize",
+      "type": "'sm' | 'md' | 'lg'",
+      "description": "传递给菜单项的尺寸。默认值来自面包屑变体（'supporting' → 'sm'，否则为 'md'）。"
     },
     {
-      name: 'as',
-      type: 'LinkComponentType',
-      description: '自定义链接组件，代替 <a> 渲染。覆盖 LinkProvider 设置的默认值。仅适用于非当前项。',
-    },
+      "name": "as",
+      "type": "LinkComponentType",
+      "description": "用于替代 <a> 渲染的自定义链接组件。覆盖 LinkProvider 提供的提供程序级默认值。仅适用于非当前项。"
+    }
   ],
+  "usage": {
+    "description": "BreadcrumbItem 表示 Breadcrumbs 路径中的一个目标、操作、当前位置或同级菜单触发器。"
+  },
+  "propDescriptions": {
+    "children": "面包屑项的标签内容。",
+    "href": "面包屑链接指向的 URL；不可导航的项请省略。",
+    "onClick": "面包屑项的点击处理函数。",
+    "isCurrent": "将此标记为当前页面，并应用 aria-current=\"page\"。省略时，若没有显式标记为当前项的项，则自动检测最后一项；传入 false 可退出该行为。",
+    "startIcon": "渲染在项标签之前的图标。",
+    "menu": "在项被激活时打开的菜单，使用与 DropdownMenu/MoreMenu/ContextMenu 相同的项 API（DropdownMenuOption[] 数组或组合的 DropdownMenuItem 子元素）。渲染带 chevron 和 aria-haspopup=\"menu\" 的链接样式菜单触发器。优先于 href/onClick。",
+    "menuSize": "传递给菜单项的尺寸。默认值来自面包屑变体（'supporting' → 'sm'，否则为 'md'）。",
+    "as": "用于替代 <a> 渲染的自定义链接组件。覆盖 LinkProvider 提供的提供程序级默认值。仅适用于非当前项。"
+  }
 };
 
 export const docsDense = {

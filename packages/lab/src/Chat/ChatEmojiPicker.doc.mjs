@@ -44,16 +44,16 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'ChatEmojiPicker',
-  displayName: 'Chat Emoji Picker',
-  description: '包裹触发按钮的弹出层表情网格：短名过滤输入框 + 8 列网格，方向键在网格内移动焦点。选中表情会调用 onSelect 并关闭弹出层，焦点回到触发元素。内置小型默认表情集，可通过 emojis 覆盖。',
-  propDescriptions: {
-    onSelect: '以选中的表情字符调用；弹出层随后自动关闭。',
-    emojis: '网格渲染的表情选项，每行 8 个。name 用于过滤和无障碍标签。',
-    label: '弹出层对话框的无障碍标签。',
-    searchLabel: '过滤输入框的占位符和隐藏标签。',
-    children: '触发元素，必须包含一个按钮。',
-  },
+  "name": "ChatEmojiPicker",
+  "displayName": "Chat Emoji Picker",
+  "description": "包裹触发按钮的弹出式表情网格：短名称筛选输入框位于 8 列网格上方，支持方向键漫游焦点。选择表情会调用 onSelect 并关闭弹出层，同时将焦点返回触发器。内置一小套默认表情；可通过 emojis 覆盖。",
+  "propDescriptions": {
+    "onSelect": "以选中的表情字符调用。选择后弹出层会自动关闭。",
+    "emojis": "在网格中渲染的表情选项，每行 8 个。name 用于驱动筛选和可访问标签。",
+    "label": "弹出对话框的可访问标签。",
+    "searchLabel": "筛选输入框的占位符和隐藏标签。",
+    "children": "触发元素。必须包含一个按钮；弹出层会自动接好点击处理程序和 ARIA。"
+  }
 };
 
 export const docsDense = {

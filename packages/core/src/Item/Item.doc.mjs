@@ -328,102 +328,107 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  components: [
+  "components": [
     {
-      name: 'Item',
-      displayName: 'Item',
-      description:
-        '通用项目原语，统一 "起始内容 + 标签 + 描述 + 结束内容" 布局模式。用作列表项、菜单项、联系人行、通知等的构建块。',
-      propDescriptions: {
-        label:
-          '标识此项目的主要文本。接受字符串（自动截断）或 ReactNode（用于富内容）。',
-        marker:
-          '在 startContent 之前渲染的标记，作为直接 flex 子元素。用于需要自定义基线对齐的列表项目符号/计数器。',
-        startContent: '在标签/描述区域之前渲染的内容，例如图标、头像或复选框。',
-        description: '次要文本：副标题、描述或辅助信息。',
-        endContent:
-          '在标签/描述区域之后渲染的内容，例如徽章、元数据、时间戳或操作按钮。',
-        as: '根元素的 HTML 元素。',
-        align:
-          "起始/结束内容插槽的垂直对齐方式：'center'（默认）、'start'（顶部对齐）或 'first-line'（以标签第一行为中心）。",
-        density:
-          '间距密度。"compact" 使用 4px 块内距，"balanced" 使用 8px，"spacious" 使用 12px 块内距和内联内距。',
-        labelLines: '标签截断前的最大行数。',
-        descriptionLines: '描述截断前的最大行数。',
-        onClick: '点击处理函数。使项目可点击，具有按钮语义。',
-        interactiveRef:
-          '指向嵌套控件（如 startContent 中的复选框）的 ref，该控件承载项目的键盘访问和操作。行成为更大的点击/触摸目标，将表面点击委托给该控件（useClickableContainer），且不渲染不可见按钮/锚点，因此行不会增加第二个 Tab 停留点（WCAG 4.1.2）。与 onClick/href 互斥——设置后二者将被忽略。',
-        href: '链接 URL。通过不可见锚点元素使项目成为链接。',
-        target:
-          '链接目标。仅与 href 一起使用。target="_blank" 会自动添加 noopener noreferrer。',
-        rel: '链接关系标记。target="_blank" 会自动合并 noopener noreferrer。',
-        isHighlighted: '高亮状态（悬停/键盘焦点外观）。',
-        isSelected: '选中状态。',
-        isDisabled: '禁用状态。',
-        ref: '转发到根元素的引用。',
-        xstyle: 'StyleX 样式，用于布局自定义。必须是 stylex.create() 的值。',
-        'data-testid': '自动化测试的选择器。',
-      },
-    },
+      "name": "Item",
+      "displayName": "Item",
+      "description": "一个通用项目原语，统一了“起始内容 + 标签 + 描述 + 末尾内容”的布局模式。用作列表项、菜单项、联系人行、通知等的构建块。",
+      "propDescriptions": {
+        "label": "标识该项的主要文本。接受字符串（自动截断）或 ReactNode（用于富内容）。",
+        "marker": "作为直接 flex 子元素渲染在 startContent 之前的标记。用于需要自定义基线对齐的列表项目符号/计数器。",
+        "startContent": "渲染在标签/描述区域之前的内容，例如图标、头像或复选框。",
+        "description": "次要文本：副标题、描述或支持信息。",
+        "endContent": "渲染在标签/描述区域之后的内容，例如徽标、元数据、时间戳或操作按钮。",
+        "as": "根元素渲染为什么：一个 HTML 元素，或为需要根元素为其他内容的调用方提供的组件。导航的菜单行会在此传入应用中的链接组件，因此该行的根元素就是锚点。仅当行带有 role 时才提供组件，并且仅当 startContent 或 endContent 中没有可交互节点时。",
+        "align": "起始/末尾内容插槽的垂直对齐方式。'center' 将每个插槽在整个文本块上居中；'start' 使插槽顶部与文本顶部对齐；'first-line' 将每个插槽在标签的第一行上居中，使小标记与换行标签的第一行保持齐平。比该行更高的插槽会将文本下移。`item` 主题目标以 `align` 反映该值。",
+        "density": "间距密度。\"compact\" 使用 4px 块内边距，\"balanced\" 使用 8px，\"spacious\" 使用 12px 块和内联内边距。",
+        "labelLines": "标签被省略号截断前的最大行数。",
+        "descriptionLines": "描述被省略号截断前的最大行数。",
+        "onClick": "点击处理函数。使项目可点击并具有按钮语义。",
+        "interactiveRef": "指向嵌套控件（例如 startContent 中的复选框）的 ref，该控件负责项目的键盘访问和操作。该行会成为放大的点击/轻点目标，将表面点击委托给它（useClickableContainer），且不渲染不可见的按钮/锚点，因此该行不会增加第二个 Tab 停靠点（WCAG 4.1.2）。与 onClick/href 互斥；设置后它们会被忽略。",
+        "href": "链接 URL。通过不可见的锚点元素使项目成为链接。根元素已经是链接组件的行（参见 `as`）改在该根元素上携带地址，且不会渲染不可见的锚点。",
+        "target": "链接目标。仅与 href 一起使用。target=\"_blank\" 会自动添加 noopener noreferrer。",
+        "rel": "链接关系令牌。对于 target=\"_blank\"，会自动合并 noopener noreferrer。",
+        "isHighlighted": "高亮状态（悬停/键盘聚焦外观）。",
+        "isSelected": "选中状态。",
+        "isDisabled": "禁用状态。可交互行仍可通过键盘到达，但无法激活。",
+        "ref": "转发到根元素的 ref，其类型跟随 `as`。",
+        "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 的值：不是像 style={{}} 这样的内联样式对象。",
+        "data-testid": "用于自动化测试框架的测试选择器。",
+        "layout": "标签和描述如何放在一起。stacked 将描述放在标签下方的单独一行；inline 将两者保持在一行，描述先被省略号截断，使行适合固定高度的宿主。",
+        "swipe": "用于触摸的滑动操作，由 createSwipe({leading?, trailing?, swipeBehavior?}) 创建：横向拖动在每侧揭示的动词，最外侧的排在最后，每个为 `{id, label, icon?, onActivate({id, itemKey}), isDisabled?, variant?: ItemSwipeActionVariant, hasRemoval?}`；`itemKey` 是 `ListItem` 的，在普通 `Item` 上为 `undefined`。`leading` 通过向行内末端拖动来揭示，`trailing` 通过向行内起始方向拖动来揭示。手指、笔或触控板的双指滑动会拖动该行；鼠标拖动和鼠标滚轮的刻度永远不会，而且主要是垂直的拖动仍属于滚动容器。打开的行会在以下情况关闭：触摸轻点其自身内容（不会激活任何内容，也不绘制按下态）、在别处按下、列表或页面在其外部聚焦时滚动，以及按 Escape。该手势是触摸加速器，绝不是行访问动词的唯一路径：只能通过滑动触达的动词，键盘和鼠标都无法触达，因此每个条目也必须能通过行自身的内容触达。仅在 role 允许可交互后代的行动上提供（listitem、没有 role 的行），而不在 option、菜单项或作为原生单选按钮放大目标的行上提供。包含这些行的元素会在内联轴上以 overflow-inline: clip 裁剪——List 会这样做；任何其他宿主只需做一次。`hasRemoval` 仅表示操作触发后行会保持移出状态，而不是弹回。滑动在所有设备上相同：无论主指针是什么，手指或笔都会滑动该行，包括触摸屏笔记本电脑，触控板的双指滑动也是如此，它会随手指移动该行并以手指的速度松开；鼠标永远不会。Swipe 的代码随 createSwipe 一起加载，因此设置了 swipe 的行在首次绘制时即可滑动，而从不导入 createSwipe 的应用不会携带任何相关代码。在模块作用域中定义一次 swipe，或在其处理函数需要组件状态时在 useMemo 中定义。具有相同 id 的新值既不会关闭已打开的行，也不会重新开始其稳定过程；具有其他 id 的值会关闭它。",
+        "swipeActions": "已弃用（DEP-0017）：请改为传入 swipe={createSwipe({leading, trailing})}。每个条目为 `{id?, label, icon?, onActivate, isDisabled?, variant?: 'neutral' | 'accent' | 'destructive', hasRemoval?}`。仍可工作，采用滑动当前的行为，在行首次拥有它时加载滑动，并在设置了 swipe 时被忽略；astryx upgrade 会重写静态用法。",
+        "swipeBehavior": "已弃用（DEP-0017）：请改为在 createSwipe 的选项中传入 swipeBehavior。仍可与 swipeActions 一起工作，采用滑动当前的行为，并在设置了 swipe 时被忽略；astryx upgrade 会重写静态用法。",
+        "className": "根元素的 CSS 类名。",
+        "style": "根元素的内联样式。"
+      }
+    }
   ],
-  usage: {
-    description:
-      '通用项目原语，统一 Astryx 中 "起始内容 + 标签 + 描述 + 结束内容" 的布局模式。适用于下拉菜单、选择器、联系人列表、通知、文件浏览器和活动流等场景。',
-    bestPractices: [
+  "usage": {
+    "description": "一个单一、灵活的项目原语，统一了 Astryx 中“起始内容 + 标签 + 描述 + 末尾内容”的模式。在需要结构化行的任何地方使用它：下拉菜单、选择器、联系人列表、通知、文件浏览器和活动源。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          '使用命名插槽（startContent、label、description、endContent）处理常见布局。',
+        "guidance": true,
+        "description": "对于常见布局使用命名插槽（startContent、label、description、endContent）。它们覆盖 80% 的用例。"
       },
       {
-        guidance: true,
-        description:
-          '菜单和密集列表使用 density="compact"，标准行使用 "balanced"，宽松布局使用 "spacious"。',
+        "guidance": true,
+        "description": "菜单和密集列表使用 density=\"compact\"，标准行使用 \"balanced\"，更宽敞的布局使用 \"spacious\"。"
       },
       {
-        guidance: true,
-        description:
-          '设置 labelLines 和 descriptionLines 控制内容长度不定时的截断。',
+        "guidance": true,
+        "description": "当内容长度变化时，设置 labelLines 和 descriptionLines 控制截断。"
       },
       {
-        guidance: true,
-        description:
-          '当换行标签旁边是属于其第一行的小标记（状态点、单选按钮、时间戳）时，使用 align="first-line"。使用 align="start" 让较高插槽与文本顶部对齐。',
+        "guidance": true,
+        "description": "当换行的标签旁边有一个属于其第一行的小标记（状态点、单选按钮、时间戳）时，使用 align=\"first-line\"。使用 align=\"start\" 使高插槽的顶部与文本的顶部对齐。"
       },
       {
-        guidance: false,
-        description: '不要在交互式 Item 内嵌套交互元素（按钮、链接）。',
+        "guidance": true,
+        "description": "为滑动操作在行中提供第二个入口（菜单或 endContent 中的按钮）：滑动是触摸加速器，只能通过滑动触达的动词，键盘和鼠标都无法触达。"
       },
       {
-        guidance: false,
-        description: '不要使用 Item 进行视图间导航：使用适当的导航组件。',
+        "guidance": false,
+        "description": "不要在可交互的 Item 内嵌套可交互元素（按钮、链接）；这会造成混乱的焦点和点击目标。"
       },
       {
-        guidance: false,
-        description:
-          '不要直接添加已读/未读行为：组合一个薄包装器如 PreviewItem。',
+        "guidance": false,
+        "description": "不要使用 Item 在视图之间导航；请改用适当的导航组件。"
       },
+      {
+        "guidance": false,
+        "description": "不要直接添加已读/未读或收件箱特定的行为；请改为组合一个薄包装（如 PreviewItem）。"
+      }
     ],
-    anatomy: [
+    "anatomy": [
       {
-        name: '标记',
-        required: false,
-        description: '在起始内容之前渲染的可选列表项目符号/计数器。',
+        "name": "标记",
+        "required": false,
+        "description": "可选列表项目符号/计数器，渲染在起始内容之前。"
       },
       {
-        name: '起始内容',
-        required: false,
-        description: '前导视觉：头像、图标、图片或复选框。',
+        "name": "起始内容",
+        "required": false,
+        "description": "前置视觉元素：头像、图标、图片或复选框。"
       },
-      {name: '标签', required: true, description: '标识项目的主要文本。'},
-      {name: '描述', required: false, description: '标签下方的次要辅助文本。'},
       {
-        name: '结束内容',
-        required: false,
-        description: '末端对齐内容：徽章、时间戳或操作按钮。',
+        "name": "标签",
+        "required": true,
+        "description": "标识该项的主要文本。"
       },
-    ],
+      {
+        "name": "描述",
+        "required": false,
+        "description": "标签下方的次要支持文本。"
+      },
+      {
+        "name": "末尾内容",
+        "required": false,
+        "description": "末尾对齐的内容：徽标、时间戳或操作按钮。"
+      }
+    ]
   },
+  "name": "Item"
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

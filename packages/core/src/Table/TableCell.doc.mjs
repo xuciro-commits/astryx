@@ -18,17 +18,20 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'TableCell',
-  isHiddenFromOverview: true,
-  displayName: 'Table Cell',
-  description: '<td> 包装器，读取 TableContext 以在 Table 内部使用时应用密度内边距、字体大小和分隔线边框。',
-  props: [
+  "name": "TableCell",
+  "isHiddenFromOverview": true,
+  "displayName": "Table Cell",
+  "description": "`<td>` 包装组件，在 `Table` 内部使用时读取 `TableContext`，应用密度内边距、字号和分隔边框。",
+  "props": [
     {
-      name: 'children',
-      type: 'ReactNode',
-      description: '单元格内容。',
-    },
+      "name": "children",
+      "type": "ReactNode",
+      "description": "单元格内容。"
+    }
   ],
+  "propDescriptions": {
+    "children": "单元格内容。"
+  }
 };
 
 export const docsDense = {

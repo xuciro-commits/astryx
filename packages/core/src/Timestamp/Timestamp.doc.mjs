@@ -237,123 +237,100 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  propDescriptions: {
-    value:
-      '\u8981\u663e\u793a\u7684\u65e5\u671f/\u65f6\u95f4\u3002\u63a5\u53d7 Unix \u65f6\u95f4\u6233\uff08\u79d2\uff09\u6216 ISO 8601 \u5b57\u7b26\u4e32\u3002',
-    format:
-      "\u663e\u793a\u683c\u5f0f\u3002'relative' \u663e\u793a '2\u5c0f\u65f6\u524d'\uff0c'date' \u663e\u793a\u65e5\u671f\uff0c'date_long' \u663e\u793a\u957f\u6708\u4efd\u65e5\u671f\uff0c'date_weekday' \u663e\u793a\u661f\u671f+\u65e5\u671f\uff0c'auto' \u6839\u636e\u65f6\u95f4\u8fdc\u8fd1\u81ea\u52a8\u5207\u6362\u3002\u5e26\u65e5\u671f\u7684\u683c\u5f0f\uff08'date'\u3001'date_long'\u3001'date_weekday'\u3001'date_time'\uff0c\u4ee5\u53ca\u60ac\u505c\u5361\u7247\u548c\u65e0\u969c\u788d\u540d\u79f0\u4e2d\u7684\u5b8c\u6574\u65e5\u671f\uff09\u4f7f\u7528 InternationalizationProvider \u7684\u5386\u6cd5\uff08\u5982 calendar=\"persian\"\uff09\uff1b'time'\u3001\u76f8\u5bf9\u683c\u5f0f\u3001'system_*' \u548c 'unix_seconds' \u4e0d\u53d8\u3002",
-    autoThreshold:
-      'auto \u683c\u5f0f\u4ece\u76f8\u5bf9\u65f6\u95f4\u5207\u6362\u5230 date_time \u7684\u9608\u503c\u79d2\u6570\u3002',
-    hasTooltip:
-      '\u60ac\u505c\u6216\u952e\u76d8\u805a\u7126\u65f6\u662f\u5426\u663e\u793a\u5305\u542b\u5b8c\u6574\u65e5\u671f/\u65f6\u95f4\u7684\u53ef\u590d\u5236\u60ac\u505c\u5361\u7247\uff08\u76f8\u5bf9\u65f6\u95f4\u6a21\u5f0f\uff0c\u6216\u914d\u7f6e tooltipEntries \u7684\u4efb\u610f\u683c\u5f0f\uff09\u3002',
-    tooltipEntries:
-      "\u60ac\u505c\u65f6\u8981\u663e\u793a\u7684\u884c\uff0c\u7528\u4e8e\u540c\u65f6\u5c55\u793a\u591a\u4e2a\u65f6\u533a\u548c/\u6216\u591a\u79cd\u683c\u5f0f\u3002\u6bcf\u9879\u4e3a\u4e00\u884c\uff0c\u6309\u987a\u5e8f\u6e32\u67d3\uff1b\u7701\u7565 timezoneID \u8868\u793a\u6cbf\u7528 Timestamp \u7684 timezoneID\uff08\u672a\u8bbe\u7f6e\u65f6\u4e3a\u67e5\u770b\u8005\u672c\u5730\u65f6\u533a\uff09\uff0c\u4f20\u5165 'local' \u5219\u59cb\u7ec8\u8868\u793a\u67e5\u770b\u8005\u672c\u5730\u65f6\u533a\u3002\u60ac\u505c\u9762\u677f\u59cb\u7ec8\u662f\u53ef\u9010\u884c\u590d\u5236\u5230\u526a\u8d34\u677f\u7684\u4ea4\u4e92\u5f0f\u5361\u7247\uff0c\u8fd9\u4e9b\u914d\u7f6e\u9879\u81ea\u5b9a\u4e49\u5176\u884c\uff1b\u672a\u914d\u7f6e\u65f6\u5361\u7247\u663e\u793a\u4e00\u884c\u9ed8\u8ba4\u7684\u5b8c\u6574\u7edd\u5bf9\u65f6\u95f4\u3002\u914d\u7f6e\u540e\u7edd\u5bf9\u65f6\u95f4\u683c\u5f0f\u4e5f\u4f1a\u56e0\u6b64\u83b7\u5f97\u60ac\u505c\u9762\u677f\u3002",
-    isTimezoneShown:
-      '\u662f\u5426\u5728\u53ef\u89c1\u6587\u672c\u540e\u9644\u52a0\u65f6\u533a\u7f29\u5199\uff08\u4ec5 date_time \u548c time\uff1bsystem_* \u683c\u5f0f\u4e0d\u9644\u52a0\uff09\u3002',
-    isLive:
-      '\u76f8\u5bf9\u65f6\u95f4\u662f\u5426\u5b9e\u65f6\u66f4\u65b0\u3002',
-    type: '\u6765\u81ea Text \u7684\u8bed\u4e49\u6587\u672c\u7c7b\u578b\u3002',
-    size: '\u663e\u5f0f\u5b57\u4f53\u5927\u5c0f\u8986\u76d6\u3002',
-    color: '\u6587\u5b57\u989c\u8272\u3002',
-    weight: '\u5b57\u4f53\u7c97\u7ec6\u8986\u76d6\u3002',
+  "propDescriptions": {
+    "value": "要显示的日期/时间。接受 Unix 时间戳（秒）或 ISO 8601 字符串。",
+    "format": "显示格式。'relative' 使用区域设置的长格式相对时间措辞（英语中为 '2 hours ago'），'relative_short' 使用其窄格式（英语中为 '2h ago'）以适配紧凑表面，'date' 显示 'Mar 21, 2025'，'date_long' 显示 'March 21, 2025'，'date_weekday' 显示 'Wed, Mar 21, 2025'，'date_time' 显示 'Mar 21, 2025, 2:51 PM'，'time' 显示 '2:51 PM'，'system_*' 变体使用 ISO 风格格式，'unix_seconds' 显示自纪元以来的整秒 Unix 时间（一个绝对的、与时区无关的值），'auto' 根据时间远近从相对格式切换为 date_time。绝对格式从不读取当前时间。'relative'、'relative_short' 和 'auto' 仅在客户端读取当前时间：服务端渲染或静态预渲染会显示带标签的 UTC 完整日期和时间，hydration 后客户端会切换为该格式的正常输出。带日期的格式（'date'、'date_long'、'date_weekday'、'date_time'，以及悬停卡片和无障碍名称中的完整日期）使用 InternationalizationProvider 的日历，例如 calendar=\"persian\"；'time'、相对格式、'system_*' 和 'unix_seconds' 不会改变。",
+    "autoThreshold": "'auto' 格式从相对格式切换为 date_time 的阈值（秒）。",
+    "hasTooltip": "是否在悬停或键盘聚焦时显示包含完整日期/时间的可复制悬停卡片。适用于相对时间戳，以及配置 tooltipEntries 后的任何格式。",
+    "tooltipEntries": "悬停时显示的行，使一个时刻可以同时在多个时区和/或格式中读取（并可选复制）。每个条目一行，按给定顺序排列。未设置 timezoneID 的条目会遵循 Timestamp 的 timezoneID（如已设置），否则使用查看者的时区；'local' 始终表示查看者的时区；format 默认使用完整的绝对样式，并且在所有非相对 TimestampFormat 之外还接受 'full'。除非设置 isCopyable（默认 false），否则行是只读的；可复制的行会在专用的尾随操作列中显示复制按钮，以便按钮对齐，并且仅当某些行可复制时才存在该列。没有条目时，卡片显示单个包含完整绝对时间的默认行，该行可复制。配置条目还会将该表面附加到绝对格式，否则绝对格式没有悬停卡片。",
+    "isTimezoneShown": "是否在可见文本后附加时区缩写。适用于 date_time 和 time 格式；system_* 格式保持机器可读，从不携带时区缩写。使用 tooltipEntries 控制工具提示的时区。",
+    "isLive": "相对时间是否应实时更新（例如 \"2 min ago\" → \"3 min ago\"）。",
+    "type": "来自 Text 的语义文本类型。决定大小、字重和行高。",
+    "size": "显式字号覆盖。覆盖 type 中的大小。",
+    "color": "文本颜色。",
+    "weight": "字重覆盖。",
+    "timezoneID": "绝对格式渲染所用的 IANA 时区，例如 'UTC' 或 'America/Los_Angeles'。省略（或传入 'local'）表示查看者自己的时区。显式时区在服务端和客户端渲染结果完全相同，因此这是显示绝对时间而不会出现 hydration 不匹配的方式；相对格式的可见文本会忽略它，而配置的 tooltipEntries 行仍会遵循它。未知标识符会在开发环境中警告一次，并回退到查看者的时区。"
   },
-  usage: {
-    description:
-      'Timestamp formats a date or time value into human-readable text. Use it to show when something was created, updated, or is scheduled; picking relative for recency, absolute for precision, or auto to let the component decide.',
-    bestPractices: [
+  "usage": {
+    "description": "Timestamp 将日期或时间值格式化为人类可读的文本。用于显示某事物的创建、更新或计划时间；近期内容选用相对格式，需要精确时选用绝对格式，或者交给 auto 让组件决定。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          'Use the auto format in feeds and lists so recent items show "2 hours ago" and older items show the full date automatically.',
+        "guidance": true,
+        "description": "在信息流和列表中使用 auto 格式，使近期项目自动显示 \"2 hours ago\"，较早项目显示完整日期。"
       },
       {
-        guidance: true,
-        description:
-          'Keep formatting consistent within the same list or table; mixing relative and absolute timestamps in the same column confuses scanning.',
+        "guidance": true,
+        "description": "在同一列表或表格中保持格式一致；在同一列中混用相对和绝对时间戳会妨碍扫读。"
       },
       {
-        guidance: true,
-        description:
-          'Enable isTimezoneShown when the audience spans multiple time zones, like a global team calendar or audit log.',
+        "guidance": true,
+        "description": "当受众跨越多个时区时启用 isTimezoneShown，例如全球团队日历或审计日志。"
       },
       {
-        guidance: true,
-        description:
-          "Use tooltipEntries when readers must compare zones, such as an incident log where the reader's time and the event's origin zone both matter.",
+        "guidance": true,
+        "description": "当读者必须比较时区时使用 tooltipEntries，例如读者所在时区和事件起源时区都很重要的事件日志。"
       },
       {
-        guidance: true,
-        description:
-          'Pass timezoneID when an absolute time must read the same for every viewer and on the server, like an incident log timestamp or anything server-rendered; without it the server markup depends on the server zone.',
+        "guidance": true,
+        "description": "当绝对时间必须对每个查看者和服务器读取一致时传入 timezoneID，例如事件日志时间戳或任何服务端渲染的内容；否则服务端标记会取决于服务器时区。"
       },
       {
-        guidance: true,
-        description:
-          'Label every entry once a tooltip shows more than one zone; a bare abbreviation is not always recognizable (Tokyo renders as "GMT+9", not "JST").',
+        "guidance": true,
+        "description": "一旦工具提示显示多个时区，就为每个条目添加标签；裸缩写并不总是容易识别（Tokyo 渲染为 \"GMT+9\"，而不是 \"JST\"）。"
       },
       {
-        guidance: true,
-        description:
-          'Use isLive for active dashboards or real-time feeds so the relative time stays accurate without a page refresh.',
+        "guidance": true,
+        "description": "对活跃的仪表盘或实时信息流使用 isLive，使相对时间无需刷新页面即可保持准确。"
       },
       {
-        guidance: true,
-        description:
-          'Reach for tooltipEntries when readers need to grab an exact value: an incident log or deploy record where someone pastes the UTC time or Unix seconds elsewhere; configuring entries turns the hover into copy-to-clipboard rows.',
+        "guidance": true,
+        "description": "当读者需要获取精确值时使用 tooltipEntries：例如事件日志或部署记录，有人要把 UTC 时间或 Unix 秒数粘贴到别处；配置条目会将悬停卡片变为可复制到剪贴板的行。"
       },
       {
-        guidance: false,
-        description:
-          "Don't display raw Unix timestamps or ISO strings to users; always pass them through Timestamp to get a human-readable format.",
+        "guidance": false,
+        "description": "不要向用户显示原始 Unix 时间戳或 ISO 字符串；始终通过 Timestamp 传递它们以获得人类可读的格式。"
       },
       {
-        guidance: false,
-        description:
-          'Avoid system_date or system_time formats in user-facing UI; they are meant for developer tools, logs, and machine-readable contexts.',
+        "guidance": false,
+        "description": "避免在面向用户的 UI 中使用 system_date 或 system_time 格式；它们用于开发者工具、日志和机器可读的上下文。"
       },
       {
-        guidance: false,
-        description:
-          'Don\'t disable the hover card on relative timestamps; users expect to hover for the full date when they see "3 hours ago".',
+        "guidance": false,
+        "description": "不要在相对时间戳上禁用悬停卡片；当用户看到 \"3 hours ago\" 时，他们期望悬停查看完整日期。"
       },
       {
-        guidance: false,
-        description:
-          "Don't stack many zones into one card; it is capped at 300px wide and long labelled lines wrap. Two or three entries read well.",
+        "guidance": false,
+        "description": "不要在一张卡片中堆叠太多时区；其宽度上限为 300px，较长的带标签行会换行。两到三个条目阅读效果良好。"
       },
       {
-        guidance: false,
-        description:
-          'Don\'t pass a fixed-offset abbreviation like "EST" as timezoneID; it is a valid identifier but never observes daylight saving, so it reads an hour wrong for half the year. Use the region id, "America/New_York".',
-      },
+        "guidance": false,
+        "description": "不要将 \"EST\" 这样的固定偏移缩写作为 timezoneID 传入；它是有效的标识符，但从不遵守夏令时，因此一年中有半年会读错一小时。请使用区域 id \"America/New_York\"。"
+      }
     ],
-    anatomy: [
+    "anatomy": [
       {
-        name: 'Formatted text',
-        required: true,
-        description:
-          'The rendered date, time, or relative label like "2 hours ago" or "Mar 21, 2025".',
+        "name": "格式化文本",
+        "required": true,
+        "description": "渲染的日期、时间或相对标签，如 \"2 hours ago\" 或 \"Mar 21, 2025\"。"
       },
       {
-        name: 'Hover card',
-        required: false,
-        description:
-          'A copyable hover card showing the full absolute date and time when the display is relative, or the rows configured via tooltipEntries. Its default single row carries the full absolute time.',
+        "name": "悬停卡片",
+        "required": false,
+        "description": "可复制的悬停卡片，当显示为相对时间时展示完整的绝对日期和时间，或展示通过 tooltipEntries 配置的行。其默认单行包含完整的绝对时间。"
       },
       {
-        name: 'Hover card row',
-        required: false,
-        description:
-          'One row of the card: an optional label beside the instant rendered in one time zone and format. Rows opt into a copy button via isCopyable.',
+        "name": "悬停卡片行",
+        "required": false,
+        "description": "卡片的一行：在某一时区和格式中渲染的时刻旁边可选一个标签。行通过 isCopyable 选择是否显示复制按钮。"
       },
       {
-        name: 'Copy button',
-        required: true,
-        description:
-          "Per-row copy-to-clipboard button in the hover card; copies that row's formatted value.",
-      },
-    ],
+        "name": "复制按钮",
+        "required": true,
+        "description": "悬停卡片中每行的复制到剪贴板按钮；复制该行格式化后的值。"
+      }
+    ]
   },
+  "name": "Timestamp"
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

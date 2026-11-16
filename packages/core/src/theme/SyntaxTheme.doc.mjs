@@ -107,3 +107,33 @@ export const docsDense = {
       'syntax highlighting theme: preset from @astryxdesign/core/theme/syntax or custom theme created w/ defineSyntaxTheme()',
   },
 };
+
+export const docsZh = {
+  "name": "SyntaxTheme",
+  "displayName": "Syntax Theme",
+  "usage": {
+    "description": "为 CodeBlock 及子树中的任何代码组件应用语法高亮颜色。默认情况下，代码组件使用主题级语法颜色（通过 `defineTheme({ syntax: ... })` 设置），这些颜色源自调色板（关键字使用 `--color-text-accent`，字符串使用 `--color-text-green`，等等）。SyntaxTheme 允许你按区域覆盖这些颜色。系统使用 14 个语义令牌（keyword、string、comment、number、function、type、variable、operator、constant、tag、attribute、property、punctuation、background），并针对 11 个社区主题进行了验证。自定义主题通过 `defineSyntaxTheme()` 创建，可使用 `[light, dark]` 元组进行自动配色方案适配。内置预设：oneDarkPro、dracula、monokai、nord、tokyoNight、catppuccinMocha、githubLight、githubDark、solarizedLight、oneLight（从 `@astryxdesign/core/theme/syntax` 导入）。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "应用全局代码样式时，请使用 `defineTheme()` 中的 `syntax` 字段。仅当特定区域需要不同外观时才使用 SyntaxTheme。"
+      },
+      {
+        "guidance": true,
+        "description": "从内置预设中选择，或使用 `defineSyntaxTheme()` 创建品牌专属颜色的自定义主题。"
+      },
+      {
+        "guidance": true,
+        "description": "语法主题支持 `light-dark()` 元组：每个令牌可以为浅色和深色模式设置不同的值，由配色方案自动解析。"
+      },
+      {
+        "guidance": true,
+        "description": "对于单个 CodeBlock，直接传入 `syntaxTheme` 属性：它是将该块包裹在 SyntaxTheme 中的简写。当要为整片区域的代码组件设置主题时，请使用 SyntaxTheme 包裹层。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "theme": "语法高亮主题：`@astryxdesign/core/theme/syntax` 中的预设，或使用 `defineSyntaxTheme()` 创建的自定义主题。",
+    "children": "内容子树。其中的所有 CodeBlock 组件都将使用此语法主题。"
+  }
+};

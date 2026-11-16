@@ -102,78 +102,96 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'DropdownMenuGroup',
-  subComponentOf: 'DropdownMenu',
-  displayName: 'Dropdown Menu Group',
-  isHiddenFromOverview: true,
-  description:
-    '复合菜单中的一组菜单行。可见标题通过 aria-labelledby 为 role="group" 命名；省略标题时该组没有名称。标题不是 menuitem，因此方向键和预输入会跳过它。标题内容应保持非交互；控件应放在 DropdownMenu 的 header 或 footer 中。宿主属性和 DOM 事件处理函数（id、data-*、aria-*）会传到分组元素上；其 role 以及有标题时的名称由组件控制。',
-  usage: {
-    description:
-      '使用 DropdownMenuGroup 为相关的复合菜单行提供同一个可见名称和无障碍名称。只有当名称能帮助理解这些菜单行时才使用分组。',
-    bestPractices: [
-      {guidance: true, description: '使用简短且能说明菜单行关系的标题。'},
+  "name": "DropdownMenuGroup",
+  "subComponentOf": "DropdownMenu",
+  "displayName": "Dropdown Menu Group",
+  "isHiddenFromOverview": true,
+  "description": "复合菜单中的一组行。可见的 title 通过 aria-labelledby 命名 role=\"group\"；省略 title 则分组无名称。标题不是 menuitem，因此方向键和类型搜索会跳过它。保持 title 内容非交互，将控件放在 DropdownMenu 的 header 或 footer 中。数据驱动形式是 items 中的 `{type: \"section\", title, items}` 条目；两种形式共享标题处理和主题目标。宿主属性与 DOM 处理函数（id、data-*、aria-*）会到达分组元素；其角色以及有标题时的名称仍由组件拥有。",
+  "usage": {
+    "description": "使用 DropdownMenuGroup 为相关的复合菜单行提供一个可见且可编程的名称。仅当单独的名称无助于用户理解这些行时，才使用无标题分组。",
+    "bestPractices": [
       {
-        guidance: true,
-        description: '保持标题非交互，让所有操作都位于菜单的方向键顺序中。',
+        "guidance": true,
+        "description": "使用简短、描述性的标题内容，说明分组行之间的共同点。"
       },
       {
-        guidance: false,
-        description:
-          '在标题中放置按钮、链接或输入控件；应改用 DropdownMenu 的 header 或 footer。',
+        "guidance": true,
+        "description": "保持标题非交互，使每个可用操作都保留在菜单的方向键顺序中。"
       },
-      {guidance: false, description: '对没有共同含义的菜单行进行分组。'},
+      {
+        "guidance": false,
+        "description": "不要在 title 中放置按钮、链接、字段或其他控件。请将它们放在 DropdownMenu 的 header 或 footer 中。"
+      },
+      {
+        "guidance": false,
+        "description": "不要包裹不构成有意义集合的行；只有当分组关系对用户有帮助时，分组才增加结构。"
+      }
     ],
-    anatomy: [
+    "anatomy": [
       {
-        name: '组',
-        required: true,
-        description: '包含标题和菜单行的 role="group" 包装元素。',
+        "name": "分组",
+        "required": true,
+        "description": "包含标题和菜单行的 role=\"group\" 包装元素。"
       },
       {
-        name: '标题',
-        required: false,
-        description: '用于命名分组的可见非交互标题内容。',
+        "name": "标题",
+        "required": false,
+        "description": "可见的非交互标题内容，用于命名分组并带有 dropdown-menu-section-heading 主题目标。"
       },
       {
-        name: '菜单行',
-        required: false,
-        description: '由 DropdownMenu 持有的菜单项、可选项、单选组或子菜单。',
-      },
-    ],
+        "name": "行",
+        "required": false,
+        "description": "由 DropdownMenu 拥有的菜单项、可选择项、单选组或子菜单。"
+      }
+    ]
   },
-  props: [
+  "props": [
     {
-      name: 'title',
-      type: 'ReactNode',
-      description:
-        '显示在菜单行上方并作为分组无障碍名称的非交互标题内容。省略时分组无名称；控件应放在 DropdownMenu 的 header 或 footer 中。',
-    },
-    {name: 'children', type: 'ReactNode', description: '该分组中的菜单行。'},
-    {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description: '应用于 role="group" 包装元素的 StyleX 样式。',
+      "name": "title",
+      "type": "ReactNode",
+      "description": "显示在行上方的非交互标题内容，并用作分组的无障碍名称。省略则为无名称分组；请将控件放在 DropdownMenu 的 header 或 footer 中。"
     },
     {
-      name: 'className',
-      type: 'string',
-      description: '应用于 role="group" 包装元素的 CSS 类名。',
+      "name": "children",
+      "type": "ReactNode",
+      "description": "分组的行：DropdownMenuItem、DropdownMenuCheckboxItem、DropdownMenuRadioGroup 或 DropdownMenuSubMenu。"
     },
     {
-      name: 'style',
-      type: 'React.CSSProperties',
-      description: '应用于 role="group" 包装元素的内联样式。',
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "应用于 role=\"group\" 包装元素的 StyleX 样式。必须是 stylex.create() 值，而不是内联样式对象。"
     },
     {
-      name: 'ref',
-      type: 'React.Ref<HTMLDivElement>',
-      description: '转发到 role="group" 包装元素的 ref。',
+      "name": "className",
+      "type": "string",
+      "description": "应用于 role=\"group\" 包装元素的 CSS 类名。"
     },
+    {
+      "name": "style",
+      "type": "React.CSSProperties",
+      "description": "应用于 role=\"group\" 包装元素的内联样式。"
+    },
+    {
+      "name": "ref",
+      "type": "React.Ref<HTMLDivElement>",
+      "description": "转发到 role=\"group\" 包装元素的 ref。"
+    }
   ],
-  theming: {
-    targets: [{className: 'astryx-dropdown-menu-section-heading'}],
+  "theming": {
+    "targets": [
+      {
+        "className": "astryx-dropdown-menu-section-heading"
+      }
+    ]
   },
+  "propDescriptions": {
+    "title": "显示在行上方的非交互标题内容，并用作分组的无障碍名称。省略则为无名称分组；请将控件放在 DropdownMenu 的 header 或 footer 中。",
+    "children": "分组的行：DropdownMenuItem、DropdownMenuCheckboxItem、DropdownMenuRadioGroup 或 DropdownMenuSubMenu。",
+    "xstyle": "应用于 role=\"group\" 包装元素的 StyleX 样式。必须是 stylex.create() 值，而不是内联样式对象。",
+    "className": "应用于 role=\"group\" 包装元素的 CSS 类名。",
+    "style": "应用于 role=\"group\" 包装元素的内联样式。",
+    "ref": "转发到 role=\"group\" 包装元素的 ref。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

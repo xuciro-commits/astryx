@@ -50,3 +50,32 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useHotkeys",
+  "usage": {
+    "description": "注册全局键盘快捷键，每个 Hook 实例使用一个 window keydown 监听器。处理程序存放在 ref 中，因此重新渲染不会重新订阅。默认跳过来自输入目标（input、textarea、select、contenteditable）的事件，除非设置 allowInInputs；跳过 defaultPrevented 的事件，并在匹配时调用 preventDefault()。SSR 安全。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "用于应用级快捷键，例如命令面板（mod+k）、帮助覆盖层（\"?\"）和导航键。"
+      },
+      {
+        "guidance": true,
+        "description": "与 Kbd 组件配合使用，显示与所注册相同的组合键；两者在各平台上解析 \"mod\" 的方式一致。"
+      },
+      {
+        "guidance": true,
+        "description": "当模态框或向导占用键盘时，使用 isDisabled 暂停快捷键，而不是卸载 Hook。"
+      },
+      {
+        "guidance": false,
+        "description": "不要用于小部件内受焦点限制的键盘导航；请改用 useListFocus 或 useGridFocus。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "hotkeys": "快捷键注册。每个条目：`{ keys, onPress, allowInInputs?, isDisabled? }`。`keys` 是用 \"+\" 分隔的组合键，例如 \"mod+k\"、\"?\"、\"escape\"；\"mod\" 在 macOS 上是 ⌘，在其他平台上是 Ctrl。对于按下 shift 后会改变输出的标点键，请按它产生的字符注册：\"?\"，而不是 \"shift+/\"，因为最后一个键会与 `event.key` 比较。`onPress` 在 preventDefault() 之后接收 KeyboardEvent。`allowInInputs`（默认 false）允许在 input/textarea/select/contenteditable 中输入时触发快捷键。`isDisabled` 临时禁用该条目。"
+  },
+  "returnDescriptions": {}
+};

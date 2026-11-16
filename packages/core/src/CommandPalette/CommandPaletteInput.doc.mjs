@@ -133,21 +133,63 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'CommandPaletteInput',
-  isHiddenFromOverview: true,
-  displayName: 'Command Palette Input',
-  description:
-    '搜索输入插槽。挂载时自动聚焦。在 CommandPalette 内使用时连接到上下文。',
-  propDescriptions: {
-    placeholder: '输入框的占位文本。',
-    label:
-      '查询字段的无障碍标签，供屏幕阅读器朗读。默认为翻译后的 "Search commands"；占位文本不会用作名称。',
-    hasAutoFocus: '挂载时自动聚焦输入框。内联命令面板中自动禁用。',
-    endContent: '渲染在输入框末尾的内容，位于加载指示器之后。',
-    value: '搜索值。在 CommandPalette 内省略时从上下文读取。',
-    onValueChange: '搜索值变化时调用。在 CommandPalette 内省略时写入上下文。',
-    xstyle: 'StyleX 布局自定义样式。必须是 stylex.create() 的值。',
+  "name": "CommandPaletteInput",
+  "isHiddenFromOverview": true,
+  "displayName": "Command Palette Input",
+  "description": "搜索输入槽。挂载时自动聚焦。在 CommandPalette 内使用时自动接入命令面板的 context。",
+  "propDescriptions": {
+    "placeholder": "输入框的占位文本。",
+    "label": "查询字段的无障碍标签，由屏幕阅读器朗读。默认为翻译后的 “Search commands”；placeholder 永远不会用作名称。",
+    "hasAutoFocus": "挂载时自动聚焦输入框。在行内命令面板内会自动禁用。",
+    "endContent": "渲染在输入框尾部、旋转图标之后的内容。用于清除按钮或键盘快捷键提示。",
+    "value": "搜索值。在 CommandPalette 内省略时，从 context 读取。",
+    "onValueChange": "搜索值变化时调用。在 CommandPalette 内省略时，写入 context。",
+    "xstyle": "用于布局自定义的 StyleX 样式。必须是 stylex.create() 的值。"
   },
+  "usage": {
+    "description": "在 CommandPalette 内使用 CommandPaletteInput 以获得带弹层的命令查询；没有结果弹层时，也可将其作为独立的搜索字段使用。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "当 “Search commands” 无法说明搜索范围时，传入一个简洁的 label 指明可搜索的内容；placeholder 永远不会作为字段名称。"
+      },
+      {
+        "guidance": true,
+        "description": "在尾部需要简短辅助控件或快捷键提示时，使用 endContent。"
+      },
+      {
+        "guidance": false,
+        "description": "不要覆盖 combobox 角色或弹层状态。连接到 CommandPalette 后，这些语义由 CommandPaletteInput 负责。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "输入框",
+        "required": true,
+        "description": "围绕搜索图标、查询字段和尾部内容的行内布局。"
+      },
+      {
+        "name": "搜索图标",
+        "required": true,
+        "description": "查询字段前的装饰性搜索图标。"
+      },
+      {
+        "name": "查询字段",
+        "required": true,
+        "description": "原生文本字段。独立使用且没有弹层属性时是 searchbox；提供弹层关系或存在 CommandPalette context 时是 combobox。"
+      },
+      {
+        "name": "加载旋转图标",
+        "required": false,
+        "description": "搜索繁忙时在尾部内容之前显示的延迟等待指示器。"
+      },
+      {
+        "name": "尾部内容",
+        "required": false,
+        "description": "调用方提供的辅助内容，例如清除控件或快捷键提示。"
+      }
+    ]
+  }
 };
 
 export const docsDense = {

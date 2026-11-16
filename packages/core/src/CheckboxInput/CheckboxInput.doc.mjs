@@ -247,186 +247,239 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'CheckboxInput',
-  displayName: 'Checkbox Input',
-  usage: {
-    description:
-      'CheckboxInput toggles a single on/off value. Use it for settings like "Enable notifications", terms acceptance, or opt-in choices. For multiple checkboxes in a group, use CheckboxList instead.',
-    bestPractices: [
+  "name": "CheckboxInput",
+  "displayName": "Checkbox Input",
+  "usage": {
+    "description": "CheckboxInput 用于切换单个开/关值。适用于“启用通知”、接受条款或选择加入等设置。若一组中有多个复选框，请改用 CheckboxList。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          'Always provide a visible label so the user knows what they are toggling. Use isLabelHidden only when surrounding context makes it obvious.',
+        "guidance": true,
+        "description": "始终提供可见标签，让用户知道自己正在切换什么。仅当周围上下文已足够明确时才使用 `isLabelHidden`。"
       },
       {
-        guidance: true,
-        description:
-          'Add a description for choices that need extra context, like explaining what "Share usage data" actually shares.',
+        "guidance": true,
+        "description": "为需要额外说明的选项添加描述，例如解释“共享使用数据”究竟会共享哪些内容。"
       },
       {
-        guidance: true,
-        description:
-          'Use the indeterminate state for "select all" checkboxes when only some items in a group are selected.',
+        "guidance": true,
+        "description": "当一组中只有部分项目被选中时，为“全选”复选框使用不确定（indeterminate）状态。"
       },
       {
-        guidance: false,
-        description:
-          'Use a checkbox for mutually exclusive choices; use RadioList when only one option can be selected.',
+        "guidance": false,
+        "description": "不要用复选框表示互斥选择；当只能选择一个选项时，请使用 RadioList。"
       },
       {
-        guidance: false,
-        description:
-          'Use a checkbox for actions that take effect immediately; use a toggle switch or button instead.',
+        "guidance": false,
+        "description": "不要用复选框表示立即生效的操作；请改用开关（toggle switch）或按钮。"
       },
       {
-        guidance: false,
-        description:
-          'Wrap a disabled checkbox in Tooltip to explain why it is disabled; disabled controls swallow the hover events the wrapper needs. Use the disabledMessage prop instead.',
-      },
+        "guidance": false,
+        "description": "不要用 Tooltip 包裹禁用的复选框来解释其禁用原因；禁用控件会吞掉包裹层所需的悬停事件。请改用 `disabledMessage` 属性。"
+      }
     ],
+    "accessibility": [
+      {
+        "name": "复选框方框",
+        "category": "Color contrast",
+        "criterion": "1.4.11 Non-text Contrast",
+        "requirement": "3:1",
+        "states": [
+          "静止",
+          "悬停",
+          "指针按下",
+          "选中"
+        ],
+        "description": "方框边缘（未选中）和填充（选中）与背后表面之间必须至少有 3:1 的对比度。对于悬停（Hover）和指针按下（Pointer down），请测量应用色调与按下叠加层后的最终颜色。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "复选框",
+        "required": true,
+        "description": "复选框本身：未选中、已选中或不确定。"
+      },
+      {
+        "name": "标签",
+        "required": true,
+        "description": "描述复选框所控制内容的文本。为满足无障碍要求，始终存在。"
+      },
+      {
+        "name": "描述",
+        "required": false,
+        "description": "位于标签下方、提供额外上下文的辅助文本。"
+      },
+      {
+        "name": "状态消息",
+        "required": false,
+        "description": "位于复选框下方的错误、警告或成功消息。"
+      }
+    ]
   },
-  props: [
+  "props": [
     {
-      name: 'ref',
-      type: 'React.Ref<HTMLInputElement>',
-      description: '转发至底层 <input> 元素的 ref。',
+      "name": "ref",
+      "type": "React.Ref<HTMLInputElement>",
+      "description": "转发到底层 `<input>` 元素的 ref。"
     },
     {
-      name: 'label',
-      type: 'string',
-      description: '复选框的标签文本（始终为无障碍性而渲染）。',
-      required: true,
+      "name": "label",
+      "type": "string",
+      "description": "复选框的标签文本（为满足无障碍要求始终渲染）。",
+      "required": true
     },
     {
-      name: 'isLabelHidden',
-      type: 'boolean',
-      description: '是否视觉隐藏标签（屏幕阅读器仍可访问）。',
-      default: 'false',
+      "name": "isLabelHidden",
+      "type": "boolean",
+      "description": "是否在视觉上隐藏标签（屏幕阅读器仍可访问）。",
+      "default": "false"
     },
     {
-      name: 'description',
-      type: 'string',
-      description: '显示在标签下方的描述文本。',
+      "name": "description",
+      "type": "string",
+      "description": "显示在标签下方的描述文本。"
     },
     {
-      name: 'value',
-      type: "boolean | 'indeterminate'",
-      description: '复选框是否为选中、未选中或不确定状态。',
-      required: true,
+      "name": "value",
+      "type": "boolean | 'indeterminate'",
+      "description": "复选框是选中、未选中还是不确定状态。",
+      "required": true
     },
     {
-      name: 'onChange',
-      type: '(checked: boolean, e: ChangeEvent<HTMLInputElement>) => void',
-      description: '复选框状态变更时触发的回调。',
+      "name": "onChange",
+      "type": "(checked: boolean, e: ChangeEvent<HTMLInputElement>) => void",
+      "description": "复选框状态变化时触发的回调。"
     },
     {
-      name: 'changeAction',
-      type: '(checked: boolean, e: ChangeEvent<HTMLInputElement>) => void | Promise<void>',
-      description:
-        '异步变更操作。在 onChange 之后触发（未被阻止时）。等待期间显示加载旋转器。',
+      "name": "changeAction",
+      "type": "(checked: boolean, e: ChangeEvent<HTMLInputElement>) => void | Promise<void>",
+      "description": "变更时执行的异步操作。若未被阻止，会在 onChange 之后触发。等待期间显示加载旋转图标。"
     },
     {
-      name: 'isLoading',
-      type: 'boolean',
-      description: '复选框是否处于加载状态。显示旋转器并阻止交互。',
-      default: 'false',
+      "name": "isLoading",
+      "type": "boolean",
+      "description": "复选框是否处于加载状态。显示旋转图标并阻止交互。",
+      "default": "false"
     },
     {
-      name: 'isDisabled',
-      type: 'boolean',
-      description: '复选框是否禁用。',
-      default: 'false',
+      "name": "isDisabled",
+      "type": "boolean",
+      "description": "复选框是否被禁用。",
+      "default": "false"
     },
     {
-      name: 'htmlName',
-      type: 'string',
-      description:
-        '底层复选框输入的 HTML name 属性，用于表单提交（勾选时提交 "on"）。',
+      "name": "htmlName",
+      "type": "string",
+      "description": "底层复选框输入的 HTML name 属性，适用于表单提交（选中时提交 \"on\"）。"
     },
     {
-      name: 'disabledMessage',
-      type: 'string',
-      description:
-        'Explains why the checkbox is disabled. With isDisabled, shows a tooltip on hover/keyboard focus and keeps the checkbox focusable via aria-disabled (toggling stays blocked). Use this instead of wrapping a disabled CheckboxInput in Tooltip: disabled controls swallow the hover events an external Tooltip needs.',
+      "name": "disabledMessage",
+      "type": "string",
+      "description": "解释复选框为何被禁用。与 `isDisabled` 一起使用时，在悬停/键盘聚焦时显示提示，并通过 `aria-disabled` 保持复选框可聚焦（切换仍会被阻止）。请使用此属性，而不要用 Tooltip 包裹禁用的 CheckboxInput。禁用控件会吞掉外部 Tooltip 所需的悬停事件。"
     },
     {
-      name: 'isReadOnly',
-      type: 'boolean',
-      description:
-        '复选框是否为只读。以完整不透明度显示当前状态但阻止交互。与 isDisabled 不同，只读复选框不会变暗。',
-      default: 'false',
+      "name": "isReadOnly",
+      "type": "boolean",
+      "description": "复选框是否为只读。以完全不透明度显示当前状态，但阻止交互。与 `isDisabled` 不同，只读复选框不会在视觉上变暗。",
+      "default": "false"
     },
     {
-      name: 'isOptional',
-      type: 'boolean',
-      description: '字段是否可选。与 isRequired 互斥。',
-      default: 'false',
+      "name": "isOptional",
+      "type": "boolean",
+      "description": "该字段是否为可选。与 `isRequired` 互斥。",
+      "default": "false"
     },
     {
-      name: 'isRequired',
-      type: 'boolean',
-      description: '复选框是否必填。与 isOptional 互斥。',
-      default: 'false',
+      "name": "isRequired",
+      "type": "boolean",
+      "description": "复选框是否为必填。与 `isOptional` 互斥。",
+      "default": "false"
     },
     {
-      name: 'size',
-      type: "'sm' | 'md'",
-      description:
-        '复选框尺寸。sm 用于紧凑布局，md 为默认。在粗指针（触摸）下，带可见标签的复选框的目标通过不可见的点击区域向 44 px 扩展。它不小于所在行，与相邻控件较近时止于间距的一半；尺寸不变。',
-      default: "'md'",
+      "name": "size",
+      "type": "'sm' | 'md'",
+      "description": "复选框的尺寸。`sm` 用于紧凑布局，`md` 为默认值。在粗指针设备上，带标签复选框的点击目标会通过不可见的命中区域扩展到接近 44 px。该区域不会缩小到小于所在行，且在与更近邻居的间距一半处停止；视觉尺寸保持不变。",
+      "default": "'md'"
     },
     {
-      name: 'onFocus',
-      type: '(e: FocusEvent<HTMLInputElement>) => void',
-      description: '复选框获得焦点时触发的回调。',
+      "name": "onFocus",
+      "type": "(e: FocusEvent<HTMLInputElement>) => void",
+      "description": "复选框获得焦点时触发的回调。"
     },
     {
-      name: 'onBlur',
-      type: '(e: FocusEvent<HTMLInputElement>) => void',
-      description: '复选框失去焦点时触发的回调。',
+      "name": "onBlur",
+      "type": "(e: FocusEvent<HTMLInputElement>) => void",
+      "description": "复选框失去焦点时触发的回调。"
     },
     {
-      name: 'labelIcon',
-      type: 'ReactNode | IconType',
-      description: '标签文本前显示的语义图标名称或自定义内容。',
+      "name": "labelIcon",
+      "type": "ReactNode | IconType",
+      "description": "显示在标签文本之前的语义图标名称或自定义内容。有效语义名称请参阅 `astryx docs icons`。"
     },
     {
-      name: 'status',
-      type: "{ type: 'error' | 'warning' | 'success', message: string }",
-      description:
-        '状态指示器。在复选框下方显示彩色消息框，错误时设置 aria-invalid。',
-    },
+      "name": "status",
+      "type": "{ type: 'error' | 'warning' | 'success', message: string }",
+      "description": "状态指示器。在复选框下方显示带颜色的消息框，并在出错时设置 `aria-invalid`。"
+    }
   ],
-  theming: {
-    targets: [
+  "theming": {
+    "targets": [
       {
-        className: 'astryx-checkbox-input',
-        visualProps: ['size'],
+        "className": "astryx-checkbox-input",
+        "visualProps": [
+          "size"
+        ]
       },
       {
-        className: 'astryx-checkbox-indicator',
-        visualProps: ['size'],
-        states: ['checked', 'disabled'],
+        "className": "astryx-checkbox-indicator",
+        "visualProps": [
+          "size"
+        ],
+        "states": [
+          "checked",
+          "disabled"
+        ]
       },
-      {className: 'astryx-checkbox-label'},
+      {
+        "className": "astryx-checkbox-label"
+      }
     ],
-    vars: [
+    "vars": [
       {
-        name: '--_indicator-press-image',
-        description:
-          '复选框行的按下图像，传递给自行绘制按下效果的第一方指示器。仅在该行自身被按下时根据按下涂层设置；在拥有按下效果的 CheckboxList 行中，取该行的按下涂层。只有该行声明它。',
-        default: 'none',
-        private: true,
+        "name": "--_indicator-press-image",
+        "description": "复选框行的按下图像，传递给自行绘制按下效果的第一方指示器。仅在该行自身被按下时根据按下涂层设置；在拥有按下效果的 CheckboxList 行中，取该行的按下涂层。只有该行声明它。",
+        "default": "none",
+        "private": true
       },
       {
-        name: '--_indicator-active-press',
-        description:
-          '按下控制器绘制该行的按下效果时为透明；在拥有按下效果的 CheckboxList 行中始终为透明。因此自行绘制按下效果的第一方指示器不会在按下图像下方再绘制 `:active` 填充。只有该行声明它。',
-        default: 'var(--color-overlay-pressed)',
-        private: true,
-      },
-    ],
+        "name": "--_indicator-active-press",
+        "description": "按下控制器绘制该行的按下效果时为透明；在拥有按下效果的 CheckboxList 行中始终为透明。因此自行绘制按下效果的第一方指示器不会在按下图像下方再绘制 `:active` 填充。只有该行声明它。",
+        "default": "var(--color-overlay-pressed)",
+        "private": true
+      }
+    ]
   },
+  "propDescriptions": {
+    "ref": "转发到底层 `<input>` 元素的 ref。",
+    "label": "复选框的标签文本（为满足无障碍要求始终渲染）。",
+    "isLabelHidden": "是否在视觉上隐藏标签（屏幕阅读器仍可访问）。",
+    "description": "显示在标签下方的描述文本。",
+    "value": "复选框是选中、未选中还是不确定状态。",
+    "onChange": "复选框状态变化时触发的回调。",
+    "changeAction": "变更时执行的异步操作。若未被阻止，会在 onChange 之后触发。等待期间显示加载旋转图标。",
+    "isLoading": "复选框是否处于加载状态。显示旋转图标并阻止交互。",
+    "isDisabled": "复选框是否被禁用。",
+    "htmlName": "底层复选框输入的 HTML name 属性，适用于表单提交（选中时提交 \"on\"）。",
+    "disabledMessage": "解释复选框为何被禁用。与 `isDisabled` 一起使用时，在悬停/键盘聚焦时显示提示，并通过 `aria-disabled` 保持复选框可聚焦（切换仍会被阻止）。请使用此属性，而不要用 Tooltip 包裹禁用的 CheckboxInput。禁用控件会吞掉外部 Tooltip 所需的悬停事件。",
+    "isReadOnly": "复选框是否为只读。以完全不透明度显示当前状态，但阻止交互。与 `isDisabled` 不同，只读复选框不会在视觉上变暗。",
+    "isOptional": "该字段是否为可选。与 `isRequired` 互斥。",
+    "isRequired": "复选框是否为必填。与 `isOptional` 互斥。",
+    "size": "复选框的尺寸。`sm` 用于紧凑布局，`md` 为默认值。在粗指针设备上，带标签复选框的点击目标会通过不可见的命中区域扩展到接近 44 px。该区域不会缩小到小于所在行，且在与更近邻居的间距一半处停止；视觉尺寸保持不变。",
+    "onFocus": "复选框获得焦点时触发的回调。",
+    "onBlur": "复选框失去焦点时触发的回调。",
+    "labelIcon": "显示在标签文本之前的语义图标名称或自定义内容。有效语义名称请参阅 `astryx docs icons`。",
+    "status": "状态指示器。在复选框下方显示带颜色的消息框，并在出错时设置 `aria-invalid`。",
+    "width": "字段宽度（数字表示像素，字符串按原样使用，例如 \"100%\"）。会调整整个字段（标签、控件和状态）的尺寸，使其保持对齐。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

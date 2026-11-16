@@ -1,91 +1,82 @@
-# @astryxdesign/charts — Launch Readiness Audit
+# @astryxdesign/charts — 发布就绪度审计
 
-Full inventory of what the package contains today and how ready each piece is to
-ship (canary), based on the API audit, the verification checklist, and the Stage 1
-fixes already landed on `feat/charts-extraction`. Goal: pick a solid first slice to
-ship soon (coordinated with the vega launch), and track the rest as fast-follows.
+完整盘点该包目前包含的内容，以及各部分距离发布（金丝雀）有多近；依据是 API 审计、验证清单，以及已落在 `feat/charts-extraction` 上的 Stage 1 修复。目标：挑选一个扎实的首批切片尽快发布（与 vega 发布协同），其余作为快速跟进项跟踪。
 
-Readiness legend:
+就绪度图例：
 
-- **Ship-ready** — verified working, fixes landed, low risk for canary.
-- **Minor polish** — works; needs 1–2 small fixes and/or a story before it's presentable.
-- **Needs work** — architectural gap or unverified interaction; not for the first slice.
+- **可发布** — 验证可用、修复已落地、金丝雀风险低。
+- **小幅打磨** — 能用；在可展示前需要 1–2 个小修复和/或一个 story。
+- **需要完善** — 存在架构缺口或未验证的交互；不进入首批切片。
 
-Bar for "ready" = canary quality: works, looks right in light + dark, reasonable API,
-has a story. (Not full stable/a11y bar — that's later.)
+“就绪”的标准 = 金丝雀质量：能用、浅色 + 深色下外观正确、API 合理、有 story。（不是完整的稳定版/无障碍标准——那是以后的事。）
 
 ---
 
-## Marks (12)
+## 标记（12）
 
-| Mark               | What it is                                            | Readiness      | Notes / blockers                                                                                            |
-| ------------------ | ----------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------- |
-| `bar`              | Bars: simple/stacked/grouped/grouped-stacked/negative | **Ship-ready** | All variants verified L+D; `_uid` + color fixes landed                                                      |
-| `line`             | Line series (curves, optional dots)                   | **Ship-ready** | Edge-clip + headroom fixed                                                                                  |
-| `area`             | Area fill (+gradient, stacked)                        | **Ship-ready** | Gradient-id collision fixed                                                                                 |
-| `dot`              | SVG scatter                                           | **Ship-ready** | `dodge` implemented; story added                                                                            |
-| `band`             | Confidence-interval band                              | Minor polish   | Utility (no legend); translucent fill washes out in dark                                                    |
-| `candlestick`      | OHLC financial                                        | Minor polish   | Semantic default colors now; not in legend by default; tooltip shows only the `open` value                  |
-| `errorBar`         | Whisker/error bars                                    | Minor polish   | Utility; dark custom color (#1e3a5f) washes out on dark                                                     |
-| `referenceLine`    | Annotation line/band at fixed x or y                  | Minor polish   | Label clamp fixed; needs solo stories; `x` only on linear scale                                             |
-| `dotGL`            | WebGL scatter (large N)                               | Minor polish   | Works; hex-only color (not palette/token integrated)                                                        |
-| `streamGL`         | WebGL streaming line (imperative push)                | Minor polish   | Renders now with a domain window; niche; needs a documented usage pattern                                   |
-| `dotGLInteractive` | WebGL scatter + GPU-picking hover                     | **Needs work** | Hover interaction never exercised by a story / unverified                                                   |
-| `heatmapGL`        | WebGL 2D heatmap                                      | **Needs work** | Builds its own categorical y-scale (breaks the shared-scale rule); top-row clip; hex ramp isn't token-aware |
+| 标记               | 说明                                 | 就绪度       | 备注 / 阻塞项                                                           |
+| ------------------ | ------------------------------------ | ------------ | ----------------------------------------------------------------------- |
+| `bar`              | 柱状图：简单/堆叠/分组/分组堆叠/负值 | **可发布**   | 所有变体验证过浅色+深色；`_uid` + 颜色修复已落地                        |
+| `line`             | 折线系列（曲线，可选点）             | **可发布**   | 边缘裁切 + 留白已修复                                                   |
+| `area`             | 面积填充（+渐变、堆叠）              | **可发布**   | 渐变 id 冲突已修复                                                      |
+| `dot`              | SVG 散点图                           | **可发布**   | `dodge` 已实现；story 已添加                                            |
+| `band`             | 置信区间带                           | 小幅打磨     | 工具型（无图例）；半透明填充在深色下被冲淡                              |
+| `candlestick`      | OHLC 金融图                          | 小幅打磨     | 现在有语义默认颜色；默认不进图例；tooltip 只显示 `open` 值              |
+| `errorBar`         | 须线/误差条                          | 小幅打磨     | 工具型；深色自定义颜色（#1e3a5f）在深色下被冲淡                         |
+| `referenceLine`    | 固定 x 或 y 处的标注线/带            | 小幅打磨     | 标签钳制已修复；需要单独 story；`x` 仅支持线性尺度                      |
+| `dotGL`            | WebGL 散点（大 N）                   | 小幅打磨     | 可用；仅支持十六进制颜色（未接入配色盘/token）                          |
+| `streamGL`         | WebGL 流式折线（命令式推入）         | 小幅打磨     | 现在带值域窗口即可渲染；小众；需要记录用法模式                          |
+| `dotGLInteractive` | WebGL 散点 + GPU 拾取悬停            | **需要完善** | 悬停交互从未由 story 实际使用 / 未验证                                  |
+| `heatmapGL`        | WebGL 二维热力图                     | **需要完善** | 自建分类 y 尺度（破坏共享尺度规则）；顶行裁切；十六进制色带不感知 token |
 
-## Chrome (6)
+## 图表外框（6）
 
-| Component      | What it is                                           | Readiness      | Notes / blockers                                                                                              |
-| -------------- | ---------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------- |
-| `Chart`        | Root: layout, scales, domains, clip, palette, events | **Ship-ready** | Strong; domains/baseline/streaming/palette all landed                                                         |
-| `ChartAxis`    | Axes (ticks, formatters, density)                    | **Ship-ready** | Label auto-density fixed; time axis + top/right/`showTicks` combos less tested (minor)                        |
-| `ChartGrid`    | Grid lines (h/v)                                     | **Ship-ready** | —                                                                                                             |
-| `ChartLegend`  | Legend (positions, alignment)                        | **Ship-ready** | Accessor/auto-color series now appear                                                                         |
-| `ChartSwatch`  | Color swatch primitive                               | **Ship-ready** | Component fine; story under-demonstrates (cosmetic)                                                           |
-| `ChartTooltip` | Grouped hover tooltip + crosshair                    | Minor polish   | Core works but hover interaction isn't screenshot-verified; value semantics wrong for candlestick/streamGL/GL |
+| 组件           | 说明                                     | 就绪度     | 备注 / 阻塞项                                                           |
+| -------------- | ---------------------------------------- | ---------- | ----------------------------------------------------------------------- |
+| `Chart`        | 根：布局、尺度、值域、裁剪、配色盘、事件 | **可发布** | 扎实；值域/基线/流式/配色盘均已落地                                     |
+| `ChartAxis`    | 坐标轴（刻度、格式化器、密度）           | **可发布** | 标签自动密度已修复；时间轴 + 顶部/右侧/`showTicks` 组合测试较少（次要） |
+| `ChartGrid`    | 网格线（横/竖）                          | **可发布** | —                                                                       |
+| `ChartLegend`  | 图例（位置、对齐）                       | **可发布** | accessor/自动配色系列现在会显示                                         |
+| `ChartSwatch`  | 色块基础组件                             | **可发布** | 组件没问题；story 展示不足（外观问题）                                  |
+| `ChartTooltip` | 分组悬停 tooltip + 十字准线              | 小幅打磨   | 核心可用，但悬停交互未经截图验证；candlestick/streamGL/GL 的值语义有误  |
 
-## Utilities
+## 工具函数
 
-| Util                                                    | Readiness      | Notes                                                                                                                                                                                                                                    |
-| ------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `useChartColors` / `getChartColors` (palette)           | **Ship-ready** | Solid; resolves concrete palette colors for Canvas/non-CSS paths. CSS-capable `dataVars` consumers get `--color-data-*` variables from Core CSS in prebuilt mode. Concrete resolution uses `resolveThemeToken()` / `useTheme().token()`. |
-| `currency` formatter                                    | **Ship-ready** | Verified on an axis                                                                                                                                                                                                                      |
-| `percent` / `compactNumber` / `shortDate` / `monthYear` | Minor polish   | Not yet verified in a story                                                                                                                                                                                                              |
+| 工具                                                    | 就绪度     | 备注                                                                                                                                                                                              |
+| ------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useChartColors` / `getChartColors`（配色盘）           | **可发布** | 扎实；为 Canvas/非 CSS 路径解析出具体的配色盘颜色。支持 CSS 的 `dataVars` 消费者在预构建模式下从 Core CSS 获得 `--color-data-*` 变量。具体解析使用 `resolveThemeToken()` / `useTheme().token()`。 |
+| `currency` 格式化器                                     | **可发布** | 已在坐标轴上验证                                                                                                                                                                                  |
+| `percent` / `compactNumber` / `shortDate` / `monthYear` | 小幅打磨   | 尚未在 story 中验证                                                                                                                                                                               |
 
 ---
 
-## Recommended first slice (ship to canary next week, with vega)
+## 推荐的首批切片（下周随 vega 发布到金丝雀）
 
-Everything in this set is **Ship-ready** and covers the "few basic charts" people
-have been asking for:
+这一集合中的一切都**可发布**，并覆盖了人们一直要求的“几个基础图表”：
 
-- **Marks:** `bar`, `line`, `area`, `dot`
-- **Chrome:** `Chart`, `ChartAxis`, `ChartGrid`, `ChartLegend`, `ChartSwatch`, `ChartTooltip`*
-- **Utilities:** the color palette + `currency`
+- **标记：** `bar`、`line`、`area`、`dot`
+- **图表外框：** `Chart`、`ChartAxis`、`ChartGrid`、`ChartLegend`、`ChartSwatch`、`ChartTooltip`*
+- **工具函数：** 配色盘 + `currency`
 
-\* Tooltip's static rendering is fine; before shipping, do one pass of hover
-verification (it's the one interaction we haven't screenshot-tested).
+\* Tooltip 的静态渲染没问题；发布前做一轮悬停验证（这是我们唯一还没做截图测试的交互）。
 
-**Stretch (nice for a compelling demo, small effort):** `candlestick` — a strong
-financial showcase; just needs the legend/tooltip-value polish. And confirm the
-remaining formatters render.
+**加码项（能让 demo 更有说服力，工作量小）：** `candlestick` —— 一个有力的金融展示；只需打磨图例/tooltip 的值。并确认其余格式化器能正常渲染。
 
-To actually ship this slice, the remaining work is small:
+要真正发布这个切片，剩余工作不多：
 
-1. Verify tooltip hover (Playwright-drive a hover) — the last unverified interaction.
-2. Confirm `percent`/date formatters in a story.
-3. Wire `/charts` into the docsite (add as a dep, fill the empty `.doc.mjs` files) so it appears in docs.
-4. Final light+dark screenshot pass of the slice.
+1. 验证 tooltip 悬停（用 Playwright 驱动一次悬停）——最后一个未验证的交互。
+2. 在 story 中确认 `percent`/日期格式化器。
+3. 把 `/charts` 接入文档站点（添加为依赖，填写空的 `.doc.mjs` 文件），使其出现在文档中。
+4. 对该切片做最终的浅色+深色截图检查。
 
-## Fast-follows (after the first slice)
+## 快速跟进项（首批切片之后）
 
-- `heatmapGL` categorical-y shared-scale fix (the architectural exception).
-- `dotGLInteractive` hover story + verification.
-- Mode-aware translucent fills so bands/error bars read in dark mode.
-- Tooltip value semantics for candlestick (OHLC) / streamGL / GL marks.
-- `dotGL` palette/token color integration.
-- Time scale + date-axis formatting.
-- `referenceLine` solo stories; edge-case stories (empty/single/all-zero/outlier).
-- Tests (unit + export-surface + SSR) and a11y pass.
-- Cross-chart interactivity broker — owned by indigo; keep `Chart`'s container
-  context + pointer stream clean as the integration seam.
+- `heatmapGL` 分类 y 共享尺度修复（架构例外）。
+- `dotGLInteractive` 悬停 story + 验证。
+- 感知模式的半透明填充，使带/误差条在深色模式下可读。
+- candlestick（OHLC）/ streamGL / GL 标记的 tooltip 值语义。
+- `dotGL` 配色盘/token 颜色集成。
+- 时间尺度 + 日期轴格式化。
+- `referenceLine` 单独 story；边界情况 story（空/单点/全零/离群值）。
+- 测试（单元 + 导出面 + SSR）和无障碍检查。
+- 跨图表交互协调器——由 indigo 负责；保持 `Chart` 的容器上下文 + 指针流干净，作为集成接缝。

@@ -144,3 +144,46 @@ export const docsDense = {
     'data-testid': 'test selector for automated testing frameworks.',
   },
 };
+
+export const docsZh = {
+  "name": "Code",
+  "description": "具有等宽字体和柔和背景的行内代码元素。用于正文中的简短代码引用。",
+  "usage": {
+    "description": "Code 标记简短的行内引用，例如函数名、变量、文件路径和命令行标志。独立或多行代码片段请使用 CodeBlock。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "在正文中使用 Code 表示简短的技术术语，例如函数名、属性、文件路径或命令行标志。"
+      },
+      {
+        "guidance": true,
+        "description": "当行内代码需要匹配周围文本的字号和行高时，将 size 设为 'inherit'。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将 Code 用于多行或独立代码片段。请改用 CodeBlock，以便读者获得合适的块级格式和语法支持。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将 Code 用作交互式复制或导航控件。需要操作时，请搭配相应的 Button 或 Link。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "容器",
+        "required": true,
+        "description": "包含行内代码内容并绘制背景、排版、内边距和圆角的语义化 code 元素。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "children": "行内代码内容。",
+    "color": "文本颜色。使用 'inherit' 继承周围文本颜色。",
+    "size": "设为 'inherit' 以继承周围的字号和行高。省略则使用代码字体比例尺寸。",
+    "ref": "转发到语义化 code 元素的 ref。",
+    "xstyle": "用于布局自定义的 StyleX 样式。必须是 stylex.create() 值，而不是像 style={{}} 这样的内联样式对象。",
+    "className": "根元素的 CSS 类名。样式优先使用 xstyle。",
+    "style": "根元素的内联样式。优先使用 xstyle 以获得 StyleX 优化的样式。",
+    "data-testid": "供自动化测试框架使用的测试选择器。"
+  }
+};

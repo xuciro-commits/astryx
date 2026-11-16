@@ -83,21 +83,21 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'ToggleButtonGroup',
-  displayName: 'Toggle Button Group',
-  description: '将切换按钮分组，支持单选或多选行为。通过 type 判别联合类型实现类型安全。在触摸呈现下（主要指针为粗指针时），按下时分组像菜单一样跟踪按压：按下一个切换按钮并滑过其他按钮，高亮随之移动。只有松开时所在的按钮会切换，在分组外松开则不切换任何按钮。使用手指时，每个按钮的触控目标向 44 px 扩展，最多到与相邻按钮间距的一半，按钮本身不变大。',
-  propDescriptions: {
-    children: 'ToggleButton 子元素；每个成员都需要 value。分组控制按下状态，并忽略成员的 isPressed、onPressedChange 和 pressedChangeAction。激活成员只调用分组的 onChange，不启动成员的 Action 过渡。',
-    label: '分组的无障碍标签 (aria-label)。',
-    type: '选择模式。single 允许单个激活，multiple 允许多个。',
-    value: '当前选中的值。类型取决于选择模式。',
-    onChange: '选择变更时的回调。',
-    orientation: '按钮组的布局方向。',
-    size: '分组内按钮的默认尺寸。单个按钮可覆盖。',
-    isDisabled: '分组内所有按钮是否禁用。',
-    xstyle: 'StyleX 样式，用于布局自定义。必须是 stylex.create() 的值。',
-    "data-testid": '自动化测试的选择器。',
-  },
+  "name": "ToggleButtonGroup",
+  "displayName": "Toggle Button Group",
+  "description": "将切换按钮分组，以实现互斥（单选）或多选行为。基于 type 的可辨识联合实现类型安全的 value/onChange。在触摸呈现下，按压的跟踪方式类似菜单：按住一个切换按钮并滑过其他按钮，高亮会跟随。只有抬起时所在的切换按钮会切换，在组外抬起则不会切换任何内容。使用手指时，每个切换按钮的点击目标会向 44 px 增长，最大为与相邻按钮间距的一半，而按钮本身不增大。",
+  "propDescriptions": {
+    "children": "ToggleButton 子元素。为每个成员提供 value；组负责其按下状态，并忽略其 isPressed、onPressedChange 和 pressedChangeAction 属性。成员激活会调用组的 onChange，但不启动成员的 Action 过渡。",
+    "label": "组的无障碍标签（aria-label）。",
+    "type": "选择模式。Single 允许一个活动按钮，multiple 允许多个。",
+    "value": "当前选中的值。类型取决于选择模式。",
+    "onChange": "选择变化时调用。",
+    "orientation": "按钮组的布局方向。",
+    "size": "组中按钮的默认尺寸。单个按钮可以覆盖。",
+    "isDisabled": "组中所有按钮是否都禁用。",
+    "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 值。",
+    "data-testid": "供自动化测试框架使用的测试选择器。"
+  }
 };
 
 export const docsDense = {

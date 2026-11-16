@@ -81,54 +81,90 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'Divider',
-  displayName: 'Divider',
-  props: [
+  "name": "Divider",
+  "displayName": "Divider",
+  "props": [
     {
-      name: 'orientation',
-      type: "'horizontal' | 'vertical'",
-      description: '分隔线的方向。',
-      default: "'horizontal'",
+      "name": "orientation",
+      "type": "'horizontal' | 'vertical'",
+      "description": "分隔线的方向。",
+      "default": "'horizontal'"
     },
     {
-      name: 'label',
-      type: 'ReactNode',
-      description:
-        '居中显示在分隔线上的可选标签。数字 0 会保留；null、布尔值和空字符串不渲染标签。',
+      "name": "label",
+      "type": "ReactNode",
+      "description": "居中显示在分隔线上的可选标签。数字 0 会保留；null、布尔值和空字符串不渲染标签。"
     },
     {
-      name: 'variant',
-      type: "'subtle' | 'strong'",
-      description: '分隔线的视觉粗细。',
-      default: "'subtle'",
+      "name": "variant",
+      "type": "'subtle' | 'strong'",
+      "description": "分隔线的视觉粗细。",
+      "default": "'subtle'"
     },
     {
-      name: 'isFullBleed',
-      type: 'boolean',
-      description: '通过负边距将分隔线延伸至容器边缘。',
-      default: 'false',
+      "name": "isFullBleed",
+      "type": "boolean",
+      "description": "使用负外边距将分隔线延伸到容器边缘。",
+      "default": "false"
     },
     {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description:
-        '用于布局自定义的 StyleX 样式（边距、定位、尺寸）。必须是 stylex.create() 的值，不能是 style={{}} 这样的内联样式对象。',
-    },
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 的值，而不是 style={{}} 这样的内联样式对象。"
+    }
   ],
-  theming: {
-    targets: [
-      {className: 'astryx-divider', visualProps: ['orientation', 'variant']},
-    ],
+  "theming": {
+    "targets": [
+      {
+        "className": "astryx-divider",
+        "visualProps": [
+          "orientation",
+          "variant"
+        ]
+      }
+    ]
   },
-  usage: {
-    anatomy,
-    description: 'A visual separator that divides content into distinct sections. Use to create clear boundaries between groups of related content, or to demarcate interactive regions within a layout.',
-    bestPractices: [
-      { guidance: true, description: 'Use subtle dividers between related content sections and strong dividers for high-contrast boundaries.' },
-      { guidance: true, description: 'Add a label to the divider when sections need a visible category heading.' },
-      { guidance: false, description: 'Overuse dividers; rely on spacing and layout to separate content when possible.' },
+  "usage": {
+    "anatomy": [
+      {
+        "name": "分隔线组",
+        "required": true,
+        "description": "在一个可选标签周围排布一条或两条分隔线的分隔线组。"
+      },
+      {
+        "name": "线条",
+        "required": true,
+        "description": "绘制的线段；存在标签时会渲染第二段。"
+      },
+      {
+        "name": "标签",
+        "required": false,
+        "description": "显示在两条线段之间的可选内容。"
+      }
     ],
+    "description": "将内容分隔为不同区段的视觉分隔线。用于在相关内容的组之间建立清晰边界，或划分布局中的交互区域。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "在相关内容区段之间使用细微分隔线，在高对比度边界处使用强烈分隔线。"
+      },
+      {
+        "guidance": true,
+        "description": "当区段需要可见的分类标题时，为分隔线添加标签。"
+      },
+      {
+        "guidance": false,
+        "description": "过度使用分隔线；尽可能依靠间距和布局来分隔内容。"
+      }
+    ]
   },
+  "propDescriptions": {
+    "orientation": "分隔线的方向。",
+    "label": "居中显示在分隔线上的可选标签。数字 0 会保留；null、布尔值和空字符串不渲染标签。",
+    "variant": "分隔线的视觉粗细。",
+    "isFullBleed": "使用负外边距将分隔线延伸到容器边缘。",
+    "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 的值，而不是 style={{}} 这样的内联样式对象。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

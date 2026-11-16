@@ -195,30 +195,74 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'ChatComposer',
-  displayName: 'Chat Composer',
-  description: '聊天编写器布局外壳。排列命名插槽（附件、标题栏、输入、页脚、发送），带有页面圆角容器和同心内圆角。',
-  propDescriptions: {
-    onSubmit: '用户提交消息时调用。',
-    onStop: '用户请求停止生成时调用。',
-    isStopShown: '是否显示停止按钮。',
-    value: '受控输入值。',
-    onChange: '受控模式的输入值变更时调用。序列化字符串包含标记占位符。',
-    placeholder: '输入为空时显示的占位文本。',
-    isDisabled: '禁用编写器。',
-    density: '视觉密度。',
-    elevation:
-      '编写器主体的静止高度。low（默认）保持当前的抬起外观——静止时 low，悬停/聚焦时升至 med。none 会将其扁平化并绘制边框。编辑器通过键盘获得焦点时，两种呈现方式都会显示共享焦点环；指针聚焦不会显示该焦点环。',
-    drawer: '插槽：输入上方的可折叠抽屉——附件、上下文标签等。使用 ChatComposerDrawer。',
-    headerActions: '插槽：标题左侧操作按钮（附件、提及按钮）。使用仅图标 size="sm" 按钮。',
-    headerContext: '插槽：标题右侧上下文信息（上下文窗口使用情况、ProgressBar、辅助文本）。',
-    input: '插槽：自定义输入元素。替换默认输入。使用 ChatComposerInput 实现触发菜单/标记，或通过 useChatComposerContext() 将任意输入（纯 textarea、富文本编辑器）接入组合契约——读取 value/onChange/onSubmit/canSend，并在 inputControlRef 上注册聚焦控制，使点击空白处聚焦生效。',
-    footerActions: '插槽：左对齐的页脚操作（模型选择器等）。',
-    sendActions: '插槽：发送按钮左侧的操作。',
-    sendButton: '插槽：自定义发送按钮。替换默认的发送/停止按钮。',
-    status: '编写器下方（或上方）的状态消息。',
-    statusPosition: '状态渲染位置。',
+  "name": "ChatComposer",
+  "displayName": "Chat Composer",
+  "description": "聊天输入区的布局外壳。以页面圆角容器、浮起效果、仅键盘操作时显示的编辑器焦点环，以及为子元素设置同心内圆角来排列具名插槽（drawer、header、input、footer、send）。",
+  "propDescriptions": {
+    "onSubmit": "当用户提交消息时调用。",
+    "onStop": "当用户请求停止生成时调用。",
+    "isStopShown": "是否显示停止按钮而非发送按钮。",
+    "value": "受控的输入值。",
+    "onChange": "受控模式下的变更处理函数。",
+    "placeholder": "输入框为空时显示的占位文本。",
+    "isDisabled": "禁用输入区。",
+    "density": "视觉密度。",
+    "elevation": "输入区主体的静止浮起高度。`low`（默认值）保持当前的浮起外观：静止时为 low，悬停/聚焦时升至 med。`none` 会压平并绘制边框。无论采用哪种呈现，编辑器中的键盘焦点都会添加共享焦点环；指针焦点不会添加该焦点环。",
+    "drawer": "插槽：输入框上方的可折叠抽屉，用于附件、上下文标签等。请使用 ChatComposerDrawer。",
+    "headerActions": "插槽：左对齐的页眉操作（附件、提及按钮）。请使用仅图标的 size=\"sm\" 按钮。",
+    "headerContext": "插槽：页眉中右对齐的上下文信息（上下文窗口用量、ProgressBar、辅助文本）。",
+    "input": "插槽：自定义输入元素，会替换默认输入框。触发菜单/令牌请使用 ChatComposerInput；也可以将任意输入框（纯 textarea、富文本编辑器）通过 useChatComposerContext() 接入组合约定：读取 value/onChange/onSubmit/canSend，并在 inputControlRef 上注册焦点控件，使点击主体即可聚焦。",
+    "footerActions": "插槽：左对齐的页脚操作（模型选择器等）。",
+    "sendActions": "插槽：发送按钮左侧的操作。",
+    "sendButton": "插槽：自定义发送按钮，会替换默认的发送/停止按钮。",
+    "status": "在输入区下方（或上方）渲染的状态消息。",
+    "statusPosition": "状态消息的渲染位置。"
   },
+  "usage": {
+    "description": "ChatComposer 是聊天界面的消息输入外壳。它协调受控或非受控草稿，提供默认的、支持令牌的输入框以及发送/停止操作，并排列可选的抽屉、页眉、页脚和状态内容。自定义输入框和发送控件可以通过 useChatComposerContext() 接入同一套值、提交、禁用、停止和焦点约定。",
+    "anatomy": [
+      {
+        "name": "输入区框架",
+        "required": true,
+        "description": "外层组合根，将主体与其上方或下方的可选状态消息组合在一起。"
+      },
+      {
+        "name": "输入区主体",
+        "required": true,
+        "description": "包含页眉、输入框和页脚的圆角浮起表面。"
+      },
+      {
+        "name": "抽屉",
+        "required": false,
+        "description": "位于主体之前的内容，用于附件或其他可展开上下文，通常是 ChatComposerDrawer。"
+      },
+      {
+        "name": "页眉",
+        "required": false,
+        "description": "用于起始对齐操作和末端对齐上下文信息的行。"
+      },
+      {
+        "name": "输入框",
+        "required": true,
+        "description": "默认的 ChatComposerInput，或通过 useChatComposerContext() 接入的自定义编辑器。"
+      },
+      {
+        "name": "页脚",
+        "required": true,
+        "description": "用于调用方提供的页脚和发送操作以及主要操作的行。"
+      },
+      {
+        "name": "发送或停止操作",
+        "required": true,
+        "description": "默认的 ChatSendButton 或自定义 sendButton；它提交当前草稿或请求中断。"
+      },
+      {
+        "name": "状态消息",
+        "required": false,
+        "description": "在输入区主体之前或之后渲染的错误或警告反馈。"
+      }
+    ]
+  }
 };
 
 export const docsDense = {

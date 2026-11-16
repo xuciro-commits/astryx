@@ -214,3 +214,48 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useGridFocus",
+  "usage": {
+    "description": "按照 WAI-ARIA 网格模式管理二维网格内的键盘导航。支持用方向键在单元格之间导航、用 Home/End 跳到行边界、用 Ctrl+Home/Ctrl+End 跳到网格边界，以及用 Page Up/Down 触发自定义回调（例如日历中的月份导航）。边界导航回调允许跨网格导航。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "用于日历日期网格：将 onPageUp/onPageDown 接到月份导航，将 onNavigateBefore/onNavigateAfter 用于跨月份的方向键导航。"
+      },
+      {
+        "guidance": true,
+        "description": "同时将 gridRef 和 handleKeyDown 附加到网格容器元素。"
+      },
+      {
+        "guidance": true,
+        "description": "对于 roving-tabindex 网格（例如 Calendar），设置 hasRovingTabIndex: true，并将 handleFocus 附加到容器的 onFocus；用一个 tabindex=0 的焦点目标作为种子，Hook 会修复并移动它。"
+      },
+      {
+        "guidance": false,
+        "description": "不要用于简单的线性列表；一维导航请优先使用 useListFocus。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "网格焦点行为的配置对象。",
+    "options.columns": "网格中的列数。用于上/下导航（按此数量移动单元格）。",
+    "options.cellSelector": "网格中单元格的选择器。应匹配 DOM 顺序中的所有单元格位置（包括禁用/空的），以保持网格几何结构。",
+    "options.isCellFocusable": "判断匹配的单元格是否可接收焦点的谓词。省略时将每个匹配的单元格视为可聚焦。",
+    "options.getFocusTarget": "解析单元格中要聚焦的元素，例如 role=\"gridcell\" 包装器内的按钮。省略时聚焦单元格本身。",
+    "options.onNavigateBefore": "导航即将越过第一个单元格时调用的回调。接收列索引和偏移量（水平为 1，垂直为 columns）。",
+    "options.onNavigateAfter": "导航即将越过最后一个单元格时调用的回调。接收列索引和偏移量。",
+    "options.onPageUp": "Page Up 键的回调（例如在日历中导航到上个月）。接收按键事件，因此 `event.shiftKey` 可以选择更大的步长，例如一年。",
+    "options.onPageDown": "Page Down 键的回调（例如在日历中导航到下个月）。接收按键事件，因此 `event.shiftKey` 可以选择更大的步长，例如一年。",
+    "options.hasRovingTabIndex": "在整个网格中拥有单个 roving Tab 停靠点：一个可聚焦单元格（其解析后的焦点目标）带有 tabindex=\"0\"，其余为 -1。在渲染时标记/修复，并随方向键导航移动。将返回的 handleFocus 附加到容器的 onFocus。"
+  },
+  "returnDescriptions": {
+    "gridRef": "要附加到网格容器元素的 ref。",
+    "handleKeyDown": "要附加到网格容器的按键按下处理程序。",
+    "handleFocus": "网格容器的焦点处理程序。在启用 hasRovingTabIndex 时保持 roving Tab 停靠点同步；否则为空操作，因此始终可以安全附加。",
+    "focusCell": "按索引聚焦特定单元格（限制在有效范围内）。",
+    "focusFirst": "聚焦网格中的第一个可聚焦单元格。",
+    "focusLast": "聚焦网格中的最后一个可聚焦单元格。"
+  }
+};

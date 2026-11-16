@@ -123,3 +123,37 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useLinkify",
+  "usage": {
+    "description": "在纯文本中查找 URL、电子邮件地址和自定义模式，并返回为每个匹配项附带 Link 的 React 节点；这些链接遵循 LinkProvider 以实现客户端路由。凡是用户或工具撰写的纯文本需要生成安全、带样式的链接而又不想预先解析为标记的地方，都可使用它：动态流、评论线程、描述字段。自定义模式通过提供正则表达式加 href 构建函数，将项目特定引用（如 #123 的问题编号、工单 ID）转换为链接——例如将捕获组映射到其 URL 方案的问题跟踪器模式。当匹配项重叠时，最早的胜出；起点相同时，自定义模式优先于内置模式，因此自定义的 #123 模式可与同一字符串中的 URL 检测共存。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "在文本容器中直接渲染返回的节点（<p>{nodes}</p>）；该 Hook 已经将未匹配的纯文本穿插其中。"
+      },
+      {
+        "guidance": true,
+        "description": "将应用（或该区域）包裹在 LinkProvider 中，使检测到的链接使用客户端路由而不是整页导航。"
+      },
+      {
+        "guidance": true,
+        "description": "为自定义模式提供全局标志（g）。没有它，扫描永远不会前进，当文本包含匹配项时渲染也永远不会结束。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在生成链接前将文本预先解析为自己的标记——该 Hook 存在的意义就是让纯字符串可以原样渲染并组合链接。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "text": "要扫描的纯文本。空文本返回只包含它本身的单元素数组。",
+    "options": "配置对象。",
+    "options.patterns": "除内置 URL 和电子邮件检测之外要检测的自定义模式（当 hasBuiltins 为 false 时则替代它们）。每个模式由一个带全局标志的正则表达式、一个 href 构建函数（可使用捕获组）、一个可选的标签构建函数和 isExternal 标志组成。当匹配项重叠时，最早的胜出；起点相同时，自定义模式优先于内置模式。",
+    "options.hasBuiltins": "是否包含内置的 http(s) URL 和电子邮件检测。默认 true；当 patterns 应完全定义哪些内容成为链接时设为 false。"
+  },
+  "returnDescriptions": {
+    "(return value)": "以纯字符串和 Link 元素混合形式返回的文本，每个匹配项一个 Link，可直接在文本容器内渲染。匹配的 URL 在外部打开（isExternal），电子邮件链接为 mailto:，并且每个链接都通过 Link 渲染——因此 LinkProvider 会像手写 Link 一样将点击路由到客户端。"
+  }
+};

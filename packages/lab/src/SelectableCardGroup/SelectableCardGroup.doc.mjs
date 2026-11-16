@@ -142,121 +142,43 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'SelectableCardGroup',
-  displayName: 'Selectable Card Group',
-  description:
-    '一组可选卡片，语义与其选择方式一致。单选（默认）是一个单选按钮组：卡片是共享同一 name 的原生单选按钮，因此整组只占一个 Tab 停靠点，方向键移动并选中，读屏软件会读出位置（“第 2 项，共 3 项”）。多选是一个带名称的复选框组。每个 SelectableCardGroupItem 都是一个 SelectableCard，其输入类型、name 和选中状态由组提供。',
-  props: [
-    {
-      name: 'label',
-      type: 'string',
-      description: '组的可见标签和无障碍名称。',
-      required: true,
-    },
-    {
-      name: 'selectionMode',
-      type: "'single' | 'multiple'",
-      description:
-        '`single`：单选按钮组，一个值。`multiple`：复选框组，任意多个值。',
-      default: "'single'",
-    },
-    {
-      name: 'value',
-      type: 'string | null | ReadonlyArray<string>',
-      description:
-        '选中的值（`single`，未选择时为 `null`）或值列表（`multiple`）。',
-      required: true,
-    },
-    {
-      name: 'onChange',
-      type: '(value: string) => void | (value: string[]) => void',
-      description: '以选中的值（`single`）或新的值列表（`multiple`）调用。',
-      required: true,
-    },
-    {
-      name: 'isLabelHidden',
-      type: 'boolean',
-      description: '在视觉上隐藏标签；它仍为组命名。',
-      default: 'false',
-    },
-    {
-      name: 'description',
-      type: 'string',
-      description: '标签下方的辅助文字，并与组关联。',
-    },
-    {
-      name: 'htmlName',
-      type: 'string',
-      description:
-        '提交组的值时使用的名称。单选按钮按自动生成的名称分组。默认自动生成。',
-    },
-    {
-      name: 'isDisabled',
-      type: 'boolean',
-      description: '禁用所有卡片；它们仍可聚焦，并读出禁用状态。',
-      default: 'false',
-    },
-    {
-      name: 'orientation',
-      type: "'horizontal' | 'vertical'",
-      description: '`horizontal` 将卡片按行换行排列；`vertical` 纵向堆叠。',
-      default: "'horizontal'",
-    },
-    {
-      name: 'children',
-      type: 'ReactNode',
-      description:
-        'SelectableCardGroupItem 卡片。每张卡片接受一个 `value`，以及除 isSelected 和 onChange 之外的 SelectableCard 属性。',
-      required: true,
-    },
-    {
-      name: 'containerXstyle',
-      type: 'StyleXStyles',
-      description:
-        '作用于标签、描述和卡片外层 Field 容器的 StyleX 样式（外边距、定位、尺寸）。该组由 Field 组成，因此不接受根级 xstyle、className 或 style。',
-    },
-    {
-      name: 'containerClassName',
-      type: 'string',
-      description: 'Field 容器的类名，作用范围与 containerXstyle 相同。',
-    },
-    {
-      name: 'containerStyle',
-      type: 'CSSProperties',
-      description: 'Field 容器的内联样式，作用范围与 containerXstyle 相同。',
-    },
-  ],
-  theming: {
-    targets: [
+  "name": "SelectableCardGroup",
+  "displayName": "Selectable Card Group",
+  "description": "一组可选卡片，带有其选择语义。一个选择（默认）是单选组：卡片是共享同一名称的原生单选按钮，因此该组是一个 Tab 停靠点，方向键移动并选择，屏幕阅读器会读出位置（\"2 of 3\"）。多个选择是命名的复选框组。每个 SelectableCardGroupItem 都是一个 SelectableCard，其 input、name 和选择状态来自该组。",
+  "usage": {
+    "description": "用于在几个以卡片呈现的丰富选项之间做选择：套餐、外观、布局。一个选择能带给用户预期的单选组键盘操作和位置；当多张卡片可以同时开启时使用 `multiple`。",
+    "bestPractices": [
       {
-        className: 'astryx-selectable-card-group',
-        visualProps: ['orientation', 'selectionMode'],
+        "guidance": true,
+        "description": "给每张卡片一个命名其选项的 `label`；它是屏幕阅读器读出的单选按钮或复选框名称。"
       },
-    ],
+      {
+        "guidance": true,
+        "description": "当产品有合理默认值时，为单选初始化一个 value，使 Tab 停靠点落在它上面。"
+      },
+      {
+        "guidance": false,
+        "description": "将按钮或链接放在卡片内；整张卡片是单选按钮或复选框的目标。"
+      },
+      {
+        "guidance": false,
+        "description": "不要用它进行导航或操作；那些请使用 ClickableCard。"
+      }
+    ]
   },
-  usage: {
-    description:
-      '用于在少数以卡片呈现的丰富选项中做选择：套餐、外观、布局。单选为用户提供他们预期的单选按钮组键盘操作和位置播报；当可以同时开启多张卡片时，使用 `multiple`。',
-    bestPractices: [
-      {
-        guidance: true,
-        description:
-          '为每张卡片提供一个说明其选项的 `label`；它就是读屏软件读出的单选按钮或复选框名称。',
-      },
-      {
-        guidance: true,
-        description:
-          '当产品有合理的默认值时，让单选从一个值开始，这样 Tab 停靠点会落在它上面。',
-      },
-      {
-        guidance: false,
-        description:
-          '在卡片内放置按钮或链接；整张卡片都是单选按钮或复选框的目标。',
-      },
-      {
-        guidance: false,
-        description: '用于导航或操作；这些场景请使用 ClickableCard。',
-      },
-    ],
-  },
+  "propDescriptions": {
+    "label": "组的可见标签和可访问名称。",
+    "selectionMode": "`single`：带有单个值的单选组。`multiple`：可包含任意数量值的复选框组。",
+    "value": "所选的值（`single`，未选择时为 `null`）或值列表（`multiple`）。",
+    "onChange": "以所选值（`single`）或新的值列表（`multiple`）调用。",
+    "isLabelHidden": "视觉隐藏标签；它仍会命名该组。",
+    "description": "标签下方的辅助文本，与组关联。",
+    "htmlName": "组的 value 提交时使用的名称。单选按钮按生成的名称分组。默认为生成的名称。",
+    "isDisabled": "禁用每张卡片；它们仍可聚焦并宣布为禁用。",
+    "orientation": "`horizontal` 将卡片按行排列；`vertical` 将它们堆叠。",
+    "children": "SelectableCardGroupItem 卡片。每张接受 `value` 以及除 isSelected 和 onChange 之外的 SelectableCard 属性。",
+    "containerXstyle": "围绕标签、描述和卡片的 Field 盒的 StyleX 样式（外边距、定位、尺寸）。该组组合了 Field，因此不接受根级 xstyle、className 或 style。",
+    "containerClassName": "Field 盒的类名。定位方式与 containerXstyle 相同。",
+    "containerStyle": "Field 盒的内联样式。定位方式与 containerXstyle 相同。"
+  }
 };

@@ -135,3 +135,38 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useTruncation",
+  "usage": {
+    "description": "检测元素的文本是否被截断——单行溢出或被限制为多行——并返回完整文本，在尺寸或内容变化时更新。基于共享的 ResizeObserver 和共享的 MutationObserver，因此数百个表格单元格每种只创建一个观察器；首次测量在提交后的微任务中批量执行，而不是在挂载期间为每段文本强制一次布局。凡是在被截断的单元格才应显示完整内容的场景都可用它：基于 `isTruncated` 和 `fullText` 组合 Tooltip，而不是始终渲染。Text 和 Heading 的截断 Tooltip 就构建在它之上；在将自己的截断反馈组合进组件时，可直接使用它。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "仅当 `isTruncated` 为 true 时渲染显示完整内容的 Tooltip，并从 `fullText` 读取工具提示文本：放得下的单元格不显示 Tooltip，文本也始终与测量结果一致。"
+      },
+      {
+        "guidance": true,
+        "description": "在 Hook 旁边自行应用匹配的截断——`maxLines` 为 1 时用 `white-space: nowrap`，更多行时用 `-webkit-line-clamp`——使用户看到的内容与 Hook 测量的内容保持相同形状。"
+      },
+      {
+        "guidance": true,
+        "description": "每个被测量元素复用一个 `useTruncation` 实例；ref 回调会清理自己的观察器，因此替换元素是安全的。"
+      },
+      {
+        "guidance": false,
+        "description": "对受限文本自行比较 `scrollHeight` 与 `offsetHeight`：当 `-webkit-line-clamp` 生效时，浏览器报告的是截断后的尺寸，而这正是 Range 测量存在的场景。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "配置对象。",
+    "options.maxLines": "截断前的最大行数。1 检测单行溢出（`scrollWidth` 对比 `offsetWidth`）；大于 1 的值通过 Range 测量真实内容高度来检测 `-webkit-line-clamp` 的截断，绕过被截断的 `scrollHeight`。0 禁用检测：`isTruncated` 始终为 false，`fullText` 始终为空。",
+    "options.isExpanded": "当文本完整显示时传入 true；被截断时 Hook 仍会继续报告是否被截断。"
+  },
+  "returnDescriptions": {
+    "ref": "附加到被测量文本元素的 ref 回调。附加到另一个元素会重新观察它，并清理之前的观察。",
+    "isTruncated": "文本当前是否被截断。用于组合显示完整文本的 Tooltip：仅当它为 true 时渲染工具提示，使放得下的单元格不显示。",
+    "fullText": "元素当前的文本内容，在每次测量时捕获，供被截断单元格的 Tooltip 使用。会跟随不改变尺寸的内容变化（例如固定宽度状态行中文字切换）。"
+  }
+};

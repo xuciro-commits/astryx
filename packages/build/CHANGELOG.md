@@ -14,13 +14,13 @@
 
 # 0.7.13
 
-#### Fixes
+#### 问题修复
 
-- dependency floors move to current releases: the build package needs autoprefixer 10.6.2, browserslist 4.29.5 and lightningcss 1.33.0; the CLI needs ignore 7.0.14, jscodeshift 17.4.0, linkedom 0.18.15, zod 4.6.7 and @stylexjs/babel-plugin 0.19.1; each theme needs lucide-react 1.66.0. Peer ranges do not change. (#10709)
+- 依赖下限提升至当前版本：build 包需要 autoprefixer 10.6.2、browserslist 4.29.5 和 lightningcss 1.33.0；CLI 需要 ignore 7.0.14、jscodeshift 17.4.0、linkedom 0.18.15、zod 4.6.7 和 @stylexjs/babel-plugin 0.19.1；每个主题需要 lucide-react 1.66.0。Peer 范围不变。(#10709)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @cixzhang
 
@@ -28,14 +28,14 @@ Thanks to everyone who contributed to this release:
 
 # 0.7.12
 
-#### Fixes
+#### 问题修复
 
-- A swizzled copy can now compile as Astryx source in the Babel, PostCSS, and Vite integrations. Every module under a folder that holds an `astryx-swizzle.json` marker gets the library class prefix and lands in `@layer astryx-base`, below `astryx-theme`, so a theme's component overrides reach it. `astryx swizzle` does not write the marker yet: add the file to the swizzle output folder. Under webpack, `withAstryx()` rebuilds a cached copy when its marker appears or disappears. Turbopack builds do not read the marker yet. No API changes. (#10334)
-- `astryx swizzle` writes an `astryx-swizzle.json` marker into an output folder it owns (one the copy creates, an empty one, or one it marked before), naming each package the folder's copies came from and its version. `@astryxdesign/build`'s Babel, PostCSS and Vite integrations, and `withAstryx()` under webpack, compile the copies under that folder below `astryx-theme`, so a theme's component overrides reach a swizzled component as they reach the package component. For a folder that already holds other files it writes no marker and says what it found and how to add the marker by hand; the `swizzle.copy` receipt reports this in a new optional `marker` field. Under Turbopack and with the stock StyleX plugins, a copy's styles still land above the theme. The marker is not listed among the copy's files. (#10483)
+- swizzle 出来的副本现在可以在 Babel、PostCSS 和 Vite 集成中作为 Astryx 源码编译。包含 `astryx-swizzle.json` 标记文件的文件夹下的每个模块都会获得库类名前缀，并落入 `astryx-theme` 之下的 `@layer astryx-base`，因此主题的组件覆盖能够作用到它。`astryx swizzle` 目前还不会写入该标记文件：请手动将该文件添加到 swizzle 输出文件夹。在 webpack 下，`withAstryx()` 会在标记文件出现或消失时重建缓存的副本。Turbopack 构建目前还不会读取该标记文件。无 API 变更。(#10334)
+- `astryx swizzle` 会向它拥有的输出文件夹（副本创建的文件夹、空文件夹，或它之前标记过的文件夹）写入一个 `astryx-swizzle.json` 标记文件，其中标明该文件夹中的副本来自哪些包以及各包的版本。`@astryxdesign/build` 的 Babel、PostCSS 和 Vite 集成，以及 webpack 下的 `withAstryx()`，会把该文件夹中的副本编译到 `astryx-theme` 之下，因此主题的组件覆盖能像作用于包内组件那样作用于 swizzle 出来的组件。对于已经存放其他文件的文件夹，它不会写入标记文件，而是说明它发现了什么以及如何手动添加标记文件；`swizzle.copy` 的 receipt 会在新增的可选 `marker` 字段中报告这一点。在 Turbopack 下以及使用原生 StyleX 插件时，副本的样式仍会落在主题之上。该标记文件不会列入副本的文件清单中。(#10483)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @cixzhang
 
@@ -59,17 +59,17 @@ Thanks to everyone who contributed to this release:
 
 # 0.7.7
 
-#### New Features
+#### 新功能
 
-- `withAstryx()` builds Astryx from source under Turbopack instead of refusing to. It points each package's documented entry points at their source (Core, Lab, Charts and Rich Text), compiles that source with the settings the prebuilt stylesheets use, and keeps the app's own Turbopack rules off it. The new PostCSS plugin `@astryxdesign/build/next/postcss` replaces an `@astryx;` rule with each source-built package's prebuilt stylesheet, compiled from that source: the same rules and selectors, in the same order, inside `@layer astryx-base`. To set it up, list `@astryxdesign/build/next/postcss` in the app's PostCSS config and put one `@astryx;` rule in the app's global stylesheet (option `cwd`, the app root, defaults to the working directory). Under Turbopack, the webpack setup's `@astryxdesign/build/postcss` refuses to run beside `withAstryx()`, since its rules never match the classes Turbopack renders. In this source build, an installed Astryx package with a malformed `package.json` fails the build instead of being left out. The webpack setup is unchanged: it builds Core and Lab from source, and Rich Text and Charts keep their prebuilt stylesheets there.
+- `withAstryx()` 在 Turbopack 下改为从源码构建 Astryx，而不是拒绝构建。它把每个包文档化的入口点指向其源码（Core、Lab、Charts 和 Rich Text），用预构建样式表所使用的设置编译这些源码，并让应用自身的 Turbopack 规则不作用于它。新的 PostCSS 插件 `@astryxdesign/build/next/postcss` 会把 `@astryx;` 规则替换为每个源码构建包的预构建样式表，这些样式表从该源码编译而来：规则和选择器相同，顺序相同，位于 `@layer astryx-base` 内。要完成设置，请在应用的 PostCSS 配置中列出 `@astryxdesign/build/next/postcss`，并在应用的全局样式表中放入一条 `@astryx;` 规则（选项 `cwd` 即应用根目录，默认为工作目录）。在 Turbopack 下，webpack 设置中的 `@astryxdesign/build/postcss` 会拒绝与 `withAstryx()` 一起运行，因为它的规则永远不会匹配 Turbopack 渲染出的类名。在此源码构建中，已安装的 Astryx 包如果 `package.json` 格式有误，会令构建失败，而不是被忽略。webpack 设置保持不变：它从源码构建 Core 和 Lab，而 Rich Text 和 Charts 在该设置下继续使用预构建样式表。
 
-#### Other Changes
+#### 其他变更
 
-- The prebuilt stylesheet build and the Turbopack source build share one module walk, compile and layer block, so a source build prints the prebuilt rules by construction. Every prebuilt stylesheet keeps its bytes.
+- 预构建样式表构建与 Turbopack 源码构建共用同一个模块遍历、编译和分层代码块，因此源码构建会按构造方式输出预构建规则。每个预构建样式表的字节内容保持不变。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @vjeux
 
@@ -77,22 +77,22 @@ Thanks to everyone who contributed to this release:
 
 # 0.7.6
 
-#### New Features
+#### 新功能
 
-- A production build with `astryxStylex` warns when its stylesheet reads a StyleX-generated custom property that nothing declares, naming the variable and the rule that reads it. It checks the class-name prefixes the build uses, `stylexOverrides.classNamePrefix` included, and never reports a custom property an app declares in its own CSS. (#8075)
+- 使用 `astryxStylex` 的生产构建在其样式表读取某个没有任何声明的 StyleX 生成自定义属性时会发出警告，并指出该变量以及读取它的规则。它会检查构建所使用的类名前缀，包括 `stylexOverrides.classNamePrefix`，并且绝不会报告应用自身 CSS 中声明的自定义属性。(#8075)
 
-#### Fixes
+#### 问题修复
 
-- `astryxStylex` resolves `defineConsts` values read from another file. With the `{stylexOptions}` form (the one Storybook uses), a file that read only constants from a `.stylex.ts` module lost that import once StyleX compiled it, so the constants never reached the CSS: a constant used as a media-query key failed the build ("Invalid empty selector") and one used as a value shipped as a custom property nothing declares. In either form, a constant defined on the other side of the layer split, or in an Astryx package (compiled with the library class-name prefix) and read from an app file (compiled with its own), stayed unresolved. (#8075)
-- Published packages no longer include repository test and benchmark files, reducing install size without changing exports. (#9153)
+- `astryxStylex` 现在可以解析从另一个文件读取的 `defineConsts` 值。使用 `{stylexOptions}` 形式（Storybook 使用的形式）时，如果一个文件只从 `.stylex.ts` 模块读取常量，StyleX 编译后该导入会丢失，导致这些常量从未进入 CSS：用作媒体查询键的常量会导致构建失败（"Invalid empty selector"），而用作值的常量则会作为没有任何声明的自定义属性发布。无论采用哪种形式，定义在分层拆分另一侧的常量，或者定义在 Astryx 包中（使用库类名前缀编译）并从应用文件读取（使用其自身前缀编译）的常量，都会保持未解析状态。(#8075)
+- 已发布的包不再包含仓库的测试和基准测试文件，从而在保持导出不变的同时减小安装体积。(#9153)
 
-#### Documentation
+#### 文档
 
-- The Next.js setup in the README says that its Babel config turns off SWC, which `next/font` needs, so a fresh `create-next-app` layout must drop its `next/font` import before the webpack source build will compile. (#9439)
+- README 中的 Next.js 设置说明，其 Babel 配置会关闭 SWC，而 `next/font` 需要 SWC，因此新建的 `create-next-app` 布局必须先移除 `next/font` 导入，webpack 源码构建才能编译。(#9439)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @cixzhang
 - @parinith-web
@@ -102,13 +102,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.7.5
 
-#### Documentation
+#### 文档
 
-- Package links now point to the project's GitHub home, `meta/astryx`.
+- 包链接现在指向项目的 GitHub 主页 `meta/astryx`。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @cixzhang
 
@@ -124,18 +124,18 @@ Thanks to everyone who contributed to this release:
 
 # 0.7.2
 
-#### Fixes
+#### 问题修复
 
-- `withAstryx()` builds again under pnpm's default isolated layout. It no longer turns off webpack's symlink resolution, which hid each Astryx package's own dependencies (`Can't resolve 'intl-messageformat'`, `'lucide-react'`). Astryx modules are still matched by their real path, so a workspace-linked package keeps resolving its `source` entries.
-- The PostCSS plugin now scans what each installed Astryx package publishes (its `files` field, or the whole package minus nested `node_modules` when it has none) instead of everything under `node_modules/@astryxdesign`. A package linked from a workspace no longer drags in its own `node_modules`, whose links can cycle back to it and made the build run out of memory, or its unpublished test fixtures. Registry installs scan the same files as before.
+- `withAstryx()` 在 pnpm 默认的隔离布局下重新可以构建。它不再关闭 webpack 的符号链接解析，因为那会隐藏每个 Astryx 包自身的依赖（`Can't resolve 'intl-messageformat'`、`'lucide-react'`）。Astryx 模块仍按其真实路径匹配，因此工作区链接的包仍能解析其 `source` 条目。
+- PostCSS 插件现在会扫描每个已安装 Astryx 包实际发布的内容（其 `files` 字段；若没有该字段，则为整个包减去嵌套的 `node_modules`），而不是扫描 `node_modules/@astryxdesign` 下的所有内容。从工作区链接的包不再拖入自身的 `node_modules`（其中的链接可能循环回该包，导致构建内存耗尽），也不再拖入未发布的测试夹具。从注册表安装的包扫描的文件与之前相同。
 
-#### Performance
+#### 性能
 
-- The PostCSS plugin no longer loads the app's root Babel config when it compiles Astryx source. In the documented Next.js setup that config (`next/babel` plus Astryx's StyleX plugin) ran over every installed Astryx module on each build only for the plugin to read StyleX metadata, roughly doubling the CSS pass. The emitted CSS is unchanged, and the app's own files still compile with its config.
+- PostCSS 插件在编译 Astryx 源码时不再加载应用的根 Babel 配置。在文档化的 Next.js 设置中，该配置（`next/babel` 加上 Astryx 的 StyleX 插件）每次构建都会跑遍每个已安装的 Astryx 模块，而插件只是为了读取 StyleX 元数据，这使 CSS 处理大约翻倍。输出的 CSS 保持不变，应用自身的文件仍用其配置编译。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @vjeux
 
@@ -147,13 +147,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.7.0
 
-#### Fixes
+#### 问题修复
 
-- Preserve native `light-dark()` token values in Vite source builds by defaulting Lightning CSS to Astryx's supported browser floor. (#7330)
+- 通过将 Lightning CSS 默认设为 Astryx 支持的浏览器下限，在 Vite 源码构建中默认保留原生 `light-dark()` token 值。(#7330)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @cixzhang
 
@@ -177,16 +177,16 @@ Thanks to everyone who contributed to this release:
 
 # 0.6.4
 
-#### Fixes
+#### 问题修复
 
-- Keep PostCSS and Vite processing inside `@astryxdesign/build`'s declared dependency boundary (#6605)
-  Packed consumers no longer depend on workspace hoisting to find PostCSS helpers or CSS compatibility processors. The package now owns Autoprefixer, Browserslist, and Lightning CSS, and a clean isolated-install test exercises the published tarball's PostCSS helper and Vite output.
-- Make source builds fail on unsupported StyleX declarations and load shared StyleX output from every Vite HTML entry.
-  Nested pseudo-elements and `stylex.keyframes()` now have production-build regression coverage, and the maintained capability registry tracks the installed StyleX version.
+- 将 PostCSS 和 Vite 处理保持在 `@astryxdesign/build` 声明的依赖边界之内 (#6605)
+  打包后的消费者不再依赖工作区提升来查找 PostCSS 辅助函数或 CSS 兼容性处理器。该包现在自行拥有 Autoprefixer、Browserslist 和 Lightning CSS，并且有一项干净的隔离安装测试来验证发布 tarball 的 PostCSS 辅助函数和 Vite 输出。
+- 让源码构建在遇到不支持的 StyleX 声明时失败，并从每个 Vite HTML 入口加载共享的 StyleX 输出。
+  嵌套伪元素和 `stylex.keyframes()` 现在已有生产构建回归覆盖，维护中的能力注册表会跟踪已安装的 StyleX 版本。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @cixzhang
 
@@ -206,13 +206,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.6.0
 
-#### Fixes
+#### 问题修复
 
-- `withAstryx()` refuses a Turbopack config instead of building an unstyled app. Every alias the helper installs lives in `nextConfig.webpack`, which Turbopack never calls, so the app resolved `@astryxdesign/*` to dist while PostCSS compiled the library from source — disjoint class names, an exit code of 0, and an unstyled page. It now throws, naming both ways out: `--webpack`, or drop the helper and consume the pre-built package. Also warns when the merged alias map claims none of the packages, which reaches the same unstyled state by another route. (#6109)
+- `withAstryx()` 在遇到 Turbopack 配置时会拒绝，而不是构建出一个没有样式的应用。该辅助函数安装的每个别名都位于 `nextConfig.webpack` 中，而 Turbopack 从不调用它，因此应用会把 `@astryxdesign/*` 解析到 dist，而 PostCSS 却从源码编译该库——类名彼此不一致、退出码为 0、页面没有样式。现在它会抛出错误，并指出两条出路：`--webpack`，或者去掉该辅助函数并改用预构建包。当合并后的别名映射没有覆盖任何包时，它也会发出警告，因为这通过另一条路径导致同样的无样式状态。(#6109)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @joaodotwork
 
@@ -224,13 +224,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.5.3
 
-#### Fixes
+#### 问题修复
 
-- `withAstryx()` now resolves an app's own `@astryxdesign/*` imports to the packages' `source` entries. The scoped webpack rule only governs requests issued from inside `node_modules`, so app code resolved the library through `default` to `dist` while PostCSS compiled it from source — the two emit disjoint class names and the app rendered unstyled without erroring. (#5932)
+- `withAstryx()` 现在会把应用自身对 `@astryxdesign/*` 的导入解析到各包的 `source` 条目。作用域限定的 webpack 规则只管理从 `node_modules` 内部发出的请求，因此应用代码会通过 `default` 把库解析到 `dist`，而 PostCSS 却从源码编译它——两者产出的类名互不相交，应用会在不报错的情况下渲染成无样式。(#5932)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @PRIEYAN
 
@@ -242,16 +242,16 @@ Thanks to everyone who contributed to this release:
 
 # 0.5.1
 
-#### Fixes
+#### 问题修复
 
-- Vite build: Astryx and product styles are split into their own cascade layers, so a theme's component overrides apply in a production build (#5410)
-  StyleX emits every rule it collects into one top-level `@layer priority1…priorityN`. The dev server re-served those partitioned by source file — Astryx's own styles into `astryx-base`, the app's into `product` — but a build did neither, so the priority layers landed outside the `@layer reset, astryx-base, astryx-theme, product` order and outranked all of it. Every `components: {…}` override a theme set — a colour, a radius, a public custom property — was silently dropped in the built app while working in dev.
+- Vite 构建：Astryx 和产品样式被拆分为各自的级联层，因此主题的组件覆盖在生产构建中也能生效 (#5410)
+  StyleX 把它收集到的每条规则都输出到一个顶层 `@layer priority1…priorityN` 中。开发服务器会按源文件重新提供这些分区后的规则——Astryx 自身的样式进入 `astryx-base`，应用的样式进入 `product`——但构建过程两者都没做，因此优先级层落在 `@layer reset, astryx-base, astryx-theme, product` 顺序之外，并压倒了整个顺序。主题设置的每个 `components: {…}` 覆盖——颜色、圆角、公共自定义属性——在构建后的应用中都被静默丢弃，而在开发环境中却正常工作。
 
-  The build now runs the same partition the dev server does, from the same helper, so the promised order holds in both: Astryx's styles are overridable by a theme, and an app's own styles still outrank everything.
+  现在构建会通过与开发服务器相同的辅助函数执行相同的分区，因此承诺的顺序在两者中都成立：Astryx 的样式可以被主题覆盖，而应用自身的样式仍然优先于一切。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @cixzhang
 
@@ -291,16 +291,16 @@ Thanks to everyone who contributed to this release:
 
 # 0.4.0
 
-#### Fixes
+#### 问题修复
 
-- build: import `node:fs` statically so the Vite plugin's package discovery survives the ESM build (#4972)
-  `astryxStylex()`'s config plugin discovered installed `@astryxdesign/*` packages with `require('node:fs')`. The `./vite` export ships only an ESM bundle (`dist/vite.mjs`, esbuild `format: 'esm'`), where esbuild lowers `require` to a shim that throws `Dynamic require of "node:fs" is not supported` — always, since native `require` never exists under ESM. The surrounding `try/catch` swallowed the throw, so `optimizeDeps.exclude` silently fell back to `['@astryxdesign/core']` and every other installed Astryx package stayed eligible for Vite pre-bundling, which strips `stylex.create`/`defineVars` calls and causes runtime errors.
+- build：以静态方式导入 `node:fs`，让 Vite 插件的包发现逻辑在 ESM 构建中存活 (#4972)
+  `astryxStylex()` 的配置插件用 `require('node:fs')` 发现已安装的 `@astryxdesign/*` 包。`./vite` 导出只发布 ESM bundle（`dist/vite.mjs`，esbuild `format: 'esm'`），esbuild 会把 `require` 降级为一个 shim，该 shim 抛出 `Dynamic require of "node:fs" is not supported`——而且总是如此，因为在 ESM 下原生 `require` 从不存在。周围的 `try/catch` 吞掉了该异常，于是 `optimizeDeps.exclude` 静默回退到 `['@astryxdesign/core']`，其他所有已安装的 Astryx 包仍然有资格被 Vite 预打包，而预打包会剥离 `stylex.create`/`defineVars` 调用并导致运行时错误。
 
-  The discovery now uses a static `import fs from 'node:fs'`, which esbuild preserves as a real ESM import. A regression test compiles `vite.ts` with the same esbuild options as `build.mjs` and runs the discovery in a child `node` process, since in-process test runners provide a `require` shim that masks the bug.
+  现在发现逻辑使用静态的 `import fs from 'node:fs'`，esbuild 会将其保留为真正的 ESM 导入。一项回归测试用与 `build.mjs` 相同的 esbuild 选项编译 `vite.ts`，并在子 `node` 进程中运行发现逻辑，因为进程内测试运行器提供的 `require` shim 会掩盖该缺陷。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @is-jain
 
@@ -316,14 +316,14 @@ Thanks to everyone who contributed to this release:
 
 # 0.1.9
 
-#### Fixes
+#### 问题修复
 
-- Scope the `source` resolve condition to @astryxdesign packages in withAstryx
-  `withAstryx` set webpack's `conditionNames` to `['source', …]` globally, which resolved _any_ dependency shipping a `source` export to its raw TypeScript — not just Astryx packages. Third-party deps that ship a `source` export (e.g. `lexical`, pulled in by the new RichTextEditor lab component) were then fed untranspiled `.ts` through Next's babel and failed on syntax like `declare` class fields.
+- 在 withAstryx 中将 `source` 解析条件限定到 @astryxdesign 包
+  `withAstryx` 全局地把 webpack 的 `conditionNames` 设置为 `['source', …]`，这会把*任何*提供 `source` 导出的依赖解析为其原始 TypeScript——而不只是 Astryx 包。提供 `source` 导出的第三方依赖（例如 `lexical`，由新的 RichTextEditor lab 组件引入）随后通过 Next 的 babel 接收到未经转译的 `.ts`，并在 `declare` 类字段之类的语法上失败。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @potatowagon
 
@@ -343,13 +343,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.1.5
 
-#### Other Changes
+#### 其他变更
 
-- Use node: protocol prefix for Node.js builtin imports (#3737)
+- Node.js 内置模块导入使用 node: 协议前缀 (#3737)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @Han5991
 
@@ -361,13 +361,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.1.3
 
-#### Fixes
+#### 问题修复
 
-- Use `pnpm build` in the `prepack` script so publishing no longer fails the `devEngines` package-manager check (#3564).
+- 在 `prepack` 脚本中使用 `pnpm build`，使发布不再触发 `devEngines` 包管理器检查失败 (#3564)。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @cixzhang
 
@@ -375,13 +375,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.1.2
 
-#### Fixes
+#### 问题修复
 
-- ship TypeScript declarations for the `@astryxdesign/build/vite` export
+- 为 `@astryxdesign/build/vite` 导出提供 TypeScript 声明
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @benjipeng
 
@@ -389,23 +389,16 @@ Thanks to everyone who contributed to this release:
 
 # 0.1.1
 
-#### Breaking Changes
+#### 破坏性变更
 
-- Rename `@xds/build` exports off the xds name
-  The Vite integration's public exports are renamed: `xdsStylex` -> `astryxStylex`,
-  and the option types `XDSVitePluginOptions` / `XDSVitePluginLegacyOptions` ->
-  `AstryxVitePluginOptions` / `AstryxVitePluginLegacyOptions`. Update imports from
-  `@xds/build/vite` accordingly. Internal plugin names and the babel wrapper are
-  also rebranded. Part of removing `xds` naming from the public API.
-- Rename Next.js helper `withXDS` to `withAstryx`
-  The Next.js configuration wrapper is renamed `withXDS` -> `withAstryx`
-  (exported from `@astryxdesign/build/next`). Update your `next.config.mjs`:
-  `import {withAstryx} from '@astryxdesign/build/next'`. Part of removing xds
-  naming from the public API.
+- 重命名 `@xds/build` 的导出，去掉 xds 名称
+  Vite 集成的公共导出已重命名：`xdsStylex` -> `astryxStylex`，选项类型 `XDSVitePluginOptions` / `XDSVitePluginLegacyOptions` -> `AstryxVitePluginOptions` / `AstryxVitePluginLegacyOptions`。请相应更新来自 `@xds/build/vite` 的导入。内部插件名称和 babel 包装器也已改名。这是从公共 API 中移除 `xds` 命名工作的一部分。
+- 将 Next.js 辅助函数 `withXDS` 重命名为 `withAstryx`
+  Next.js 配置包装器已重命名：`withXDS` -> `withAstryx`（从 `@astryxdesign/build/next` 导出）。请更新你的 `next.config.mjs`：`import {withAstryx} from '@astryxdesign/build/next'`。这是从公共 API 中移除 xds 命名工作的一部分。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @ejhammond
 
@@ -413,39 +406,24 @@ Thanks to everyone who contributed to this release:
 
 # 0.1.0
 
-#### Breaking Changes
+#### 破坏性变更
 
-- Default the StyleX library atomic-class prefix to `astryx` (was `xds`)
-  `@astryxdesign/build`'s babel/Vite integrations now emit library atomic classes as
-  `.astryx78zum5` by default instead of `.xds78zum5` (the `libraryPrefix` /
-  `stylexPrefix` option default flips `xds` -> `astryx`). This is an opaque,
-  StyleX-generated namespace — consumers don't target these classes directly —
-  but it completes the removal of `xds` naming from build output. Consumers that
-  explicitly configured `libraryPrefix`/`stylexPrefix` are unaffected.
-- Remove the XDS-prefix compatibility layer — astryx is now the only public surface
-  This release erases all `xds` naming from the public API; there is no compatibility
-  window. Consumers must migrate (we own all consumers pre-OSS):
-- Remove the daily, brutalist, and default themes; neutral is the new baseline
-  Three theme packages are removed from the repo and will no longer be published:
+- 将 StyleX 库原子类前缀默认设为 `astryx`（原为 `xds`）
+  `@astryxdesign/build` 的 babel/Vite 集成现在默认把库原子类输出为 `.astryx78zum5`，而不是 `.xds78zum5`（`libraryPrefix` / `stylexPrefix` 选项的默认值从 `xds` 翻转为 `astryx`）。这是一个不透明的、由 StyleX 生成的命名空间——消费者不会直接针对这些类——但它完成了从构建输出中移除 `xds` 命名的工作。显式配置了 `libraryPrefix`/`stylexPrefix` 的消费者不受影响。
+- 移除 XDS 前缀兼容层——astryx 现在是唯一的公共接口
+  此版本从公共 API 中抹去所有 `xds` 命名；没有兼容窗口。消费者必须迁移（在开源前我们拥有所有消费者）：
+- 移除 daily、brutalist 和 default 主题；neutral 成为新的基线
+  三个主题包已从仓库移除，将不再发布：
 
-#### Other Changes
+#### 其他变更
 
-- **Component names:** the `XDS*` aliases are gone — use bare names (`Button` not
-  `XDSButton`, `useTheme` not `useXDSTheme`, `ButtonProps` not `XDSButtonProps`). The
-  `drop-xds-prefix-imports` codemod automates this.
-- **CSS classes:** components emit only `.astryx-*` (the dual `.xds-*` class is gone).
-  Update custom CSS selectors `.xds-button` -> `.astryx-button` (prop/state value classes
-  like `.primary`/`.sm` are unchanged).
-- **data attributes:** only `data-astryx-theme` / `data-astryx-media` are written; update
-  custom selectors and SSR root attributes off `data-xds-*`.
-- **CSS layers:** `@layer xds-base` / `xds-theme` are renamed to `astryx-base` /
-  `astryx-theme`; update your `@layer` order line and any PostCSS `layersBefore` config.
-  `@astryxdesign/build`'s default library layer is now `astryx-base`.
-- **Pre-compiled stylesheet:** the `@astryxdesign/core/xds.css` export is removed — import
-  `@astryxdesign/core/astryx.css`.
-- **CSS custom properties:** the `--xds-*` padding fallback is gone; set `--astryx-*`.
-- **CLI config key:** `@astryxdesign/cli` reads the package.json `"astryx"` field (was `"xds"`).
-  Rename the block; a stale `"xds"` key silently drops the package from discovery.
+- **组件名称：** `XDS*` 别名已移除——请使用裸名称（`Button` 而不是 `XDSButton`，`useTheme` 而不是 `useXDSTheme`，`ButtonProps` 而不是 `XDSButtonProps`）。`drop-xds-prefix-imports` codemod 可自动完成此操作。
+- **CSS 类：** 组件只输出 `.astryx-*`（双份的 `.xds-*` 类已移除）。请将自定义 CSS 选择器 `.xds-button` -> `.astryx-button`（`.primary`/`.sm` 之类的 prop/状态值类保持不变）。
+- **data 属性：** 只写入 `data-astryx-theme` / `data-astryx-media`；请将自定义选择器和 SSR 根属性从 `data-xds-*` 更新过来。
+- **CSS 层：** `@layer xds-base` / `xds-theme` 已重命名为 `astryx-base` / `astryx-theme`；请更新你的 `@layer` 顺序行以及任何 PostCSS `layersBefore` 配置。`@astryxdesign/build` 的默认库层现在为 `astryx-base`。
+- **预编译样式表：** `@astryxdesign/core/xds.css` 导出已移除——请导入 `@astryxdesign/core/astryx.css`。
+- **CSS 自定义属性：** `--xds-*` padding 回退已移除；请设置 `--astryx-*`。
+- **CLI 配置键：** `@astryxdesign/cli` 读取 package.json 的 `"astryx"` 字段（原为 `"xds"`）。请重命名该块；过时的 `"xds"` 键会让该包从发现中静默消失。
 - `@astryxdesign/theme-daily`
 - `@astryxdesign/theme-brutalist`
 - `@astryxdesign/theme-default`
@@ -458,12 +436,12 @@ Thanks to everyone who contributed to this release:
 
   ```
 
-- Rename the npm package scope from `@xds/*` to `@astryxdesign/*`
-  All published packages move to the new `@astryxdesign` scope (e.g. `@xds/core` → `@astryxdesign/core`), along with the workspace lockfile, build/runtime scope-directory scans, and docsite slug derivation. Consumers must update their imports and dependency names. The internal ESLint plugin namespace (`@xds/*` rules) is intentionally untouched and tracked separately. Existing `@xds/*` codemods continue to target the old scope so projects still on `@xds/*` can migrate.
+- 将 npm 包 scope 从 `@xds/*` 重命名为 `@astryxdesign/*`
+  所有已发布的包都迁移到新的 `@astryxdesign` scope（例如 `@xds/core` → `@astryxdesign/core`），同时还有工作区锁文件、构建时/运行时 scope 目录扫描以及 docsite slug 推导。消费者必须更新其导入和依赖名称。内部 ESLint 插件命名空间（`@xds/*` 规则）有意保持不变，另行跟踪。现有的 `@xds/*` codemod 继续面向旧 scope，以便仍在使用 `@xds/*` 的项目可以迁移。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @cixzhang
 - @ejhammond
@@ -472,13 +450,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.0.15
 
-#### Fixes
+#### 问题修复
 
-- **Unprefix migration alignment** — Build output and Vite plugin updated for the XDS-prefix migration (bare names canonical, `XDS*` compat aliases) so generated CSS stays in sync with `@xds/core` (#2941).
+- **无前缀迁移对齐** — 构建输出和 Vite 插件已针对 XDS 前缀迁移更新（裸名称成为规范，`XDS*` 为兼容别名），使生成的 CSS 与 `@xds/core` 保持同步 (#2941)。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本版本做出贡献的人：
 
 - @cixzhang
 - @czarandy
@@ -489,14 +467,14 @@ Thanks to everyone who contributed to this release:
 
 # 0.0.14
 
-_First public release_ — `@xds/build` is now published to the npm registry.
+_首次公开发布_ — `@xds/build` 现已发布到 npm 注册表。
 
-#### New Features
+#### 新功能
 
-- **Streamlined `xdsStylex()` Vite API** — Simplified configuration for Vite projects (#2227)
-- **Build step for Vite plugin** — Proper dist output for the Vite integration (#2205)
+- **精简的 `xdsStylex()` Vite API** — 简化 Vite 项目的配置 (#2227)
+- **Vite 插件的构建步骤** — 为 Vite 集成提供正确的 dist 输出 (#2205)
 
-#### Internal
+#### 内部
 
-- **Migrated to pnpm** (#2197)
-- **Bumped esbuild** from 0.24.2 to 0.28.0 (#2246)
+- **迁移到 pnpm** (#2197)
+- **升级 esbuild** 从 0.24.2 到 0.28.0 (#2246)

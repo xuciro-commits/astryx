@@ -61,3 +61,21 @@ export const docs = {
     },
   ],
 };
+
+export const docsZh = {
+  "name": "ChatReasoning",
+  "displayName": "Chat Reasoning",
+  "usage": {
+    "description": "紧凑的可折叠容器，用于显示模型推理或思维链细节。收起时显示单行摘要，展开后显示完整的推理文本。"
+  },
+  "propDescriptions": {
+    "children": "推理内容字符串或自定义 ReactNode。",
+    "label": "显示在触发行中的标题标签。",
+    "duration": "显示在标签旁的时长字符串（例如 \"12s\"）。",
+    "isStreaming": "推理内容是否正在流式传输。显示动画微光效果。",
+    "isExpanded": "受控的展开状态。",
+    "defaultIsExpanded": "非受控用法下的默认展开状态。",
+    "onExpandedChange": "展开状态变化时触发的回调。",
+    "xstyle": "用于布局自定义的 StyleX 样式。"
+  }
+};

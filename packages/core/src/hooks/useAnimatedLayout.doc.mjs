@@ -99,3 +99,34 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useAnimatedLayout",
+  "usage": {
+    "description": "返回一个句柄，传给尺寸会变化的组件（例如 TreeList 或 Collapsible）。当该组件改变尺寸时，它和 `containerRef` 内其后的内容会以一个共享的动态角色一起动画。固定和粘性元素保持不动，滑动永远不会滚动该区域，并遵循减少动态效果。它在所有指针下都生效，包括鼠标。没有该句柄时，组件保持跳跃：其后的内容立即占据位置。变化后的内容可以混合 Astryx 组件和你自己的元素；它们都无需选择加入。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "每个滚动容器或面板创建一个句柄，并将同一个句柄传给其中每个尺寸会变化的组件。"
+      },
+      {
+        "guidance": true,
+        "description": "将你已提供给 ScrollableArea 的 ref 作为 containerRef 传入；ScrollableArea 不会自行注册。"
+      },
+      {
+        "guidance": false,
+        "description": "将披露内容后的内容包裹在额外元素中使其移动；容器内变化后的所有内容都会自行移动。"
+      },
+      {
+        "guidance": false,
+        "description": "自行同时为高度做动画；滑动使用合成器 translate 移动内容，从不为高度做动画。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options.containerRef": "滑动保持在其内的区域：你已提供给滚动容器或面板的 ref。ScrollableArea 的 ref 会到达其原生滚动视口，因此传入那个。"
+  },
+  "returnDescriptions": {
+    "animatedLayout": "一个不透明句柄，没有公开成员。将其传给尺寸会变化的组件的 animatedLayout 属性，例如 TreeList 或 Collapsible。"
+  }
+};

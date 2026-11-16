@@ -128,3 +128,52 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useScrollableArea",
+  "usage": {
+    "description": "为调用方拥有的结构添加规范的、感知轴的滚动行为。仅当某个轴的 computed overflow 可滚动且几何尺寸超过共享的 1px 容差时，该轴才生效。视口和内容盒子都会被观察。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将已解析的属性和 ref 通过两个属性 getter 传入，然后各展开一次返回的对象。"
+      },
+      {
+        "guidance": true,
+        "description": "仅当视口本身应进入 Tab 顺序时才使用视口键盘所有权；提供简洁的无障碍标签。"
+      },
+      {
+        "guidance": true,
+        "description": "当保留原生滚动按键时，使用 contentOrViewport 将向前 Tab 进入委托给第一个顺序原生链接或按钮。输入框、复合控件和嵌套滚动区域保留命名的视口停靠点。从被委托的第一个子元素按 Shift+Tab 会跳过视口；指针和程序化焦点仍停留在视口上。"
+      },
+      {
+        "guidance": true,
+        "description": "当你的集成已为完整滚动范围提供键盘访问时，使用内容键盘所有权。自动委托在每次键盘进入时检查当前内容，而不持续跟踪其可聚焦性。"
+      },
+      {
+        "guidance": true,
+        "description": "通过 `getViewportProps` 传入调用方的 `xstyle`；getter 会将其与适配裁剪、活动溢出和 Sticky 包含组合。"
+      },
+      {
+        "guidance": true,
+        "description": "为视口拥有的 Tab 停靠点提供可见的焦点指示器；将 `focusOutlineStyles.focusVisible`（或等效项）组合进视口 `xstyle`，就像 ScrollableArea 那样。"
+      },
+      {
+        "guidance": false,
+        "description": "只附加视口 getter。实时溢出变化需要真实观察的内容盒子。"
+      },
+      {
+        "guidance": false,
+        "description": "通过调用方属性在视口上声明 overflow；getter 拥有 overflow 声明，并会剥离冲突的内联值。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "逻辑滚动意图、固定或自动键盘所有者、过度滚动策略，以及适配的 Sticky 包含。"
+  },
+  "returnDescriptions": {
+    "getViewportProps": "消费调用方视口属性、xstyle 和 ref；组合适配/活动溢出、Sticky 包含、无障碍、链式传递和所有者注册。",
+    "getContentProps": "将调用方内容盒子属性、xstyle 和 ref 与内容观察组合。",
+    "state": "稳定的行内和块向有效滚动及逻辑边缘状态。"
+  }
+};

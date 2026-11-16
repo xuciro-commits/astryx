@@ -93,3 +93,31 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useSyntaxTheme",
+  "usage": {
+    "description": "为无法使用 SyntaxTheme 设置的 CSS 变量的画布或其他绘图读取语法颜色。在 SyntaxTheme 下调用。该提供者不存在时返回 null，以便调用方跳过绘制。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "在与周围代码相同配色的 SyntaxTheme 下渲染绘图。"
+      },
+      {
+        "guidance": true,
+        "description": "读取 token 前检查是否为 null。上方没有 SyntaxTheme 时，该 Hook 返回 null。"
+      },
+      {
+        "guidance": false,
+        "description": "不要手动将语法颜色复制到画布中。它们会偏离当前活动的语法主题。"
+      }
+    ]
+  },
+  "paramDescriptions": {},
+  "returnDescriptions": {
+    "name": "来自最近 SyntaxTheme 的语法主题名称。",
+    "mode": "用于解析令牌的模式。约定是最近 Theme 的有效模式。该 Hook 目前改为读取 prefers-color-scheme，因此在强制模式的 Theme 下，这些颜色可能与周围代码不同。",
+    "token": "当前模式下某个语法令牌的 CSS 颜色，例如 keyword。",
+    "tokens": "为当前模式解析的所有语法令牌。"
+  }
+};

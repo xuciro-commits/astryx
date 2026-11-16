@@ -82,3 +82,26 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useCollator",
+  "usage": {
+    "description": "返回用于自定义排序的、经批准的 locale 感知比较器。当 provider locale 或某个选项变化时会重新创建 collator。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "在自定义 Table 比较器及其他用户可见的字符串排序中复用 `collator.compare`。"
+      },
+      {
+        "guidance": false,
+        "description": "不要直接构造 `Intl.Collator` 或调用 `localeCompare`；它们会绕过由 provider 支撑的 locale 契约。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "可选的排序行为，例如数字排序、敏感度、标点处理和大小写顺序。"
+  },
+  "returnDescriptions": {
+    "collator": "绑定到当前 InternationalizationProvider locale 的记忆化 collator。"
+  }
+};

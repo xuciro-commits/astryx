@@ -44,34 +44,40 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'SelectorOption',
-  isHiddenFromOverview: true,
-  displayName: 'Selector Option',
-  description:
-    '用于在 Selector 的 renderOption 渲染函数中自定义选项渲染的辅助组件。',
-  props: [
+  "name": "SelectorOption",
+  "isHiddenFromOverview": true,
+  "displayName": "Selector Option",
+  "description": "用于在 Selector 的 renderOption 属性中自定义项渲染的辅助组件。",
+  "props": [
     {
-      name: 'label',
-      type: 'ReactNode',
-      description: '选项的主标签文本。',
-      required: true,
+      "name": "label",
+      "type": "ReactNode",
+      "description": "该项的主标签文本。",
+      "required": true
     },
     {
-      name: 'icon',
-      type: 'IconType',
-      description: '显示在标签前的图标。',
+      "name": "icon",
+      "type": "IconType",
+      "description": "显示在标签之前的图标。有关有效的语义名称，请参阅 `astryx docs icons`。"
     },
     {
-      name: 'description',
-      type: 'ReactNode',
-      description: '显示在标签下方的次要描述文本。',
+      "name": "description",
+      "type": "ReactNode",
+      "description": "显示在标签下方的次要描述文本。"
     },
     {
-      name: 'endContent',
-      type: 'ReactNode',
-      description: '在标签和描述之后渲染的附加内容。',
-    },
+      "name": "endContent",
+      "type": "ReactNode",
+      "description": "在标签和描述之后渲染的附加内容。"
+    }
   ],
+  "propDescriptions": {
+    "label": "该项的主标签文本。",
+    "icon": "显示在标签之前的图标。有关有效的语义名称，请参阅 `astryx docs icons`。",
+    "description": "显示在标签下方的次要描述文本。",
+    "layout": "标签和描述如何组合在一起。'stacked' 将描述放在单独一行；'inline' 将两者保持在一行，使行适合固定高度的宿主。在 Selector 触发器内部，触发器的内边距会根据你选择的布局自行调整，因此两者都能落在 4px 节奏上；InputGroup 会固定行高并强制使用 'inline'。",
+    "endContent": "在标签和描述之后渲染的附加内容。"
+  }
 };
 
 export const docsDense = {

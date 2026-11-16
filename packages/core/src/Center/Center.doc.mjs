@@ -129,79 +129,145 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'Center',
-  displayName: 'Center',
-  usage: {
-    description:
-      'Center aligns content to the middle of its container. Use it for empty states, loading screens, login forms, or any content that should sit in the center of the available space.',
-    bestPractices: [
-      {guidance: true, description: 'Use a single-axis value only in horizontal writing, or after verifying the active writing mode. In vertical writing, the current implementation follows flex main/cross axes rather than the physical prop names.'},
-      {guidance: true, description: 'In horizontal writing, give Center height when using axis="vertical"; centering needs available space on the selected flex axis.'},
-      {guidance: true, description: 'Use isInline to center small elements like icons or badges within a line of text without breaking the text flow.'},
-      {guidance: true, description: 'Keep semantic structure and accessible names on the content. Center is a layout-only container and does not add a role or label.'},
-      {guidance: false, description: 'Wrap large page sections in Center. Use Layout or AppShell for page-level structure.'},
-      {guidance: false, description: 'Use Center for horizontal lists of items. Use Stack with hAlign="center" instead.'},
-    ],
-  },
-  props: [
-    {name: 'axis', type: "'both' | 'horizontal' | 'vertical'", description: '选择 Center 模式。横向书写时，horizontal 对应 flex 主轴/行内轴，vertical 对应交叉轴/块轴；纵向书写时，当前单轴行为仍跟随这些逻辑 flex 轴，而不是属性名暗示的物理轴。', default: "'both'"},
-    {name: 'width', type: 'number | string', description: '容器宽度（px 或 CSS 值）。'},
-    {name: 'height', type: 'number | string', description: '容器高度（px 或 CSS 值）。'},
-    {
-      name: 'padding',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description:
-        '所有方向的内边距，使用间距刻度（0、0.5、1、1.5、2、3、4、5、6、8、10）。与 Stack、Card、LayoutContent 和 LayoutPanel 的 padding 属性一致。在 JSX 中使用数字表达式 e.g. padding={3}。',
-    },
-    {
-      name: 'paddingInline',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description: '逻辑行内轴内边距，使用间距刻度。两者同时设置时在行内轴上覆盖 padding。',
-    },
-    {
-      name: 'paddingInlineStart',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description: '逻辑行内起始内边距，使用间距刻度。解析后的物理边取决于书写模式和方向。仅在该边上覆盖 paddingInline 和 padding。',
-    },
-    {
-      name: 'paddingInlineEnd',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description: '逻辑行内结束内边距，使用间距刻度。解析后的物理边取决于书写模式和方向。仅在该边上覆盖 paddingInline 和 padding。',
-    },
-    {
-      name: 'paddingBlock',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description: '逻辑块轴内边距，使用间距刻度。两者同时设置时在块轴上覆盖 padding。',
-    },
-    {
-      name: 'paddingBlockStart',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description: '逻辑块起始内边距，使用间距刻度。解析后的物理边取决于书写模式。仅在该边上覆盖 paddingBlock 和 padding。',
-    },
-    {
-      name: 'paddingBlockEnd',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description: '逻辑块结束内边距，使用间距刻度。解析后的物理边取决于书写模式。仅在该边上覆盖 paddingBlock 和 padding。',
-    },
-    {name: 'isInline', type: 'boolean', description: '使用 inline-flex（适用于文本/图标）。', default: 'false'},
-    {name: 'children', type: 'ReactNode', description: '要居中的内容。'},
-    {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description:
-        '用于布局自定义的 StyleX 样式（外边距、定位、尺寸）。必须是 stylex.create() 的值，不能是 style={{}} 这样的内联样式对象。',
-    },
-  ],
-  theming: {
-    targets: [
+  "name": "Center",
+  "displayName": "Center",
+  "usage": {
+    "description": "Center 将内容对齐到容器中部。用于空状态、加载屏幕、登录表单，或任何应位于可用空间中央的内容。",
+    "bestPractices": [
       {
-        className: 'astryx-center',
-        visualProps: [
-          'axis',
-        ],
+        "guidance": true,
+        "description": "仅在水平书写模式中使用单轴值，或先确认当前书写模式。在垂直书写模式下，当前实现遵循 flex 主轴/交叉轴，而不是物理属性名称。"
       },
+      {
+        "guidance": true,
+        "description": "在水平书写模式下，使用 axis=\"vertical\" 时为 Center 提供高度；居中需要所选 flex 轴上有可用空间。"
+      },
+      {
+        "guidance": true,
+        "description": "使用 isInline 将图标或徽标等小元素在一行文本内居中，而不打断文本流。"
+      },
+      {
+        "guidance": true,
+        "description": "将语义结构和无障碍名称保留在内容上。Center 只是布局容器，不会添加 role 或标签。"
+      },
+      {
+        "guidance": false,
+        "description": "将大型页面区块包裹在 Center 中。页面级结构请使用 Layout 或 AppShell。"
+      },
+      {
+        "guidance": false,
+        "description": "将 Center 用于水平项目列表。请改用 hAlign=\"center\" 的 Stack。"
+      }
     ],
+    "anatomy": [
+      {
+        "name": "容器",
+        "required": true,
+        "description": "一个 flexbox 包装器，沿所选轴将子元素对齐到中心。"
+      },
+      {
+        "name": "内容",
+        "required": true,
+        "description": "传给 Center 的任意子元素。通常是卡片、表单、加载指示器或空状态消息。"
+      }
+    ]
   },
+  "props": [
+    {
+      "name": "axis",
+      "type": "'both' | 'horizontal' | 'vertical'",
+      "description": "使用哪种 Center 模式。在水平书写模式下，\"horizontal\" 使 flex 主轴/行内轴居中，\"vertical\" 使交叉轴/块轴居中。在垂直书写模式下，当前的单轴行为遵循这些逻辑 flex 轴，而不是物理名称；\"both\" 仍会使两个轴都居中。",
+      "default": "'both'"
+    },
+    {
+      "name": "width",
+      "type": "number | string",
+      "description": "容器宽度（px 或 CSS 值）。"
+    },
+    {
+      "name": "height",
+      "type": "number | string",
+      "description": "容器高度（px 或 CSS 值）。"
+    },
+    {
+      "name": "padding",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "四周的内部内边距，使用间距刻度（0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10）。与 Stack、Card、LayoutContent 和 LayoutPanel 的 padding 属性一致。以 JSX 数字表达式传入，例如 padding={3}。"
+    },
+    {
+      "name": "paddingInline",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "逻辑行内轴内边距，使用间距刻度。同时设置时覆盖行内轴上的 padding。"
+    },
+    {
+      "name": "paddingInlineStart",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "逻辑行内起始内边距，使用间距刻度。其解析后的物理边缘取决于书写模式和方向。仅覆盖该边缘上的 paddingInline 和 padding。"
+    },
+    {
+      "name": "paddingInlineEnd",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "逻辑行内末端内边距，使用间距刻度。其解析后的物理边缘取决于书写模式和方向。仅覆盖该边缘上的 paddingInline 和 padding。"
+    },
+    {
+      "name": "paddingBlock",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "逻辑块轴内边距，使用间距刻度。同时设置时覆盖块轴上的 padding。"
+    },
+    {
+      "name": "paddingBlockStart",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "逻辑块起始内边距，使用间距刻度。其解析后的物理边缘取决于书写模式。仅覆盖该边缘上的 paddingBlock 和 padding。"
+    },
+    {
+      "name": "paddingBlockEnd",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "逻辑块末端内边距，使用间距刻度。其解析后的物理边缘取决于书写模式。仅覆盖该边缘上的 paddingBlock 和 padding。"
+    },
+    {
+      "name": "isInline",
+      "type": "boolean",
+      "description": "使用 inline-flex（适用于文本/图标）。",
+      "default": "false"
+    },
+    {
+      "name": "children",
+      "type": "ReactNode",
+      "description": "要居中的内容。"
+    },
+    {
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 值，而不是像 style={{}} 这样的内联样式对象。"
+    }
+  ],
+  "theming": {
+    "targets": [
+      {
+        "className": "astryx-center",
+        "visualProps": [
+          "axis"
+        ]
+      }
+    ]
+  },
+  "propDescriptions": {
+    "axis": "使用哪种 Center 模式。在水平书写模式下，\"horizontal\" 使 flex 主轴/行内轴居中，\"vertical\" 使交叉轴/块轴居中。在垂直书写模式下，当前的单轴行为遵循这些逻辑 flex 轴，而不是物理名称；\"both\" 仍会使两个轴都居中。",
+    "width": "容器宽度（px 或 CSS 值）。",
+    "height": "容器高度（px 或 CSS 值）。",
+    "maxWidth": "容器最大宽度（px 或 CSS 值）。",
+    "minHeight": "容器最小高度（px 或 CSS 值）。",
+    "padding": "四周的内部内边距，使用间距刻度（0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10）。与 Stack、Card、LayoutContent 和 LayoutPanel 的 padding 属性一致。以 JSX 数字表达式传入，例如 padding={3}。",
+    "paddingInline": "逻辑行内轴内边距，使用间距刻度。同时设置时覆盖行内轴上的 padding。",
+    "paddingInlineStart": "逻辑行内起始内边距，使用间距刻度。其解析后的物理边缘取决于书写模式和方向。仅覆盖该边缘上的 paddingInline 和 padding。",
+    "paddingInlineEnd": "逻辑行内末端内边距，使用间距刻度。其解析后的物理边缘取决于书写模式和方向。仅覆盖该边缘上的 paddingInline 和 padding。",
+    "paddingBlock": "逻辑块轴内边距，使用间距刻度。同时设置时覆盖块轴上的 padding。",
+    "paddingBlockStart": "逻辑块起始内边距，使用间距刻度。其解析后的物理边缘取决于书写模式。仅覆盖该边缘上的 paddingBlock 和 padding。",
+    "paddingBlockEnd": "逻辑块末端内边距，使用间距刻度。其解析后的物理边缘取决于书写模式。仅覆盖该边缘上的 paddingBlock 和 padding。",
+    "isInline": "使用 inline-flex（适用于文本/图标）。",
+    "children": "要居中的内容。",
+    "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 值，而不是像 style={{}} 这样的内联样式对象。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

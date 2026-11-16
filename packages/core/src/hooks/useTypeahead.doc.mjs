@@ -151,3 +151,40 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useTypeahead",
+  "usage": {
+    "description": "为集合添加 APG 的 type-to-focus 搜索：可打印按键会被缓冲（暂停后重置），第一个标签以缓冲区开头的项（忽略大小写、重音符号、带斜线的字母 đ ł ø ħ ŧ ƀ 和土耳其语 ı/İ，在所有区域设置中相同；键入的重音符号优先精确匹配）会通过 onMatch 报告。重复按同一个字母会在匹配项之间循环，而不是进一步过滤。它本身不移动任何东西；请将其与集合自身的焦点管理配对使用，最常见的是 useListFocus 或 useGridFocus。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将 onMatch 连接到已有的焦点管理器（useListFocus.focusItem），而不是自行移动焦点。"
+      },
+      {
+        "guidance": true,
+        "description": "让它先查看按键事件，仅在其返回 false 时才继续进行方向键导航。"
+      },
+      {
+        "guidance": true,
+        "description": "传递 getCurrentIndex，使重复按同一个字母能在匹配项之间遍历，而不是停留在第一个。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在文本输入框上使用它；字段已经接收字符，typeahead 会与值冲突。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "配置对象。",
+    "options.getItemLabels": "按 DOM 顺序返回项标签。null 或空条目表示不可匹配的槽位，并保持索引与调用方的项对齐。",
+    "options.onMatch": "使用匹配项的索引调用，以便调用方聚焦或选择它；通常是 useListFocus 的 focusItem。",
+    "options.getCurrentIndex": "搜索起始索引，通常是当前聚焦的项，因此重复按同一个字母会在匹配项之间循环。负值表示没有当前项。",
+    "options.resetMs": "键入缓冲区重置前的无活动毫秒数。",
+    "options.isDisabled": "是否应跳过某个索引，例如禁用项。"
+  },
+  "returnDescriptions": {
+    "onKeyDown": "Keydown 处理函数。当它消费了一个可打印字符时返回 true，以便调用方停止自己的按键处理。",
+    "reset": "清除待处理的缓冲区，例如集合关闭时。"
+  }
+};

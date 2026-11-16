@@ -99,3 +99,40 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useKeyboardHint",
+  "usage": {
+    "description": "当 roving-tabindex 复合组件（Toolbar、TabList、SegmentedControl 等）首次获得键盘焦点时，显示锚定到聚焦项上的临时“← → to navigate”提示。它教会视力正常的键盘用户方向键可在组内移动。该提示在顶层（popover=\"manual\"）用 Kbd 渲染方向键，并通过 CSS 锚点定位到聚焦元素，因此溢出容器绝不会裁剪它。它会一直保留到首次按下方向键、Escape 或失焦，并且对该实例不再重新显示。Escape 仅关闭提示（通过共享的浮层关闭栈），并将焦点保持在原处。Toolbar、TabList 和 SegmentedControl 会自动接入此 Hook；仅在构建自定义 roving-tabindex 组件时才需要直接使用该 Hook。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将返回的 onFocus/onKeyDown 与现有焦点处理函数组合，而不是替换它们：先调用 onKeyDown（它只关闭提示，绝不阻止默认行为），再调用你的导航处理函数。"
+      },
+      {
+        "guidance": true,
+        "description": "将 hintElement 作为复合容器的最后一个子元素渲染；它在顶层使用 position:fixed 并带有 aria-hidden，因此绝不会影响布局或无障碍树。"
+      },
+      {
+        "guidance": true,
+        "description": "将 orientation 与你的组件实际响应的方向键匹配，以便提示显示正确的图标。"
+      },
+      {
+        "guidance": false,
+        "description": "用于单个控件或不带 roving-tabindex 导航的组件；提示仅在方向键于组内移动焦点时才有意义。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "键盘提示的配置对象。",
+    "options.orientation": "复合组件导航的箭头键轴，控制提示显示哪些箭头图标（水平为 ← →，垂直为 ↑ ↓，两者为全部四个）。",
+    "options.dismissAfterMs": "提示出现后自动消失前的毫秒数。保持未设置：默认情况下提示会保留到按下方向键、Escape 或失焦。时间限制可能在用户读完之前就移除提示（WCAG 1.4.13）。",
+    "options.isEnabled": "是否启用提示。设为 false 可对特定实例（例如禁用或只读组件）抑制提示。"
+  },
+  "returnDescriptions": {
+    "hintElement": "要在复合容器内（作为最后一个子元素）渲染的 popover 提示元素。通过 popover=\"manual\" 传送到顶层，用 Kbd 渲染方向键，并自行管理可见性；请无条件渲染它。",
+    "onFocus": "附加到容器的 onFocus。当从复合组件外部首次通过键盘焦点（:focus-visible）进入时显示提示。",
+    "onBlur": "附加到容器的 onBlur。当焦点完全离开复合组件时隐藏提示，并在焦点于内部移动时重新锚定。",
+    "onKeyDown": "附加到容器的 onKeyDown。首次按下方向键时关闭提示（用户已发现该交互）。绝不阻止默认行为或停止传播。"
+  }
+};

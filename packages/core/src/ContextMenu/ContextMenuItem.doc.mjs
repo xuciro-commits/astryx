@@ -44,37 +44,44 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'ContextMenuItem',
-  isHiddenFromOverview: true,
-  displayName: 'Context Menu Item',
-  description: '复合模式的菜单项组件。从 DropdownMenuItem 重新导出以便发现。',
-  props: [
+  "name": "ContextMenuItem",
+  "isHiddenFromOverview": true,
+  "displayName": "Context Menu Item",
+  "description": "复合模式使用的菜单项组件。为便于发现，从 DropdownMenuItem 重新导出。",
+  "props": [
     {
-      name: 'icon',
-      type: 'IconType',
-      description: '显示在标签前的图标。',
+      "name": "icon",
+      "type": "IconType",
+      "description": "显示在标签之前的图标。"
     },
     {
-      name: 'label',
-      type: 'ReactNode',
-      description: '主标签文本。',
+      "name": "label",
+      "type": "ReactNode",
+      "description": "主标签文本。"
     },
     {
-      name: 'description',
-      type: 'ReactNode',
-      description: '显示在标签下方的次要描述文本。',
+      "name": "description",
+      "type": "ReactNode",
+      "description": "显示在标签下方的辅助描述文本。"
     },
     {
-      name: 'endContent',
-      type: 'ReactNode',
-      description: '在标签和描述之后渲染的附加内容。',
+      "name": "endContent",
+      "type": "ReactNode",
+      "description": "渲染在标签和描述之后的附加内容。"
     },
     {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description: '根容器的 StyleX 样式。',
-    },
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "用于布局自定义的 StyleX 样式。"
+    }
   ],
+  "propDescriptions": {
+    "icon": "显示在标签之前的图标。",
+    "label": "主标签文本。",
+    "description": "显示在标签下方的辅助描述文本。",
+    "endContent": "渲染在标签和描述之后的附加内容。",
+    "xstyle": "用于布局自定义的 StyleX 样式。"
+  }
 };
 
 export const docsDense = {

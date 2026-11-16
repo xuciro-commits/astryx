@@ -190,79 +190,130 @@ export const docs = {
 };
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'MobileNav',
-  displayName: 'Mobile Nav',
-  props: [
+  "name": "MobileNav",
+  "displayName": "Mobile Nav",
+  "props": [
     {
-      name: 'isOpen',
-      type: 'boolean',
-      description: '抽屉是否打开。',
-      required: true,
+      "name": "isOpen",
+      "type": "boolean",
+      "description": "抽屉是否打开。",
+      "required": true
     },
     {
-      name: 'onOpenChange',
-      type: '(isOpen: boolean) => void',
-      description:
-        '当抽屉可见性变化时调用（点击背景遮罩、按 Escape 键或点击关闭按钮）。在手机或平板上（主指针为粗指针时），抽屉滑入期间不接受点按或拖动；键盘和辅助技术仍可操作。关闭后，焦点会在对话框关闭时回到打开它的元素。',
-      required: true,
+      "name": "onOpenChange",
+      "type": "(isOpen: boolean) => void",
+      "description": "当抽屉可见性变化时调用（点击背景遮罩、按 Escape 键或点击关闭按钮）。在手机或平板上（主指针为粗指针时），抽屉滑入期间不接受点按或拖动；键盘和辅助技术仍可操作。关闭后，焦点会在对话框关闭时回到打开它的元素。",
+      "required": true
     },
     {
-      name: 'children',
-      type: 'ReactNode',
-      description:
-        '抽屉内容，通常是 SideNavSection/SideNavItem 或任何 ReactNode。',
-      required: true,
+      "name": "children",
+      "type": "ReactNode",
+      "description": "抽屉内容，通常是 SideNavSection/SideNavItem 或任何 ReactNode。",
+      "required": true
     },
     {
-      name: 'header',
-      type: 'ReactNode',
-      description:
-        '抽屉的头部内容。渲染在关闭按钮旁边。传入字符串作为简单文本标题，或传入 ReactNode 作为自定义内容。',
+      "name": "header",
+      "type": "ReactNode",
+      "description": "抽屉的头部内容。渲染在关闭按钮旁边。传入字符串作为简单文本标题，或传入 ReactNode 作为自定义内容。"
     },
     {
-      name: 'width',
-      type: 'number',
-      description: '抽屉宽度（像素）。上限为 85vw 以防止在小屏幕上溢出。',
-      default: '320',
+      "name": "width",
+      "type": "number",
+      "description": "抽屉宽度（像素）。上限为 85vw 以防止在小屏幕上溢出。",
+      "default": "320"
     },
     {
-      name: 'side',
-      type: "'start' | 'end' | 'auto'",
-      description:
-        '抽屉滑出的方向。在 LTR 布局中 start 为左侧，在 RTL 布局中为右侧。auto 根据触发元素的位置自动选择方向。',
-      default: "'auto'",
-    },
+      "name": "side",
+      "type": "'start' | 'end' | 'auto'",
+      "description": "抽屉滑出的方向。在 LTR 布局中 start 为左侧，在 RTL 布局中为右侧。auto 根据触发元素的位置自动选择方向。",
+      "default": "'auto'"
+    }
   ],
-  theming: {
-    targets: [{className: 'astryx-mobile-nav', visualProps: ['side']}],
+  "theming": {
+    "targets": [
+      {
+        "className": "astryx-mobile-nav",
+        "visualProps": [
+          "side"
+        ]
+      }
+    ]
   },
-  usage: {
-    anatomy,
-    description:
-      'A slide-out drawer for mobile navigation. MobileNav is the mobile counterpart to SideNav and accepts the same children. Use it on narrow viewports where a persistent sidebar is not practical.',
-    bestPractices: [
+  "usage": {
+    "anatomy": [
       {
-        guidance: true,
-        description:
-          'Share the same nav items between MobileNav and SideNav by extracting them into a variable.',
+        "name": "导航浮层",
+        "required": true,
+        "description": "承载移动端导航抽屉的全视口对话框浮层。"
       },
       {
-        guidance: true,
-        description:
-          "Provide a header when the drawer's purpose is not obvious from its content.",
+        "name": "抽屉",
+        "required": true,
+        "description": "从解析后的视口边缘滑入的绘制面板。"
       },
       {
-        guidance: true,
-        description:
-          'Inside AppShell, use MobileNavToggle to open the drawer; it reads state from context. Do not pass isOpen/onOpenChange to the toggle.',
+        "name": "页眉",
+        "required": true,
+        "description": "包含可选页眉内容和关闭按钮的固定行。"
       },
       {
-        guidance: false,
-        description:
-          'Use MobileNav on desktop: use a persistent SideNav instead.',
+        "name": "内容",
+        "required": true,
+        "description": "包含导航内容的可滚动区域。"
       },
+      {
+        "name": "关闭按钮",
+        "required": true,
+        "description": "关闭导航抽屉的按钮。"
+      },
+      {
+        "name": "切换按钮",
+        "required": false,
+        "description": "感知 AppShell 的 Button，在移动端视口打开或关闭抽屉。"
+      }
     ],
+    "description": "移动端导航的滑出式抽屉。MobileNav 是 SideNav 的移动端对应组件，接受相同的子元素。在持久侧边栏不实用的窄视口上使用它。在 AppShell 内，请使用 MobileNavToggle 作为触发器；它会自动从上下文读取状态。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "通过将导航项提取为变量，在 MobileNav 和 SideNav 之间共享同一组导航项。"
+      },
+      {
+        "guidance": true,
+        "description": "当抽屉的用途无法从内容中明显看出时，请提供页眉。"
+      },
+      {
+        "guidance": true,
+        "description": "在 AppShell 内，请使用 MobileNavToggle 打开抽屉；它会从上下文读取状态。不要向该切换按钮传递 isOpen/onOpenChange。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在桌面端使用 MobileNav：请改用持久 SideNav。"
+      }
+    ]
   },
+  "components": [
+    {
+      "name": "MobileNav",
+      "description": "移动端导航的滑出式抽屉。接受 SideNav 子元素。",
+      "propDescriptions": {
+        "isOpen": "抽屉是否打开。在 AppShell 内，此项通过上下文自动管理。在 AppShell 外，请提供此属性自行控制抽屉。",
+        "onOpenChange": "当抽屉可见性变化时调用（背景点击、Escape 键或关闭按钮）。在 AppShell 内，此项通过上下文自动管理。在手机或平板（粗粒度主指针）上，抽屉滑入期间不接受点击或拖动；按键和辅助技术仍可操作。关闭后，焦点会在其对话框关闭时返回到打开它的元素。",
+        "children": "抽屉内容：通常是 SideNavSection/SideNavItem，或任意 ReactNode。",
+        "header": "抽屉的页眉内容。渲染在关闭按钮旁。传入字符串可获得简单的文本标题，或传入 ReactNode 以获得自定义内容（Logo、搜索栏等）。",
+        "width": "抽屉宽度（像素）。上限为 85vw，以防小屏幕溢出。",
+        "side": "抽屉从哪一侧滑入。Start 在 LTR 下为左侧，在 RTL 下为右侧。Auto 会根据触发器位置选择一侧。"
+      }
+    },
+    {
+      "name": "MobileNavToggle",
+      "description": "打开/关闭移动端导航抽屉的汉堡按钮。会自动从 AppShell 上下文读取打开状态：不接受 isOpen 或 onOpenChange 属性。在移动端断点以上不渲染任何内容。宿主属性和 DOM 处理函数（id、data-*、aria-*）会到达按钮；其 aria-expanded 和 aria-controls 由组件管理，调用方的 onClick 会在切换之后运行。",
+      "propDescriptions": {
+        "children": "替代默认汉堡图标渲染的自定义内容。",
+        "label": "切换按钮的无障碍标签。"
+      }
+    }
+  ]
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

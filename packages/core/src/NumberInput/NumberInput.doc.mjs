@@ -365,324 +365,352 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'NumberInput',
-  displayName: 'Number Input',
-  props: [
+  "name": "NumberInput",
+  "displayName": "Number Input",
+  "props": [
     {
-      name: 'label',
-      type: 'string',
-      description: '输入框的标签文本（始终渲染以确保无障碍访问）。',
-      required: true,
+      "name": "label",
+      "type": "string",
+      "description": "输入框的标签文本（始终为无障碍而渲染）。",
+      "required": true
     },
     {
-      name: 'value',
-      type: 'number | null | undefined',
-      description: '输入框的当前值。',
-      required: true,
+      "name": "value",
+      "type": "number | null | undefined",
+      "description": "输入框的当前值。",
+      "required": true
     },
     {
-      name: 'onChange',
-      type: '(value: number) => void',
-      description:
-        '有效文本编辑在失焦或按 Enter 时提交；步进或清除控件更改值时也会触发回调。',
-      required: true,
+      "name": "onChange",
+      "type": "(value: number) => void",
+      "description": "当有效的文本编辑在失焦或 Enter 时提交，或当步进或清除控件更改值时触发的回调。",
+      "required": true
     },
     {
-      name: 'size',
-      type: "'sm' | 'md' | 'lg'",
-      description: '尺寸变体。',
-      default: "'md'",
+      "name": "size",
+      "type": "'sm' | 'md' | 'lg'",
+      "description": "尺寸变体。",
+      "default": "'md'"
     },
     {
-      name: 'isLabelHidden',
-      type: 'boolean',
-      description: '视觉隐藏标签（屏幕阅读器仍可访问）。',
+      "name": "isLabelHidden",
+      "type": "boolean",
+      "description": "在视觉上隐藏标签（屏幕阅读器仍可访问）。"
     },
     {
-      name: 'description',
-      type: 'string',
-      description: '显示在标签和输入框之间的描述文本。',
+      "name": "description",
+      "type": "string",
+      "description": "显示在标签和输入框之间的描述文本。"
     },
     {
-      name: 'isOptional',
-      type: 'boolean',
-      description: '字段是否可选（与 isRequired 互斥）。',
+      "name": "isOptional",
+      "type": "boolean",
+      "description": "字段是否可选（与 isRequired 互斥）。"
     },
     {
-      name: 'isRequired',
-      type: 'boolean',
-      description: '字段是否必填（与 isOptional 互斥）。',
+      "name": "isRequired",
+      "type": "boolean",
+      "description": "字段是否必填（与 isOptional 互斥）。"
     },
     {
-      name: 'isDisabled',
-      type: 'boolean',
-      description: '输入框是否禁用。',
+      "name": "isDisabled",
+      "type": "boolean",
+      "description": "输入框是否禁用。"
     },
     {
-      name: 'isReadOnly',
-      type: 'boolean',
-      description:
-        '将输入框设为只读：值以完整不透明度显示并仍随表单提交，但无法编辑。与 isDisabled 不同，只读输入框不会变暗，并保留其表单值。只读时所有步进方式均被禁用：方向键、滚轮和步进按钮。同时设置时 isDisabled 优先。',
-      default: 'false',
+      "name": "isReadOnly",
+      "type": "boolean",
+      "description": "使输入框只读：值以完全不透明显示，仍随表单提交，但无法编辑。与 isDisabled 不同，只读输入框不会变暗，并保留其表单值。只读时所有表单中的步进都关闭：方向键、滚轮和数字步进器。两者都设置时，isDisabled 优先。",
+      "default": "false"
     },
     {
-      name: 'disabledMessage',
-      type: 'string',
-      description:
-        '说明输入框被禁用的原因。与 isDisabled 一起使用时，在悬停/键盘聚焦时显示工具提示，并通过 aria-disabled 保持输入框可聚焦（字段变为只读）。请使用此属性，而不是用 Tooltip 包裹已禁用的 NumberInput。',
+      "name": "disabledMessage",
+      "type": "string",
+      "description": "解释输入框为何被禁用。与 isDisabled 搭配时，在悬停/键盘聚焦时显示工具提示，并通过 aria-disabled 保持输入框可聚焦（字段变为只读）。请使用此属性，而不是用 Tooltip 包裹禁用的 NumberInput。"
     },
     {
-      name: 'placeholder',
-      type: 'string',
-      description: '占位符文本。',
+      "name": "placeholder",
+      "type": "string",
+      "description": "占位文本。"
     },
     {
-      name: 'labelTooltip',
-      type: 'string',
-      description: '在标签末尾的信息图标中显示的工具提示文本。',
+      "name": "labelTooltip",
+      "type": "string",
+      "description": "在标签末尾的信息图标中显示的工具提示文本。"
     },
     {
-      name: 'startIcon',
-      type: 'IconType',
-      description: '显示在输入框起始位置的图标。',
+      "name": "startIcon",
+      "type": "IconType",
+      "description": "在输入框起始处显示的图标。有效语义名称参见 `astryx docs icons`。"
     },
     {
-      name: 'labelIcon',
-      type: 'IconType',
-      description: '显示在标签文本前的图标。',
+      "name": "labelIcon",
+      "type": "IconType",
+      "description": "在标签文本之前显示的图标。有效语义名称参见 `astryx docs icons`。"
     },
     {
-      name: 'status',
-      type: "{type: 'error' | 'warning' | 'success', message?: string}",
-      description:
-        '带可选消息的验证状态。输入过程中不会显示拒绝：输入的数字只有在提交时才算完整。按 Enter 或失焦时，若文本不是数字、在仅限整数的字段中带有小数，或 min 大于 max 时输入了任何数字，文本会保留在字段中，字段显示自身的错误消息以替代 status。带消息的 error 状态会替代该消息，拒绝仍会被播报并将字段标记为无效。warning 或 success 状态，以及不带消息的 error 状态，不会替代拒绝消息。超出普通范围的数字会被限制到边界值。',
+      "name": "status",
+      "type": "{type: 'error' | 'warning' | 'success', message?: string}",
+      "description": "带可选消息的校验状态。键入时从不显示拒绝：键入的数字仅在提交时才完整。当 Enter 或失焦遇到非数字文本、仅整数字段中的小数，或 min 大于 max 时的任何数字时，文本会留在字段中，字段会用自己的错误消息替代 status。带消息的错误状态会替代该消息显示，拒绝仍会被播报并将字段标记为无效。警告或成功状态，或不带消息的错误状态，绝不会替换它。超出普通范围的数字会被钳制。"
     },
     {
-      name: 'onEntryErrorChange',
-      type: "(error: {kind: 'unreadable' | 'fractional' | 'outOfRange', text: string, value?: number} | null) => void",
-      description:
-        "每当字段对输入文本的拒绝发生变化时调用，拒绝结束时传入 null。拒绝只在按 Enter 或失焦时开始。kind 为 'unreadable'（不是数字的文本）、'fractional'（启用 isIntegerOnly 时的小数）或 'outOfRange'（min 大于 max 时的任何数字）；text 为输入的文本；value 为文本所指的数字，用于 'fractional' 和 'outOfRange'。编辑使文本有效或为空时、新的 value、min、max 或 isIntegerOnly 改变或结束拒绝时、禁用字段丢弃文本时也会调用；同一拒绝不会重复调用；拒绝仍存在时字段卸载会传入 null。传入带消息的 error 状态即可自行措辞拒绝消息。",
+      "name": "onEntryErrorChange",
+      "type": "(error: {kind: 'unreadable' | 'fractional' | 'outOfRange', text: string, value?: number} | null) => void",
+      "description": "每当字段对键入文本的拒绝发生变化时调用，拒绝结束时以 null 调用。拒绝仅在 Enter 或失焦时开始。kind 为 'unreadable'（非数字文本）、'fractional'（isIntegerOnly 时的小数）或 'outOfRange'（min 大于 max 时的任何数字）；text 是键入的文本；value 是它表示的数字，适用于 'fractional' 和 'outOfRange'。当编辑使文本变为有效或为空、当新的 value、min、max 或 isIntegerOnly 更改或结束拒绝、以及当禁用字段丢弃文本时，它也会运行，且同一拒绝绝不会重复调用；当字段在拒绝仍然存在时卸载，它报告 null。传入带消息的错误状态可自行表述拒绝。"
     },
     {
-      name: 'entryErrorBehavior',
-      type: "'complete' | 'blur-or-enter'",
-      description:
-        "字段何时显示自身的输入错误：即字段拒绝的输入文本，也就是 onEntryErrorChange 报告的拒绝。它设定错误何时显示，而不是何时校验，因此不同于 React Aria 的 validationBehavior（原生校验与 ARIA 校验之分），也不会改变调用方的 status。输入的数字只有在按 Enter 或失焦时才算完整，因此 'complete' 和 'blur-or-enter' 的行为相同：消息、aria-invalid、无效样式、播报和 onEntryErrorChange 报告都在按 Enter 或失焦时一起出现，输入过程中从不出现；使文本有效或清空文本的编辑会立即清除错误。可将其设为与表单中其他字段一致；字段自身的取值优先于最近的 FormLayout 的 defaultEntryErrorBehavior。",
-      default:
-        "最近的 FormLayout 的 defaultEntryErrorBehavior，否则为 'complete'",
+      "name": "entryErrorBehavior",
+      "type": "'complete' | 'blur-or-enter'",
+      "description": "字段何时显示自己的条目错误：它拒绝的键入文本，即 onEntryErrorChange 报告的内容。它设置错误何时显示，而不是校验何时运行，因此不是 React Aria 的 validationBehavior（原生还是 ARIA 校验），也从不更改调用方状态。键入的数字仅在 Enter 或失焦时才完整，因此 'complete' 和 'blur-or-enter' 行为相同：消息、aria-invalid、无效样式、播报和 onEntryErrorChange 报告会在 Enter 或失焦时一起出现，绝不在用户键入时出现，而使文本有效或为空的编辑会立即清除错误。设置它使其与表单的其他字段匹配；字段自身的值优先于最近的 FormLayout 的 defaultEntryErrorBehavior。",
+      "default": "最近的 FormLayout 的 defaultEntryErrorBehavior，否则为 'complete'"
     },
     {
-      name: 'statusVariant',
-      type: "'attached' | 'detached' | 'tooltip'",
-      description:
-        '状态消息相对于输入框的放置方式。attached 直接叠加在输入框下方（带边框处理）；detached 作为独立元素浮于下方并留有间距；tooltip 隐藏消息框，并在状态图标上以提示气泡形式显示。',
-      default: "'attached'",
+      "name": "statusVariant",
+      "type": "'attached' | 'detached' | 'tooltip'",
+      "description": "状态消息相对于输入框的放置方式。attached 直接重叠在输入框下方（带边框的处理）；detached 作为单独元素浮动在下方并留有间距；tooltip 隐藏消息框，并在状态图标上的工具提示中展示。",
+      "default": "'attached'"
     },
     {
-      name: 'min',
-      type: 'number | null',
-      description: '允许的最小值。更小的输入会在失焦或按 Enter 时提交为该值。',
+      "name": "min",
+      "type": "number | null",
+      "description": "允许的最小值。较小的输入会在失焦或 Enter 时以该值提交。"
     },
     {
-      name: 'max',
-      type: 'number | null',
-      description: '允许的最大值。更大的输入会在失焦或按 Enter 时提交为该值。',
+      "name": "max",
+      "type": "number | null",
+      "description": "允许的最大值。较大的输入会在失焦或 Enter 时以该值提交。"
     },
     {
-      name: 'step',
-      type: 'number | null',
-      description: '输入框的步进增量。',
-      default: '1',
+      "name": "step",
+      "type": "number | null",
+      "description": "输入框的步进增量。",
+      "default": "1"
     },
     {
-      name: 'formatValue',
-      type: '(value: number) => string',
-      description:
-        '输入框未聚焦时格式化已提交的值。聚焦编辑时显示原始数值，并通过 aria-valuetext 提供格式化值。',
+      "name": "formatValue",
+      "type": "(value: number) => string",
+      "description": "在输入框未聚焦时格式化已提交的值。聚焦时显示原始数值以供编辑，格式化后的值通过 aria-valuetext 暴露。"
     },
     {
-      name: 'isWheelEnabled',
-      type: 'boolean',
-      description:
-        '是否允许在已聚焦的输入框上滚动滚轮来步进数值。当页面滚动应始终优先时请禁用。',
-      default: 'true',
+      "name": "isWheelEnabled",
+      "type": "boolean",
+      "description": "在聚焦的输入框上滚动滚轮是否步进值。当页面滚动应始终优先时，禁用此功能。",
+      "default": "true"
     },
     {
-      name: 'hasNumberSteppers',
-      type: 'boolean',
-      description:
-        '在精细指针设备上于输入框末尾显示递增和递减按钮。粗指针设备（例如触摸屏）上隐藏按钮；仍可直接输入数值或使用键盘步进。',
-      default: 'false',
+      "name": "hasNumberSteppers",
+      "type": "boolean",
+      "description": "在精细指针上显示输入框末尾的递增和递减按钮。在粗略指针（如触摸屏）上隐藏；文本输入和键盘步进仍可用。用鼠标或笔按住按钮会重复步进，并在按住结束时提交一次。",
+      "default": "false"
     },
     {
-      name: 'units',
-      type: 'string | null',
-      description: '在输入框末尾显示的单位文本（例如"%"或"GB"）。',
+      "name": "units",
+      "type": "string | null",
+      "description": "在输入框末尾显示的单位文本（例如 \"%\" 或 \"GB\"）。"
     },
     {
-      name: 'isIntegerOnly',
-      type: 'boolean',
-      description: '仅允许整数值（不允许浮点数）。',
+      "name": "isIntegerOnly",
+      "type": "boolean",
+      "description": "仅允许整数值（无浮点数）。"
     },
     {
-      name: 'hasClear',
-      type: 'boolean',
-      description:
-        '输入有值时显示清除 (×) 按鈕。启用后， onChange 回调还接受 null 表示用户已清空输入。',
-      default: 'false',
+      "name": "hasClear",
+      "type": "boolean",
+      "description": "输入框有值时显示清除（×）按钮。为 true 时，onChange 回调还接受 null，表示用户清除了输入框。",
+      "default": "false"
     },
     {
-      name: 'htmlName',
-      type: 'string',
-      description:
-        '用于表单提交的 HTML name 属性。失焦后保留被拒绝的文本时，表单提交已提交的数字，直到用户编辑该文本或新的 value 替换它。',
+      "name": "htmlName",
+      "type": "string",
+      "description": "用于表单提交的 HTML name 属性。在失焦保留被拒绝文本期间，表单提交已提交的数字，直到用户编辑文本或新值替换它。"
     },
     {
-      name: 'autoComplete',
-      type: 'string',
-      description: 'HTML autocomplete 属性。',
+      "name": "autoComplete",
+      "type": "string",
+      "description": "HTML autocomplete 属性。"
     },
     {
-      name: 'hasAutoFocus',
-      type: 'boolean',
-      description: '是否在挂载时聚焦输入框。',
+      "name": "hasAutoFocus",
+      "type": "boolean",
+      "description": "是否在挂载时聚焦输入框。"
     },
     {
-      name: 'onFocus',
-      type: '(e: FocusEvent<HTMLInputElement>) => void',
-      description: '输入框获得焦点时触发的回调。',
+      "name": "onFocus",
+      "type": "(e: FocusEvent<HTMLInputElement>) => void",
+      "description": "输入框获得焦点时触发的回调。"
     },
     {
-      name: 'onBlur',
-      type: '(e: FocusEvent<HTMLInputElement>) => void',
-      description: '输入框失去焦点时触发的回调。',
+      "name": "onBlur",
+      "type": "(e: FocusEvent<HTMLInputElement>) => void",
+      "description": "输入框失去焦点时触发的回调。"
     },
     {
-      name: 'onEnter',
-      type: '() => void',
-      description: '用户按下 Enter 键时触发的回调。',
+      "name": "onEnter",
+      "type": "() => void",
+      "description": "用户按下 Enter 键时触发的回调。"
     },
     {
-      name: 'containerXstyle',
-      type: 'StyleXStyles',
-      description:
-        '字段容器（标签、控件和状态整体）的 StyleX 样式。在 InputGroup 内（请改为设置 InputGroup 的样式）或 `horizontal-labels` FormLayout 中无效。不接受根级 `xstyle`、`className` 和 `style`。',
+      "name": "containerXstyle",
+      "type": "StyleXStyles",
+      "description": "字段容器（标签、控件和状态一起）的 StyleX 样式。在 InputGroup 内无效（请改为设置 InputGroup 样式），在 `horizontal-labels` FormLayout 中也无效。不接受根级 `xstyle`、`className` 和 `style`。"
     },
     {
-      name: 'containerClassName',
-      type: 'string',
-      description: '字段容器的类名，作用目标同 `containerXstyle`。',
+      "name": "containerClassName",
+      "type": "string",
+      "description": "字段容器的类名。定位方式与 `containerXstyle` 相同。"
     },
     {
-      name: 'containerStyle',
-      type: 'CSSProperties',
-      description: '字段容器的内联样式，作用目标同 `containerXstyle`。',
+      "name": "containerStyle",
+      "type": "CSSProperties",
+      "description": "字段容器的内联样式。定位方式与 `containerXstyle` 相同。"
     },
     {
-      name: 'controlXstyle',
-      type: 'StyleXStyles',
-      description:
-        '可视控件框的 StyleX 样式：绘制边框和背景并包含图标与尾部控件的元素，而非原生输入元素。',
+      "name": "controlXstyle",
+      "type": "StyleXStyles",
+      "description": "可视控件框的 StyleX 样式：绘制边框和背景并容纳图标和结束控件的元素。绝不是原生输入框。"
     },
     {
-      name: 'controlClassName',
-      type: 'string',
-      description: '可视控件框的类名。',
+      "name": "controlClassName",
+      "type": "string",
+      "description": "可视控件框的类名。"
     },
     {
-      name: 'controlStyle',
-      type: 'CSSProperties',
-      description: '可视控件框的内联样式。',
-    },
+      "name": "controlStyle",
+      "type": "CSSProperties",
+      "description": "可视控件框的内联样式。"
+    }
   ],
-  theming: {
-    targets: [
+  "theming": {
+    "targets": [
       {
-        className: 'astryx-number-input',
-        visualProps: ['size', 'status'],
-        states: ['disabled', 'readonly'],
+        "className": "astryx-number-input",
+        "visualProps": [
+          "size",
+          "status"
+        ],
+        "states": [
+          "disabled",
+          "readonly"
+        ]
+      }
+    ],
+    "derived": [
+      {
+        "property": "padding",
+        "expand": "container"
       },
-    ],
-    derived: [
-      // 任何写法的 `padding`（简写、`paddingBlock`，或单独的
-      // `paddingBlockStart`）都由共享的 container 展开解析，并输出为规范化的
-      // 每侧 `--astryx-number-input-padding-*` 令牌。容器与数字步进器列都读取
-      // 这些令牌，因此在主题化内边距下步进器仍与字段边缘齐平。
-      {property: 'padding', expand: 'container'},
-      // 作用域限于该组件自身的子树：步进器列的外角跟随字段圆角，因此主题化的
-      // `number-input` borderRadius 必须传到步进器读取的变量，而不只是容器
-      // 自身的 `border-radius`。
-      {property: 'borderRadius', vars: ['--_field-radius']},
-    ],
+      {
+        "property": "borderRadius",
+        "vars": [
+          "--_field-radius"
+        ]
+      }
+    ]
   },
-  usage: {
-    description:
-      'A form input for numeric values with built-in validation, min/max constraints, and step controls. Use NumberInput for quantities, measurements, percentages, and similar inputs.',
-    bestPractices: [
+  "usage": {
+    "description": "用于数值的表单输入框，内置校验、min/max 约束和步进控件。数量、度量、百分比及类似输入请使用 NumberInput。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          '可以直接粘贴带格式的数字：粘贴 1,234,234,234 会按字段所在区域设置解析，失去焦点时提交为 1234234234。输入过程中不会拦截按键。',
+        "guidance": true,
+        "description": "允许用户粘贴带格式的数字：粘贴的 1,234,234,234 会按字段的区域设置读取，并在失焦时提交为 1234234234。键入过程从不被拦截。"
       },
       {
-        guidance: true,
-        description:
-          'Set min, max, and step to guide users toward valid values.',
+        "guidance": true,
+        "description": "设置 min、max 和 step，引导用户输入有效值。"
       },
       {
-        guidance: true,
-        description:
-          'Show units (e.g. "%" or "GB") so users know what the number represents.',
+        "guidance": true,
+        "description": "显示单位（例如 \"%\" 或 \"GB\"），让用户知道数字代表什么。"
       },
       {
-        guidance: true,
-        description:
-          'Set isWheelEnabled={false} when the input appears in a scrolling surface where wheel gestures should always scroll the page.',
+        "guidance": true,
+        "description": "当输入框位于滚动表面、滚轮手势应始终滚动页面时，设置 isWheelEnabled={false}。"
       },
       {
-        guidance: false,
-        description:
-          'Use NumberInput for free-form text that happens to contain numbers; use TextInput instead.',
+        "guidance": false,
+        "description": "将 NumberInput 用于恰好包含数字的自由文本；请改用 TextInput。"
       },
       {
-        guidance: false,
-        description: 'Set both isOptional and isRequired on the same field.',
+        "guidance": false,
+        "description": "在同一字段上同时设置 isOptional 和 isRequired。"
       },
       {
-        guidance: false,
-        description:
-          "Wrap a disabled NumberInput in Tooltip to explain why it's disabled. Use the disabledMessage prop, which attaches the reason to the field itself.",
-      },
+        "guidance": false,
+        "description": "用 Tooltip 包裹禁用的 NumberInput 来解释其禁用原因。请使用 disabledMessage 属性，它会将原因附加到字段本身。"
+      }
     ],
-    anatomy: [
+    "anatomy": [
       {
-        name: 'Label',
-        required: true,
-        description: 'The label for the number input.',
+        "name": "标签",
+        "required": true,
+        "description": "数字输入框的标签。"
       },
       {
-        name: 'Description',
-        required: false,
-        description: 'Additional description text below the label.',
+        "name": "描述",
+        "required": false,
+        "description": "标签下方的附加描述文本。"
       },
       {
-        name: 'Icon',
-        required: false,
-        description: 'An optional icon within the input.',
+        "name": "图标",
+        "required": false,
+        "description": "输入框内的可选图标。"
       },
       {
-        name: 'Placeholder',
-        required: false,
-        description: 'Placeholder text shown when the input is empty.',
+        "name": "占位文本",
+        "required": false,
+        "description": "输入框为空时显示的占位文本。"
       },
       {
-        name: 'Number steppers',
-        required: false,
-        description:
-          'Optional buttons that increment or decrement by the configured step.',
-      },
-    ],
+        "name": "数字步进器",
+        "required": false,
+        "description": "按配置的 step 递增或递减的可选按钮。"
+      }
+    ]
   },
+  "propDescriptions": {
+    "label": "输入框的标签文本（始终为无障碍而渲染）。",
+    "value": "输入框的当前值。",
+    "onChange": "当有效的文本编辑在失焦或 Enter 时提交，或当步进或清除控件更改值时触发的回调。",
+    "size": "尺寸变体。",
+    "isLabelHidden": "在视觉上隐藏标签（屏幕阅读器仍可访问）。",
+    "description": "显示在标签和输入框之间的描述文本。",
+    "isOptional": "字段是否可选（与 isRequired 互斥）。",
+    "onKeyDown": "输入框上 keydown 事件触发的回调。",
+    "isRequired": "字段是否必填（与 isOptional 互斥）。",
+    "isDisabled": "输入框是否禁用。",
+    "isReadOnly": "使输入框只读：值以完全不透明显示，仍随表单提交，但无法编辑。与 isDisabled 不同，只读输入框不会变暗，并保留其表单值。只读时所有表单中的步进都关闭：方向键、滚轮和数字步进器。两者都设置时，isDisabled 优先。",
+    "disabledMessage": "解释输入框为何被禁用。与 isDisabled 搭配时，在悬停/键盘聚焦时显示工具提示，并通过 aria-disabled 保持输入框可聚焦（字段变为只读）。请使用此属性，而不是用 Tooltip 包裹禁用的 NumberInput。",
+    "placeholder": "占位文本。",
+    "labelTooltip": "在标签末尾的信息图标中显示的工具提示文本。",
+    "startIcon": "在输入框起始处显示的图标。有效语义名称参见 `astryx docs icons`。",
+    "labelIcon": "在标签文本之前显示的图标。有效语义名称参见 `astryx docs icons`。",
+    "status": "带可选消息的校验状态。键入时从不显示拒绝：键入的数字仅在提交时才完整。当 Enter 或失焦遇到非数字文本、仅整数字段中的小数，或 min 大于 max 时的任何数字时，文本会留在字段中，字段会用自己的错误消息替代 status。带消息的错误状态会替代该消息显示，拒绝仍会被播报并将字段标记为无效。警告或成功状态，或不带消息的错误状态，绝不会替换它。超出普通范围的数字会被钳制。",
+    "onEntryErrorChange": "每当字段对键入文本的拒绝发生变化时调用，拒绝结束时以 null 调用。拒绝仅在 Enter 或失焦时开始。kind 为 'unreadable'（非数字文本）、'fractional'（isIntegerOnly 时的小数）或 'outOfRange'（min 大于 max 时的任何数字）；text 是键入的文本；value 是它表示的数字，适用于 'fractional' 和 'outOfRange'。当编辑使文本变为有效或为空、当新的 value、min、max 或 isIntegerOnly 更改或结束拒绝、以及当禁用字段丢弃文本时，它也会运行，且同一拒绝绝不会重复调用；当字段在拒绝仍然存在时卸载，它报告 null。传入带消息的错误状态可自行表述拒绝。",
+    "entryErrorBehavior": "字段何时显示自己的条目错误：它拒绝的键入文本，即 onEntryErrorChange 报告的内容。它设置错误何时显示，而不是校验何时运行，因此不是 React Aria 的 validationBehavior（原生还是 ARIA 校验），也从不更改调用方状态。键入的数字仅在 Enter 或失焦时才完整，因此 'complete' 和 'blur-or-enter' 行为相同：消息、aria-invalid、无效样式、播报和 onEntryErrorChange 报告会在 Enter 或失焦时一起出现，绝不在用户键入时出现，而使文本有效或为空的编辑会立即清除错误。设置它使其与表单的其他字段匹配；字段自身的值优先于最近的 FormLayout 的 defaultEntryErrorBehavior。",
+    "statusVariant": "状态消息相对于输入框的放置方式。attached 直接重叠在输入框下方（带边框的处理）；detached 作为单独元素浮动在下方并留有间距；tooltip 隐藏消息框，并在状态图标上的工具提示中展示。",
+    "min": "允许的最小值。较小的输入会在失焦或 Enter 时以该值提交。",
+    "max": "允许的最大值。较大的输入会在失焦或 Enter 时以该值提交。",
+    "step": "输入框的步进增量。",
+    "formatValue": "在输入框未聚焦时格式化已提交的值。聚焦时显示原始数值以供编辑，格式化后的值通过 aria-valuetext 暴露。",
+    "isWheelEnabled": "在聚焦的输入框上滚动滚轮是否步进值。当页面滚动应始终优先时，禁用此功能。",
+    "hasNumberSteppers": "在精细指针上显示输入框末尾的递增和递减按钮。在粗略指针（如触摸屏）上隐藏；文本输入和键盘步进仍可用。用鼠标或笔按住按钮会重复步进，并在按住结束时提交一次。",
+    "units": "在输入框末尾显示的单位文本（例如 \"%\" 或 \"GB\"）。",
+    "isIntegerOnly": "仅允许整数值（无浮点数）。",
+    "hasClear": "输入框有值时显示清除（×）按钮。为 true 时，onChange 回调还接受 null，表示用户清除了输入框。",
+    "htmlName": "用于表单提交的 HTML name 属性。在失焦保留被拒绝文本期间，表单提交已提交的数字，直到用户编辑文本或新值替换它。",
+    "autoComplete": "HTML autocomplete 属性。",
+    "width": "字段宽度（数字 = 像素，字符串按原样使用，例如 \"100%\"）。设置整个字段（标签、控件和状态）的尺寸，使它们保持对齐。",
+    "hasAutoFocus": "是否在挂载时聚焦输入框。",
+    "onFocus": "输入框获得焦点时触发的回调。",
+    "onBlur": "输入框失去焦点时触发的回调。",
+    "onEnter": "用户按下 Enter 键时触发的回调。",
+    "containerXstyle": "字段容器（标签、控件和状态一起）的 StyleX 样式。在 InputGroup 内无效（请改为设置 InputGroup 样式），在 `horizontal-labels` FormLayout 中也无效。不接受根级 `xstyle`、`className` 和 `style`。",
+    "containerClassName": "字段容器的类名。定位方式与 `containerXstyle` 相同。",
+    "containerStyle": "字段容器的内联样式。定位方式与 `containerXstyle` 相同。",
+    "controlXstyle": "可视控件框的 StyleX 样式：绘制边框和背景并容纳图标和结束控件的元素。绝不是原生输入框。",
+    "controlClassName": "可视控件框的类名。",
+    "controlStyle": "可视控件框的内联样式。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

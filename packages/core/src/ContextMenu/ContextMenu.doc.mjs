@@ -222,36 +222,98 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  usage: {
-    description:
-      '右键点击时在光标位置出现的上下文菜单。用于为特定元素或区域提供上下文操作，而不使 UI 杂乱。',
-    bestPractices: [
-      {guidance: true, description: '保持菜单项简洁和面向操作。'},
-      {guidance: true, description: '有很多项时使用分组和分隔线。'},
+  "usage": {
+    "description": "在光标位置出现的右键上下文菜单。用于为特定元素或区域提供上下文操作，而无需用可见按钮弄乱界面。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          '在桌面端需要光标定位、紧凑触控设备上需要 BottomSheet 时，使用 `presentation="adaptive"`。',
+        "guidance": true,
+        "description": "菜单项应简洁且以操作为导向；用户期望快速访问上下文操作。"
       },
       {
-        guidance: true,
-        description: '确保所有上下文菜单操作也可通过其他 UI 元素访问。',
+        "guidance": true,
+        "description": "当菜单项较多时，使用分区和分隔线对相关操作分组。"
       },
       {
-        guidance: true,
-        description:
-          '重要的移动端操作还应提供可见的 MoreMenu 或同等入口，不要只依赖长按。',
+        "guidance": true,
+        "description": "当桌面端右键应保持光标定位、而紧凑触摸设备上长按应打开易于触达的 BottomSheet 时，使用 `presentation=\"adaptive\"`。"
       },
       {
-        guidance: false,
-        description: '将上下文菜单作为访问重要操作的唯一方式。',
+        "guidance": true,
+        "description": "确保仅使用键盘的用户也能通过其他 UI 元素访问所有上下文菜单操作。"
       },
       {
-        guidance: false,
-        description: '在单个菜单中放置超过 10-12 个项而不分组。',
+        "guidance": true,
+        "description": "为重要的移动端操作保留可见的 MoreMenu 或等效触发器；长按不能是唯一入口。"
       },
+      {
+        "guidance": false,
+        "description": "不要将 ContextMenu 作为访问重要操作的唯一方式；并非所有用户都知道要右键点击。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在单个菜单中放置超过 10–12 个菜单项而不将其分组到各分区。"
+      }
     ],
+    "anatomy": [
+      {
+        "name": "触发区域",
+        "required": true,
+        "description": "调用方提供的区域，接受右键、键盘上下文菜单键和长按输入。"
+      },
+      {
+        "name": "指针菜单表面",
+        "required": false,
+        "description": "指针呈现方式使用的、定位在光标处的菜单面板。"
+      },
+      {
+        "name": "指针操作行",
+        "required": false,
+        "description": "指针呈现方式中由 DropdownMenu 拥有的操作、可选项或子菜单行。"
+      },
+      {
+        "name": "触摸面板框架",
+        "required": false,
+        "description": "承载触摸操作的 BottomSheet 面板、内容区、把手和可选遮罩。"
+      },
+      {
+        "name": "触摸菜单表面",
+        "required": false,
+        "description": "渲染在触摸面板框架内、由 ContextMenu 拥有的内容面板。"
+      },
+      {
+        "name": "触摸操作列表",
+        "required": false,
+        "description": "对数据驱动的触摸操作进行分组、间距宽松的 List。"
+      },
+      {
+        "name": "触摸操作行",
+        "required": false,
+        "description": "触摸呈现方式中用于数据驱动操作或下钻入口的 ListItem 按钮。"
+      }
+    ]
   },
+  "name": "ContextMenu",
+  "displayName": "Context Menu",
+  "description": "在右键点击处、光标位置出现的上下文菜单。将触发内容包裹为 children。",
+  "propDescriptions": {
+    "children": "触发区域：在此内容上右键点击以打开菜单。",
+    "items": "数据驱动的菜单条目。`items` 或 `menuContent` 必须且只能传入一个。每个条目为以下之一：操作条目 `{label, onClick?, icon?, isDisabled?, variant?, items?}`（嵌套 `items` 在 popover 呈现方式中打开飞出菜单，在 bottom-sheet 呈现方式中下钻到新视图；`variant` 为 `\"destructive\"` 时以错误色渲染）、分隔线 `{type: \"divider\"}`，或分区 `{type: \"section\", title?, items: [...action items]}`。",
+    "menuContent": "复合模式下自定义的 JSX 菜单内容。`menuContent` 或 `items` 必须且只能传入一个。",
+    "menuWidth": "自定义菜单宽度。",
+    "size": "菜单项的尺寸：控制内边距密度。",
+    "label": "菜单表面的可访问名称，打开时会被朗读。",
+    "onOpenChange": "菜单打开或关闭时触发的回调。",
+    "presentation": "呈现策略。`popover` 在指针位置打开，`bottom-sheet` 始终使用操作面板，`adaptive` 在紧凑触摸屏幕上使用 BottomSheet：主指针为粗指针，且视口宽度小于主题 `md` 断点（默认 768px）或高度小于 500px。",
+    "isDisabled": "为 true 时，右键点击改为显示浏览器原生上下文菜单。",
+    "triggerXstyle": "应用于触发包裹层的样式。接受 `stylex.create()` 的值，而不是内联样式对象。",
+    "triggerAs": "触发包裹层渲染为的元素。`div` 为块级元素，`span` 为内联包裹层，因此正文中的引用可以拥有上下文菜单而不破坏文本流。"
+  },
+  "components": [
+    {
+      "name": "ContextMenuItem",
+      "description": ""
+    }
+  ]
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

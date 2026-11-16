@@ -582,192 +582,169 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'Stack',
-  displayName: 'Stack',
-  group: 'Layout',
-  theming: {
-    targets: [
-      {className: 'astryx-stack', visualProps: ['direction', 'gap', 'wrap']},
-      {className: 'astryx-stack-item', visualProps: ['size']},
-    ],
+  "name": "Stack",
+  "displayName": "Stack",
+  "group": "Layout",
+  "theming": {
+    "targets": [
+      {
+        "className": "astryx-stack",
+        "visualProps": [
+          "direction",
+          "gap",
+          "wrap"
+        ]
+      },
+      {
+        "className": "astryx-stack-item",
+        "visualProps": [
+          "size"
+        ]
+      }
+    ]
   },
-  components: [
+  "components": [
     {
-      name: 'HStack',
-      isHiddenFromOverview: true,
-      displayName: 'H Stack',
-      description:
-        '水平堆叠组件，沿行内方向排列元素：LTR 中从左到右，RTL 中从右到左。支持多态渲染。',
-      props: [
-        {
-          name: 'gap',
-          type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-          description:
-            '间距步进（数字字面量）：0、0.5、1、1.5、2、3、4、5、6、8、10。在 JSX 中使用数字表达式 e.g. gap={4}，不要使用字符串 gap="4"。',
-        },
-        {
-          name: 'width',
-          type: 'SizeValue',
-          description: '堆叠容器的宽度。数字按像素处理，字符串原样使用（如 \'100%\'）。',
-        },
-        {
-          name: 'height',
-          type: 'SizeValue',
-          description: '堆叠容器的高度。数字按像素处理，字符串原样使用（如 \'100%\'）。',
-        },
-        {
-          name: 'hAlign',
-          type: "'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'",
-          description: '水平（主轴）对齐方式。',
-        },
-        {
-          name: 'vAlign',
-          type: "'start' | 'center' | 'end' | 'stretch'",
-          description: '元素的垂直（交叉轴）对齐方式。',
-          default: "'stretch'",
-        },
-        {
-          name: 'justify',
-          type: "'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'",
-          description: 'hAlign 的别名。对应 CSS justify-content。同时设置 hAlign 时，以 hAlign 为准。',
-        },
-        {
-          name: 'align',
-          type: "'start' | 'center' | 'end' | 'stretch'",
-          description: 'vAlign 的别名。对应 CSS align-items。同时设置 vAlign 时，以 vAlign 为准。',
-        },
-        {
-          name: 'wrap',
-          type: "'nowrap' | 'wrap' | 'wrap-reverse'",
-          description: 'Flex 换行行为。',
-          default: "'nowrap'",
-        },
-        {
-          name: 'as',
-          type: 'ElementType',
-          description: '作为堆叠容器渲染的 HTML 元素。',
-          default: "'div'",
-        },
-        {
-          name: 'children',
-          type: 'ReactNode',
-          description: '堆叠内容。',
-        },
-        {
-          name: 'xstyle',
-          type: 'StyleXStyles',
-          description:
-            '用于布局自定义的 StyleX 样式（外边距、定位、尺寸）。必须是 stylex.create() 的值，而非内联样式对象如 style={{}}。',
-        },
-      ],
+      "name": "Stack",
+      "description": "统一的 Stack 布局组件，带有 direction 属性。使用 direction=\"horizontal\" 沿行内轴排列（LTR 中从左到右，RTL 中从右到左），或使用 direction=\"vertical\"（默认）从上到下排列。为方便起见，HStack 和 VStack 是预配置的包装器。",
+      "propDescriptions": {
+        "direction": "Stack 布局的方向。'horizontal' 沿行内轴排列项目，LTR 中从左到右，RTL 中从右到左（类似 HStack）；'vertical' 从上到下排列（类似 VStack）。注意：值是 'horizontal'，不是 'row'。",
+        "gap": "间距刻度（数字字面量）：0、0.5、1、1.5、2、3、4、5、6、8、10。以 JSX 数字表达式传入，例如 gap={4}，而不是像 gap=\"4\" 这样的字符串。",
+        "padding": "使用间距刻度的四边内边距。以 JSX 数字表达式传入，例如 padding={3}。",
+        "paddingInline": "行内（水平）内边距。两者都设置时，覆盖行内轴上的 padding。",
+        "paddingInlineStart": "行内起始内边距，使用间距刻度（LTR 中为左，RTL 中为右）。仅在该边缘覆盖 paddingInline 和 padding。",
+        "paddingInlineEnd": "行内结束内边距，使用间距刻度（LTR 中为右，RTL 中为左）。仅在该边缘覆盖 paddingInline 和 padding。",
+        "paddingBlock": "块级（垂直）内边距。两者都设置时，覆盖块轴上的 padding。",
+        "paddingBlockStart": "块级起始（顶部）内边距，使用间距刻度。仅在该边缘覆盖 paddingBlock 和 padding。",
+        "paddingBlockEnd": "块级结束（底部）内边距，使用间距刻度。仅在该边缘覆盖 paddingBlock 和 padding。",
+        "isScrollable": "启用可滚动溢出（overflow: auto）。",
+        "width": "Stack 容器的宽度。数字按像素处理，字符串按原样使用（例如 '100%'）。",
+        "height": "Stack 容器的高度。数字按像素处理，字符串按原样使用（例如 '100%'）。",
+        "maxWidth": "Stack 容器的最大宽度。",
+        "minHeight": "Stack 容器的最小高度。",
+        "hAlign": "水平对齐。当 direction='horizontal' 时：主轴（justify-content）。当 direction='vertical' 时：交叉轴（align-items）。",
+        "vAlign": "垂直对齐。当 direction='horizontal' 时：交叉轴（align-items）。当 direction='vertical' 时：主轴（justify-content）。",
+        "justify": "主轴对齐别名。解析为 hAlign（水平）或 vAlign（垂直）。注意：使用 'between'，不是 'space-between'。",
+        "align": "交叉轴对齐别名。对应 CSS align-items。",
+        "wrap": "Flex 换行行为。",
+        "as": "作为 Stack 容器渲染的 HTML 元素。",
+        "children": "Stack 内容。",
+        "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 值，而不是像 style={{}} 这样的内联样式对象。",
+        "className": "添加到 Stack 元素的类名，位于组件样式之后。",
+        "style": "Stack 元素的内联样式。width、height、maxWidth 和 minHeight 优先于这里的同名属性。",
+        "ref": "指向渲染后的 Stack 元素的 ref。"
+      }
     },
     {
-      name: 'VStack',
-      isHiddenFromOverview: true,
-      displayName: 'V Stack',
-      description:
-        '垂直堆叠组件，将元素从上到下排列。支持多态渲染。',
-      props: [
-        {
-          name: 'gap',
-          type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-          description:
-            '间距步进（数字字面量）：0、0.5、1、1.5、2、3、4、5、6、8、10。在 JSX 中使用数字表达式 e.g. gap={4}，不要使用字符串 gap="4"。',
-        },
-        {
-          name: 'width',
-          type: 'SizeValue',
-          description: '堆叠容器的宽度。数字按像素处理，字符串原样使用（如 \'100%\'）。',
-        },
-        {
-          name: 'height',
-          type: 'SizeValue',
-          description: '堆叠容器的高度。数字按像素处理，字符串原样使用（如 \'100%\'）。',
-        },
-        {
-          name: 'hAlign',
-          type: "'start' | 'center' | 'end' | 'stretch'",
-          description: '元素的水平（交叉轴）对齐方式。',
-          default: "'stretch'",
-        },
-        {
-          name: 'vAlign',
-          type: "'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'",
-          description: '垂直（主轴）对齐方式。',
-        },
-        {
-          name: 'justify',
-          type: "'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'",
-          description: 'vAlign 的别名。对应 CSS justify-content。',
-        },
-        {
-          name: 'align',
-          type: "'start' | 'center' | 'end' | 'stretch'",
-          description: 'hAlign 的别名。对应 CSS align-items。',
-        },
-        {
-          name: 'wrap',
-          type: "'nowrap' | 'wrap' | 'wrap-reverse'",
-          description: 'Flex 换行行为。',
-          default: "'nowrap'",
-        },
-        {
-          name: 'as',
-          type: 'ElementType',
-          description: '作为堆叠容器渲染的 HTML 元素。',
-          default: "'div'",
-        },
-        {
-          name: 'children',
-          type: 'ReactNode',
-          description: '堆叠内容。',
-        },
-      ],
+      "name": "HStack",
+      "description": "沿行内轴排列项目的水平 Stack：LTR 中从左到右，RTL 中从右到左。支持多态渲染。",
+      "propDescriptions": {
+        "gap": "间距刻度（数字字面量）：0、0.5、1、1.5、2、3、4、5、6、8、10。以 JSX 数字表达式传入，例如 gap={4}，而不是像 gap=\"4\" 这样的字符串。",
+        "padding": "使用间距刻度（0、0.5、1、1.5、2、3、4、5、6、8、10）的四边内边距。与 Card、LayoutContent 和 LayoutPanel 上的 padding 属性一致。以 JSX 数字表达式传入，例如 padding={3}。",
+        "paddingInline": "行内（水平）内边距，使用间距刻度。两者都设置时，覆盖行内轴上的 padding。",
+        "paddingInlineStart": "行内起始内边距，使用间距刻度（LTR 中为左，RTL 中为右）。仅在该边缘覆盖 paddingInline 和 padding。",
+        "paddingInlineEnd": "行内结束内边距，使用间距刻度（LTR 中为右，RTL 中为左）。仅在该边缘覆盖 paddingInline 和 padding。",
+        "paddingBlock": "块级（垂直）内边距，使用间距刻度。两者都设置时，覆盖块轴上的 padding。",
+        "paddingBlockStart": "块级起始（顶部）内边距，使用间距刻度。仅在该边缘覆盖 paddingBlock 和 padding。",
+        "paddingBlockEnd": "块级结束（底部）内边距，使用间距刻度。仅在该边缘覆盖 paddingBlock 和 padding。",
+        "isScrollable": "启用可滚动溢出（overflow: auto）。与 LayoutContent 和 LayoutPanel 上的 isScrollable 一致。",
+        "width": "Stack 容器的宽度。数字按像素处理，字符串按原样使用（例如 '100%'）。",
+        "height": "Stack 容器的高度。数字按像素处理，字符串按原样使用（例如 '100%'）。",
+        "maxWidth": "Stack 容器的最大宽度。数字按像素处理，字符串按原样使用（例如 '100%'）。",
+        "minHeight": "Stack 容器的最小高度。数字按像素处理，字符串按原样使用（例如 '100%'）。",
+        "hAlign": "项目的水平（主轴）对齐。",
+        "vAlign": "项目的垂直（交叉轴）对齐。",
+        "justify": "hAlign 的主轴对齐别名。对应 CSS justify-content。当同时设置 hAlign 时，hAlign 优先。",
+        "align": "vAlign 的交叉轴对齐别名。对应 CSS align-items。当同时设置 vAlign 时，vAlign 优先。",
+        "wrap": "Flex 换行行为。",
+        "as": "作为 Stack 容器渲染的 HTML 元素。",
+        "children": "Stack 内容。",
+        "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 值，而不是像 style={{}} 这样的内联样式对象。",
+        "className": "添加到 Stack 元素的类名，位于组件样式之后。",
+        "style": "Stack 元素的内联样式。width、height、maxWidth 和 minHeight 优先于这里的同名属性。",
+        "ref": "指向渲染后的 Stack 元素的 ref。"
+      }
     },
     {
-      name: 'StackItem',
-      isHiddenFromOverview: true,
-      displayName: 'Stack Item',
-      description:
-        '堆叠子元素，用于控制堆叠中单个元素的行为。支持多态渲染。',
-      props: [
-        {
-          name: 'size',
-          type: "'static' | 'fill'",
-          description:
-            'Flex 增长行为：static 保持自然尺寸，fill 扩展以占据剩余空间。',
-          default: "'static'",
-        },
-        {
-          name: 'crossAlignSelf',
-          type: "'start' | 'center' | 'end' | 'stretch'",
-          description:
-            '覆盖此元素的交叉轴对齐方式，忽略父堆叠的对齐设置。',
-        },
-        {
-          name: 'as',
-          type: 'ElementType',
-          description: '作为子元素包装器渲染的 HTML 元素。',
-          default: "'div'",
-        },
-        {
-          name: 'children',
-          type: 'ReactNode',
-          description: '子元素内容。',
-        },
-      ],
+      "name": "VStack",
+      "description": "从上到下排列项目的垂直 Stack。支持多态渲染。",
+      "propDescriptions": {
+        "gap": "间距刻度（数字字面量）：0、0.5、1、1.5、2、3、4、5、6、8、10。以 JSX 数字表达式传入，例如 gap={4}，而不是像 gap=\"4\" 这样的字符串。",
+        "padding": "使用间距刻度（0、0.5、1、1.5、2、3、4、5、6、8、10）的四边内边距。与 Card、LayoutContent 和 LayoutPanel 上的 padding 属性一致。以 JSX 数字表达式传入，例如 padding={3}。",
+        "paddingInline": "行内（水平）内边距，使用间距刻度。两者都设置时，覆盖行内轴上的 padding。",
+        "paddingInlineStart": "行内起始内边距，使用间距刻度（LTR 中为左，RTL 中为右）。仅在该边缘覆盖 paddingInline 和 padding。",
+        "paddingInlineEnd": "行内结束内边距，使用间距刻度（LTR 中为右，RTL 中为左）。仅在该边缘覆盖 paddingInline 和 padding。",
+        "paddingBlock": "块级（垂直）内边距，使用间距刻度。两者都设置时，覆盖块轴上的 padding。",
+        "paddingBlockStart": "块级起始（顶部）内边距，使用间距刻度。仅在该边缘覆盖 paddingBlock 和 padding。",
+        "paddingBlockEnd": "块级结束（底部）内边距，使用间距刻度。仅在该边缘覆盖 paddingBlock 和 padding。",
+        "isScrollable": "启用可滚动溢出（overflow: auto）。与 LayoutContent 和 LayoutPanel 上的 isScrollable 一致。",
+        "width": "Stack 容器的宽度。数字按像素处理，字符串按原样使用（例如 '100%'）。",
+        "height": "Stack 容器的高度。数字按像素处理，字符串按原样使用（例如 '100%'）。",
+        "maxWidth": "Stack 容器的最大宽度。数字按像素处理，字符串按原样使用（例如 '100%'）。",
+        "minHeight": "Stack 容器的最小高度。数字按像素处理，字符串按原样使用（例如 '100%'）。",
+        "hAlign": "项目的水平（交叉轴）对齐。",
+        "vAlign": "项目的垂直（主轴）对齐。",
+        "justify": "vAlign 的主轴对齐别名。对应 CSS justify-content。",
+        "align": "hAlign 的交叉轴对齐别名。对应 CSS align-items。",
+        "wrap": "Flex 换行行为。",
+        "as": "作为 Stack 容器渲染的 HTML 元素。",
+        "children": "Stack 内容。",
+        "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 值，而不是像 style={{}} 这样的内联样式对象。",
+        "className": "添加到 Stack 元素的类名，位于组件样式之后。",
+        "style": "Stack 元素的内联样式。width、height、maxWidth 和 minHeight 优先于这里的同名属性。",
+        "ref": "指向渲染后的 Stack 元素的 ref。"
+      }
     },
+    {
+      "name": "StackItem",
+      "description": "用于控制 Stack 中单个项目行为的 Stack 项目。支持多态渲染。",
+      "propDescriptions": {
+        "size": "Flex 增长行为：static 保持自然尺寸，fill 扩展以占用剩余空间。",
+        "isScrollable": "启用可滚动溢出（overflow: auto）。StackItem 已应用 flex 最小高度/最小宽度重置，因此 <StackItem size=\"fill\" isScrollable> 是完整的滚动区域。与 LayoutContent 和 LayoutPanel 上的 isScrollable 一致。当内容溢出时，div 或 span 项是一个由 aria-label 或本地化的 \"Content\" 命名的组；其他元素保留自己的 role。",
+        "crossAlignSelf": "覆盖此单个项目的交叉轴对齐，忽略父 Stack 的对齐。",
+        "as": "作为项目包装器渲染的 HTML 元素。",
+        "children": "项目内容。",
+        "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 值，而不是像 style={{}} 这样的内联样式对象。",
+        "className": "添加到项目元素的类名，位于组件样式之后。",
+        "style": "项目元素的内联样式。",
+        "ref": "指向渲染后的项目元素的 ref。"
+      }
+    }
   ],
-  usage: {
-    anatomy,
-    description:
-      'Stack arranges items in a row or column with consistent spacing. Use the gap prop to control the space between items.',
-    bestPractices: [
-      { guidance: true, description: 'Use the gap prop for spacing between items; don\'t add margins manually.' },
-      { guidance: true, description: 'Use StackItem with size="fill" to make one item stretch and fill the leftover space.' },
-      { guidance: false, description: 'Nest stacks inside stacks; try wrap="wrap" first to let items flow to the next line.' },
+  "usage": {
+    "anatomy": [
+      {
+        "name": "Stack 容器",
+        "required": true,
+        "description": "沿一个 flex 轴排列内容的布局容器。"
+      },
+      {
+        "name": "项目",
+        "required": false,
+        "description": "可选的 StackItem 包装器，用于控制 Stack 中的单个项目。"
+      },
+      {
+        "name": "内容",
+        "required": false,
+        "description": "由 Stack 或 StackItem 渲染的调用方内容。"
+      }
     ],
-  },
+    "description": "Stack 以行或列排列项目，并保持一致的间距。使用 gap 属性控制项目之间的空间。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "使用 gap 属性设置项目间距；不要手动添加外边距。"
+      },
+      {
+        "guidance": true,
+        "description": "使用 size=\"fill\" 的 StackItem 让某个项目拉伸并填满剩余空间。"
+      },
+      {
+        "guidance": false,
+        "description": "不要嵌套 Stack；先尝试 wrap=\"wrap\"，让项目流到下一行。"
+      }
+    ]
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

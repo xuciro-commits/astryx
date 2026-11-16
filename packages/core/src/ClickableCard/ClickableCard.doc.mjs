@@ -85,3 +85,56 @@ export const docsDense = {
     maxWidth: 'max card width',
   },
 };
+
+export const docsZh = {
+  "name": "ClickableCard",
+  "displayName": "Clickable Card",
+  "usage": {
+    "description": "用于导航或操作目标的交互式卡片。嵌套的交互元素可独立工作。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "用于导航到详情页或触发单个操作的卡片。"
+      },
+      {
+        "guidance": true,
+        "description": "可以自由地在其中嵌套按钮或链接；它们会处理自己的事件。"
+      },
+      {
+        "guidance": false,
+        "description": "不要用于切换选择状态；这种情况请使用 SelectableCard。"
+      },
+      {
+        "guidance": false,
+        "description": "仅当需要借用按压模型让自带盒子的表面可交互时，才配合透明变体和无内边距使用。请改用 useClickableContainer 文档中无边框组合的配方：它不会向页面添加任何 Card 样式。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "容器",
+        "required": true,
+        "description": "具有 hover/focus/active 状态的交互式 div。"
+      },
+      {
+        "name": "内容",
+        "required": true,
+        "description": "children，其中可以包含嵌套的交互元素。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "label": "无障碍标签。",
+    "onClick": "点击处理函数：仅在卡片表面触发。",
+    "href": "导航 URL。普通点击、新标签页、Cmd/Ctrl 点击和中键激活均遵循 Link `href` 属性上描述的共享导航规则。",
+    "target": "链接目标。",
+    "isDisabled": "禁用卡片并移除链接目标；卡片保留其 Tab 停靠点，并会被宣布为已禁用。",
+    "children": "卡片内容。",
+    "padding": "内部内边距。",
+    "variant": "背景颜色变体。",
+    "elevation": "静止时的阴影深度。通常提升以暗示整张卡片可点击。",
+    "width": "卡片宽度。",
+    "height": "卡片高度。",
+    "maxWidth": "卡片最大宽度。",
+    "xstyle": "用于布局自定义（边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 值，而不是 style={{}} 这样的内联样式对象。"
+  }
+};

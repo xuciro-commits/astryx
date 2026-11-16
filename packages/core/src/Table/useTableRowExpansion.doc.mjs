@@ -143,3 +143,19 @@ export const docsDense = {
       'Handle from useAnimatedLayout: opening or closing a panel glides the rows after it instead of jumping them. Under Reduce Motion they fade in place on touch and change at once with a mouse; with column lines they change at once.',
   },
 };
+
+export const docsZh = {
+  "name": "useTableRowExpansion",
+  "description": "返回 TablePlugin 的 Hook，该插件在行下方展开一个全宽详情面板，由使用方通过 renderExpanded(item) 渲染。添加一个前置尖角符号列和一个右键 \"Expand/Collapse row\" 操作；expandedKeys 集合由使用方持有。面板横跨整行，但内容从第一列开始（越过尖角符号），因此详情与上方标签对齐；缩进遵循表格密度。用于主从行（订单详情、表单、图表、嵌套表格）。如果子行复用父列，请改用 useTableTreeData + useTableTreeState。",
+  "propDescriptions": {
+    "expandedKeys": "当前已展开行的键集合。由使用方持有。",
+    "onToggle": "行的展开状态切换时（点击尖角符号或上下文菜单操作）以该行的键调用。",
+    "getRowKey": "从行项目派生稳定唯一的键。",
+    "getRowLabel": "为尖角符号的无障碍名称派生人类可读的行标识。Astryx 会将其与本地化的展开/折叠措辞组合。省略它或返回空白文本，以保留通用的 \"Expand row\" 和 \"Collapse row\" 标签。",
+    "renderExpanded": "行展开时渲染显示在行下方全宽面板中的详情内容。接收行项目。",
+    "getIsItemExpandable": "控制哪些行可展开。不可展开的行不显示尖角符号、不显示上下文菜单操作，也永不渲染面板。默认所有行可展开。",
+    "panelVariant": "详情面板背景。'transparent'（默认）不绘制任何内容：面板是行的延续，采用表格所在的表面，因此 Card 会透出，条纹表格的斑马纹也保持不变。'muted' 会对其着色，将其标记为注释而不是另一行数据——在无卡片、无分隔线或条纹的裸表格中，其他元素无法做出这种区分时使用。该着色是低透明度的近黑色，因此在深色卡片上几乎不可见：'muted' 主要是浅色主题效果。",
+    "hasRowClickExpansion": "点击行的任意位置即可切换该行，而不仅限于尖角符号。这是在尖角符号之上叠加的指针便捷方式，尖角符号仍是键盘和辅助技术使用的无障碍控件。点击交互式单元格内容（按钮、链接、表单控件）或文本选择不会切换，不可展开的行保持惰性。",
+    "animatedLayout": "来自 useAnimatedLayout 的句柄。提供后，打开或关闭面板会让其后的行（以及表格后的内容）平滑移动到新位置而不是跳跃，打开的面板以相同动态效果播放，每行的分隔线也随之移动。在减少动态效果下，触摸屏上的行原地淡入，鼠标操作则即时变化；在带列线（分隔线列或网格，目前不会移动）的表格中，它们即时变化。不提供时，行会跳跃。"
+  }
+};

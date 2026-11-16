@@ -38,3 +38,13 @@ export const docsDense = {
     xstyle: 'StyleX styles for layout customization',
   },
 };
+
+export const docsZh = {
+  "name": "TableFooter",
+  "displayName": "Table Footer",
+  "description": "用于 children 模式的 <tfoot> 包装器。在主表体下方承载汇总行或总计行。行必须位于某个分区内：<table> 不能直接包含 <tr>，因为 HTML 解析器在解析服务端渲染的标记时会插入一个隐含的 <tbody>，而 React 在客户端渲染时不会，导致两棵树在 hydration 时不一致。仅限 children 模式：数据驱动的 data={...} 路径只渲染表头和表体，从不渲染表尾。",
+  "propDescriptions": {
+    "children": "<tfoot> 行。",
+    "xstyle": "用于布局自定义的 StyleX 样式。必须是 stylex.create() 值，而不是 style={{}} 这样的内联样式对象。"
+  }
+};

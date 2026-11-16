@@ -25,24 +25,25 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'useTableStickyColumns',
-  displayName: 'useTableStickyColumns',
-  description:
-    '返回 TablePlugin 的 Hook，将一组连续的列固定到表格的起始和/或结束边缘。固定的列具有累积偏移量，并在滚动内容上方显示柔和的、随滚动感知的阴影。空配置 ({}) 是有效的空操作，不固定任何列。',
-  props: [
+  "name": "useTableStickyColumns",
+  "displayName": "useTableStickyColumns",
+  "description": "返回 TablePlugin 的 Hook，该插件将连续的一组列固定在表格的起始和/或结束边缘。固定列获得累积偏移量，并在滚动内容上显示柔和的、感知滚动的阴影。空配置（{}）是有效的无操作配置，不固定任何列。",
+  "props": [
     {
-      name: 'startKeys',
-      type: 'string[]',
-      description:
-        '固定到起始（inline-start / LTR 中为左侧）边缘的列键——从第一列到最后列出的键的连续范围。',
+      "name": "startKeys",
+      "type": "string[]",
+      "description": "固定在起始（行内起始 / LTR 中为左）边缘的列键：从第一列到所列最后一个键的连续区间。"
     },
     {
-      name: 'endKeys',
-      type: 'string[]',
-      description:
-        '固定到结束（inline-end / LTR 中为右侧）边缘的列键——从第一个列出的键到最后一列的连续范围。',
-    },
+      "name": "endKeys",
+      "type": "string[]",
+      "description": "固定在结束（行内结束 / LTR 中为右）边缘的列键：从所列第一个键到最后一列的连续区间。"
+    }
   ],
+  "propDescriptions": {
+    "startKeys": "固定在起始（行内起始 / LTR 中为左）边缘的列键：从第一列到所列最后一个键的连续区间。",
+    "endKeys": "固定在结束（行内结束 / LTR 中为右）边缘的列键：从所列第一个键到最后一列的连续区间。"
+  }
 };
 
 export const docsDense = {

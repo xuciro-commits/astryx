@@ -123,17 +123,77 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'ChatLayout',
-  displayName: 'Chat Layout',
-  description: '完整聊天界面的布局外壳。消息在页面中自然流动，编写器固定在底部，带有毛玻璃效果。通过 density 属性控制密度。在可视视口会随软键盘缩小的浏览器中，编写器停在键盘上方，停留在最新消息的对话保持在最新消息。在 Android 上的 Chrome 中，编写器随 Gboard 的滑动同步移动。在 iOS 上的 Safari（浏览器中和添加到主屏幕的网页应用）和 Android 上的 Firefox 中，编写器会在浏览器报告键盘后移到键盘上方。在触摸屏上的顶层页面中，进入编写器文本的每种方式（轻点、键盘的上一项和下一项按钮、Tab、输入框的 focus()）都会聚焦它而不滚动页面；使用鼠标或在 iframe 中时沿用浏览器自身的聚焦行为。如果页面设置了 interactive-widget=resizes-content，Android 上的 Chrome 会自行为键盘缩小页面，编写器停在键盘上方而不移动（参见浏览器支持指南）。',
-  propDescriptions: {
-    children: '消息内容，通常是 ChatMessageList。在页面中自然流动。',
-    composer: '编写器元素，通常是 ChatComposer。固定在底部，带有毛玻璃底座。',
-    emptyState: '子元素为空时显示的内容。',
-    scrollButton: '编写器上方的滚动到底部按钮。默认使用 ChatLayoutScrollButton。传入 null 隐藏。',
-    scrollRef: '外部滚动容器引用。提供时，自动滚动和滚动到底部将目标指向此元素。',
-    density: '视觉密度：控制底座内边距、消息区最大宽度和毛玻璃层高度。',
+  "name": "ChatLayout",
+  "displayName": "Chat Layout",
+  "description": "用于完整聊天界面的布局外壳。消息按正常页面流排列，输入区固定于底部，并带有毛玻璃停靠区。设置 density（compact/balanced/spacious）可控制间距、消息最大宽度和模糊层尺寸。内置自动滚动、“新消息”滚动到底部按钮，以及输入区后方的毛玻璃模糊层。默认情况下布局根元素就是滚动容器；传入 scrollRef 可将滚动委托给父元素或文档 body。当软件键盘使可视视口缩小时，输入区保持在键盘上方，位于最新消息处的对话也停留在原处。在 Android 的 Chrome 中，输入区会随 Gboard 的滑动同步移动。在 iOS 的 Safari（浏览器内及主屏幕应用）和 Android 的 Firefox 中，浏览器报告键盘出现后，输入区会移动到键盘上方。在触摸屏的顶层页面中，进入输入区文本的每种方式（点按、键盘的上一个或下一个按钮、Tab、输入框的 focus()）都会聚焦它而不滚动页面；在鼠标环境下或 iframe 内则应用浏览器自身的聚焦行为。当页面设置 interactive-widget=resizes-content 时，Android 的 Chrome 会自行按键盘缩小页面，输入区无需移动即可保持在键盘上方（参见浏览器支持指南）。",
+  "propDescriptions": {
+    "children": "消息内容：通常是 ChatMessageList。在页面中自然流动，并随容器滚动。",
+    "composer": "输入区元素：通常是 ChatComposer。通过毛玻璃停靠区固定于底部。",
+    "emptyState": "children 为空时显示的内容。在消息区域中垂直居中。",
+    "scrollButton": "渲染在输入区上方的滚动到底部按钮。默认为带自动滚动集成的 ChatLayoutScrollButton。传入 null 可隐藏。",
+    "scrollRef": "外部滚动容器 ref。提供后，自动滚动和滚动到底部会以该元素而不是布局根元素为目标。当聊天嵌入到由父元素或文档 body 滚动的页面时使用。",
+    "density": "视觉密度：控制停靠区内边距、消息区域最大宽度与行内内边距，以及毛玻璃模糊层的高度。"
   },
+  "usage": {
+    "description": "ChatLayout 是整页聊天界面的布局外壳。它按正常页面流渲染消息，并通过毛玻璃模糊层将输入区停靠到底部。用 density 属性控制间距，默认为 balanced。用它包裹 ChatMessageList 和 ChatComposer，即可获得带内置自动滚动和滚动到底部按钮的完整聊天体验。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将 ChatMessageList 作为 children、ChatComposer 作为 composer 属性传入，构成完整的聊天界面。"
+      },
+      {
+        "guidance": true,
+        "description": "提供 emptyState，让新对话显示引导提示，而不是空白屏幕。"
+      },
+      {
+        "guidance": true,
+        "description": "当聊天嵌入到由父元素负责滚动的页面时，使用 scrollRef。"
+      },
+      {
+        "guidance": true,
+        "description": "将整页 ChatLayout 的容器高度设为 100dvh 而不是 100vh：手机浏览器工具栏收起时，100vh 是工具栏隐藏后的视口高度，输入区会从屏幕边缘之外开始。"
+      },
+      {
+        "guidance": true,
+        "description": "Markdown 正文保持 680px 的排版宽度，而代码块和表格横跨消息列。若要让回复只有一条右边界，可给其 Markdown 传入 contentWidth=\"100%\"。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在布局上应用固定高度；用 flex: 1 让它填满容器。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在同一个滚动容器中渲染多个 ChatLayout 实例；每个实例都期望独占其滚动上下文。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "消息区域",
+        "required": true,
+        "description": "消息的可滚动区域。以 flex 列渲染 children（通常是 ChatMessageList），列表较短时将内容推到底部。"
+      },
+      {
+        "name": "毛玻璃停靠区",
+        "required": true,
+        "description": "位于底部的粘性定位或固定容器，带有背景模糊层。容纳滚动按钮和输入区。软件键盘弹出时，它位于键盘上方，消息区域也获得在其上方滚动的空间。"
+      },
+      {
+        "name": "滚动到底部按钮",
+        "required": false,
+        "description": "当用户向上滚动或有新消息到达时出现。默认为 ChatLayoutScrollButton；传入 null 可隐藏，或传入自定义元素以覆盖。"
+      },
+      {
+        "name": "输入区",
+        "required": true,
+        "description": "用于发送消息的输入区域，通常是 ChatComposer。停靠在毛玻璃层内的底部。在触摸屏的顶层页面中，其包装元素（不含滚动按钮）是一个无名称的分组。当键盘的“完成”结束输入后，焦点停在该分组上（它不是 Tab 停靠点），因此下一次点按或按 Tab 会从输入区开始。它仅在键盘输入后显示焦点环。在鼠标环境下或 iframe 内，包装元素是普通容器。"
+      },
+      {
+        "name": "空状态",
+        "required": false,
+        "description": "没有消息时显示的居中占位内容。使用 EmptyState 以获得一致的外观。"
+      }
+    ]
+  }
 };
 
 export const docsDense = {

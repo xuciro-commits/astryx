@@ -120,3 +120,33 @@ export const docsDense = {
     mode: 'color mode. System follows OS preference. defaults to "system"',
   },
 };
+
+export const docsZh = {
+  "name": "Theme",
+  "usage": {
+    "description": "用特定的 Astryx 主题包裹一个子树。对于静态生产主题，请使用 `astryx theme build`，并导入生成的 CSS 和构建后的主题对象，以获得首屏和 SSR 性能。当主题是动态的或用于原型设计时，请使用运行时 `defineTheme()`。\n\n`defineTheme` 接受一个 `tokens` 对象，其键是 CSS 自定义属性名（始终以 `--` 为前缀）。常用的令牌名包括 `--color-accent`、`--color-background-surface`、`--color-background-body`、`--color-text-primary`、`--color-text-secondary`、`--radius-container`、`--spacing-1` 至 `--spacing-6`。值可以是字符串（明暗主题相同）或 `[light, dark]` 元组。\n\n示例：\n```ts\nimport {defineTheme} from '@astryxdesign/core/theme';\nconst myTheme = defineTheme({\n  name: 'ocean',\n  tokens: {\n    '--color-accent': ['#0077B6', '#48CAE4'],\n    '--color-background-surface': ['#F0F8FF', '#0A1628'],\n    '--color-text-primary': ['#0A1317', '#FFFFFF'],\n    '--radius-container': '16px',\n  },\n});\n```",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "对于提前已知的应用主题，使用 `astryx theme build` 构建，然后导入生成的 CSS 和构建后的主题对象。"
+      },
+      {
+        "guidance": true,
+        "description": "当主题在浏览器中创建或编辑时（例如主题编辑器、用户品牌定制或原型），使用运行时主题。"
+      },
+      {
+        "guidance": true,
+        "description": "令牌名始终以 `--` 开头（例如 `--color-accent`、`--color-background-surface`）。不要省略前缀。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在 SSR 生产应用中默认使用运行时主题。组件覆盖会在 hydration 后注入，而不是作为静态 CSS 发布。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "theme": "要应用的主题对象。静态生产主题优先使用构建后的主题对象；动态主题请使用运行时 `defineTheme()`。其 `motion` 可设置 `tempo`（0.75–1.5）和 `character`（`'crisp' | 'standard' | 'expressive'`）。",
+    "mode": "颜色模式。System 跟随操作系统偏好。",
+    "children": "使用该主题渲染的内容。"
+  }
+};

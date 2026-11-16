@@ -262,3 +262,52 @@ export const docsDense = {
       'calendar system for Calendar, DateInput, DateRangeInput, DateTimeInput, Timestamp, PowerSearch, and Schedule dates (default: gregory; a -u-ca- keyword in locale does not select it); values stay Gregorian ISO; non-Gregorian-aligned calendars need Temporal',
   },
 };
+
+export const docsZh = {
+  "name": "InternationalizationProvider",
+  "displayName": "Internationalization Provider",
+  "usage": {
+    "description": "包裹应用以设置活动区域设置，并（可选地）合并额外的翻译目录和按区域设置的覆盖。子树内的 Astryx 组件会依据此上下文解析其字符串。如果没有 provider，组件会回退到随附的英文默认值。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "当目标区域设置存在随附的 Astryx 区域设置目录时，使用 `@astryxdesign/core/locales/*` 中的目录。"
+      },
+      {
+        "guidance": true,
+        "description": "仅当 Astryx 尚未发布该区域设置，或你正在测试进行中的翻译时，才使用相同形状的本地目录。"
+      },
+      {
+        "guidance": true,
+        "description": "使用真实的 BCP 47 标签，例如 `fr-FR`、`pt-BR` 或 `ar-SA`；区域设置会先回退到其基础语言，再回退到英语。"
+      },
+      {
+        "guidance": true,
+        "description": "自行在 `<html>`（或包裹元素）上设置 `dir` 属性；provider 不会设置它。Astryx 组件根据 DOM 的 `dir` 镜像布局和方向图标，因此没有它时，RTL 区域设置在视觉上不会镜像。使用 `getLocaleDirection(locale)` 为 provider 和 DOM 推导该值。"
+      },
+      {
+        "guidance": true,
+        "description": "设置 `calendar`，让 `Calendar`、`DateInput`、`DateRangeInput` 和 `DateTimeInput` 以另一种日历系统显示，并用它书写 Timestamp、PowerSearch 和 Schedule 的日期。区域设置绝不会选择日历：`fa-IR` 会一直显示格里高利历日期，直到你设置 `calendar=\"persian\"`；`locale` 中的 `-u-ca-` 关键字（如 `th-TH-u-ca-buddhist`）也保持格里高利历日期。日期值保持为格里高利历 ISO 字符串。"
+      },
+      {
+        "guidance": false,
+        "description": "将自定义目录映射转换为 `any`；i18n 包导出了 `ProviderMessagesByLocale`、`MessagesByLocale`、`Catalog` 和 `RuntimeCatalog` 用于本地目录的类型标注。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "提供者边界",
+        "required": true,
+        "description": "非可视的上下文边界，向子级 Astryx 组件提供区域设置、消息目录、覆盖和方向，并向 `Calendar` 提供日历系统。它不渲染任何 DOM 元素。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "locale": "活动区域设置的 BCP 47 语言标签（例如 \"en\"、\"pt\"、\"pt-BR\"、\"zh-Hans\"）。区域标签会回退到其基础语言，然后回退到随附的 \"en\" 目录。",
+    "messages": "可选的 BCP 47 标签到丰富或生成的运行时目录的映射。从 `@astryxdesign/core/locales/*.generated.js` 导入紧凑的随附目录；随附的 \"en\" 目录始终可用，无需在此列出。",
+    "overrides": "应用于随附默认值之上的稀疏按区域设置键覆盖。覆盖以区域设置为键，因此运行时切换区域设置会选取正确的集合。",
+    "dir": "上下文的显式文本方向覆盖。省略时，方向通过 `Intl.Locale.getTextInfo()` 从 `locale` 派生。这设置 Astryx 读取的方向，但不会设置 DOM 的 `dir` 属性；你必须自行在 `<html>`（或包裹元素）上设置 `dir`，因为 Astryx 组件根据 DOM 的 `dir` 而不是此属性来镜像布局和方向图标。请将两者设为相同值并保持同步。",
+    "calendar": "子树的日历系统，例如 'persian'、'hebrew' 或 'buddhist'。`Calendar`、`DateInput`、`DateRangeInput` 和 `DateTimeInput` 会显示它，Timestamp、PowerSearch 和 Lab 的 Schedule 会用其书写日期。省略时，日历为格里高利历：区域设置绝不会选择它，无论是通过其默认日历还是 `-u-ca-` 关键字。组件自己的 `calendar` 属性优先。值保持为格里高利历 ISO 日期。gregory、iso8601、buddhist、roc 和 japanese 之外的日历需要 `Temporal`；上下文会保留请求的日历，而在运行时缺少 `Temporal` 时，这些组件会显示格里高利历日期并在开发环境中发出警告。请在服务端和浏览器中加载 `temporal-polyfill/full/global` 等 polyfill。",
+    "children": "使用国际化 provider 渲染的内容。"
+  }
+};

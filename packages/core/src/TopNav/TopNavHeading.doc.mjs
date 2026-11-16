@@ -100,67 +100,80 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'TopNavHeading',
-  isHiddenFromOverview: true,
-  displayName: 'Top Nav Heading',
-  description: 'TopNav 标题插槽的产品/套件/账户标题组件。支持智能交互边界逻辑：标志、标题文本、独立链接的上标题/下标题，以及带自动箭头指示器的可选菜单弹出层。',
-  props: [
+  "name": "TopNavHeading",
+  "isHiddenFromOverview": true,
+  "displayName": "Top Nav Heading",
+  "description": "用于 TopNav 标题插槽的产品/套件/账户标题。支持智能交互边界逻辑：徽标、标题文本、带独立链接的上层标题/副标题，以及带自动箭头指示器的可选菜单弹出框。",
+  "props": [
     {
-      name: 'logo',
-      type: 'ReactNode',
-      description: '在标题文本前显示的标志元素。可以是图片、NavIcon 或任何 ReactNode。',
+      "name": "logo",
+      "type": "ReactNode",
+      "description": "显示在标题文本之前的徽标元素。可以是图片、NavIcon 或任何 ReactNode。"
     },
     {
-      name: 'heading',
-      type: 'string',
-      description: '作为主标题文本显示的产品/应用名称。',
+      "name": "heading",
+      "type": "string",
+      "description": "作为主标题文本显示的产品/应用名称。"
     },
     {
-      name: 'headingHref',
-      type: 'string',
-      description: '标题文本的链接（如产品首页）。当没有菜单且这是唯一的 href 时，整个标题变为一个可点击链接。',
+      "name": "headingHref",
+      "type": "string",
+      "description": "标题文本的链接（例如产品主页）。当没有菜单且这是唯一的 href 时，整个标题会成为一个可点击的链接。"
     },
     {
-      name: 'superheading',
-      type: 'string',
-      description: '标题上方的文本（如套件名称）。以较小的次要样式渲染。',
+      "name": "superheading",
+      "type": "string",
+      "description": "标题上方的文本（例如套件名称）。以较小的次要样式渲染。"
     },
     {
-      name: 'superheadingHref',
-      type: 'string',
-      description: '上标题文本的链接（如套件首页）。与菜单一起提供时，渲染为独立的内联链接。',
+      "name": "superheadingHref",
+      "type": "string",
+      "description": "上层标题文本的链接（例如套件主页）。与菜单一起提供时，渲染为独立的行内链接。"
     },
     {
-      name: 'subheading',
-      type: 'string',
-      description: '标题下方的文本（如账户上下文）。以较小的次要样式渲染。',
+      "name": "subheading",
+      "type": "string",
+      "description": "标题下方的文本（例如账户上下文）。以较小的次要样式渲染。"
     },
     {
-      name: 'subheadingHref',
-      type: 'string',
-      description: '下标题文本的链接。与菜单一起提供时，渲染为独立的内联链接。',
+      "name": "subheadingHref",
+      "type": "string",
+      "description": "副标题文本的链接。与菜单一起提供时，渲染为独立的行内链接。"
     },
     {
-      name: 'headerEndContent',
-      type: 'ReactNode',
-      description: '在标题行尾部渲染的内容（如徽章或状态指示器）。',
+      "name": "headerEndContent",
+      "type": "ReactNode",
+      "description": "渲染在标题行末端的内容（例如徽章或状态指示器）。"
     },
     {
-      name: 'menu',
-      type: 'ReactNode',
-      description: '在弹出层下拉菜单中显示的菜单内容。提供时自动显示箭头指示器。交互边界由 href 的存在决定：没有 href 时整个标题为触发器；有 href 时链接独立，箭头区域为触发器。',
+      "name": "menu",
+      "type": "ReactNode",
+      "description": "在弹出框中显示的菜单内容。提供时会自动显示箭头指示器。交互边界由是否存在 href 决定：没有 href 时整个标题都是触发区域；有 href 时链接彼此独立，箭头区域是触发区域。"
     },
     {
-      name: 'as',
-      type: 'LinkComponentType',
-      description: '用于替代 <a> 的自定义链接组件。覆盖 LinkProvider 设置的默认组件。必须接受 href、className、style 和 children 属性。',
+      "name": "as",
+      "type": "LinkComponentType",
+      "description": "用于替代 <a> 渲染的自定义组件。覆盖 LinkProvider 设置的提供程序级默认值。必须接受 href、className、style 和 children 属性。"
     },
     {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description: '用于布局自定义的 StyleX 样式。必须是 stylex.create() 的值。',
-    },
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "用于布局自定义的 StyleX 样式。必须是 stylex.create() 值。"
+    }
   ],
+  "propDescriptions": {
+    "logo": "显示在标题文本之前的徽标元素。可以是图片、NavIcon 或任何 ReactNode。",
+    "heading": "作为主标题文本显示的产品/应用名称。",
+    "headingHref": "标题文本的链接（例如产品主页）。当没有菜单且这是唯一的 href 时，整个标题会成为一个可点击的链接。",
+    "superheading": "标题上方的文本（例如套件名称）。以较小的次要样式渲染。",
+    "superheadingHref": "上层标题文本的链接（例如套件主页）。与菜单一起提供时，渲染为独立的行内链接。",
+    "subheading": "标题下方的文本（例如账户上下文）。以较小的次要样式渲染。",
+    "subheadingHref": "副标题文本的链接。与菜单一起提供时，渲染为独立的行内链接。",
+    "headerEndContent": "渲染在标题行末端的内容（例如徽章或状态指示器）。",
+    "menu": "在弹出框中显示的菜单内容。提供时会自动显示箭头指示器。交互边界由是否存在 href 决定：没有 href 时整个标题都是触发区域；有 href 时链接彼此独立，箭头区域是触发区域。",
+    "as": "用于替代 <a> 渲染的自定义组件。覆盖 LinkProvider 设置的提供程序级默认值。必须接受 href、className、style 和 children 属性。",
+    "xstyle": "用于布局自定义的 StyleX 样式。必须是 stylex.create() 值。"
+  }
 };
 
 export const docsDense = {

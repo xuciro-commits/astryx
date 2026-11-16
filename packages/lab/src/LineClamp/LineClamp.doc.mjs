@@ -80,68 +80,36 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'LineClamp',
-  displayName: 'Line Clamp',
-  props: [
-    {
-      name: 'children',
-      type: 'ReactNode',
-      description:
-        '要截断的内容。LineClamp 包裹任意子节点（混合内联内容、嵌套元素）并截断整个区块，而不是单个 Text 组件。',
-      required: true,
-    },
-    {
-      name: 'maxLines',
-      type: 'number',
-      description: '截断前显示的最大行数。',
-      required: true,
-    },
-    {
-      name: 'hasTruncateTooltip',
-      type: 'boolean',
-      description:
-        '截断时在悬停或键盘聚焦时显示完整文本的工具提示；被截断的根元素可聚焦（tabindex 0），你传入的 tabIndex 优先。工具提示相关属性与 Text 保持一致：Text 的 hasTruncateTooltip 在次版本中改名时，LineClamp 随之改名。',
-      default: 'true',
-    },
-    {
-      name: 'truncateTooltipPlacement',
-      type: "'above' | 'below' | 'start' | 'end'",
-      description: '截断工具提示的打开位置。',
-      default: "'above'",
-    },
-    {
-      name: 'as',
-      type: "'div' | 'span' | 'p'",
-      description: '要渲染的 HTML 元素。',
-      default: "'div'",
-    },
-  ],
-  usage: {
-    description:
-      '将任意内容截断为固定行数并显示省略号。Text 的 maxLines 截断 Text 组件自身的内容；LineClamp 是可组合版本 —— 用它包裹任意子节点（混合内联内容、嵌套元素）即可将整个区块截断为 N 行。',
-    bestPractices: [
+  "name": "LineClamp",
+  "displayName": "Line Clamp",
+  "usage": {
+    "description": "将任意内容以省略号限制为固定行数。Text 的 maxLines 限制单个 Text 元素；LineClamp 限制其包裹的任何内容，且不添加自身排版，因此适用于混合内联内容和嵌套元素，而不会改变它们的字体、颜色或换行方式。截断检测复用 useTruncation（Text 使用的同一 Hook），因此即使 -webkit-line-clamp 裁剪 scrollHeight，溢出也能被正确测量。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          '当需要截断混合或组合内容（而非单个 Text 节点）时使用 LineClamp。',
+        "guidance": true,
+        "description": "当限制混合或组合内容块（而非单个 Text 节点）时使用 LineClamp。"
       },
       {
-        guidance: true,
-        description:
-          '截断单个 Text 节点时使用 Text 自身的 maxLines 属性，无需用 LineClamp 包裹。',
+        "guidance": true,
+        "description": "限制单个 Text 节点时使用 Text 自身的 maxLines 属性——无需将其包裹在 LineClamp 中。"
       },
       {
-        guidance: true,
-        description:
-          '当截断内容已在页面其他位置可访问时，禁用工具提示（hasTruncateTooltip={false}）以避免重复播报。',
+        "guidance": true,
+        "description": "当被限制的内容已在页面其他地方可达时，禁用工具提示（hasTruncateTooltip={false}），以避免冗余播报。"
       },
       {
-        guidance: true,
-        description:
-          '只有同时满足以下两点时，LineClamp 才会把可聚焦的后代设为 inert：(1) 它在截断容器自己的文档流中。若定位元素的包含块是容器内同样处于文档流中的元素（例如控件自己的定位包装元素），该定位元素也算在文档流中，此时按该包含块的盒子判断是否越过最后一行。fixed 元素、包含块是容器本身或位于容器之外的 absolute 元素、顶层元素（popover 或 dialog），以及通过 portal 渲染到别处的内容，各自开启一个无论多深都不会被设为 inert 的子树。(2) 它的盒子完全位于最后一个可见行之外。只要有一部分可见，控件就保持可达。检查时没有盒子的可聚焦元素会被视为位于最后一行之外，直到它获得盒子；届时 LineClamp 会重新检查。LineClamp 会在尺寸、内容或字体变化时重新检查。已知缺口：被容器本身截断的绝对定位控件仍是一个 Tab 停靠点；容器内的定位内容由作者负责。LineClamp 不会改写你自己设置的 tabIndex 或 aria-hidden，持有焦点的元素也不会被设为 inert。',
-      },
-    ],
+        "guidance": true,
+        "description": "仅在以下两个条件同时成立时，LineClamp 才会使可聚焦的后代变为惰性：(1) 它位于 clamp 自身的流中。当定位元素的包含块是 clamp 内部且本身处于流中的元素（例如控件自有的定位包裹层）时，该定位元素就在该流中；此时行测试应用于该包含块的盒。固定元素、包含块为 clamp 自身或位于其外的绝对定位元素、顶层元素（popover 或 dialog），以及通过 portal 渲染到别处的任何内容，都会各自开启一个永远不会变为惰性的子树，无论深度如何。(2) 其盒完全位于 clamp 最后可见行之外。任何部分可见的控件仍可到达。LineClamp 检查时没有盒的可聚焦元素会被视为在最后一行之外，直到它获得盒；LineClamp 届时会重新检查。LineClamp 在其尺寸、内容或字体变化时会重新检查。缺口：被 clamp 自身裁剪的绝对定位控件仍会保留为 Tab 停靠点；clamp 内的定位内容由作者负责。惰性会将此类控件从 Tab 顺序和无障碍树中移除。LineClamp 绝不会改写你自己的 tabIndex 或 aria-hidden，且持有焦点的元素永远不会被设为惰性。"
+      }
+    ]
   },
+  "propDescriptions": {
+    "children": "要限制的内容：混合内联内容、嵌套元素，以及任何你不愿包裹在单个 Text 中的内容。",
+    "maxLines": "以省略号截断前显示的最大行数。",
+    "hasTruncateTooltip": "截断时在悬停或键盘聚焦时显示包含完整文本内容的工具提示。被截断的根元素可聚焦（tabindex 0），以便键盘用户能访问工具提示；你传入的 tabIndex 优先。工具提示属性遵循 Text 的约定：若 Text 的 hasTruncateTooltip 在次版本中重命名，LineClamp 会跟随。",
+    "truncateTooltipPlacement": "截断工具提示的打开位置。",
+    "as": "要渲染的 HTML 元素。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

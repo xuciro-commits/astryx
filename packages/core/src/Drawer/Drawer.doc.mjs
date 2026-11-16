@@ -332,87 +332,87 @@ const [openPanel, setOpenPanel] = useState(false);
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  usage: {
-    anatomy: [
+  "usage": {
+    "anatomy": [
       {
-        name: 'Panel',
-        required: true,
-        description:
-          '根 <dialog> 元素：锚定于行内起始或结束边缘的全高表面，与三个视口边缘齐平（直角）。',
+        "name": "面板",
+        "required": true,
+        "description": "根 <dialog> 元素：锚定在行内起始边或结束边的全高表面，与三个视口边缘齐平（直角）。"
       },
       {
-        name: 'Content area',
-        required: true,
-        description:
-          '承载 children 的可滚动容器；像 Dialog 一样在其中用 Layout 组合页眉、正文和页脚。默认带有 --spacing-4（16px）的内边距；padding 属性或主题的 drawer padding 可设置其他容器内边距。',
+        "name": "内容区域",
+        "required": true,
+        "description": "接收 children 的可滚动容器；像 Dialog 一样，在其内部用 Layout 组合头部、主体和页脚。默认按 --spacing-4（16px）内缩；padding 属性或主题可设置不同的容器内边距。"
       },
       {
-        name: 'Header',
-        required: false,
-        description:
-          'DrawerHeader，像 Dialog 中的 DialogHeader 一样放在 Layout 的 header 插槽：包含标题，以及可选的副标题和首尾内容。传入 onOpenChange 即显示关闭按钮，与 DialogHeader 相同。',
+        "name": "头部",
+        "required": false,
+        "description": "DrawerHeader，像 Dialog 中的 DialogHeader 一样组合在 Layout 的头部槽中：标题行，带可选副标题和起始/结束内容。传入 onOpenChange 即可像 DialogHeader 一样显示关闭按钮。"
       },
       {
-        name: 'Scrim',
-        required: false,
-        description:
-          '模态抽屉（hasScrim，默认开启）背后调暗并阻止页面交互的背景层；非模态抽屉没有。',
-      },
+        "name": "遮罩",
+        "required": false,
+        "description": "模态抽屉后方用于压暗并阻挡页面的背景（hasScrim，默认行为）；非模态抽屉不渲染遮罩。"
+      }
     ],
-    description:
-      '浮在页面内容之上的侧边面板，用于检查器和详情视图——"点击表格行查看详情"的模式。与停靠面板不同，它覆盖在布局之上，不会挤压页面。桌面端按 width 设定宽度，宽度小于 640px 时保留 56px 的底层页面，并且不超过 width 上限。按 Escape 关闭抽屉（purpose 为 required 时除外），焦点返回到打开它的元素。滑入/滑出动画遵循 prefers-reduced-motion。堆叠约定：同级抽屉后开的在上层，Escape 只关闭最上层的，关闭顺序由内向外——请以同级方式渲染，切勿嵌套。\n\n与 Dialog 一样，Drawer 是一个容器：内容区域默认带有 --spacing-4（16px）的内边距，也可以由 padding 属性或主题中 drawer 的 padding 设置。像 Dialog 一样用 Layout 组合页眉、正文和页脚：DrawerHeader 放在 header 插槽（传入 onOpenChange 时显示关闭按钮，与 DialogHeader 相同），正文放在 LayoutContent，操作放在 LayoutFooter。Layout 会把内边距分配给这些区域，使它们对齐在同一条内容线上，页眉也不会被重复缩进。作为唯一子元素的 Section 同样会越出该内边距。Drawer 本身不渲染关闭按钮，所以每个抽屉都要提供可见的关闭方式，非模态抽屉尤其如此，因为它没有可点击的遮罩。在打开时应获得焦点的控件上加 data-autofocus。\n\n如何选择：居中的决定或短表单用 Dialog；保持页面可见的全高侧边详情用 Drawer；触屏上的块轴面板用 BottomSheet；内容应当把页面挤开重排时用停靠面板（布局分栏），而不是浮层。\n\n主题化：面板是唯一的稳定目标（astryx-drawer，data-side 反映 side 值），遮罩是面板的原生 ::backdrop。DrawerHeader 为其标题行、插槽和关闭图标提供 astryx-drawer-header 系列目标。',
-    bestPractices: [
+    "description": "用于检查器和详情视图的侧面板，浮于页面内容之上，也就是“点击表格行、查看其详情”的模式。与停靠面板不同，它会覆盖布局，而不会重排布局。桌面端和触控设备均可使用：宽度预算在桌面端生效，而在低于 640px 时面板仍会保留 56px 的页面露出，且不超过宽度预算。按 Escape 关闭抽屉（除非 purpose 为 required），焦点会回到打开它的元素。进入和退出的滑动动画遵循 prefers-reduced-motion。在手机或平板（主要指针为粗略指针）上，如果抽屉仍在滑入时发生点击或拖拽，该操作不会命中任何目标（对于没有遮罩的抽屉，只可能命中面板本身：页面保持可交互），抽屉则会完成滑入；键盘和辅助技术保持可用，鼠标或触控板仍可点击：如果它是最后使用的指针则立即生效，否则在移动后生效。堆叠约定：同级抽屉按最后打开的顺序叠在最上层，Escape 只关闭最顶层，关闭时从最内层开始逐层剥离；请将它们渲染为同级，切勿嵌套。\n\n与 Dialog 一样，抽屉是一个容器：其内容区域默认按 --spacing-4（16px）内缩，也可由 padding 属性或主题中 drawer 的 padding 指定。像 Dialog 那样用 Layout 组合头部、主体和页脚：在头部槽中放 DrawerHeader（传入 onOpenChange 时它会像 DialogHeader 一样显示关闭按钮），主体放在 LayoutContent 中，操作放在 LayoutFooter 中。Layout 会把内缩重新分配给这些区域，使它们对齐到同一条内容线上，头部也不会被重复内缩。单独的 Section 子元素同样不受内缩影响。Drawer 自身不渲染关闭按钮，因此请为每个抽屉提供可见的关闭方式，尤其是没有遮罩可点击的非模态抽屉。把 data-autofocus 放在打开时应获得焦点的控件上。\n\n选择表面：居中的决策或短表单使用 Dialog；需要全高度侧边详情且保持页面可见时使用 Drawer；触控设备上的块轴面板使用 BottomSheet；当内容应重排页面而不是浮在其上时，使用停靠面板（布局列）。\n\n主题化：面板是唯一稳定的目标（astryx-drawer，data-side 反映 side），遮罩则是面板原生的 ::backdrop。DrawerHeader 暴露 astryx-drawer-header 目标，用于其行、槽和关闭图标。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          '用于上下文详情视图（行检查器、实体详情），让用户保持对底层列表的可见性。',
+        "guidance": true,
+        "description": "用于上下文相关的详情视图（行检查器、实体详情），让用户始终能看到底层列表。"
       },
       {
-        guidance: true,
-        description:
-          '让调用方作为唯一数据源：从选中状态派生 isOpen，并在 onOpenChange 中清除选中。',
+        "guidance": true,
+        "description": "让调用方成为唯一事实来源：从选中状态推导 isOpen，并在 onOpenChange 中清除选中状态。"
       },
       {
-        guidance: true,
-        description:
-          '在主从流程中使用 hasScrim={false}——非模态抽屉不捕获焦点，抽屉后面的页面保持可交互。',
+        "guidance": true,
+        "description": "主从流程使用 hasScrim={false}；非模态抽屉不会困住焦点，后方页面保持可交互。"
       },
       {
-        guidance: true,
-        description:
-          '关闭时保留最后选中的内容：退出动画期间子内容仍然挂载，中途置空会让面板在滑出时变为空白。',
+        "guidance": true,
+        "description": "关闭时保持最后选中的项目仍被渲染：children 在退出动画期间保持挂载，因此在关闭过程中将内容置空会让面板在滑出时变空白。"
       },
       {
-        guidance: true,
-        description:
-          '为每个抽屉提供可见的关闭操作，通常是带 onOpenChange 的 DrawerHeader；非模态抽屉没有可点击的遮罩。',
+        "guidance": true,
+        "description": "为每个抽屉提供可见的关闭操作，通常使用带 onOpenChange 的 DrawerHeader；非模态抽屉没有可点击的遮罩。"
       },
       {
-        guidance: true,
-        description: '误点遮罩会丢失未保存的输入时，使用 purpose="form"。',
+        "guidance": true,
+        "description": "当误点遮罩会丢失未保存的输入时，使用 purpose=\"form\"。"
       },
       {
-        guidance: false,
-        description:
-          '用 Drawer 做简短确认或小表单——请改用 Dialog 或 AlertDialog。',
+        "guidance": false,
+        "description": "不要用 Drawer 做简短确认或小型表单；请改用 Dialog 或 AlertDialog。"
       },
       {
-        guidance: false,
-        description:
-          '需要把页面内容挤开时不要用 Drawer——它浮在内容之上，请改用停靠面板或布局分栏。',
+        "guidance": false,
+        "description": "不要在内容应把页面挤开时使用 Drawer；Drawer 浮在内容之上，请改用停靠面板或布局列。"
       },
       {
-        guidance: false,
-        description:
-          '不要把 Drawer 当作底部/顶部面板使用——它只支持行内轴，块轴面板请用 BottomSheet。',
+        "guidance": false,
+        "description": "不要把 Drawer 用作底部或顶部面板；它仅支持行内轴，块轴面板请使用 BottomSheet。"
       },
       {
-        guidance: false,
-        description:
-          '在 Drawer 中嵌套另一个 Drawer；应以同级方式渲染——后开的堆叠在上层，Escape 先关闭它。',
-      },
-    ],
+        "guidance": false,
+        "description": "不要将一个 Drawer 嵌套在另一个 Drawer 内；请将抽屉渲染为同级；最后打开的叠在最上层，Escape 会先关闭它。"
+      }
+    ]
   },
+  "name": "Drawer",
+  "description": "浮在页面内容之上的侧面板，使用原生 <dialog> 元素。从行内起始边或结束边滑入；占满高度，从不重排下方布局。与 Dialog 一样，它是一个容器：设置 padding（或主题的 drawer padding）后，单独的 Section 子元素或 Table、Divider 等出血子元素会按该内边距对齐。默认内边距为 --spacing-4（16px），与 Dialog 相同。",
+  "propDescriptions": {
+    "isOpen": "抽屉是否打开。完全受控；需与 onOpenChange 配合使用。",
+    "onOpenChange": "抽屉请求改变打开状态时调用。按 Escape 和点击遮罩会按 purpose 允许的情况以 false 调用；将同一回调传给 DrawerHeader 时，其关闭按钮也会调用它。打开状态由调用方持有。存在同级抽屉打开时，Escape 只会关闭最后打开的那个。",
+    "label": "抽屉的无障碍标签。必填；抽屉没有可用于推导名称的内置标题。",
+    "children": "抽屉内容，渲染在全高可滚动区域内。请自行组合头部/主体/页脚；带 data-autofocus 的元素会在打开时获得焦点。children 在退出动画期间保持挂载；关闭时应保留最后选中的项目，而不是将内容置空。",
+    "side": "抽屉滑入的边缘：在 LTR 中 'end' 为右侧（检查器惯例），'start' 为左侧。仅支持行内轴；底部面板请使用 BottomSheet。",
+    "width": "桌面端宽度预算。数字表示像素；字符串表示任意 CSS 长度（'50%'、'32rem'）。在低于 640px 的移动断点时，这仍是最大值，同时抽屉会保留 56px 的页面露出。",
+    "experimental": "实验性选项：此对象中的任何内容都可能在补丁版本中更改或移除，省略它可保持稳定行为。isFullWidthOnMobile（默认 false）会在低于 640px 的移动断点时覆盖整个视口宽度，而不是保留默认的 56px 页面露出，这会让抽屉更像覆盖层而非导航。",
+    "hasScrim": "抽屉后的模态遮罩。true 使用 showModal()（顶层、焦点陷阱、滚动锁定；除非 purpose 阻止，否则点击遮罩会关闭；仅限模态）；false 使用手动 Popover API 创建非模态顶层浮层，不会困住焦点，并保持后方页面可交互。",
+    "purpose": "配置隐式关闭行为，与 Dialog 一致。info：按 Escape 和点击遮罩都会关闭。form：按 Escape 关闭，点击遮罩不关闭。required：两者都不关闭（Escape 被消费），且模态抽屉会作为 alertdialog 暴露，因此请为其内容提供退出方式。非模态抽屉没有遮罩，因此 form 与 info 的行为相同。",
+    "padding": "抽屉内容的内部内边距，使用间距刻度，与 Dialog 一致。省略时使用抽屉的主题默认值：--spacing-4（16px），除非主题为 drawer 设置了 padding。传入 0 可让内容区域通栏。单独的 Section 子元素不受内边距影响，Table 和 Divider 等出血子元素会据此补偿，Layout 也会为其区域采用该内边距。内容区域的块级末端边在任何模式下都会额外加上主屏幕指示条的安全区域。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

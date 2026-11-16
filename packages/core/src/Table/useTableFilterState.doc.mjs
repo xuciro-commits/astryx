@@ -18,17 +18,20 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'useTableFilterState',
-  isHiddenFromOverview: true,
-  displayName: 'useTableFilterState',
-  description: '表格筛选的受管状态 hook。返回当前筛选映射和 onChange 处理程序。将结果直接传递给 useTableFiltering。',
-  props: [
+  "name": "useTableFilterState",
+  "isHiddenFromOverview": true,
+  "displayName": "useTableFilterState",
+  "description": "用于表格筛选的托管状态 Hook。返回当前筛选映射和 onChange 处理函数。将结果直接传给 useTableFiltering。",
+  "props": [
     {
-      name: 'initialState',
-      type: 'TableFilterState',
-      description: '可选的初始筛选状态映射。',
-    },
+      "name": "initialState",
+      "type": "TableFilterState",
+      "description": "可选的初始筛选状态映射。"
+    }
   ],
+  "propDescriptions": {
+    "initialState": "可选的初始筛选状态映射。"
+  }
 };
 
 export const docsDense = {

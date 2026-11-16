@@ -230,3 +230,97 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "InputGroup",
+  "displayName": "Input Group",
+  "description": "将输入框与前缀、后缀附加内容组合成一行相连的整体。获得焦点的成员会显示在相邻元素之上，因此其焦点环可以完整显示。",
+  "usage": {
+    "description": "InputGroup 将输入框与前缀/后缀附加内容连接为单一的视觉单元。用于 URL 字段、货币输入、带操作按钮的搜索字段，或任何需要上下文装饰的输入框。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "使用文本附加内容显示单位、前缀或后缀，以说明输入格式（例如 `\"$\"`、`\"kg\"`、`\"https://\"`）。"
+      },
+      {
+        "guidance": true,
+        "description": "对于 `\"$\"`、`\"kg\"` 或 `\"https://\"` 等静态前缀/后缀，请使用 InputGroupText。"
+      },
+      {
+        "guidance": true,
+        "description": "需要附加到输入框的操作时使用 Button；InputGroup 会自动连接其圆角。"
+      },
+      {
+        "guidance": true,
+        "description": "将 InputGroup 与兼容的单行输入框搭配使用：TextInput、NumberInput、TimeInput、DateInput、Typeahead、Tokenizer、Selector 和 MultiSelector。"
+      },
+      {
+        "guidance": true,
+        "description": "让每个内部输入框的标签保持具体；分组输入框会自动将组标签与自身标签组合，并继承组的描述/状态上下文。"
+      },
+      {
+        "guidance": true,
+        "description": "在组内保持多值控件（Tokenizer、MultiSelector）简短——组是固定高度的单行表面，因此应限制或汇总已选项，而不是让它们填满整行。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在一个组中放入多个文本输入框；请改用独立字段。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将 InputGroup 用于互不相关的输入框；它适用于带装饰的单个输入框。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将 InputGroup 与 TextArea、Slider、Switch、CheckboxInput 或 RadioList 搭配使用。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "标签",
+        "required": true,
+        "description": "组上方的文本。"
+      },
+      {
+        "name": "前缀附加内容",
+        "required": false,
+        "description": "输入框之前的内容（文本、图标或按钮）。"
+      },
+      {
+        "name": "输入框",
+        "required": true,
+        "description": "主输入元素（TextInput、NumberInput、TimeInput、DateInput、Typeahead、Tokenizer、Selector 或 MultiSelector）。"
+      },
+      {
+        "name": "后缀附加内容",
+        "required": false,
+        "description": "输入框之后的内容（文本、图标或按钮）。"
+      },
+      {
+        "name": "状态消息",
+        "required": false,
+        "description": "组下方的错误、警告或成功消息。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "children": "InputGroupText、Button 附加内容，以及兼容的输入子元素：TextInput、NumberInput、TimeInput、DateInput、Typeahead、Tokenizer、Selector 或 MultiSelector。",
+    "label": "组的无障碍标签。",
+    "isLabelHidden": "在视觉上隐藏标签。",
+    "description": "标签与输入组之间的辅助文本。",
+    "isDisabled": "禁用整个组。",
+    "isOptional": "在标签后显示“可选”指示符。",
+    "isRequired": "将字段标记为必填。",
+    "size": "组内输入框的默认尺寸。",
+    "status": "校验状态。其消息显示在组下方。组边框不会变化；主题可以根据 `data-status` 为该行设置样式。",
+    "labelTooltip": "标签末尾的提示文本。",
+    "xstyle": "用于布局自定义的 StyleX 样式。",
+    "data-testid": "测试选择器。"
+  },
+  "components": [
+    {
+      "name": "InputGroupText",
+      "description": ""
+    }
+  ]
+};

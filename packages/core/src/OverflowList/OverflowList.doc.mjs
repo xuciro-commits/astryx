@@ -162,106 +162,121 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'OverflowList',
-  displayName: 'Overflow List',
-  props: [
+  "name": "OverflowList",
+  "displayName": "Overflow List",
+  "props": [
     {
-      name: 'children',
-      type: 'ReactNode',
-      description: '要渲染的项目，每个子元素应为单一元素。',
-      required: true,
+      "name": "children",
+      "type": "ReactNode",
+      "description": "要渲染的项目。每个子元素应为单个元素。",
+      "required": true
     },
     {
-      name: 'overflowRenderer',
-      type: '(overflowItems: OverflowItem[]) => ReactNode',
-      description:
-        '溢出指示器的渲染函数。接收隐藏项目列表（每项包含 child 和 index）。仅在有溢出项时调用。',
+      "name": "overflowRenderer",
+      "type": "(overflowItems: OverflowItem[]) => ReactNode",
+      "description": "溢出指示器的渲染函数。接收隐藏项目列表（每项包含 `child` 和 `index`）。仅在项目溢出时调用。"
     },
     {
-      name: 'onOverflowChange',
-      type: '(overflowItems: OverflowItem[]) => void',
-      description:
-        '折叠项集合变化时调用：发生折叠时传入折叠项，行重新变宽、全部放得下时传入空数组。没有溢出时（包括挂载时）不会调用。用于将折叠项交给周围界面已有的菜单，避免列表再挂载一个自己的指示器。',
+      "name": "onOverflowChange",
+      "type": "(overflowItems: OverflowItem[]) => void",
+      "description": "折叠集合发生变化时调用：有项目折叠时传入折叠的项目，行重新变宽后传入空数组。即使数量不变，成员或顺序变化也会报告；无关的重渲染和回调标识变化不会触发。没有溢出时保持静默，包括挂载时。为动态项目使用稳定的 React key。"
     },
     {
-      name: 'gap',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description:
-        '项目间距，使用间距步进值（0、0.5、1、1.5、2、3、4、5、6、8、10）。',
-      default: '2',
+      "name": "gap",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "项目之间的间距，以间距令牌步长表示（0、0.5、1、1.5、2、3、4、5、6、8、10）。",
+      "default": "2"
     },
     {
-      name: 'minVisibleItems',
-      type: 'number',
-      description: '溢出时始终显示的最小项目数。',
-      default: '0',
+      "name": "minVisibleItems",
+      "type": "number",
+      "description": "始终显示的最小项目数，即使发生溢出也是如此。",
+      "default": "0"
     },
     {
-      name: 'maxVisibleItems',
-      type: 'number',
-      description:
-        '始终显示的最大项目数（即使全部都能放下）。它是 minVisibleItems 的上限伙伴；多余项目会折叠进溢出指示器。若小于 minVisibleItems，则以下限为准。',
-      default: 'undefined（无上限）',
+      "name": "maxVisibleItems",
+      "type": "number",
+      "description": "最多显示的项目数，即使它们全部放得下也是如此。它是 `minVisibleItems` 的上限搭档；多出的项目会折叠到溢出指示器中。如果小于 `minVisibleItems`，以下限为准。",
+      "default": "undefined（无上限）"
     },
     {
-      name: 'maxRows',
-      type: 'number',
-      description:
-        '在将其余项目折叠进溢出指示器之前，允许项目换行到的最大行数。是数字而非布尔值。留空（或设为 1）表示单行。假定行高一致。',
-      default: 'undefined（单行）',
+      "name": "maxRows",
+      "type": "number",
+      "description": "在将剩余项目折叠到溢出指示器之前，项目最多可换行到这么多行。是数字，不是布尔值。留空（或设为 1）表示单行行为。假定行高一致。",
+      "default": "undefined（单行）"
     },
     {
-      name: 'collapseFrom',
-      type: "'start' | 'end'",
-      description: '溢出时从哪一端开始折叠项目。',
-      default: "'end'",
+      "name": "collapseFrom",
+      "type": "'start' | 'end'",
+      "description": "发生溢出时，从哪一端折叠项目。",
+      "default": "'end'"
     },
     {
-      name: 'behavior',
-      type: "'observeSelf' | 'observeParent'",
-      description:
-        "控制测量可用宽度的元素。'observeSelf' 使用容器自身宽度；'observeParent' 观察父元素，适用于需要内容尺寸但仍检测可用空间的场景。",
-      default: "'observeSelf'",
+      "name": "behavior",
+      "type": "'observeSelf' | 'observeParent'",
+      "description": "控制测量哪个元素的可用宽度。`'observeSelf'` 使用容器自身的宽度。`'observeParent'` 观察父元素，适用于列表应保持内容尺寸但仍需检测可用空间的场景。",
+      "default": "'observeSelf'"
     },
     {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description:
-        '用于布局自定义的 StyleX 样式（外边距、定位、尺寸）。必须使用 stylex.create() 的值，而非内联样式对象。',
-    },
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "用于布局定制（外边距、定位、尺寸）的 StyleX 样式。必须是 `stylex.create()` 的值，而不是内联样式对象。"
+    }
   ],
-  usage: {
-    anatomy,
-    description:
-      'A horizontal list that automatically hides items when they exceed the available width. Use OverflowList for breadcrumbs, toolbars, tag lists, or any row that needs to collapse gracefully at smaller sizes.',
-    bestPractices: [
+  "usage": {
+    "anatomy": [
       {
-        guidance: true,
-        description:
-          'Provide a meaningful overflowRenderer: a "+N more" badge, a dropdown, or a count indicator.',
+        "name": "列表",
+        "required": true,
+        "description": "用于显示当前内容的可见水平列表容器。"
       },
       {
-        guidance: true,
-        description:
-          'When the row already has its own menu, use onOverflowChange to feed the collapsed items into it instead of adding a second anchor with overflowRenderer.',
+        "name": "项目",
+        "required": true,
+        "description": "调用方提供的项目，根据当前宽度和数量限制选择可见显示。"
       },
       {
-        guidance: true,
-        description:
-          'Set minVisibleItems to keep key items visible, and maxVisibleItems to cap the row at a fixed count regardless of available width.',
-      },
-      {
-        guidance: true,
-        description:
-          'Use maxRows to let items wrap onto a bounded number of rows (e.g. a two-row tag cloud) before collapsing the rest into the indicator.',
-      },
-      {
-        guidance: false,
-        description:
-          'Use OverflowList for a vertical stack; horizontal multi-row wrap is supported via maxRows, but items still flow left-to-right, not top-to-bottom.',
-      },
+        "name": "溢出指示器",
+        "required": false,
+        "description": "可选，由调用方渲染，用于表示因宽度或数量限制而折叠的项目。"
+      }
     ],
+    "description": "`OverflowList` 是一个水平列表，当项目超出可用宽度时会自动隐藏。适用于面包屑、工具栏、标签列表，或任何需要在较小尺寸下优雅折叠的行。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "提供有意义的 `overflowRenderer`：“+N 更多”徽标、下拉菜单或计数指示器。"
+      },
+      {
+        "guidance": true,
+        "description": "当该行已有自己的菜单时，使用 `onOverflowChange` 将折叠的项目提供给该菜单，而不是通过 `overflowRenderer` 再添加一个锚点。"
+      },
+      {
+        "guidance": true,
+        "description": "设置 `minVisibleItems` 以保持关键项目可见，设置 `maxVisibleItems` 以将行限制为固定数量，不受可用宽度影响。"
+      },
+      {
+        "guidance": true,
+        "description": "使用 `maxRows` 让项目换行到有限行数（例如两行标签云），再将剩余项目折叠到指示器中。"
+      },
+      {
+        "guidance": false,
+        "description": "将 `OverflowList` 用于垂直堆叠；通过 `maxRows` 支持水平多行换行，但项目仍从左到右排列，而不是从上到下。"
+      }
+    ]
   },
+  "propDescriptions": {
+    "children": "要渲染的项目。每个子元素应为单个元素。",
+    "overflowRenderer": "溢出指示器的渲染函数。接收隐藏项目列表（每项包含 `child` 和 `index`）。仅在项目溢出时调用。",
+    "onOverflowChange": "折叠集合发生变化时调用：有项目折叠时传入折叠的项目，行重新变宽后传入空数组。即使数量不变，成员或顺序变化也会报告；无关的重渲染和回调标识变化不会触发。没有溢出时保持静默，包括挂载时。为动态项目使用稳定的 React key。",
+    "gap": "项目之间的间距，以间距令牌步长表示（0、0.5、1、1.5、2、3、4、5、6、8、10）。",
+    "minVisibleItems": "始终显示的最小项目数，即使发生溢出也是如此。",
+    "maxVisibleItems": "最多显示的项目数，即使它们全部放得下也是如此。它是 `minVisibleItems` 的上限搭档；多出的项目会折叠到溢出指示器中。如果小于 `minVisibleItems`，以下限为准。",
+    "maxRows": "在将剩余项目折叠到溢出指示器之前，项目最多可换行到这么多行。是数字，不是布尔值。留空（或设为 1）表示单行行为。假定行高一致。",
+    "collapseFrom": "发生溢出时，从哪一端折叠项目。",
+    "behavior": "控制测量哪个元素的可用宽度。`'observeSelf'` 使用容器自身的宽度。`'observeParent'` 观察父元素，适用于列表应保持内容尺寸但仍需检测可用空间的场景。",
+    "xstyle": "用于布局定制（外边距、定位、尺寸）的 StyleX 样式。必须是 `stylex.create()` 的值，而不是内联样式对象。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

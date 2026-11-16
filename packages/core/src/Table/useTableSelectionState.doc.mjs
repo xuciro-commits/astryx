@@ -67,3 +67,16 @@ export const docsDense = {
       'Returns whether row checkbox is interactive; disabled rows frozen: select-all preserves their state. Defaults to () => true.',
   },
 };
+
+export const docsZh = {
+  "name": "useTableSelectionState",
+  "description": "useTableSelection 的状态管理配套 Hook。返回用于行为插件的 selectionConfig，以及用于 TableSelectionToolbar 等感知选择的 UI 的 selectionState。自动处理全选时的禁用/可选行筛选：禁用行被冻结（在全选/取消全选时保留），不可选行被排除。",
+  "propDescriptions": {
+    "data": "表格中渲染的完整数据数组。",
+    "idKey": "键提取器：属性名或返回唯一字符串 ID 的函数。",
+    "selectedKeys": "受控的已选项 ID 集合。",
+    "setSelectedKeys": "受控选中键的设置函数。",
+    "getIsItemSelectable": "此行是否应显示复选框？不可选行会从全选中排除。",
+    "getIsItemEnabled": "此行的复选框是否可交互？禁用行会被冻结：全选会保留其状态。"
+  }
+};

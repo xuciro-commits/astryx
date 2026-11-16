@@ -307,27 +307,118 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  description:
-    '用于打开单个锚定批注线程或调用方定义线程组的头像优先按钮。单线程显示主要参与者头像；分组标记最多显示三个圆形（超过三人时显示两个头像和省略号圆形），并显示线程总数；有未读线程时在末尾（总数或单个头像之后）显示强调色状态点。三种尺寸遵循元素尺寸刻度。',
-  propDescriptions: {
-    label:
-      '必填的无障碍操作名称及悬停/聚焦提示；包含分组、未读或已解决上下文。',
-    participants:
-      '有序参与者列表（主要参与者在前）；单线程显示第一个；分组最多显示三个圆形，超过三位不同参与者时显示前两个头像和省略号溢出圆形。',
-    size: '标记高度：sm 28px、md 32px、lg 36px，参与者头像分别为 22px、24px、28px；四边内边距相等。',
-    threadCount: '所代表的线程总数；大于 1 时使用分组样式并显示准确数量。',
-    unreadCount:
-      '有未读活动的线程数；大于 0 时在总数之后（单线程时在头像之后）显示强调色状态点，不显示该数字。',
-    isSelected:
-      '标记是否为当前批注目标；再次激活已选中的标记时，宿主应清除选择（aria-pressed 切换语义）。',
-    isDimmed:
-      '其他标记被选中时降低此标记的视觉突出度，但不禁用操作；未选中任何标记时不应降低。',
-    isResolved: '所代表的线程是否都已解决；已解决的标记除非被选中否则不渲染。',
-    isDisabled:
-      '通过 aria-disabled 禁用激活：保留 Tab 焦点，拦截所有激活路径。',
-    onClick: '由产品拥有的激活处理函数。',
-    xstyle: '根按钮的 StyleX 布局样式；由宿主决定内容上方或边距中的位置。',
+  "name": "CommentPin",
+  "displayName": "Comment Pin",
+  "description": "以头像为主的按钮，用于打开一个锚定的批注线程或调用方定义的组。单个标记显示其首要参与者；分组标记最多显示三个参与者圆形（超过三个时显示两个加一个省略号）以及线程总数。只要任何所代表的线程未读，计数之后就会出现一个强调状态点。三种尺寸遵循元素尺寸比例。宿主负责锚点、坐标、分组、碰撞处理和批注表面。",
+  "usage": {
+    "description": "将 CommentPin 用作附加到图片、文档、画布、表格区域或内容边距的批注的交互式锚点。传入不同的参与者（首要者在前）、宿主在该锚点分组的线程总数，以及其中有多少未读。该组件有意不包含坐标、锚点 ID、线程 ID、聚类算法、弹出框或 Comments 依赖：这些保留在产品中，以便同一个标记可以放置在经过变换的媒体上或普通文档布局中。参与者 Avatar 和溢出圆形会抑制自己的工具提示和交互；该 pin 是唯一的按钮，其标签就是完整的操作名称。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "首先传入首要评论者。对于组，传入每个不同的参与者，按他们帮助用户识别该簇的程度排序；pin 最多显示三个圆形，并用省略号汇总其余部分。"
+      },
+      {
+        "guidance": true,
+        "description": "编写完整的标签，名称要包含操作和相关上下文，例如“打开来自 Ada 和 Lin 的 4 条分组批注”。"
+      },
+      {
+        "guidance": true,
+        "description": "将坐标、缩放/旋转变换、碰撞处理、组成员关系和线程选择保留在宿主中；使用布局组合或 xstyle 定位 pin。"
+      },
+      {
+        "guidance": true,
+        "description": "将绝对锚点坐标映射到 pin 的逻辑 bottom-start 角，而不是其中心。将 pin 的行内起始边缘放在锚点处，并将其向上平移其完整高度。"
+      },
+      {
+        "guidance": true,
+        "description": "当一个 pin 被选中时，向其他 pin 传入 isDimmed，而不是禁用它们。它们仍然可用于切换选择，同时活动 pin 保持视觉焦点。没有选中任何内容时，没有 pin 变暗。"
+      },
+      {
+        "guidance": true,
+        "description": "将选择视为 aria-pressed 切换：当再次激活已选中的 pin 时，清除宿主选择。"
+      },
+      {
+        "guidance": true,
+        "description": "将 threadCount 仅视为数量。即使总数很大，Avatar 身份仍是主要的。"
+      },
+      {
+        "guidance": true,
+        "description": "只要所代表的线程有未读活动，就传入 unreadCount。其强调点使未读工作保持在总数旁边可见；在 label 中重复未读计数。"
+      },
+      {
+        "guidance": false,
+        "description": "不要使用序数作为标记身份。当批注被插入、删除、筛选或分组时，编号会变得不稳定且难以扫读。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在标记内放置交互式 Avatar 链接或按钮。标记根拥有唯一的操作和可访问名称。"
+      },
+      {
+        "guidance": false,
+        "description": "不要自行截取参与者列表来控制溢出。传入每个不同的参与者，使省略号恰好在超过三人参与时出现，并在 label 中命名隐藏的人员。"
+      }
+    ],
+    "accessibility": [
+      {
+        "name": "原生按钮激活",
+        "category": "Keyboard",
+        "criterion": "2.1.1 Keyboard",
+        "description": "CommentPin 是一个原生按钮。Tab 可到达启用的 pin；Enter 和 Space 可激活它。禁用的 pin 保持在 Tab 顺序中，并通过 aria-disabled 宣布为已禁用，且所有激活路径都被阻止。"
+      },
+      {
+        "name": "选中状态与名称",
+        "category": "Semantics",
+        "criterion": "4.1.2 Name, Role, Value",
+        "description": "必需的 label 是按钮名称和工具提示。aria-pressed 传达受控选择；参与者 Avatar、溢出圆形、可见的线程总数和未读点保持装饰性，因此在 label 中重复分组和未读上下文。"
+      },
+      {
+        "name": "选择与焦点",
+        "category": "Color contrast",
+        "criterion": "1.4.11 Non-text Contrast",
+        "description": "实心的 2px 强调轮廓紧贴 pin，而共享的 focus-visible 轮廓位于其外侧更远处，因此选择和键盘焦点保持可区分；强制颜色模式使用平台 Highlight 处理。请针对宿主表面验证选中和选中加聚焦两种状态。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "标记表面",
+        "required": true,
+        "description": "紧凑的对话气泡按钮表面，具有固定的 2px 逻辑 bottom-start 角，按尺寸为 28、32 或 36px 高，四周内边距相等。它拥有选中、已解决、禁用、悬停、按压、focus-visible 和分组呈现，但不包含坐标。"
+      },
+      {
+        "name": "代表性头像",
+        "required": true,
+        "description": "单个线程显示一个 Avatar。组将其不同参与者显示为最多三个圆形的 AvatarGroup：最多三个 Avatar，或者当超过三人参与时显示两个 Avatar 加溢出指示器。Avatar 在标记内是装饰性的；按钮标签拥有可访问性。"
+      },
+      {
+        "name": "溢出指示器",
+        "required": false,
+        "description": "一个省略号 AvatarGroupOverflow 圆形，当组有超过三个不同参与者时占据第三个位置。它不显示数字，因此组计数仍是 pin 上唯一的数字。在 pin 内是装饰性的且不可交互。"
+      },
+      {
+        "name": "分组计数",
+        "required": false,
+        "description": "所代表线程的准确总数。当 threadCount 大于一时出现，在存在未读点时位于其之前；它是数量，而不是序数身份。额外的末端内边距使其远离 pin 的边缘。"
+      },
+      {
+        "name": "未读圆点",
+        "required": false,
+        "description": "pin 末端的强调 StatusDot，在 unreadCount 大于零时标记未读活动：位于组计数之后，或单线程 pin 的参与者之后。它不添加第二个数字；在 pin 内是装饰性的。"
+      }
+    ]
   },
+  "propDescriptions": {
+    "label": "必需的可访问操作名称和悬停/焦点工具提示。当分组、未读或已解决上下文会改变操作含义时将其包含在内，例如“打开来自 Ada 和 Lin 的 4 条分组批注，2 条未读”。",
+    "participants": "非空的有序参与者，首要者在前。单个 pin 渲染第一个。分组 pin 将不同 ID 渲染为最多三个圆形的 AvatarGroup：当不同参与者为三个或更少时显示全部，否则显示前两个加一个省略号溢出圆形。传入每个不同的参与者，使溢出恰好在超过三人参与时出现。每条记录包含 id、name 和可选的 avatarSrc。",
+    "size": "元素尺寸比例上的 pin 高度：sm 28px、md 32px、lg 36px，参与者圆形分别为 22px、24px 和 28px。四周内边距相等，因此头像和溢出与每条边缘的距离相同；尾随计数或未读点会增加少量末端内边距，使其永远不会挤到边缘。",
+    "threadCount": "所代表线程的总数。大于一的有限正整数会切换为分组呈现并显示准确计数。宿主仍拥有聚类策略。",
+    "unreadCount": "有未读活动的所代表线程。大于零时，pin 末端会出现一个强调状态点，位于线程总数或单个参与者之后；数字本身不显示。无效值会被忽略，大于 threadCount 的值会被限制。在 label 中重复未读上下文。",
+    "isSelected": "pin 是否为活动批注目标。在 pin 外部绘制实心 2px 强调轮廓，保持其高度，并加上 aria-pressed；共享的偏移焦点轮廓仍在更外侧用于键盘焦点。遵循 aria-pressed 切换语义：再次激活已选中的 pin 应清除宿主选择。",
+    "isDimmed": "是否有另一个 pin 被选中。降低此 pin 的不透明度但不禁用，因此它仍可用于切换选择。没有选中任何内容时，所有 pin 都应设为 false。两者都为 true 时，选中呈现优先。",
+    "isResolved": "所代表的每个线程是否都已解决。已解决的 pin 除非被选中，否则不渲染：已解决的讨论会离开内容，而读者打开（或从其弹出框解决）的线程会保留其锚点，并带有选中处理，直到宿主清除选择。",
+    "isDisabled": "禁用激活：pin 暴露 aria-disabled，保留其 Tab 停靠点，并阻止所有激活路径。适用于线程尚未存在之前的待处理锚点。",
+    "onClick": "产品拥有的激活处理程序。在此打开或选择所代表的线程/组；CommentPin 不拥有任何评论或弹出框状态。",
+    "xstyle": "按钮根的 StyleX 布局自定义。宿主可以将其定位在内容之上或边距中；绝对锚点通过将行内起始边缘放在锚点处并将 pin 向上平移其完整高度来映射到逻辑 bottom-start 角。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

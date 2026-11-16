@@ -41,3 +41,14 @@ export const docsDense = {
     element: 'the dialog element: render this in your JSX tree',
   },
 };
+
+export const docsZh = {
+  "name": "useImperativeDialog",
+  "description": "用于在不管理打开状态的情况下显示对话框的 Hook。调用 `dialog.show(content, options)` 打开，调用 `dialog.hide()` 关闭。在 JSX 树中渲染 `dialog.element`。",
+  "propDescriptions": {
+    "show": "使用给定内容显示对话框。选项与 Dialog 的属性相同，但不包括 isOpen/onOpenChange/children。",
+    "hide": "隐藏对话框。",
+    "isOpen": "对话框当前是否打开。",
+    "element": "对话框元素：在 JSX 树中渲染此项。"
+  }
+};

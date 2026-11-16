@@ -35,29 +35,35 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'useTableColumnSettings',
-  displayName: 'useTableColumnSettings',
-  description: '无头列可见性和排序管理。提供筛选后的列、切换帮助方法和 MultiSelector 选项。',
-  props: [
+  "name": "useTableColumnSettings",
+  "displayName": "useTableColumnSettings",
+  "description": "`Table` 的无头列可见性与排序管理。提供筛选后的列、切换辅助函数，以及用于列选择器 UI 的预构建 `MultiSelector` 选项。",
+  "props": [
     {
-      name: 'columns',
-      type: 'ColumnSettingsOption[]',
-      description: '所有可用列及其设置 UI 的元数据。每个条目包含 key、label、可选的 isAlwaysVisible 和 group。',
-      required: true,
+      "name": "columns",
+      "type": "ColumnSettingsOption[]",
+      "description": "所有可用列及其用于设置 UI 的元数据。每项包含 `key`、`label`，以及可选的 `isAlwaysVisible` 和 `group`。",
+      "required": true
     },
     {
-      name: 'activeColumnKeys',
-      type: 'string[]',
-      description: '当前活动的列键，按显示顺序排列。',
-      required: true,
+      "name": "activeColumnKeys",
+      "type": "string[]",
+      "description": "当前激活的列键，按显示顺序排列。仅显示键在此数组中的列。",
+      "required": true
     },
     {
-      name: 'onChangeActiveColumnKeys',
-      type: '(keys: string[]) => void',
-      description: '活动列更改时调用。',
-      required: true,
-    },
+      "name": "onChangeActiveColumnKeys",
+      "type": "(keys: string[]) => void",
+      "description": "激活列发生变化（切换、重新排序）时调用。",
+      "required": true
+    }
   ],
+  "propDescriptions": {
+    "columns": "所有可用列及其用于设置 UI 的元数据。每项包含 `key`、`label`，以及可选的 `isAlwaysVisible` 和 `group`。",
+    "activeColumnKeys": "当前激活的列键，按显示顺序排列。仅显示键在此数组中的列。",
+    "onChangeActiveColumnKeys": "激活列发生变化（切换、重新排序）时调用。",
+    "defaultColumnKeys": "“重置为默认值”所使用的默认列集合。省略时，重置会显示所有列。"
+  }
 };
 
 export const docsDense = {

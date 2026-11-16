@@ -138,3 +138,42 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useTreeFocus",
+  "usage": {
+    "description": "管理 roving tabindex 焦点和 WAI-ARIA tree 键盘模型。ArrowUp/ArrowDown/Home/End 在可见 treeitem 上线性移动（跳过禁用的项），而 ArrowRight/ArrowLeft 承担树语义（展开/折叠、移到第一个子项/父项）。Enter/Space 激活，可打印字符触发 typeahead。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "用于层级树组件：将 `onToggleExpand` 接到展开状态，将 `onActiveChange` 接到单个 roving tab stop。"
+      },
+      {
+        "guidance": true,
+        "description": "将 `treeRef` 和 `handleKeyDown` 都附加到 `role=\"tree\"` 容器元素上。"
+      },
+      {
+        "guidance": false,
+        "description": "不要用于线性列表（优先使用 useListFocus）或二维网格（优先使用 useGridFocus）；这些遍历方式与树不同。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "树焦点行为的配置对象。",
+    "options.itemSelector": "树内可见 treeitem 的选择器，按 DOM 顺序。",
+    "options.isItemDisabled": "判断 treeitem 是否被禁用、必须在导航中跳过的谓词。默认读取 `data-tree-disabled` / `aria-disabled`。",
+    "options.getLevel": "读取 treeitem 的从 1 开始的嵌套层级。默认使用 `aria-level` 属性。",
+    "options.onToggleExpand": "用于展开/折叠指定 id 的 treeitem（在折叠的父项上按 ArrowRight、在展开的父项上按 ArrowLeft、在没有自身操作的父项上按 Enter/Space）。",
+    "options.onActivate": "当 Enter/Space 激活 treeitem 时调用。已处理则返回 true；返回 false/undefined 让 Hook 回退为切换展开。",
+    "options.onActiveChange": "当 Hook 将焦点移到某个 treeitem 时通知。使用者借此移动单个 roving tab stop。",
+    "options.hasRovingTabIndex": "为 true 时，Hook 在可见 treeitem 上拥有单个 roving tab stop（写入 tabindex 0/-1，挂载时修复，随导航移动）。挂载时保留已有的 `tabindex=\"0\"` 种子。附加返回的 `handleFocus`，以便点击后保持 tab stop 同步。",
+    "options.typeahead": "是否启用 typeahead（跳到下一个文本以键入字符开头的项，忽略大小写、重音符号，以及所有语言环境中的带横线字母 đ ł ø ħ ŧ ƀ 和土耳其语 ı/İ）。"
+  },
+  "returnDescriptions": {
+    "treeRef": "附加到树容器元素（`role=\"tree\"`）的 ref。",
+    "handleKeyDown": "附加到树容器的按键按下处理器。",
+    "handleFocus": "附加到容器 `onFocus` 的焦点处理器。启用 `hasRovingTabIndex` 时保持 roving tab stop 同步；否则为空操作，因此始终可以安全附加。",
+    "focusFirst": "聚焦第一个启用且可见的 treeitem。",
+    "focusLast": "聚焦最后一个启用且可见的 treeitem。"
+  }
+};

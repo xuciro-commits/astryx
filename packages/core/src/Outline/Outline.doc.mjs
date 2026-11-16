@@ -329,136 +329,181 @@ function FlashOnArrival() {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'Outline',
-  displayName: 'Outline',
-  group: 'Outline',
-  theming: {
-    targets: [
-      {className: 'astryx-outline', visualProps: ['density']},
-      {className: 'astryx-outline-indicator'},
+  "name": "Outline",
+  "displayName": "Outline",
+  "group": "Outline",
+  "theming": {
+    "targets": [
       {
-        className: 'astryx-outline-item',
-        visualProps: ['level'],
-        states: ['active'],
+        "className": "astryx-outline",
+        "visualProps": [
+          "density"
+        ]
       },
-    ],
+      {
+        "className": "astryx-outline-indicator"
+      },
+      {
+        "className": "astryx-outline-item",
+        "visualProps": [
+          "level"
+        ],
+        "states": [
+          "active"
+        ]
+      }
+    ]
   },
-  components: [
+  "components": [
     {
-      name: 'Outline',
-      displayName: 'Outline',
-      description:
-        '文档大纲导航，带有滑动指示器轨道。将扁平标题列表渲染为锚点链接，支持密度变体和非受控模式下的滚动监听。',
-      props: [
+      "name": "Outline",
+      "displayName": "Outline",
+      "description": "带滑动指示轨道的文档大纲导航。将扁平标题列表渲染为锚点链接，支持密度变体，并在非受控时提供滚动监听的活动状态。",
+      "props": [
         {
-          name: 'items',
-          type: 'OutlineItem[]',
-          description:
-            '有序标题项。每项包含 id、label 和 level (1-6)。id 应匹配目标标题元素的 id。',
-          required: true,
+          "name": "items",
+          "type": "OutlineItem[]",
+          "description": "有序标题项。每项包含 id、label 和 level (1-6)。id 应匹配目标标题元素的 id。",
+          "required": true
         },
         {
-          name: 'activeId',
-          type: 'string',
-          description:
-            '当前激活的标题 id。提供后组件进入受控模式，并禁用内置滚动监听。',
+          "name": "activeId",
+          "type": "string",
+          "description": "当前激活的标题 id。提供后组件进入受控模式，并禁用内置滚动监听。"
         },
         {
-          name: 'onActiveIdChange',
-          type: '(id: string) => void',
-          description: '当内置滚动监听或点击大纲链接改变激活项时调用。',
+          "name": "onActiveIdChange",
+          "type": "(id: string) => void",
+          "description": "当内置滚动监听或点击大纲链接改变激活项时调用。"
         },
         {
-          name: 'label',
-          type: 'string',
-          description: 'nav 地标的无障碍标签。',
-          default: "'Table of contents'",
+          "name": "label",
+          "type": "string",
+          "description": "nav 地标的无障碍标签。",
+          "default": "'Table of contents'"
         },
         {
-          name: 'density',
-          type: "'default' | 'compact'",
-          description:
-            "控制项目内边距的密度变体。'compact' 用于紧凑界面，'default' 为标准间距。",
-          default: "'default'",
+          "name": "density",
+          "type": "'default' | 'compact'",
+          "description": "控制项目内边距的密度变体。'compact' 用于紧凑界面，'default' 为标准间距。",
+          "default": "'default'"
         },
         {
-          name: 'onNavigateStart',
-          type: '(id: string) => void',
-          description:
-            '导航开始时（滚动前）调用，传入项目 id。与 onNavigateEnd 搭配可在目标标题上实现到达效果（闪烁、描边、脉冲）。',
+          "name": "onNavigateStart",
+          "type": "(id: string) => void",
+          "description": "导航开始时（滚动前）调用，传入项目 id。与 onNavigateEnd 搭配可在目标标题上实现到达效果（闪烁、描边、脉冲）。"
         },
         {
-          name: 'onNavigateEnd',
-          type: '(id: string) => void',
-          description:
-            '导航结束时调用（平滑滚动停止，或减弱动效将其变为瞬时跳转）。每次 onNavigateStart 必定对应一次调用，包括用户中途手动滚动打断的情况，因此“导航中”状态不会泄漏。',
+          "name": "onNavigateEnd",
+          "type": "(id: string) => void",
+          "description": "导航结束时调用（平滑滚动停止，或减弱动效将其变为瞬时跳转）。每次 onNavigateStart 必定对应一次调用，包括用户中途手动滚动打断的情况，因此“导航中”状态不会泄漏。"
         },
         {
-          name: 'offset',
-          type: 'number',
-          description:
-            '覆盖滚动根顶部的固定顶栏高度（px）。同时位移激活线与滚动落点，因此标题被激活的位置正是点击后停留的位置——落在顶栏下方，而非被顶栏遮住。它与每个标题自身的 scroll-margin-top 叠加（先顶栏，再留白），而非取代它。若没有元素覆盖内容，保持 0，交给 scroll-margin-top 处理。',
-          default: '0',
+          "name": "offset",
+          "type": "number",
+          "description": "覆盖滚动根顶部的固定顶栏高度（px）。同时位移激活线与滚动落点，因此标题被激活的位置正是点击后停留的位置——落在顶栏下方，而非被顶栏遮住。它与每个标题自身的 scroll-margin-top 叠加（先顶栏，再留白），而非取代它。若没有元素覆盖内容，保持 0，交给 scroll-margin-top 处理。",
+          "default": "0"
         },
         {
-          name: 'scrollContainerRef',
-          type: 'React.RefObject<HTMLElement | null>',
-          description:
-            '要跟踪的滚动容器，替代自动探测最近的可滚动祖先。当内容在分栏、弹窗或面板中滚动而非视口时使用。',
+          "name": "scrollContainerRef",
+          "type": "React.RefObject<HTMLElement | null>",
+          "description": "要跟踪的滚动容器，替代自动探测最近的可滚动祖先。当内容在分栏、弹窗或面板中滚动而非视口时使用。"
         },
         {
-          name: 'hasScrollOnClick',
-          type: 'boolean',
-          description:
-            '激活项目时是否平滑滚动。设为 false 可自行接管滚动（虚拟列表、路由）：Outline 仍会更新激活项、hash 和导航回调，但不执行滚动。',
-          default: 'true',
+          "name": "hasScrollOnClick",
+          "type": "boolean",
+          "description": "激活项目时是否平滑滚动。设为 false 可自行接管滚动（虚拟列表、路由）：Outline 仍会更新激活项、hash 和导航回调，但不执行滚动。",
+          "default": "true"
         },
         {
-          name: 'xstyle',
-          type: 'StyleXStyles',
-          description:
-            '用于布局自定义的 StyleX 样式。必须是 stylex.create() 值。',
-        },
+          "name": "xstyle",
+          "type": "StyleXStyles",
+          "description": "用于布局自定义的 StyleX 样式。必须是 stylex.create() 值。"
+        }
       ],
-    },
+      "propDescriptions": {
+        "items": "有序的标题项。每项包含 id、label 和 level（1-6）。id 应与目标标题元素的 id 匹配。",
+        "activeId": "当前活动的标题 id。提供此属性会使活动状态变为受控，并禁用内置滚动监听。",
+        "onActiveIdChange": "当活动项因内置滚动监听或点击大纲链接而改变时调用。",
+        "label": "nav 地标的无障碍标签。",
+        "density": "控制项内边距的密度变体。'compact' 用于密集界面，'default' 用于标准间距。",
+        "onNavigateStart": "导航开始时（滚动开始前）以项 id 调用。可与 onNavigateEnd 搭配，在目标标题上驱动到达效果（闪烁、光环、脉冲）。",
+        "onNavigateEnd": "导航结束时以项 id 调用——平滑滚动稳定时，或减少动态效果将其变为瞬时跳转时。每次 onNavigateStart 恰好触发一次，包括用户中断滚动时，因此 \"navigating\" 状态不会泄漏。",
+        "offset": "覆盖在滚动根顶部的固定页头的高度（px）。将激活线和滚动落点同时偏移相同距离，使标题恰好在导航后落到的位置激活——位于页头下方，而不是被遮住。它与每个标题自己的 scroll-margin-top 组合使用（先是页头，然后是其下方的空隙）；不会替换它。当没有元素覆盖内容时保持为 0，让 scroll-margin-top 发挥作用。",
+        "scrollContainerRef": "要跟踪的滚动容器，替代自动检测最近的滚动祖先。当内容在分割窗格、模态框或仪表盘面板内滚动而不是在视口中滚动时使用。",
+        "hasScrollOnClick": "激活项时是否平滑滚动到该项。设为 false 可自行控制滚动（虚拟化内容、路由器）：Outline 仍会更新活动项、hash 和导航回调，但不执行滚动。",
+        "xstyle": "用于布局自定义的 StyleX 样式。必须是 stylex.create() 值。"
+      }
+    }
   ],
-  usage: {
-    anatomy,
-    description:
-      'A table-of-contents sidebar for documentation pages, help centers, wikis, and long settings pages. Use it for navigation within a single page, not for app routes.',
-    bestPractices: [
+  "usage": {
+    "anatomy": [
       {
-        guidance: true,
-        description:
-          'Pass a flat ordered list of headings and let level control indentation.',
+        "name": "大纲",
+        "required": true,
+        "description": "用于同页标题链接和指示器的导航容器。"
       },
       {
-        guidance: true,
-        description:
-          'Use activeId when custom scroll logic owns the active section.',
+        "name": "标题链接",
+        "required": true,
+        "description": "指向某个标题的锚点，按 level 缩进，活动时标记。"
       },
       {
-        guidance: true,
-        description:
-          'Use density="compact" in dense sidebars where vertical space is tight.',
+        "name": "标签",
+        "required": true,
+        "description": "显示在标题链接内的标题文本。"
       },
       {
-        guidance: true,
-        description:
-          'Use useOutlineFromMarkdown or useOutlineFromDOM when headings are generated from content. For linkable Markdown headings, pass the same createMarkdownHeadingLinks() entry to Markdown and Outline; configure headingIdPrefix on that plugin for multiple roots.',
+        "name": "指示轨道",
+        "required": true,
+        "description": "绘制在活动指示器后面的垂直线。"
       },
       {
-        guidance: false,
-        description:
-          'Use Outline for application navigation - use SideNav or TopNav for routes.',
-      },
-      {
-        guidance: false,
-        description:
-          'Use Outline for expandable hierarchy - use TreeList when nodes need expand and collapse.',
-      },
+        "name": "活动指示器",
+        "required": true,
+        "description": "位于当前活动标题链接旁的滑动条。"
+      }
     ],
-  },
+    "description": "用于文档页、帮助中心、Wiki 和较长设置页的目录侧边栏。用于单页内的导航，而不是应用路由。具有滑动的指示轨道，会动画移动到当前活动标题。每个链接都在正常的 Tab 顺序中，按 Enter/Space 激活。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "传入扁平的有序标题列表，由 level 控制缩进。"
+      },
+      {
+        "guidance": true,
+        "description": "当自定义滚动逻辑负责活动区块时，使用 activeId。"
+      },
+      {
+        "guidance": true,
+        "description": "在垂直空间紧张的密集侧边栏中使用 density=\"compact\"。"
+      },
+      {
+        "guidance": true,
+        "description": "当标题由内容生成时，使用 useOutlineFromMarkdown 或 useOutlineFromDOM。对于可链接的 Markdown 标题，将同一个 createMarkdownHeadingLinks() 条目传给 Markdown 和 Outline；若有多个根，请在该插件上配置 headingIdPrefix。"
+      },
+      {
+        "guidance": true,
+        "description": "当内容在分割窗格、模态框或面板中滚动而不是在视口中滚动时，传入 scrollContainerRef。"
+      },
+      {
+        "guidance": true,
+        "description": "将 offset 设为覆盖内容的固定页头高度，使标题落在页头下方而不是被其遮住。"
+      },
+      {
+        "guidance": false,
+        "description": "将 Outline 用于应用导航——路由请使用 SideNav 或 TopNav。"
+      },
+      {
+        "guidance": false,
+        "description": "将 Outline 用于可展开的层级结构——当节点需要展开和折叠时请使用 TreeList。"
+      },
+      {
+        "guidance": false,
+        "description": "依赖 onNavigateEnd 表示“已到达”——当用户中断滚动时它也会触发。"
+      }
+    ]
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

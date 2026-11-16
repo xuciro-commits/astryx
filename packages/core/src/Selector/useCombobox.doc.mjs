@@ -382,3 +382,113 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useCombobox",
+  "usage": {
+    "description": "跟踪单选组合框的活动选项并处理其按键，同时 DOM 焦点保持在控件上。它为 Selector 和 CommandPalette 提供支持；当你需要构建这些组件未覆盖的组合框时可以使用它，包括基于你自己渲染的单行文本字段（例如搜索结果会替换页面区块的搜索字段，或对话框中的“添加人员”字段）。它不渲染任何内容：你负责渲染字段、列表框和选项，并将 `getFieldProps`、`getListboxProps` 和 `getOptionProps` 展开到它们上面；或者针对按钮这类控件，自行从 `onKeyDown` 和 `getItemId` 接线 `role`、`aria-expanded`、`aria-controls` 和 `aria-activedescendant`。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "使用 `id={getItemId(index)}` 渲染每个选项，并且仅在 `isOpen` 且 `highlightedIndex` 指向已渲染选项时设置控件的 `aria-activedescendant`，就像 CommandPalette 那样。"
+      },
+      {
+        "guidance": true,
+        "description": "对于没有搜索字段的输入预选，先运行 useTypeahead 的处理器，当其返回 false 时再落入此 `onKeyDown`，就像 Selector 那样。"
+      },
+      {
+        "guidance": true,
+        "description": "对于你自己渲染的字段，展开属性 getter，并在新查询改变选项时自行设置活动选项：选择第一个选项以便 Enter 选中它，或设为 -1 以便 Enter 保留给字段。"
+      },
+      {
+        "guidance": true,
+        "description": "当选项因新查询而变化时，通过 useAnnounce 播报结果数量（AST-075 DEC-2）。当没有任何匹配时，播报字段为此显示的词语。"
+      },
+      {
+        "guidance": false,
+        "description": "在列表框内渲染非选项控件（例如创建按钮或空消息）；请将它们渲染在列表框旁边。"
+      },
+      {
+        "guidance": false,
+        "description": "将 DOM 焦点移到选项上；活动选项通过 `aria-activedescendant` 播报，而焦点仍留在控件上。"
+      }
+    ],
+    "accessibility": [
+      {
+        "name": "焦点留在字段中",
+        "category": "Semantics",
+        "criterion": "",
+        "requirement": "AST-075 FR1",
+        "description": "使用属性 getter 时，移动活动选项永远不会把焦点移出字段。字段通过 `aria-activedescendant` 命名活动选项，没有活动选项时不携带该属性。"
+      },
+      {
+        "name": "展开状态跟随列表",
+        "category": "Semantics",
+        "criterion": "",
+        "requirement": "AST-075 FR2",
+        "description": "列表框渲染时，字段暴露 `aria-expanded=\"true\"` 和指向它的 `aria-controls`。否则暴露 `aria-expanded=\"false\"` 且不引用任何内容。"
+      },
+      {
+        "name": "角色",
+        "category": "Semantics",
+        "criterion": "",
+        "requirement": "AST-075 FR3",
+        "description": "字段是 `combobox`，带 `aria-autocomplete=\"list\"`。列表是 `option` 的 `listbox`，活动项带 `aria-selected=\"true\"`。字段和列表框由你命名。"
+      },
+      {
+        "name": "按键",
+        "category": "Keyboard",
+        "criterion": "",
+        "requirement": "AST-075 FR4",
+        "description": "列表显示时，ArrowDown 和 ArrowUp 移动活动选项并循环；Enter 选择活动选项，且仅在这种情况下阻止字段自身的 Enter；无论按住什么修饰键，Escape 都会隐藏列表，而不会在同一次按键中关闭外层对话框或弹出层。列表隐藏时，如果有选项，ArrowDown 会显示它。已打开但没有选项的字段仍会接收 Escape，它会关闭列表，因此打开时应渲染空消息。Home、End、Shift+Enter 等其他组合键以及所有其他按键都会传给字段。"
+      },
+      {
+        "name": "输入法",
+        "category": "Keyboard",
+        "criterion": "",
+        "requirement": "AST-075 FR5",
+        "description": "输入法正在组合文本时，任何按键都不会移动、选择或隐藏内容。"
+      },
+      {
+        "name": "指针",
+        "category": "Semantics",
+        "criterion": "",
+        "requirement": "AST-075 FR6",
+        "description": "指针移过选项会使其成为活动项而不移动焦点；按下选项会选择它，字段在按压期间保持焦点。"
+      },
+      {
+        "name": "结果数量",
+        "category": "Content",
+        "criterion": "",
+        "requirement": "AST-075 FR7",
+        "description": "由你播报：组合 useAnnounce（AST-075 DEC-2），让每个新查询以礼貌方式播报一次选项数量，或播报没有选项。对于没有结果的情况，播报字段显示的词语。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "配置对象。",
+    "options.selectableItems": "按渲染顺序排列的选项：`SelectorOptionData`，或任何具有字符串 `value` 和可选 `disabled` 的选项类型。带 `disabled` 的选项无法选择，在浏览打开的列表时会被跳过；从 `onKeyDown` 打开列表的 ArrowDown 或 ArrowUp 会落在选中的选项（若其已启用），否则落在第一个或最后一个已启用选项。",
+    "options.isOpen": "是否显示列表。此状态由调用方持有。",
+    "options.onOpen": "调用以显示列表。返回 `false` 可拒绝；此时 Hook 不会改动高亮。",
+    "options.onClose": "Hook 隐藏列表时调用；Hook 会先重置高亮。当调用方自行关闭列表时（例如外部按压），还应调用 `setHighlightedIndex(-1)`。",
+    "options.listboxId": "列表框元素的 id。选项 id 通过 `getItemId` 由此派生。",
+    "options.value": "选中的值。打开列表时若其已启用则高亮它；否则 ArrowUp 在最后一个已启用选项上打开，ArrowDown、按压、Enter 或 Space 在第一个上打开。禁用选项在打开时永远不会高亮，没有已启用选项时也不会高亮任何项。",
+    "options.onSelect": "以选中的值调用。选择也会关闭列表。",
+    "options.onClear": "清除值。提供后，在关闭的控件上按 Delete 或 Backspace 会清除它，因此清除不仅限于指针。列表打开或使用 `hasSearch` 时忽略。",
+    "options.hasSearch": "列表是否有自己的搜索字段。此时 Space 会输入而不是选择，通过按压或 Enter 打开时不会预高亮（ArrowDown 和 ArrowUp 仍会在选中、第一个或最后一个已启用选项上打开），关闭控件上的可打印按键会传给 `onSearchSeed`。",
+    "options.onSearchSeed": "使用 `hasSearch` 时，接收控件聚焦时输入的每个可打印字符（Space 除外）；列表关闭时先打开列表，因此输入即查找无需单独的打开步骤。",
+    "options.isDisabled": "控件是否忽略点击和按键。"
+  },
+  "returnDescriptions": {
+    "highlightedIndex": "活动选项的索引，没有活动项时为 -1。使用 `hasSearch` 时，通过按压或 Enter 打开不会设置索引，因此 Hook 自行关闭列表后它仍为 -1；ArrowDown 和 ArrowUp 仍会在选中、第一个或最后一个已启用选项上打开。仅在它指向已渲染选项时，将其渲染为活动选项并在 `aria-activedescendant` 中命名它。",
+    "setHighlightedIndex": "设置活动选项，例如来自改变选项的筛选器。",
+    "getItemId": "要在 `index` 处选项上渲染的 id。将控件的 `aria-activedescendant` 设置为 `isOpen && highlightedIndex >= 0 && highlightedIndex < selectableItems.length ? getItemId(highlightedIndex) : undefined`，确保它永远不会命名不存在的选项，包括空列表。",
+    "onTriggerClick": "通过按压控件切换列表。",
+    "onKeyDown": "用于保持焦点的控件的按键处理器。ArrowDown 和 ArrowUp 打开列表或移动活动选项；Enter（以及无搜索时的 Space）选择它或打开列表；Escape 和 Tab 关闭它；Home、End、PageUp 和 PageDown 跳到第一个或最后一个选项。为光标保留 Home 和 End 的可编辑控件不会将它们传给此处理器，就像 CommandPalette 那样。",
+    "onItemSelect": "通过按压选项来选择它，然后关闭列表。",
+    "onItemMouseEnter": "使悬停的选项成为活动项，而不滚动列表或移动焦点。",
+    "getFieldProps": "为你渲染的单行 `input` 准备的属性：`role=\"combobox\"`、`aria-expanded`、`aria-autocomplete=\"list\"`、仅在列表框渲染时（`isOpen` 且至少有一个选项）的 `aria-controls`、仅在选项活动时的 `aria-activedescendant`，以及字段的按键处理器。将自己的 `onKeyDown` 传到这里，而不是放在展开属性旁边：它会在 Hook 的处理器之后运行，除非该处理器已认领该按键；它还可以按其元素类型标注。",
+    "getListboxProps": "为你渲染的列表框准备的属性，列表框可位于文档任意位置，包括页面流中：其 `id` 和 `role`，以及一个将焦点保持在字段中的按压处理器。在 `isOpen` 且存在选项时渲染它，并用 `aria-label` 或 `aria-labelledby` 命名它。",
+    "getOptionProps": "为 `index` 处选项准备的属性：其 `id`、`role`、`aria-selected`（活动选项为 true）、禁用项上的 `aria-disabled`、使其成为活动项而不移动焦点的指针移动，以及选择它的按压。"
+  }
+};

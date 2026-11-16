@@ -60,22 +60,18 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'ChatMessageBubble',
-  isHiddenFromOverview: true,
-  displayName: 'Chat Message Bubble',
-  description:
-    '样式化的气泡容器，从父上下文读取发送者信息进行自动样式化。支持 name/metadata 插槽、多气泡分组和透明变体。',
-  propDescriptions: {
-    children: '气泡内容：文本、Markdown 或任何 ReactNode。',
-    variant:
-      "视觉变体。'filled' 渲染发送者颜色背景，'ghost' 渲染透明背景但保持填充对齐。",
-    name: '气泡上方渲染的发送者名称，与气泡文本内边距对齐。null、undefined、布尔值和空字符串会省略对齐容器；数字 0 仍保持对齐。用于消息中的第一个气泡。',
-    metadata:
-      '气泡下方渲染的元数据内容，与气泡文本内边距对齐。null、undefined、布尔值和空字符串会省略对齐容器；数字 0 仍保持对齐。用于消息中的最后一个气泡。',
-    group: '多气泡组中的位置。控制发送者侧的圆角缩减。',
-    width:
-      '气泡宽度（数字 = 像素，字符串 = 按原样使用）。设置后替代默认的 max(80%, 280px) 宽度上限；与 ghost 变体组合可让自定义内容占满消息列宽度。',
-  },
+  "name": "ChatMessageBubble",
+  "isHiddenFromOverview": true,
+  "displayName": "Chat Message Bubble",
+  "description": "聊天“气泡”的样式化内容容器。从父级 ChatMessage 上下文读取发送者，以自动设置背景样式。标准消息使用 filled，内容需要在没有可见边界的情况下对齐时使用 ghost。支持与气泡内边距对齐的 name/metadata 槽位，以及通过 group 属性将同一发送者的连续消息组成多气泡分组。",
+  "propDescriptions": {
+    "children": "气泡内容：文本、Markdown 或任意 ReactNode。",
+    "variant": "视觉变体。'filled' 渲染发送者颜色的背景（默认）。'ghost' 渲染透明背景，但保留内边距以便对齐。",
+    "name": "在气泡上方渲染的发送者名称，与气泡文本内边距对齐。用于消息中的第一个气泡。不渲染的标量值（null、undefined、布尔值和空字符串）会省略对齐包装层；数字 0 仍保持对齐。如果第一个内容是原始内容（无气泡），请改用 ChatMessage 的 `name` 属性。",
+    "metadata": "在气泡下方渲染的元数据内容，与气泡文本内边距对齐。用于消息中的最后一个气泡。不渲染的标量值（null、undefined、布尔值和空字符串）会省略对齐包装层；数字 0 仍保持对齐。如果最后一个内容是原始内容（无气泡），请改用 ChatMessage 的 `metadata` 属性。",
+    "group": "多气泡组中的位置。控制发送者一侧的圆角缩减。独立气泡请留空（完整圆角）。",
+    "width": "气泡宽度（数字 = 像素，字符串 = 按原样使用）。设置后将替换默认的 max(80%, 280px) 宽度上限。与 variant=\"ghost\" 组合使用，可让自定义内容（工件卡片、附件）横跨整个消息列。"
+  }
 };
 
 export const docsDense = {

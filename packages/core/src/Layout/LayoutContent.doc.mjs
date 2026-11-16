@@ -47,45 +47,51 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'LayoutContent',
-  isHiddenFromOverview: true,
-  displayName: 'Layout Content',
-  description: '可滚动的主内容区域。',
-  props: [
+  "name": "LayoutContent",
+  "isHiddenFromOverview": true,
+  "displayName": "Layout Content",
+  "description": "可滚动的主内容区域。",
+  "props": [
     {
-      name: 'children',
-      type: 'ReactNode',
-      description: '内容。',
+      "name": "children",
+      "type": "ReactNode",
+      "description": "内容。"
     },
     {
-      name: 'padding',
-      type: '0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10',
-      description: '使用间距比例的内边距。覆盖布局容器的默认内边距。',
+      "name": "padding",
+      "type": "0 | 0.5 | 1 | 1.5 | 2 | 3 | 4 | 5 | 6 | 8 | 10",
+      "description": "使用间距比例的内部内边距。覆盖布局容器的默认内边距。"
     },
     {
-      name: 'isScrollable',
-      type: 'boolean',
-      description:
-        '启用可滚动溢出。设置可参与算术计算的 contentWidth 时，滚动区域会延伸到所有未被面板占用的边缘，同时根据上下文调整内边距以保持子内容对齐。',
-      default: 'true',
+      "name": "isScrollable",
+      "type": "boolean",
+      "description": "启用可滚动溢出。对于算术 contentWidth 值，滚动视口会跨越每个打开的侧边，同时上下文感知的内边距让子元素保持对齐。",
+      "default": "true"
     },
     {
-      name: 'label',
-      type: 'string',
-      description:
-        '地标元素的无障碍标签。区域滚动时，它也为滚动区域命名；未提供时使用已翻译的“Content”（内容）。',
+      "name": "label",
+      "type": "string",
+      "description": "地标元素的无障碍标签。区域滚动时，它也为滚动区域命名，否则该区域使用翻译后的“Content”。"
     },
     {
-      name: 'role',
-      type: 'AriaRole',
-      description: 'ARIA 地标角色。',
+      "name": "role",
+      "type": "AriaRole",
+      "description": "ARIA 地标角色。"
     },
     {
-      name: 'ref',
-      type: 'React.Ref<HTMLDivElement>',
-      description: '转发到内容区域元素的 ref。',
-    },
+      "name": "ref",
+      "type": "React.Ref<HTMLDivElement>",
+      "description": "转发到内容区域元素的 Ref。"
+    }
   ],
+  "propDescriptions": {
+    "children": "内容。",
+    "padding": "使用间距比例的内部内边距。覆盖布局容器的默认内边距。",
+    "isScrollable": "启用可滚动溢出。对于算术 contentWidth 值，滚动视口会跨越每个打开的侧边，同时上下文感知的内边距让子元素保持对齐。",
+    "label": "地标元素的无障碍标签。区域滚动时，它也为滚动区域命名，否则该区域使用翻译后的“Content”。",
+    "role": "ARIA 地标角色。",
+    "ref": "转发到内容区域元素的 Ref。"
+  }
 };
 
 export const docsDense = {

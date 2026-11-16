@@ -38,3 +38,13 @@ export const docsDense = {
     xstyle: 'StyleX styles for layout customization',
   },
 };
+
+export const docsZh = {
+  "name": "TableBody",
+  "displayName": "Table Body",
+  "description": "<tbody> 包装器，用于 children 模式。承载数据行。行必须位于某个 section 内：<table> 不能直接包含 <tr>，因为 HTML 解析器解析服务端渲染的标记时会插入隐式的 <tbody>，而 React 在客户端渲染时不会，因此直接写入 Table 的行会在 hydration 时不匹配。数据驱动的 data={...} 模式会自行渲染此元素；在 children 模式下则需要你自行提供。",
+  "propDescriptions": {
+    "children": "<tbody> 的行。",
+    "xstyle": "用于布局自定义的 StyleX 样式。必须是 stylex.create() 的值：不能是 style={{}} 这样的内联样式对象。"
+  }
+};

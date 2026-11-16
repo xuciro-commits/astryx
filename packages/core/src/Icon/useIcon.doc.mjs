@@ -92,3 +92,30 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useIcon",
+  "usage": {
+    "description": "通过最近的 `Theme` 将语义图标名称解析为 React 节点，使自定义组件绘制出与 Astryx 组件相同的成功、警告或错误图标，并跟随覆盖该图标的主题。解析顺序为：最近 `Theme` 的 `icons`（不在任何 `Theme` 内时，使用文档根指定的已注册主题），然后是 `registerIcons()` 覆盖，最后是内置默认值。返回的节点保持原样，不带尺寸或颜色包装：内置图标是 `1em` 大小的方块，使用 `currentColor`，因此会跟随周围文本。函数项按 `{size: 'md'}` 读取。当图标需要其他尺寸、颜色或标签时，请改为渲染 `<Icon icon={name} />`。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "在自行放置语义图标的自定义组件中使用它，这样覆盖该图标的 `Theme` 也会改变该组件。"
+      },
+      {
+        "guidance": true,
+        "description": "当图标需要 `md` 以外的尺寸、颜色或无障碍标签时，渲染 `<Icon icon={name} />`。"
+      },
+      {
+        "guidance": false,
+        "description": "为主题应控制的语义用途（如成功或错误状态）导入特定图标库字形。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "name": "语义图标名称，例如 `'success'`、`'warning'` 或 `'close'`，或带命名空间的扩展键，例如 `'richtext:bold'`。两者都通过同一注册表解析。"
+  },
+  "returnDescriptions": {
+    "icon": "该名称对应的图标：优先取最近 `Theme` 的 `icons`（不在任何 `Theme` 内时，取文档根指定的已注册主题），否则取 `registerIcons()` 覆盖，否则取内置默认值。函数项按 `{size: 'md'}` 读取。"
+  }
+};

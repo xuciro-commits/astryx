@@ -39,15 +39,15 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'CommandPaletteList',
-  isHiddenFromOverview: true,
-  displayName: 'Command Palette List',
-  description: '可滚动的结果容器。独立使用时，以及在 CommandPalette 中存在可选结果时，作为 listbox 渲染。',
-  propDescriptions: {
-    children: '条目、分组和空状态。',
-    label: 'listbox 的无障碍标签。',
-    xstyle: 'StyleX 布局自定义样式。必须是 stylex.create() 的值。',
-  },
+  "name": "CommandPaletteList",
+  "isHiddenFromOverview": true,
+  "displayName": "Command Palette List",
+  "description": "可滚动的结果容器。独立使用时渲染为 listbox，在存在可选结果时于 CommandPalette 内也如此渲染。包含 CommandPaletteItem 和 CommandPaletteGroup 子元素。",
+  "propDescriptions": {
+    "children": "条目、分组和空状态。",
+    "label": "listbox 的无障碍标签。",
+    "xstyle": "用于布局自定义的 StyleX 样式。必须是 stylex.create() 的值。"
+  }
 };
 
 export const docsDense = {

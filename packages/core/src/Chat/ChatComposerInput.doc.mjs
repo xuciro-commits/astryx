@@ -168,35 +168,72 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'ChatComposerInput',
-  isHiddenFromOverview: true,
-  displayName: 'Chat Composer Input',
-  description:
-    '聊天编写器的富文本输入。支持触发菜单（输入 @ 或 / 打开 typeahead）、内联标记徽章、ArrowUp/Down 消息历史回溯、粘贴/拖放文件处理，并在 iOS 上将字体大小保持至少 16px 以避免输入缩放。当需要普通文本区域以外的功能时，传入 ChatComposer 的 input 插槽。',
-  propDescriptions: {
-    handleRef:
-      '命令式句柄，用于编程式控制：insertToken、expandToken、insertText、focus 和 getValue。',
-    value: '受控输入值。与 onChange 配对实现双向绑定。',
-    onChange: '输入值变更时调用。序列化字符串包含标记占位符。',
-    placeholder: '输入为空时显示的占位文本。',
-    maxRows: '滚动前的最大可见行数。紧凑布局中使用较小值。',
-    triggers:
-      '菜单的触发定义。每个触发器指定字符（@ 或 /）、搜索源和返回要插入标记的 onSelect 处理器。每个触发器的 emptySearchText（ReactNode）用于查询无匹配结果时的提示。',
-    debounceMs: '异步搜索源的去抖动延迟，避免过多网络请求。',
-    hasHistory: '启用 ArrowUp/Down 回溯之前提交的消息。',
-    label: '屏幕阅读器播报的无障碍标签。',
-    isDisabled: '禁用输入。在流式输出期间或前置条件未满足时使用。',
-    onPaste:
-      '粘贴纯文本时调用。自行处理后返回 true；否则由 ChatComposerInput 插入文本或应用粘贴转标记行为。',
-    pasteAsToken:
-      '粘贴转标记行为。默认将超过 200 个字符的纯文本粘贴转为可展开标记；传入 false 可始终内联粘贴，或传入 useChatPasteAsToken() 结果来自定义转换。',
-    onFiles: '粘贴或拖放文件到输入时调用。用于处理附件。',
-    onSubmit: '用户不按 Shift 按 Enter 时调用。序列化值包含标记占位符。',
-    onKeyDown:
-      '在内置 Enter/历史处理之前（在打开的触发菜单之后）调用的按键处理器。平台特定按键的接缝：调用 event.preventDefault() 可抑制默认提交（例如触控键盘上插入换行），或自行处理事件以添加行为（例如 Cmd/Ctrl+Enter 提交）。始终尊重输入法组字状态——组字过程中 Enter 永不提交。',
-    enterKeyHint:
-      '触屏键盘回车键上显示的内容（原生 enterkeyhint）。Enter 会发送消息，因此默认为 send，iOS 显示“发送”键。当 onKeyDown 让触屏键盘上的 Enter 插入换行时，传入 enter 让按键恢复为回车。',
+  "name": "ChatComposerInput",
+  "isHiddenFromOverview": true,
+  "displayName": "Chat Composer Input",
+  "description": "聊天输入区（composer）的富文本输入框。支持触发菜单（输入 @ 或 / 打开 typeahead）、以内联徽标渲染的令牌、用 ArrowUp/Down 回溯消息历史、粘贴/拖放文件处理，以及 16px 的 iOS 字号下限以防止输入时缩放。当你需要的功能超出普通 textarea 时，将它传入 ChatComposer 的 input 插槽。",
+  "propDescriptions": {
+    "handleRef": "用于编程控制的命令式句柄：insertToken、expandToken、insertText、focus 和 getValue。",
+    "value": "受控的输入值。与 onChange 搭配实现双向绑定。",
+    "onChange": "输入值变化时调用。序列化字符串包含令牌占位符。",
+    "placeholder": "输入为空时显示的占位文本。",
+    "maxRows": "输入框滚动前最多可见的行数。在紧凑布局中使用较小的值。",
+    "triggers": "typeahead 菜单的触发器定义。每个触发器指定一个字符（@ 或 /）、一个搜索源，以及返回待插入令牌的 onSelect 处理器。当建议项包含空格（人名、主题）时，设置 `hasMultiWordQuery: true`：此时查询会一直延伸到换行或约 64 个字符，而不是在第一个空格处结束。每个触发器可设置 `emptySearchText`（ReactNode），作为查询无匹配时的提示消息。",
+    "debounceMs": "异步搜索源的防抖延迟，用于避免过多的网络请求。",
+    "hasHistory": "启用 ArrowUp/Down 回溯此前提交的消息。",
+    "label": "由屏幕阅读器朗读的可访问标签。",
+    "isDisabled": "禁用输入框。在流式传输期间或前提条件未满足时使用。",
+    "onPaste": "粘贴纯文本时调用。自行处理文本后返回 true；否则由 ChatComposerInput 插入文本或应用“粘贴为令牌”行为。",
+    "pasteAsToken": "“粘贴为令牌”行为。默认情况下，超过 200 个字符的纯文本粘贴会变为可展开令牌。传入 false 可让所有文本粘贴保持内联，或提供 `useChatPasteAsToken()` 自定义转换。",
+    "onFiles": "文件被粘贴或拖放到输入框时调用。用于处理附件。",
+    "onSubmit": "用户按下不带 Shift 的 Enter 时调用。序列化值包含令牌占位符。",
+    "onKeyDown": "在内置 Enter/历史行为之前（任何打开的触发菜单之后）调用的按键处理函数。这是处理平台特定按键的接缝：调用 `event.preventDefault()` 可抑制默认提交（例如触摸键盘上的换行），或自行处理事件以添加行为（例如按 Cmd/Ctrl+Enter 提交）。始终尊重 IME 组合输入；组合过程中 Enter 绝不会提交。",
+    "enterKeyHint": "触摸键盘上 Return 键的显示文案（原生 enterkeyhint）。Enter 用于发送消息，因此默认值为 `send`，iOS 会显示其 Send 键。当 onKeyDown 让 Enter 在触摸键盘上插入换行时，传入 `enter`，使该键重新显示 Return。"
   },
+  "usage": {
+    "description": "当草稿需要触发菜单、内联令牌、历史回溯、听写插入或文件接收时，将 ChatComposerInput 传入 ChatComposer 的 input 插槽。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "使用 `handleRef` 以编程方式插入文本或令牌；插入的文本与手动输入走相同的 onChange 流程。"
+      },
+      {
+        "guidance": true,
+        "description": "使用 `onFiles` 处理粘贴或拖放到编辑器上的文件，并把文件校验与上传进度保留在产品层。"
+      },
+      {
+        "guidance": false,
+        "description": "不要对普通提及或命令使用自定义令牌渲染；优先使用结构化徽标形式，使令牌保持可预期且可主题化。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "输入根元素",
+        "required": true,
+        "description": "应用主题的容器，转发根 ref 和 BaseProps 样式接缝。"
+      },
+      {
+        "name": "可编辑表面",
+        "required": true,
+        "description": "带标签的 contenteditable 文本框或组合框，负责文本、选区、键盘、粘贴和拖放行为。"
+      },
+      {
+        "name": "占位符",
+        "required": false,
+        "description": "仅在序列化草稿为空时显示的视觉提示。"
+      },
+      {
+        "name": "触发菜单",
+        "required": false,
+        "description": "配置的触发器激活时渲染的建议弹窗。"
+      },
+      {
+        "name": "内联令牌",
+        "required": false,
+        "description": "不可编辑的徽标或自定义渲染，具有稳定的序列化值。"
+      }
+    ]
+  }
 };
 
 export const docsDense = {

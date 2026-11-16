@@ -79,3 +79,24 @@ export const docs = {
     },
   ],
 };
+
+export const docsZh = {
+  "name": "CodeEditor",
+  "displayName": "Code Editor",
+  "usage": {
+    "description": "可编辑的代码组件，使用 CSS Custom Highlight API 实现实时语法高亮。支持行号、只读状态、占位文本和自定义分词器。"
+  },
+  "propDescriptions": {
+    "value": "编辑器的受控字符串值。",
+    "onChange": "代码内容变化时触发的回调。",
+    "label": "可编辑区域的无障碍标签（aria-label）。",
+    "language": "用于语法高亮的编程语言。",
+    "hasLineNumbers": "在左侧显示行号栏。",
+    "isReadOnly": "以只读状态渲染编辑器。",
+    "placeholder": "当值为空时显示的占位文本。",
+    "maxHeight": "内部滚动前的最大容器高度。",
+    "size": "代码文本的字号变体。",
+    "tokenizer": "用于语言解析的自定义分词器函数覆盖。",
+    "xstyle": "用于布局自定义的 StyleX 样式。"
+  }
+};

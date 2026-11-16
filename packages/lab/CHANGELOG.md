@@ -42,54 +42,54 @@
 
 # 0.0.15
 
-#### Breaking Changes
+#### 破坏性变更
 
-- **Fully unprefixed** — `@xds/lab` drops the `XDS*` prefix entirely (no compat aliases): import `Stepper`, `Step`, `ChartV2`, `Schedule`, etc. directly. (#2954)
+- **完全移除前缀** — `@xds/lab` 彻底移除 `XDS*` 前缀（无兼容别名）：直接导入 `Stepper`、`Step`、`ChartV2`、`Schedule` 等。(#2954)
 
-#### New Components
+#### 新组件
 
-- **Stepper / Step** — Moved here from `@xds/core` for an API rework; visual overhaul with a segmented bar, indicator modes, and density. (#2335, #2308)
-- **Schedule** — New scheduling component. (#2366)
+- **Stepper / Step** — 为进行 API 重构从 `@xds/core` 迁移至此；采用分段条、指示器模式和密度的全新视觉设计。(#2335, #2308)
+- **Schedule** — 新的日程安排组件。(#2366)
 
-#### New Features
+#### 新功能
 
-- **ChartV2** — New v2 axis + grid with composable styling, plus tooltip, axis formatters, and tick controls. (#2287, #2189)
+- **ChartV2** — 新的 v2 坐标轴 + 网格，支持可组合样式，并新增 tooltip、坐标轴格式化器和刻度控制。(#2287, #2189)
 
-#### Fixes
+#### 问题修复
 
-- Adopt `handleRef` for imperative component handles, and rebrand internal SVG ids `xds-` → `astryx-`. (#2363, #2952)
+- 采用 `handleRef` 作为命令式组件句柄，并将内部 SVG id 从 `xds-` 更名为 `astryx-`。(#2363, #2952)
 
 # 0.0.13
 
-#### New Features
+#### 新功能
 
-- **XDSChart** — Composable d3-based chart components (#1389)
-- **XDSChartColors** — Palette accessor for data visualization (#1388)
-- **XDSSankeyChart** — Ribbon-based flow visualization (#1516)
-- **Advanced charts** — WebGL, streaming, confidence intervals, candlestick (#1397)
-- **Radial charts + 3D charts** + `useXDSChartRange` (#1440)
-- **Chart interactions** — brush, crosshair, zoom, select, highlight, reference lines (#1463)
-- **Chart v2 architecture** — config model with series renderers (#1548, #1730)
+- **XDSChart** — 基于 d3 的可组合图表组件 (#1389)
+- **XDSChartColors** — 数据可视化调色板访问器 (#1388)
+- **XDSSankeyChart** — 基于 Ribbon 的流向可视化 (#1516)
+- **高级图表** — WebGL、流式、置信区间、K 线图 (#1397)
+- **径向图表 + 3D 图表** + `useXDSChartRange` (#1440)
+- **图表交互** — 刷选、十字准线、缩放、选择、高亮、参考线 (#1463)
+- **Chart v2 架构** — 带系列渲染器的配置模型 (#1548, #1730)
 
-#### Fixes
+#### 问题修复
 
-- Chart Tier 1 correctness — xKey in context, bars from zero (#1402)
-- Chart Tier 2 — remove hardcoded colors, document DPR contract (#1424)
-- Rewrite zoom/pan + fix yDomain ratcheting (#1527)
-- Merge Crosshair into Tooltip, use XDS Layer for top-layer rendering (#1514)
-- CodeEditor: perf/theme stories, remove span fallback (#1470)
-- CodeBlock: per-line tokens, skip default color, fix `::highlight` selectors (#1369)
+- Chart Tier 1 正确性 — 上下文中的 xKey，柱状图从零开始 (#1402)
+- Chart Tier 2 — 移除硬编码颜色，记录 DPR 契约 (#1424)
+- 重写缩放/平移 + 修复 yDomain 棘轮效应 (#1527)
+- 将 Crosshair 合并进 Tooltip，使用 XDS Layer 进行顶层渲染 (#1514)
+- CodeEditor：性能/主题 story，移除 span 回退 (#1470)
+- CodeBlock：逐行 token，跳过默认颜色，修复 `::highlight` 选择器 (#1369)
 
-#### Patch Changes
+#### 补丁变更
 
-- Updated dependencies
+- 更新依赖
   - @xds/core@0.0.13
 
 ---
 
 # 0.0.5
 
-#### Patch Changes
+#### 补丁变更
 
-- Updated dependencies
+- 更新依赖
   - @xds/core@0.0.5

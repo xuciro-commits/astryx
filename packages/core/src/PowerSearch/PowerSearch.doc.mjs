@@ -327,193 +327,209 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'PowerSearch',
-  displayName: 'Power Search',
-  props: [
+  "name": "PowerSearch",
+  "displayName": "Power Search",
+  "props": [
     {
-      name: 'config',
-      type: 'PowerSearchConfig',
-      description: '定义可用字段、运算符及其值类型的配置。',
-      required: true,
+      "name": "config",
+      "type": "PowerSearchConfig",
+      "description": "定义可用字段、运算符及其值类型的配置。",
+      "required": true
     },
     {
-      name: 'filters',
-      type: 'ReadonlyArray<PowerSearchFilter>',
-      description: '当前活跃的过滤器。',
-      required: true,
+      "name": "filters",
+      "type": "ReadonlyArray<PowerSearchFilter>",
+      "description": "当前生效的筛选条件。",
+      "required": true
     },
     {
-      name: 'onChange',
-      type: "(filters: ReadonlyArray<PowerSearchFilter>, changeType: 'add' | 'edit' | 'remove', index: number) => void",
-      description:
-        "当过滤器变更时调用。changeType 为 'add'、'edit' 或 'remove'。index 为受影响的过滤器位置。",
-      required: true,
+      "name": "onChange",
+      "type": "(filters: ReadonlyArray<PowerSearchFilter>, changeType: 'add' | 'edit' | 'remove', index: number) => void",
+      "description": "筛选条件变化时调用。changeType 为 'add'、'edit' 或 'remove'。index 是受影响筛选条件的位置。",
+      "required": true
     },
     {
-      name: 'label',
-      type: 'string',
-      description: '搜索输入框的无障碍标签。',
-      default: "'Search'",
+      "name": "label",
+      "type": "string",
+      "description": "搜索输入框的无障碍标签。",
+      "default": "'Search'"
     },
     {
-      name: 'isLabelHidden',
-      type: 'boolean',
-      description: '视觉上隐藏标签，同时保持无障碍性。',
-      default: 'true',
+      "name": "isLabelHidden",
+      "type": "boolean",
+      "description": "在视觉上隐藏标签，同时保持其可访问。",
+      "default": "true"
     },
     {
-      name: 'placeholder',
-      type: 'string',
-      description: '未选择过滤器时显示的占位文本。',
-      default: "'Search...'",
+      "name": "placeholder",
+      "type": "string",
+      "description": "未选择任何筛选条件时显示的占位符文本。",
+      "default": "'Search...'"
     },
     {
-      name: 'hasAutoFocus',
-      type: 'boolean',
-      description: '挂载时自动聚焦输入框。',
-      default: 'false',
+      "name": "hasAutoFocus",
+      "type": "boolean",
+      "description": "挂载时自动聚焦输入框。",
+      "default": "false"
     },
     {
-      name: 'hasClear',
-      type: 'boolean',
-      description: '显示清除全部按钮，移除可编辑的过滤器，保留只读过滤器。',
-      default: 'true',
+      "name": "hasClear",
+      "type": "boolean",
+      "description": "显示一个清除全部按钮，移除所有可编辑的筛选条件。只读筛选条件保留。",
+      "default": "true"
     },
     {
-      name: 'isReadOnly',
-      type: 'boolean',
-      description: '阻止添加、编辑或移除过滤器。',
-      default: 'false',
+      "name": "isReadOnly",
+      "type": "boolean",
+      "description": "阻止添加、编辑或移除筛选条件。",
+      "default": "false"
     },
     {
-      name: 'isDisabled',
-      type: 'boolean',
-      description: '禁用整个组件。',
-      default: 'false',
+      "name": "isDisabled",
+      "type": "boolean",
+      "description": "禁用整个组件。",
+      "default": "false"
     },
     {
-      name: 'disabledMessage',
-      type: 'string',
-      description:
-        'Explains why the search is disabled. With isDisabled, shows a tooltip on hover/keyboard focus and keeps the input focusable via aria-disabled (input stays blocked). Use this instead of wrapping a disabled PowerSearch in Tooltip. Disabled controls swallow the hover events an external Tooltip needs.',
+      "name": "disabledMessage",
+      "type": "string",
+      "description": "解释搜索为何被禁用。与 isDisabled 一起使用时，在悬停/键盘聚焦时显示工具提示，并通过 aria-disabled 保持输入框可聚焦（输入仍被阻止）。请使用此属性，而不是将禁用的 PowerSearch 包裹在 Tooltip 中。禁用控件会吞掉外部 Tooltip 所需的悬停事件。"
     },
     {
-      name: 'status',
-      type: "{type: 'warning' | 'error' | 'success', message?: string}",
-      description: '带有类型和可选消息的验证状态对象。',
+      "name": "status",
+      "type": "{type: 'warning' | 'error' | 'success', message?: string}",
+      "description": "包含 type 和可选 message 的验证状态对象。"
     },
     {
-      name: 'startIcon',
-      type: 'ReactNode | IconType',
-      description:
-        '在输入框开头（筛选 token 之前）显示的图标，转发给内部的 Tokenizer。接受语义图标名称、SVG 图标组件或直接传入 ReactNode。',
+      "name": "startIcon",
+      "type": "ReactNode | IconType",
+      "description": "在输入框起始处、任何筛选令牌之前显示的图标。会转发给内部 Tokenizer。接受语义图标名称、SVG 图标组件或直接传入 ReactNode。"
     },
     {
-      name: 'statusVariant',
-      type: "'attached' | 'detached'",
-      description:
-        '状态消息相对于输入框的放置方式。attached 直接叠加在输入框下方（带边框处理）；detached 作为独立元素浮于下方并留有间距。',
-      default: "'attached'",
+      "name": "statusVariant",
+      "type": "'attached' | 'detached'",
+      "description": "状态消息相对于输入框的放置方式。attached 直接重叠在输入框下方（带边框处理）；detached 作为独立元素悬浮在下方并带有间距。",
+      "default": "'attached'"
     },
     {
-      name: 'maxTokenLength',
-      type: 'number',
-      description: '令牌中过滤器值显示的最大字符长度。',
-      default: '40',
+      "name": "maxTokenLength",
+      "type": "number",
+      "description": "令牌中筛选值显示的最大字符长度。",
+      "default": "40"
     },
     {
-      name: 'maxOperatorMenuItems',
-      type: 'number',
-      description:
-        '字符串和实体值预输入菜单中显示的最大建议数。不影响主字段搜索菜单或枚举值菜单。',
-      default: '10',
+      "name": "maxOperatorMenuItems",
+      "type": "number",
+      "description": "运算符下拉菜单中显示的最大项数。",
+      "default": "10"
     },
     {
-      name: 'maxSearchResults',
-      type: 'number',
-      description:
-        '非空查询的最大排名结果数。不影响字段值编辑器。使用空查询浏览时最多显示 1,000 个字段。',
-      default: '10',
+      "name": "maxSearchResults",
+      "type": "number",
+      "description": "非空查询的最大排名结果数。不影响字段值编辑器。空查询浏览最多显示 1,000 个字段。",
+      "default": "10"
     },
     {
-      name: 'menuWidth',
-      type: 'number',
-      description: '主字段/搜索菜单的像素宽度。不影响字段值编辑器。',
+      "name": "menuWidth",
+      "type": "number",
+      "description": "运算符/值下拉菜单的最大宽度（像素）。"
     },
     {
-      name: 'popoverSaveButtonLabel',
-      type: 'string',
-      description: '编辑弹出窗口中保存按钮的标签。',
-      default: "'Apply'",
+      "name": "popoverSaveButtonLabel",
+      "type": "string",
+      "description": "编辑弹出框中保存按钮的标签。",
+      "default": "'Apply'"
     },
     {
-      name: 'timezoneID',
-      type: 'string',
-      description:
-        '仅日期的 date_absolute 值及 date_range 的每个绝对端点读写所用的 IANA 时区：该日在此时区显示、编辑并以其午夜存储；未设置时为 UTC 日。isDateOnly: false 的 date_absolute 值在此时区显示并编辑其日期和时间；未设置时为查看者所在时区。例如 "America/New_York"。日期值使用 InternationalizationProvider 的历法（如 calendar="persian"）显示；筛选值仍为 Unix 秒数。',
+      "name": "timezoneID",
+      "type": "string",
+      "description": "仅日期 date_absolute 值以及 date_range 的每个绝对部分所读取和写入的 IANA 时区：日期在其中显示、编辑和存储（作为该午夜）；未设置时，日期为其 UTC 日期。isDateOnly: false 的 date_absolute 会在其中显示和编辑其日期与时间；未设置时，使用查看者的时区。例如 \"America/New_York\"。日期值以 InternationalizationProvider 日历写入，例如 calendar=\"persian\"；筛选值保持为 Unix 秒。"
     },
     {
-      name: 'handleRef',
-      type: 'Ref<PowerSearchHandle>',
-      description:
-        '提供 focusTypeahead() 和 blurTypeahead() 方法的命令式句柄。',
+      "name": "handleRef",
+      "type": "Ref<PowerSearchHandle>",
+      "description": "带有 focusTypeahead() 和 blurTypeahead() 方法的命令式句柄。"
     },
     {
-      name: 'endContent',
-      type: 'ReactNode',
-      description: '显示在输入行末尾的内容。适用于操作按钮或其他控件。',
+      "name": "endContent",
+      "type": "ReactNode",
+      "description": "在输入行末尾显示的内容。适用于操作按钮或其他控件。"
     },
     {
-      name: 'resultCount',
-      type: 'number | string',
-      description:
-        '匹配当前过滤器的结果数量。数字类型时格式化为"N results"。字符串类型时按原样显示。数量变化会通过 polite 实时区域向屏幕阅读器播报。',
+      "name": "resultCount",
+      "type": "number | string",
+      "description": "与当前筛选条件匹配的结果数。为数字时，格式化为 \"N results\"。为字符串时，按原样显示。变化会通过礼貌的实时区域向屏幕阅读器宣布。"
     },
     {
-      name: 'size',
-      type: "'sm' | 'md' | 'lg'",
-      description: '搜索输入框和标记的尺寸。',
-      default: "'md'",
+      "name": "size",
+      "type": "'sm' | 'md' | 'lg'",
+      "description": "搜索输入框和令牌的尺寸。",
+      "default": "'md'"
     },
     {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description: '用于布局自定义的 StyleX 样式。必须是 stylex.create() 值。',
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "用于布局自定义的 StyleX 样式。必须是 stylex.create() 的值。"
     },
     {
-      name: 'presentation',
-      type: "'popover' | 'bottom-sheet' | 'adaptive'",
-      description:
-        '字段如何呈现筛选编辑。adaptive（默认）在紧凑触摸屏上使用底部面板，其他情况使用 popover，解析方式与 Selector 相同；服务端渲染和水合期间的渲染均为 popover。popover 在所有设备上为带有预输入和编辑弹出层的标记字段。bottom-sheet 在所有设备上将整个字段变为一个显示只读筛选标记的触发按钮——点按后打开列出筛选项的「筛选」面板，每行可编辑或移除筛选（含添加筛选、完成、全部清除；全部清除会先确认，并保留只读筛选）；列出字段（或带内联建议的内容搜索）的「添加筛选」面板在其上方打开，按运算符 → 值暂存并在底部确认的取值步骤再在其上方打开。关闭某一步会露出下方的那一步。整个流程编辑的是草稿：添加、编辑、移除筛选和全部清除都只改动草稿，点按「完成」应用草稿时才按编辑顺序逐次触发 onChange；草稿有改动时关闭流程会先询问是否放弃。列表值通过 Tokenizer 自身的面板编辑。在底部面板呈现中，menuWidth 和 tokenOverflowBehavior 没有作用对象，并会在开发环境中发出警告。传入 presentation="popover" 可在所有设备上保留标记字段和编辑弹出层。',
-      default: "'adaptive'",
-    },
+      "name": "presentation",
+      "type": "'popover' | 'bottom-sheet' | 'adaptive'",
+      "description": "字段如何呈现筛选编辑。adaptive（默认）在紧凑触摸屏上使用底部工作表，否则使用弹出框，解析方式与 Selector 相同；服务器渲染和水合渲染均为弹出框。popover 在任何设备上都使用带预输入的令牌化字段和编辑器弹出框。bottom-sheet 在任何设备上都将整个字段变成一个触发器，仅显示筛选令牌：它会打开一个“筛选条件”工作表，将筛选条件列为可编辑或删除的行，并提供“添加筛选条件”、“完成”和“全部清除”（会先询问并保留只读筛选条件）；在其上方会打开一个包含字段（或带内联建议的内容搜索）的“添加筛选条件”工作表，再上方是一个值步骤，用于暂存运算符 → 值并从其页脚确认。关闭一个步骤会显示下方的步骤。该流程编辑草稿：添加、编辑、删除筛选条件以及“全部清除”都会更改草稿；当“完成”应用草稿时，会按顺序为每次编辑调用一次 onChange；草稿有更改时关闭流程会先询问是否丢弃。列表值通过 Tokenizer 自带的工作表编辑。在 sheet 呈现中，menuWidth 和 tokenOverflowBehavior 没有可作用的表面，并会在开发模式下警告。传入 presentation=\"popover\" 可在所有设备上保留令牌化字段和编辑器弹出框。",
+      "default": "'adaptive'"
+    }
   ],
-  usage: {
-    description:
-      'PowerSearch is a structured filter bar where each token represents a field, operator, and value. Use it for complex multi-dimensional filtering when users need to combine multiple search criteria. For simple single-field search, use a text input instead.',
-    bestPractices: [
+  "usage": {
+    "description": "PowerSearch 是一个结构化筛选栏，每个令牌代表一个字段、运算符和值。当用户需要组合多个搜索条件时，用于复杂的多维筛选。简单单字段搜索请改用文本输入框。宿主 `data-*` 属性（包括 `data-testid`）会传到主控件：popover 呈现中是组合框输入框，sheet 呈现中是触发按钮。`components.Token` 和 `components.Editor` 的默认值 `PowerSearchToken` 和 `PowerSearchFilterEditor`，会将它们传给令牌和编辑器根元素。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          'Define clear, descriptive field names and aliases so users can quickly find the filter they need.',
+        "guidance": true,
+        "description": "定义清晰、描述性的字段名称和别名，让用户能快速找到所需的筛选条件。"
       },
       {
-        guidance: true,
-        description:
-          'Provide a result count to give users feedback on how their filters affect the data set.',
+        "guidance": true,
+        "description": "提供结果计数，让用户了解筛选条件对数据集的影响。"
       },
       {
-        guidance: false,
-        description:
-          'Use PowerSearch for simple keyword searches; a standard text input is more appropriate for single-field lookups.',
+        "guidance": false,
+        "description": "简单关键词搜索请使用 PowerSearch；标准文本输入框更适合单字段查找。"
       },
       {
-        guidance: false,
-        description:
-          'Wrap a disabled PowerSearch in Tooltip to explain why it is disabled; disabled controls swallow the hover events the wrapper needs. Use the disabledMessage prop instead.',
-      },
-    ],
+        "guidance": false,
+        "description": "将禁用的 PowerSearch 包裹在 Tooltip 中以解释禁用原因；禁用控件会吞掉包装层所需的悬停事件。请改用 disabledMessage 属性。"
+      }
+    ]
   },
+  "propDescriptions": {
+    "config": "定义可用字段、运算符及其值类型的配置。",
+    "filters": "当前生效的筛选条件。",
+    "onChange": "筛选条件变化时调用。changeType 为 'add'、'edit' 或 'remove'。index 是受影响筛选条件的位置。",
+    "label": "搜索输入框的无障碍标签。",
+    "isLabelHidden": "在视觉上隐藏标签，同时保持其可访问。",
+    "placeholder": "未选择任何筛选条件时显示的占位符文本。",
+    "hasAutoFocus": "挂载时自动聚焦输入框。",
+    "hasClear": "显示一个清除全部按钮，移除所有可编辑的筛选条件。只读筛选条件保留。",
+    "isReadOnly": "阻止添加、编辑或移除筛选条件。",
+    "isDisabled": "禁用整个组件。",
+    "disabledMessage": "解释搜索为何被禁用。与 isDisabled 一起使用时，在悬停/键盘聚焦时显示工具提示，并通过 aria-disabled 保持输入框可聚焦（输入仍被阻止）。请使用此属性，而不是将禁用的 PowerSearch 包裹在 Tooltip 中。禁用控件会吞掉外部 Tooltip 所需的悬停事件。",
+    "status": "包含 type 和可选 message 的验证状态对象。",
+    "startIcon": "在输入框起始处、任何筛选令牌之前显示的图标。会转发给内部 Tokenizer。接受语义图标名称、SVG 图标组件或直接传入 ReactNode。",
+    "statusVariant": "状态消息相对于输入框的放置方式。attached 直接重叠在输入框下方（带边框处理）；detached 作为独立元素悬浮在下方并带有间距。",
+    "maxTokenLength": "令牌中筛选值显示的最大字符长度。",
+    "maxOperatorMenuItems": "运算符下拉菜单中显示的最大项数。",
+    "maxSearchResults": "非空查询的最大排名结果数。不影响字段值编辑器。空查询浏览最多显示 1,000 个字段。",
+    "menuWidth": "运算符/值下拉菜单的最大宽度（像素）。",
+    "popoverSaveButtonLabel": "编辑弹出框中保存按钮的标签。",
+    "timezoneID": "仅日期 date_absolute 值以及 date_range 的每个绝对部分所读取和写入的 IANA 时区：日期在其中显示、编辑和存储（作为该午夜）；未设置时，日期为其 UTC 日期。isDateOnly: false 的 date_absolute 会在其中显示和编辑其日期与时间；未设置时，使用查看者的时区。例如 \"America/New_York\"。日期值以 InternationalizationProvider 日历写入，例如 calendar=\"persian\"；筛选值保持为 Unix 秒。",
+    "handleRef": "带有 focusTypeahead() 和 blurTypeahead() 方法的命令式句柄。",
+    "endContent": "在输入行末尾显示的内容。适用于操作按钮或其他控件。",
+    "resultCount": "与当前筛选条件匹配的结果数。为数字时，格式化为 \"N results\"。为字符串时，按原样显示。变化会通过礼貌的实时区域向屏幕阅读器宣布。",
+    "size": "搜索输入框和令牌的尺寸。",
+    "tokenOverflowBehavior": "控制容器过窄时令牌的溢出方式。转发给 Tokenizer。",
+    "onFocus": "焦点进入搜索输入框时触发。",
+    "onBlur": "焦点离开搜索输入框时触发。",
+    "xstyle": "用于布局自定义的 StyleX 样式。必须是 stylex.create() 的值。",
+    "presentation": "字段如何呈现筛选编辑。adaptive（默认）在紧凑触摸屏上使用底部工作表，否则使用弹出框，解析方式与 Selector 相同；服务器渲染和水合渲染均为弹出框。popover 在任何设备上都使用带预输入的令牌化字段和编辑器弹出框。bottom-sheet 在任何设备上都将整个字段变成一个触发器，仅显示筛选令牌：它会打开一个“筛选条件”工作表，将筛选条件列为可编辑或删除的行，并提供“添加筛选条件”、“完成”和“全部清除”（会先询问并保留只读筛选条件）；在其上方会打开一个包含字段（或带内联建议的内容搜索）的“添加筛选条件”工作表，再上方是一个值步骤，用于暂存运算符 → 值并从其页脚确认。关闭一个步骤会显示下方的步骤。该流程编辑草稿：添加、编辑、删除筛选条件以及“全部清除”都会更改草稿；当“完成”应用草稿时，会按顺序为每次编辑调用一次 onChange；草稿有更改时关闭流程会先询问是否丢弃。列表值通过 Tokenizer 自带的工作表编辑。在 sheet 呈现中，menuWidth 和 tokenOverflowBehavior 没有可作用的表面，并会在开发模式下警告。传入 presentation=\"popover\" 可在所有设备上保留令牌化字段和编辑器弹出框。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

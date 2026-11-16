@@ -140,126 +140,136 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'Heading',
-  displayName: 'Heading',
-  description:
-    '语义化标题组件，渲染带主题样式的 h1–h6 元素，支持可选的编辑风格比例和行截断。',
-  props: [
+  "name": "Heading",
+  "displayName": "Heading",
+  "description": "语义化标题组件，渲染 h1-h6 元素，提供主题化样式、通过字号比例令牌实现的主题化尺寸，以及行数截断功能。",
+  "props": [
     {
-      name: 'level',
-      type: '1 | 2 | 3 | 4 | 5 | 6',
-      description:
-        '标题级别。决定语义 HTML 元素（h1–h6）和来自主题的样式（除非设置了 `type`）。',
-      required: true,
+      "name": "level",
+      "type": "1 | 2 | 3 | 4 | 5 | 6",
+      "description": "标题级别。决定语义 HTML 元素（h1-h6）以及来自主题的视觉样式（除非设置了 `type`）。",
+      "required": true
     },
     {
-      name: 'type',
-      type: "'display-1' | 'display-2' | 'display-3'",
-      description:
-        '展示类型变体。用展示级别的大小（更大、更轻的字重、更紧的行高）覆盖来自 `level` 的视觉样式。主题可以添加自定义视觉类型。`level` 仍然决定用于无障碍的 HTML 元素。用于英雄横幅、营销标题和数据提示。',
+      "name": "type",
+      "type": "'display-1' | 'display-2' | 'display-3'",
+      "description": "显示类型变体。使用展示级尺寸（更大、更细的字重、更紧的行高）覆盖 `level` 的视觉样式。主题可以添加自定义视觉类型。`level` 仍决定用于无障碍的 HTML 元素。适用于主视觉横幅、营销标题和数据标注。"
     },
     {
-      name: 'weight',
-      type: "'normal' | 'medium' | 'semibold' | 'bold'",
-      description: '显式字重覆盖。优先于所选视觉类型或标题级别的默认值。',
+      "name": "weight",
+      "type": "'normal' | 'medium' | 'semibold' | 'bold'",
+      "description": "显式字重覆盖。优先于所选的视觉类型或标题级别的默认值。"
     },
     {
-      name: 'children',
-      type: 'ReactNode',
-      description: '标题内容。',
-      required: true,
+      "name": "children",
+      "type": "ReactNode",
+      "description": "标题内容。",
+      "required": true
     },
     {
-      name: 'accessibilityLevel',
-      type: '1 | 2 | 3 | 4 | 5 | 6',
-      description:
-        '无障碍级别覆盖。当设置且与 `level` 不同时，应用 `aria-level` 使文档大纲与视觉样式不同。',
+      "name": "accessibilityLevel",
+      "type": "1 | 2 | 3 | 4 | 5 | 6",
+      "description": "无障碍级别覆盖。设置且与 `level` 不同时，应用 `aria-level`，使文档大纲与视觉样式不同。"
     },
     {
-      name: 'color',
-      type: "'primary' | 'secondary' | 'disabled' | 'placeholder' | 'accent' | 'inherit'",
-      description: '文本颜色。主题可添加自定义颜色。',
-      default: "'primary'",
+      "name": "color",
+      "type": "'primary' | 'secondary' | 'disabled' | 'placeholder' | 'accent' | 'inherit'",
+      "description": "文本颜色。主题可以添加自定义颜色。",
+      "default": "'primary'"
     },
     {
-      name: 'display',
-      type: "'inline' | 'block'",
-      description:
-        "显示类型。当 maxLines > 0 或 hasCapsize 为 true 时，会静默覆盖为 'block'。",
-      default: "'block'",
+      "name": "display",
+      "type": "'inline' | 'block'",
+      "description": "显示类型。当 maxLines > 0 或 hasCapsize 为 true 时会被静默覆盖为 'block'。",
+      "default": "'block'"
     },
     {
-      name: 'maxLines',
-      type: 'number',
-      description:
-        '截断前的最大行数。0 表示不截断。设置后，如果内容被截断，悬停时会显示工具提示。',
-      default: '0',
+      "name": "maxLines",
+      "type": "number",
+      "description": "截断前的最大行数。0 表示不截断。设置后，如果内容被截断，悬停时显示工具提示。",
+      "default": "0"
     },
     {
-      name: 'hasTruncateTooltip',
-      type: "boolean | 'above' | 'below' | 'start' | 'end'",
-      description:
-        "控制截断文本的工具提示行为。true 在默认位置显示工具提示，false 禁用它，或者放置字符串 ('above' | 'below' | 'start' | 'end') 设置特定位置。",
-      default: 'true',
+      "name": "hasTruncateTooltip",
+      "type": "boolean | 'above' | 'below' | 'start' | 'end'",
+      "description": "控制截断文本的工具提示行为。true 在默认位置显示工具提示，false 禁用它，或者用位置字符串（'above' | 'below' | 'start' | 'end'）设置特定位置。",
+      "default": "true"
     },
     {
-      name: 'wordBreak',
-      type: "'break-word' | 'break-all'",
-      description:
-        "截断时的断词行为。单行截断默认为 'break-all'，其他情况默认为 'break-word'。不截断时，超过一行宽度的长串（如 URL、ID）会换行（`overflow-wrap: break-word`），因此在普通文档流中文本不会让页面横向滚动。在 flex 行中，请为 flex 子元素设置 `min-width: 0` 以便其收缩。你自己设置了 `overflow-wrap: anywhere` 的容器不会作用于此文本；Astryx 自带的容器会传递其换行方式。",
+      "name": "wordBreak",
+      "type": "'break-word' | 'break-all'",
+      "description": "截断时的断词行为。单行截断默认 'break-all'，其他情况默认 'break-word'。不截断时，长度超过一行的令牌（URL、ID）会换行（`overflow-wrap: break-word`），因此在普通流式文本中不会让页面横向滚动。在 flex 行内，给 flex 子项设置 `min-width: 0` 以便收缩。用 `overflow-wrap: anywhere` 设置的容器不会影响此文本；Astryx 自己的容器会传递其换行设置。"
     },
     {
-      name: 'textWrap',
-      type: "'wrap' | 'nowrap' | 'balance' | 'pretty'",
-      description: '文本换行行为。',
+      "name": "textWrap",
+      "type": "'wrap' | 'nowrap' | 'balance' | 'pretty'",
+      "description": "文本换行行为。"
     },
     {
-      name: 'justify',
-      type: "'start' | 'center' | 'end'",
-      description:
-        '文本对齐（两端对齐）。使用逻辑值（start/end）以兼容 i18n/RTL。',
-      default: "'start'",
+      "name": "justify",
+      "type": "'start' | 'center' | 'end'",
+      "description": "文本对齐（两端对齐）。使用逻辑值（start/end）以兼容 i18n/RTL。",
+      "default": "'start'"
     },
     {
-      name: 'hasCapsize',
-      type: 'boolean',
-      description: '使用 text-box-trim 启用光学对齐。强制块级显示。',
-      default: 'false',
+      "name": "hasCapsize",
+      "type": "boolean",
+      "description": "使用 text-box-trim 启用光学对齐。强制块级显示。",
+      "default": "false"
     },
     {
-      name: 'hasStrikethrough',
-      type: 'boolean',
-      description: '应用删除线文本装饰。',
-      default: 'false',
+      "name": "hasStrikethrough",
+      "type": "boolean",
+      "description": "应用删除线文本装饰。",
+      "default": "false"
     },
     {
-      name: 'id',
-      type: 'string',
-      description: 'HTML id 属性。',
+      "name": "id",
+      "type": "string",
+      "description": "HTML id 属性。"
     },
     {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description:
-        '应用于标题元素的 StyleX 样式。必须是 stylex.create() 的值，而不是 style={{}} 这样的内联样式对象。',
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "应用于标题元素的 StyleX 样式。必须是 stylex.create() 值，而不是 style={{}} 这样的内联样式对象。"
     },
     {
-      name: 'className',
-      type: 'string',
-      description: '应用于标题元素的 CSS 类名。',
+      "name": "className",
+      "type": "string",
+      "description": "应用于标题元素的 CSS 类名。"
     },
     {
-      name: 'style',
-      type: 'React.CSSProperties',
-      description:
-        '应用于标题元素的内联样式。当 `maxLines` 大于 1 时，其行数截断会替换 `style` 中的 `WebkitLineClamp`。',
+      "name": "style",
+      "type": "React.CSSProperties",
+      "description": "应用于标题元素的内联样式。当 `maxLines` 大于 1 时，其行数限制会替换 `style` 中的任何 `WebkitLineClamp`。"
     },
     {
-      name: 'ref',
-      type: 'React.Ref<HTMLHeadingElement>',
-      description: '转发到标题元素的 Ref。',
-    },
+      "name": "ref",
+      "type": "React.Ref<HTMLHeadingElement>",
+      "description": "转发到标题元素的 ref。"
+    }
   ],
+  "propDescriptions": {
+    "level": "标题级别。决定语义 HTML 元素（h1-h6）以及来自主题的视觉样式（除非设置了 `type`）。",
+    "type": "显示类型变体。使用展示级尺寸（更大、更细的字重、更紧的行高）覆盖 `level` 的视觉样式。主题可以添加自定义视觉类型。`level` 仍决定用于无障碍的 HTML 元素。适用于主视觉横幅、营销标题和数据标注。",
+    "weight": "显式字重覆盖。优先于所选的视觉类型或标题级别的默认值。",
+    "children": "标题内容。",
+    "accessibilityLevel": "无障碍级别覆盖。设置且与 `level` 不同时，应用 `aria-level`，使文档大纲与视觉样式不同。",
+    "color": "文本颜色。主题可以添加自定义颜色。",
+    "display": "显示类型。当 maxLines > 0 或 hasCapsize 为 true 时会被静默覆盖为 'block'。",
+    "maxLines": "截断前的最大行数。0 表示不截断。设置后，如果内容被截断，悬停时显示工具提示。",
+    "hasTruncateTooltip": "控制截断文本的工具提示行为。true 在默认位置显示工具提示，false 禁用它，或者用位置字符串（'above' | 'below' | 'start' | 'end'）设置特定位置。",
+    "wordBreak": "截断时的断词行为。单行截断默认 'break-all'，其他情况默认 'break-word'。不截断时，长度超过一行的令牌（URL、ID）会换行（`overflow-wrap: break-word`），因此在普通流式文本中不会让页面横向滚动。在 flex 行内，给 flex 子项设置 `min-width: 0` 以便收缩。用 `overflow-wrap: anywhere` 设置的容器不会影响此文本；Astryx 自己的容器会传递其换行设置。",
+    "textWrap": "文本换行行为。",
+    "justify": "文本对齐（两端对齐）。使用逻辑值（start/end）以兼容 i18n/RTL。",
+    "hasCapsize": "使用 text-box-trim 启用光学对齐。强制块级显示。",
+    "hasStrikethrough": "应用删除线文本装饰。",
+    "id": "HTML id 属性。",
+    "xstyle": "应用于标题元素的 StyleX 样式。必须是 stylex.create() 值，而不是 style={{}} 这样的内联样式对象。",
+    "className": "应用于标题元素的 CSS 类名。",
+    "style": "应用于标题元素的内联样式。当 `maxLines` 大于 1 时，其行数限制会替换 `style` 中的任何 `WebkitLineClamp`。",
+    "ref": "转发到标题元素的 ref。"
+  }
 };
 
 export const docsDense = {

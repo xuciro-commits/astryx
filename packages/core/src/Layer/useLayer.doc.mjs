@@ -170,3 +170,44 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useLayer",
+  "usage": {
+    "description": "使用 CSS 锚点定位和 Popover API 渲染浮层内容的核心定位 Hook。当更高层组件不够用时，将其作为自定义 popover、悬浮卡片、工具提示和固定定位浮层的基础。两种模式都使用主题正文文本默认值，并整体终止祖先表面/组成员关系，包括组拥有的状态。显式传入的属性和无关上下文保持不变。通过渲染样式或内容施加有意的格式，并在渲染的浮层内建立完整的内容局部 Provider。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "对于相对于触发器元素锚定的浮层，使用 context 模式；对于在特定坐标手动定位的浮层，使用 fixed 模式。"
+      },
+      {
+        "guidance": true,
+        "description": "常见浮层模式请基于 Popover、HoverCard 和 Tooltip 等更高层组件构建。"
+      },
+      {
+        "guidance": true,
+        "description": "依靠 Popover API 顶层来摆脱祖先裁剪和堆叠上下文，并将浮层托管在触发器附近而非 body 中，这样它能继承触发器的主题级联并保持自然的焦点顺序。"
+      },
+      {
+        "guidance": false,
+        "description": "除非你也负责完整的无障碍行为，否则不要在 Layer 中直接实现 ARIA 模式。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "mode": "定位策略：context 使用相对于触发器 ref 的 CSS 锚点定位；fixed 使用显式的 x/y 坐标。",
+    "onShow": "浮层变为可见时触发的回调。",
+    "onHide": "浮层被隐藏时触发的回调。",
+    "lightDismiss": "点击外部时是否使用原生 popover 轻触关闭行为来关闭浮层。",
+    "lazyMount": "仅 context 模式。等到 show() 时才解析内联/传送位置并挂载内容；hide 会卸载内容，但保留惰性标记。"
+  },
+  "returnDescriptions": {
+    "ref": "context 模式的触发器 ref。fixed 模式下为 undefined。",
+    "anchorId": "用于 context 模式定位的 CSS 锚点名称。",
+    "show": "以命令方式显示浮层。",
+    "hide": "以命令方式隐藏浮层。",
+    "isOpen": "浮层当前是否打开。",
+    "id": "用于 aria-describedby 或其他 ARIA 关系的唯一 ID。",
+    "render": "popover 元素的渲染函数。context 模式下传入 placement/alignment，fixed 模式下传入 x/y。placement/alignment 是逻辑值：它们映射到 self-* position-area 关键字族，依据 popover 自身继承的方向解析，因此 RTL 上下文在纯 CSS 下会自动镜像。在 context 模式下传入 `positioning: \"custom\"`，可通过 `style` 自行编写定位样式（例如显式的 anchor() 内边距或 anchor-size() 覆盖）：该 Hook 保留 popover 行为和 position-anchor 接线，但不推导任何定位样式，包括自动 RTL 镜像，这由你自行负责。在 context 模式下传入 `offset`（CSS 长度；数字表示 px）以设置与锚点之间的间隙：它应用于放置轴的两侧，因此翻转后间隙仍然存在。浮层默认紧贴。context 模式首先在服务器和客户端标记中渲染相匹配的惰性 `<template>` 标记。如果父级安全，最终浮层保留在该 JSX 位置；否则会传送到最近的、位于段落、链接、按钮、内联格式和结构受限容器之外的祖先。最近的安全宿主会让 CSS 自定义属性保持实时继承，同时浮层保留其 JSX 位置的方向和书写模式。默认情况下，此解析在水合后发生，因此关闭状态的浮层 DOM 仍然可用，并且只重新渲染包含标记和浮层的插槽，而不是调用该 Hook 的组件（仅当已解析的挂载点被移动到另一宿主的渲染调用替换时，该组件才会再次渲染）；`lazyMount` 将其推迟到 `show()`，并在隐藏时再次卸载内容而保留标记。Popover API 在显示时将浮层提升到顶层，因此无论托管在哪里都能摆脱祖先裁剪和堆叠。当浮层将溢出视口时，position-try 回退会将其翻转到对侧；居中的浮层还会沿对齐轴滑动（span 回退），以便在视口边缘附近保持可见。"
+  }
+};

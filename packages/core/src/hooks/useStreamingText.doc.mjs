@@ -79,3 +79,37 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useStreamingText",
+  "usage": {
+    "description": "使用 requestAnimationFrame 将突发式流式文本平滑为稳定的逐字符显示。将到达速率与显示速率解耦。按单词和语法边界推进，避免在 Markdown 或单词中间截断，从而防止 Markdown 渲染器出现视觉故障。动画时序在可用时通过 useTheme 从 Astryx 动效令牌派生，在主题 Provider 之外则使用合理回退。当 isStreaming 变为 false 时直接跳到完整文本。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将累积文本（而非单个块）作为 targetText 传入；该 Hook 在内部处理增量显示。"
+      },
+      {
+        "guidance": true,
+        "description": "流完成时将 isStreaming 设置为 false，以直接跳到最终文本。"
+      },
+      {
+        "guidance": true,
+        "description": "对于搜索结果等非动画场景或偏好减少动效时，使用 speed='instant'。"
+      },
+      {
+        "guidance": false,
+        "description": "不要用于不会变化的静态文本；该 Hook 会为非流式内容增加不必要的开销。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "targetText": "要显示的完整目标文本。随着新块到达，用累积文本更新此值。",
+    "isStreaming": "文本当前是否正在流式传输。为 false 时，该 Hook 立即返回完整的 targetText。",
+    "options": "流式行为的可选配置。",
+    "options.speed": "文本显示的速度预设。'natural' 稳定约 2 字符/帧，'fast' 随积压量扩展约 4 字符/帧，'instant' 返回完整文本且无动画。"
+  },
+  "returnDescriptions": {
+    "displayedText": "要渲染的 targetText 部分。流式传输期间稳步增长至完整 targetText，非流式传输时等于 targetText。"
+  }
+};

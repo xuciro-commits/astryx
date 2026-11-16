@@ -69,50 +69,60 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'TopNavItem',
-  isHiddenFromOverview: true,
-  displayName: 'Top Nav Item',
-  description: '用于 TopNav startContent 的导航链接项，渲染为具有悬停和选中状态的锚点。',
-  props: [
+  "name": "TopNavItem",
+  "isHiddenFromOverview": true,
+  "displayName": "Top Nav Item",
+  "description": "用于 TopNav startContent 的导航链接条目：渲染为带悬停和选中状态的锚点。",
+  "props": [
     {
-      name: 'label',
-      type: 'string',
-      description: '导航项的无障碍标签。用作可见文本，或作为仅图标项的 aria-label。',
-      required: true,
+      "name": "label",
+      "type": "string",
+      "description": "导航条目的无障碍标签。默认渲染为可见文本。当 isIconOnly 为 true 时，改为用作 aria-label。",
+      "required": true
     },
     {
-      name: 'href',
-      type: 'string',
-      description: '导航目标 URL。',
+      "name": "href",
+      "type": "string",
+      "description": "导航目标 URL。"
     },
     {
-      name: 'isSelected',
-      type: 'boolean',
-      description: '此导航项是否为当前选中状态。设置 aria-current="page" 并应用高亮样式。',
-      default: 'false',
+      "name": "isSelected",
+      "type": "boolean",
+      "description": "此导航条目当前是否被选中。设置 aria-current=\"page\" 并应用高亮样式。",
+      "default": "false"
     },
     {
-      name: 'isDisabled',
-      type: 'boolean',
-      description: '导航项是否被禁用。设置 aria-disabled，移除 href/target 使其无法导航，并阻止交互。',
-      default: 'false',
+      "name": "isDisabled",
+      "type": "boolean",
+      "description": "导航条目是否禁用。设置 aria-disabled，移除 href/target 使条目无法导航，并阻止交互。",
+      "default": "false"
     },
     {
-      name: 'icon',
-      type: 'ReactNode',
-      description: '在标签前显示的可选图标。如果在没有子元素的情况下提供，项目变为仅图标模式。',
+      "name": "icon",
+      "type": "ReactNode",
+      "description": "显示在标签之前的可选图标。"
     },
     {
-      name: 'children',
-      type: 'ReactNode',
-      description: '替代标签文本渲染的自定义内容。省略且提供了图标时，项目变为仅图标模式。',
+      "name": "children",
+      "type": "ReactNode",
+      "description": "代替标签文本渲染的自定义内容。"
     },
     {
-      name: 'as',
-      type: 'LinkComponentType',
-      description: '替代 <a> 渲染的自定义组件。覆盖 LinkProvider 设置的提供者级别默认值。必须接受 href、className、style 和 children 属性。',
-    },
+      "name": "as",
+      "type": "LinkComponentType",
+      "description": "代替 <a> 渲染的自定义组件。覆盖 LinkProvider 设置的 provider 级默认值。必须接受 href、className、style 和 children 属性。"
+    }
   ],
+  "propDescriptions": {
+    "label": "导航条目的无障碍标签。默认渲染为可见文本。当 isIconOnly 为 true 时，改为用作 aria-label。",
+    "href": "导航目标 URL。",
+    "isSelected": "此导航条目当前是否被选中。设置 aria-current=\"page\" 并应用高亮样式。",
+    "isDisabled": "导航条目是否禁用。设置 aria-disabled，移除 href/target 使条目无法导航，并阻止交互。",
+    "isIconOnly": "将条目渲染为方形仅图标元素。为 true 时，label 成为 aria-label，可见文本被隐藏。要求设置 icon。",
+    "icon": "显示在标签之前的可选图标。",
+    "children": "代替标签文本渲染的自定义内容。",
+    "as": "代替 <a> 渲染的自定义组件。覆盖 LinkProvider 设置的 provider 级默认值。必须接受 href、className、style 和 children 属性。"
+  }
 };
 
 export const docsDense = {

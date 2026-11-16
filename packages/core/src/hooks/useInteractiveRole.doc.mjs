@@ -117,3 +117,33 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useInteractiveRole",
+  "usage": {
+    "description": "在一个地方解析多态组件应渲染成什么：`href` 优先，其次是 `onClick`，然后是父级（Popover、DropdownMenu 等）提供的交互式触发上下文，最后是惰性内容。凡是时而作为链接、时而作为按钮、时而作为普通内容的组件都可以使用它；Token、Thumbnail、Item 和 ClickableCard 都是如此。由于上下文是解析的一部分，基于它构建的组件无需改动即可成为新浮层的有效触发器。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "根据返回的 role 选择元素，并且只为 \"link\" 渲染锚点，这样键盘和中键点击行为都由平台提供。"
+      },
+      {
+        "guidance": true,
+        "description": "直接传递 isDisabled，而不要自行丢弃 href；该 Hook 已经会让禁用的链接脱离 Tab 顺序。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在组件中再添加临时的 href/onClick 优先级判断；新的触发上下文会在这里添加，以便所有使用方都能继承。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "组件收到的交互性输入。",
+    "options.href": "用于导航的 URL。优先级最高：提供 href 时组件即为链接。",
+    "options.onClick": "点击处理函数。会解析为按钮，优先于任何由上下文提供的角色。",
+    "options.isDisabled": "为 true 时，角色解析会忽略 href（禁用的链接是一种反模式），因此角色依次由 onClick、上下文、惰性内容决定。"
+  },
+  "returnDescriptions": {
+    "role": "组件应渲染的元素：锚点、按钮，或非交互的 span/div。"
+  }
+};

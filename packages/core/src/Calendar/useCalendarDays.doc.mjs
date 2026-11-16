@@ -156,3 +156,38 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useCalendarDays",
+  "usage": {
+    "description": "为一个月构建日期网格：包含要显示的所有日期（包括填满首尾周的上一月和下一月日期），按周分组，并提供从 weekStartsOn 开始的本地化星期表头名称。这就是 Calendar 使用的布局，适用于紧凑的可用性网格或迷你日历等自定义月视图。它只返回数据：渲染、选择、键盘导航和网格的无障碍语义由调用方负责。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将 dayNames 渲染为表头行，使表头与网格一起遵循 weekStartsOn 和区域设置。"
+      },
+      {
+        "guidance": true,
+        "description": "对 isOutside 的日期使用不同的样式（例如变暗），使填充日期看起来属于下一月或上一月。"
+      },
+      {
+        "guidance": false,
+        "description": "用它构建供人选择的日期选择器；请改用 Calendar，它增加了选择、键盘导航和网格语义。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "要布局的月份以及布局方式。",
+    "options.year": "要布局的月份所属年份，按 options.calendar 的编号方式。",
+    "options.month": "该月在 options.calendar 对应年份中的位置，从 1 开始。公历中 1 是 1 月，12 是 12 月；其他日历按 Temporal.PlainDate 的方式编号月份，因此希伯来历的闰年从 1 到 13。",
+    "options.weekStartsOn": "每周的第一天，从 0（星期日）到 6（星期六）。它决定网格和 dayNames 的第一列。",
+    "options.hasVariableRowCount": "只使用该月所需的周行数，而不是固定的 6 行网格。公历月份为 4 到 6 行，科普特历和埃塞俄比亚历的第 13 个短月为 1 或 2 行。",
+    "options.calendar": "为年份、月份以及每天 dayNumber 编号的日历系统。每天仍保留其公历日期和 iso。该 Hook 从不读取 InternationalizationProvider 的日历。除 gregory、iso8601、buddhist、roc 和 japanese 之外的日历需要 Temporal；没有 Temporal 时，该 Hook 使用公历编号，并在开发环境中警告一次。"
+  },
+  "returnDescriptions": {
+    "days": "按顺序排列的网格每个单元格，包括填满首尾周的上一月和下一月日期。每天包含 date（PlainDate）、iso（YYYY-MM-DD）、isOutside（月份外的日期为 true）和 dayNumber（该日历月中的日）。",
+    "weeks": "将相同的日期按每行七个分组。",
+    "dayNames": "当前区域设置（来自 InternationalizationProvider）的星期表头名称，从 weekStartsOn 开始。如果每个名称都能放入列中则使用缩写，否则使用该区域设置的窄名称。",
+    "totalCells": "网格中的单元格数量：固定网格为 42，否则为行数乘以 7。"
+  }
+};

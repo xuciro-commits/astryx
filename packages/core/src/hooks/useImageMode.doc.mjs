@@ -85,3 +85,34 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useImageMode",
+  "usage": {
+    "description": "通过 OffscreenCanvas 采样像素，检测图像整体偏暗还是偏亮。使用 APCA 感知亮度（sRGB 线性化 + 幂曲线）进行准确检测，尤其在饱和颜色上。完全在绘制路径之外运行：无可见画布、无布局抖动。支持区域采样，以检测文本叠加层将出现的区域的亮度。加载中返回 `null`，在 CORS 或网络错误时优雅回退。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "与 MediaTheme 搭配，在动态背景图像上自动调整文本颜色。"
+      },
+      {
+        "guidance": true,
+        "description": "使用 `region` 选项仅采样文本叠加层将出现的区域，以获得更准确的结果。"
+      },
+      {
+        "guidance": false,
+        "description": "不要用于快速变化的图像（例如视频帧）；每次 `src` 变化都会触发新的获取和分析。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "src": "要分析的图像源 URL。为 null/undefined 时，返回回退值。",
+    "options": "图像分析的可选配置。",
+    "options.region": "使用归一化 0-1 坐标（{ x, y, width, height }）在图像内采样的区域。默认为整张图像。",
+    "options.threshold": "暗/亮划分的亮度阈值。低于 = 暗，高于 = 亮。",
+    "options.fallback": "加载中或出错时的回退值。"
+  },
+  "returnDescriptions": {
+    "mode": "检测到的图像亮度模式。加载中或 `src` 为 null/undefined 时返回 `null`。"
+  }
+};

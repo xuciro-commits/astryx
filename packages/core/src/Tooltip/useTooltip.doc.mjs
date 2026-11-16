@@ -215,3 +215,51 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useTooltip",
+  "usage": {
+    "description": "用于悬停/聚焦触发工具提示的无头 Hook。基于 `useLayer` 构建，包含悬停意图、键盘焦点处理和可访问的 `aria-describedby` 关联。适用于需要工具提示行为但不想使用包装组件的自定义触发元素。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "用于描述图标按钮、截断文本、缩写或紧凑控件的简短文本标签。"
+      },
+      {
+        "guidance": true,
+        "description": "标准包装场景优先使用 `Tooltip` 组件；当触发器不是简单子元素时使用此 Hook。"
+      },
+      {
+        "guidance": true,
+        "description": "对于切换式触发器，让你自己的按钮在每次按下时调用 `show()` 和 `hide()`。为其设置 `aria-describedby` 和 `aria-controls` 为 `describedBy`，并设置 `aria-expanded`（`show()` 保持工具提示打开时为 `true`，`hide()` 或 `onHide` 之后为 `false`），同时保留其自身的无障碍名称。对于信息图标，请改用 `InfoTip`。"
+      },
+      {
+        "guidance": false,
+        "description": "在工具提示内放置交互式内容：请改用 `Popover` 或 `HoverCard`。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "placement": "相对于触发器的位置。逻辑值：`start`/`end` 根据浮层自身继承的方向解析（RTL 下通过纯 CSS 镜像）。",
+    "alignment": "沿放置轴的对齐方式。逻辑值：`start`/`end` 根据浮层自身继承的方向解析（RTL 下通过纯 CSS 镜像）。",
+    "delay": "悬停后显示前的延迟，单位为毫秒。",
+    "hideDelay": "鼠标或焦点离开后隐藏前的延迟，单位为毫秒。",
+    "focusTrigger": "何时应在聚焦时打开工具提示。`auto` 会在触发器本身获得焦点，或焦点落在当时可聚焦的触发器内部时打开，因此 roving-tabindex 成员在方向键到达时会打开。",
+    "touchTrigger": "在没有悬停的场景下，点按会做什么。`auto` 在点按时打开，除非触发器本身执行某项操作（`aria-disabled` 控件不执行任何操作）；`tap` 始终打开（仅用于显示工具提示的按钮）；`none` 在触摸时从不打开。",
+    "isEnabled": "是否启用悬停和聚焦触发。",
+    "isOpen": "受控打开状态。`true` 强制显示；`false` 强制隐藏，此时本应显示它的焦点会调用 `onShow`；`undefined` 则由悬停/聚焦管理可见性。",
+    "isDefaultOpen": "是否在挂载时显示工具提示。",
+    "onShow": "工具提示变为可见时触发的回调。在 `isOpen={false}` 下，它会报告本应显示工具提示的焦点。",
+    "onHide": "工具提示隐藏时触发的回调。"
+  },
+  "returnDescriptions": {
+    "ref": "组合 ref，在同一触发元素上同时设置定位和交互。",
+    "positionRef": "定位锚点元素的 ref。",
+    "interactionRef": "悬停/聚焦交互元素的 ref。",
+    "anchorId": "用于高级定位场景的 CSS 锚点名称。",
+    "describedBy": "要组合到触发器 `aria-describedby` 中的 ID。",
+    "renderTooltip": "用于渲染锚点定位工具提示内容的函数。已排除定位退出选项：工具提示始终根据 `placement`/`alignment` 推导位置。",
+    "show": "立即打开工具提示，并保持打开直到调用 `hide()`、按 Escape、在外部按下，或焦点离开其触发器。其文本会朗读一次，并触发 `onShow`。在受控 `isOpen` 下仅调用 `onShow`。`isEnabled` 为 `false` 时不做任何事。",
+    "hide": "立即关闭工具提示，并触发 `onHide`。在受控 `isOpen` 下仅调用 `onHide`。"
+  }
+};

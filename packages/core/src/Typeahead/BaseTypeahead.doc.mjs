@@ -283,173 +283,275 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'BaseTypeahead',
-  isHiddenFromOverview: true,
-  displayName: 'Base Typeahead',
-  description:
-    '可组合的组合框引擎，提供裸输入框、搜索、键盘导航和带样式的结果下拉列表。它不渲染输入框包装、边框或已选值标记；Typeahead 和 Tokenizer 将其组合成标准字段。',
-  props: [
+  "name": "BaseTypeahead",
+  "isHiddenFromOverview": true,
+  "displayName": "Base Typeahead",
+  "description": "可组合的 combobox 引擎，提供裸输入框、搜索、键盘导航和带样式的结果下拉列表。它不渲染输入框包装、边框或选中值令牌。Typeahead 和 Tokenizer 会组合它来提供标准字段。",
+  "props": [
     {
-      name: 'searchSource',
-      type: 'SearchSource<T>',
-      description:
-        '提供搜索和引导方法的数据源。`search(query, context)` 可调用 `context.update(items)` 先显示已有的匹配项；返回值是最终列表，同一查询在第一个列表之后的每个列表都保留已显示的行，并只在其后追加新行。',
-      required: true,
+      "name": "searchSource",
+      "type": "SearchSource<T>",
+      "description": "提供 search 和 bootstrap 方法的数据源。`search(query, context)` 可以调用 `context.update(items)` 在返回前显示它已有的匹配项；其返回值是最终列表，而查询产生第一个列表之后的每个列表都会保留已显示的行在前，并在其后追加新行。",
+      "required": true
     },
     {
-      name: 'value',
-      type: 'T | null',
-      description: '当前选中的项目。',
-      required: true,
+      "name": "value",
+      "type": "T | null",
+      "description": "当前选中的项。",
+      "required": true
     },
     {
-      name: 'onChange',
-      type: '(item: T | null) => void',
-      description: '选择变更时调用。',
-      required: true,
+      "name": "onChange",
+      "type": "(item: T | null) => void",
+      "description": "选择变化时调用。",
+      "required": true
     },
     {
-      name: 'renderItem',
-      type: '(item: T) => ReactNode',
-      description: '下拉列表项的自定义渲染函数。',
+      "name": "renderItem",
+      "type": "(item: T) => ReactNode",
+      "description": "下拉项的自定义渲染函数。"
     },
     {
-      name: 'placeholder',
-      type: 'string',
-      description: '输入框占位文本。',
-      default: "'Search…'",
+      "name": "placeholder",
+      "type": "string",
+      "description": "输入框占位文本。",
+      "default": "'Search…'"
     },
     {
-      name: 'hasEntriesOnFocus',
-      type: 'boolean',
-      description: '聚焦时在输入前显示引导结果。',
-      default: 'false',
+      "name": "hasEntriesOnFocus",
+      "type": "boolean",
+      "description": "聚焦时在输入前显示引导结果。",
+      "default": "false"
     },
     {
-      name: 'maxMenuItems',
-      type: 'number',
-      description: '下拉列表显示的最大项目数。',
-      default: '10',
+      "name": "maxMenuItems",
+      "type": "number",
+      "description": "显示的最大下拉项数。",
+      "default": "10"
     },
     {
-      name: 'menuWidth',
-      type: 'number',
-      description: '视口限制前请求的下拉菜单像素宽度。',
+      "name": "menuWidth",
+      "type": "number",
+      "description": "在视口限制之前请求的下拉宽度（像素）。"
     },
     {
-      name: 'minQueryLength',
-      type: 'number',
-      description:
-        '查询搜索源前的最小查询长度。低于该长度不会发起搜索，菜单保持关闭。',
-      default: '1',
+      "name": "minQueryLength",
+      "type": "number",
+      "description": "查询 search 数据源所需的最小查询长度。低于该长度时不运行搜索，菜单保持关闭。",
+      "default": "1"
     },
     {
-      name: 'emptySearchText',
-      type: 'ReactNode',
-      description:
-        '查询无匹配结果时显示的内容。接受 ReactNode，因此可在无结果处放置链接或创建入口。会从 DOM 读取其渲染出的文本在礼貌性实时区域中播报；aria-hidden 的部分两处都不包含，不渲染任何文本的内容则不会播报。null 与 undefined 同样视为未提供，将回退到默认值；若要不渲染任何内容，请传入空字符串。',
-      default: "'No results found'",
+      "name": "emptySearchText",
+      "type": "ReactNode",
+      "description": "查询未匹配任何内容时显示的内容。接受 ReactNode，因此死胡同也可以携带链接或创建行。会作为其渲染的文本在礼貌实时区域中播报，文本从 DOM 读取；aria-hidden 部分不会出现在两者中，不渲染文本的内容不会播报任何内容。null 会被视为未提供，与 undefined 一样，并回退到默认值；传入空字符串可渲染为空。",
+      "default": "'No results found'"
     },
     {
-      name: 'isDisabled',
-      type: 'boolean',
-      description: '输入框是否被禁用。',
-      default: 'false',
+      "name": "isDisabled",
+      "type": "boolean",
+      "description": "输入框是否禁用。",
+      "default": "false"
     },
     {
-      name: 'isFocusableDisabled',
-      type: 'boolean',
-      description:
-        '使用 aria-disabled 和只读状态保持禁用输入框可聚焦，以便访问调用方提供的禁用原因。它会阻止文本输入、打开结果列表和选择结果，在它生效前已打开的结果中也是如此；Escape 或 Tab 仍可关闭列表。',
-      default: 'false',
+      "name": "isFocusableDisabled",
+      "type": "boolean",
+      "description": "通过 aria-disabled 和 readOnly 保持禁用输入框可聚焦，使调用方拥有的禁用原因仍可被发现。它会阻止文本输入、打开结果和选择结果，对在此状态应用前已打开的结果也有效；Escape 或 Tab 仍会关闭它们。",
+      "default": "false"
     },
     {
-      name: 'hasAutoFocus',
-      type: 'boolean',
-      description: '挂载时自动聚焦输入框。',
-      default: 'false',
+      "name": "hasAutoFocus",
+      "type": "boolean",
+      "description": "挂载时自动聚焦输入框。",
+      "default": "false"
     },
     {
-      name: 'debounceMs',
-      type: 'number',
-      description:
-        '触发搜索前的防抖延迟（毫秒）。同步数据源，以及通过 `context.update` 显示本地匹配项并自行延迟服务器请求的数据源，设置为 0。',
-      default: '150',
+      "name": "debounceMs",
+      "type": "number",
+      "description": "触发搜索前的防抖延迟（毫秒）。同步数据源请设为 0，对于通过 `context.update` 显示本地匹配并延迟自身服务器请求的数据源也请设为 0。",
+      "default": "150"
     },
     {
-      name: 'size',
-      type: "'sm' | 'md' | 'lg'",
-      description: '用于调整下拉选项内边距的尺寸。',
-      default: "'md'",
+      "name": "size",
+      "type": "'sm' | 'md' | 'lg'",
+      "description": "用于缩放下拉选项内边距的尺寸。",
+      "default": "'md'"
     },
     {
-      name: 'anchorRef',
-      type: 'RefObject<HTMLElement | null>',
-      description: '用于下拉列表定位的锚点元素引用。未提供时使用输入框本身。',
+      "name": "anchorRef",
+      "type": "RefObject<HTMLElement | null>",
+      "description": "用于下拉定位的锚点元素 ref。未提供时，会使用输入框本身。"
     },
     {
-      name: 'inputXStyle',
-      type: 'StyleXStyles',
-      description: '输入元素的附加 StyleX 样式。',
+      "name": "inputXStyle",
+      "type": "StyleXStyles",
+      "description": "输入框元素的额外 StyleX 样式。"
     },
     {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description: '应用于输入元素的标准 BaseProps StyleX 样式。',
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "应用于输入框的标准 BaseProps StyleX 样式。必须是 `stylex.create()` 的值，不能是内联样式对象。"
     },
     {
-      name: 'inputTabIndex',
-      type: 'number',
-      description:
-        '原生 tabIndex 的旧输入专用别名。提供时优先；未提供时保留原生属性。',
+      "name": "inputTabIndex",
+      "type": "number",
+      "description": "原生 tabIndex 的旧式输入框专用别名。提供时优先使用；否则保留原生 tabIndex。"
     },
     {
-      name: 'onKeyDown',
-      type: '(e: React.KeyboardEvent<HTMLInputElement>) => void',
-      description:
-        '在内部键盘导航之前调用的附加 keydown 处理函数。调用 e.preventDefault() 可跳过内部处理。',
+      "name": "onKeyDown",
+      "type": "(e: React.KeyboardEvent<HTMLInputElement>) => void",
+      "description": "在内部键盘导航之前调用的额外 keydown 处理函数。调用 e.preventDefault() 可跳过内部处理。"
     },
     {
-      name: 'onChangeQuery',
-      type: '(query: string) => void',
-      description: '搜索查询文本变更时触发的回调。',
+      "name": "onChangeQuery",
+      "type": "(query: string) => void",
+      "description": "搜索查询文本变化时触发的回调。"
     },
     {
-      name: 'onOpenChange',
-      type: '(isOpen: boolean) => void',
-      description: '下拉列表打开或关闭时的回调。',
+      "name": "onOpenChange",
+      "type": "(isOpen: boolean) => void",
+      "description": "下拉列表打开或关闭时的回调。"
     },
     {
-      name: 'menu',
-      type: 'BaseTypeaheadMenu',
-      description:
-        "菜单显示的内容。role 为 'listbox'（默认）时显示结果列表；可选的 render({listbox, query, isBusy, isEmptySearch, close}) 可在列表周围放置标题或提示等信息，用户可操作的内容仍需作为结果放在列表中，以便方向键可达。role 为 'dialog' 时在以 label 命名的对话框中显示 render({query, close})，并将焦点移入；按 Escape、点击外部或调用 close() 后焦点回到菜单打开时的位置。两种情况下图层都由 Astryx 管理。从 listbox 切换到 dialog 时菜单保持打开：在 onChange 中调用 handleRef.open()。",
+      "name": "menu",
+      "type": "BaseTypeaheadMenu",
+      "description": "菜单显示的内容。role 'listbox'（默认）是结果列表；其可选的 render({listbox, query, isBusy, isEmptySearch, close}) 会在列表周围放置页眉或提示等信息，用户可操作的任何内容仍是结果，以便方向键能够到达。role 'dialog' 会在以 label 命名的对话框中显示 render({query, close})，该对话框获取焦点；Escape、外部按压或 close() 会将焦点返回到菜单打开时的位置。无论哪种方式，layer 都由 Astryx 管理。从 listbox 切换到 dialog 会保持菜单打开：请在 onChange 中调用 handleRef.open()。"
     },
     {
-      name: 'handleRef',
-      type: 'React.Ref<BaseTypeaheadHandle>',
-      description:
-        '命令式句柄：open() 打开菜单（dialog 立即打开；listbox 显示或加载结果），close() 关闭菜单。没有受控的打开状态；onOpenChange 报告变化。',
+      "name": "handleRef",
+      "type": "React.Ref<BaseTypeaheadHandle>",
+      "description": "命令式句柄：open() 打开菜单（dialog 立即打开；listbox 显示或加载其结果），close() 关闭菜单。没有受控的打开状态；onOpenChange 报告变化。"
     },
     {
-      name: 'inputId',
-      type: 'string',
-      description:
-        '原生 id 的旧输入专用别名。提供时优先；未提供时保留原生属性。',
+      "name": "inputId",
+      "type": "string",
+      "description": "原生 id 的旧式输入框专用别名。提供时优先使用；否则保留原生 id。"
     },
     {
-      name: 'ariaDescribedBy',
-      type: 'string',
-      description:
-        '原生 aria-describedby 的旧输入专用别名。提供时优先；未提供时保留原生属性。',
+      "name": "ariaDescribedBy",
+      "type": "string",
+      "description": "原生 aria-describedby 的旧式输入框专用别名。提供时优先使用；否则保留原生属性。"
     },
     {
-      name: 'ariaLabelledBy',
-      type: 'string',
-      description:
-        '原生 aria-labelledby 的旧输入专用别名。提供时优先；未提供时保留原生属性。',
-    },
+      "name": "ariaLabelledBy",
+      "type": "string",
+      "description": "原生 aria-labelledby 的旧式输入框专用别名。提供时优先使用；否则保留原生属性。"
+    }
   ],
+  "usage": {
+    "description": "可组合的 combobox 引擎，提供裸输入框、搜索、键盘导航和带样式的结果下拉列表。它不渲染输入框包装、边框或选中值令牌。Typeahead 和 Tokenizer 会组合它来提供标准字段。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "标准字段请使用 Typeahead 或 Tokenizer；它们为 BaseTypeahead 包裹了它有意省略的输入框外观和选中值渲染。"
+      },
+      {
+        "guidance": true,
+        "description": "提供自己的可见标签或 aria-label 以及自定义输入框包装，使这个裸 combobox 具有无障碍名称、焦点处理、边框和布局。"
+      },
+      {
+        "guidance": true,
+        "description": "传入指向包装元素的 anchorRef，使下拉列表相对于自定义输入框外观定位，而不仅仅是裸输入框元素。"
+      },
+      {
+        "guidance": false,
+        "description": "不要期望输入框外观或选中值渲染。BaseTypeahead 是引擎；调用方负责这些可见部分。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在 Typeahead 或 Tokenizer 已足够时使用 BaseTypeahead；额外的包装和样式工作只有在真正自定义组合时才值得。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将 Escape 视为对进行中数据源工作的取消。它会隐藏当前弹出层，但迟到的响应仍可能重新打开它。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "输入框",
+        "required": true,
+        "description": "裸 combobox 输入框。调用方提供其可见字段外观和无障碍名称。"
+      },
+      {
+        "name": "加载状态",
+        "required": false,
+        "description": "异步数据源挂起时显示在输入框旁的具名 Spinner，除非组合方接管了忙碌指示器通道。"
+      },
+      {
+        "name": "下拉列表",
+        "required": false,
+        "description": "包含当前搜索或引导结果的锚定 listbox 表面。"
+      },
+      {
+        "name": "空状态",
+        "required": false,
+        "description": "搜索完成但没有结果后显示的禁用 listbox 选项。"
+      },
+      {
+        "name": "结果组标题",
+        "required": false,
+        "description": "一组结果选项的可见标签。"
+      },
+      {
+        "name": "结果行",
+        "required": false,
+        "description": "负责高亮、选择、指针和键盘行为的选项包装。"
+      },
+      {
+        "name": "默认项内容",
+        "required": false,
+        "description": "在结果行内渲染的 TypeaheadItem 标签和可选辅助内容。"
+      },
+      {
+        "name": "调用方渲染的项内容",
+        "required": false,
+        "description": "通过 renderItem 或 item.element 在稳定结果行内提供的调用方内容。"
+      },
+      {
+        "name": "菜单内容",
+        "required": false,
+        "description": "来自 menu.render 的调用方内容：在 listbox 角色中围绕结果列表的信息，或 dialog 角色的内容。"
+      },
+      {
+        "name": "菜单对话框",
+        "required": false,
+        "description": "dialog 角色菜单在锚定层中显示的具名对话框；它会获取焦点，并在关闭时归还焦点。"
+      },
+      {
+        "name": "选中结果状态",
+        "required": false,
+        "description": "当某个结果与 value 匹配时显示的选中行字重和末尾勾选标记。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "searchSource": "提供 search 和 bootstrap 方法的数据源。`search(query, context)` 可以调用 `context.update(items)` 在返回前显示它已有的匹配项；其返回值是最终列表，而查询产生第一个列表之后的每个列表都会保留已显示的行在前，并在其后追加新行。",
+    "value": "当前选中的项。",
+    "onChange": "选择变化时调用。",
+    "renderItem": "下拉项的自定义渲染函数。",
+    "placeholder": "输入框占位文本。",
+    "hasEntriesOnFocus": "聚焦时在输入前显示引导结果。",
+    "maxMenuItems": "显示的最大下拉项数。",
+    "menuWidth": "在视口限制之前请求的下拉宽度（像素）。",
+    "minQueryLength": "查询 search 数据源所需的最小查询长度。低于该长度时不运行搜索，菜单保持关闭。",
+    "emptySearchText": "查询未匹配任何内容时显示的内容。接受 ReactNode，因此死胡同也可以携带链接或创建行。会作为其渲染的文本在礼貌实时区域中播报，文本从 DOM 读取；aria-hidden 部分不会出现在两者中，不渲染文本的内容不会播报任何内容。null 会被视为未提供，与 undefined 一样，并回退到默认值；传入空字符串可渲染为空。",
+    "isDisabled": "输入框是否禁用。",
+    "isFocusableDisabled": "通过 aria-disabled 和 readOnly 保持禁用输入框可聚焦，使调用方拥有的禁用原因仍可被发现。它会阻止文本输入、打开结果和选择结果，对在此状态应用前已打开的结果也有效；Escape 或 Tab 仍会关闭它们。",
+    "hasAutoFocus": "挂载时自动聚焦输入框。",
+    "debounceMs": "触发搜索前的防抖延迟（毫秒）。同步数据源请设为 0，对于通过 `context.update` 显示本地匹配并延迟自身服务器请求的数据源也请设为 0。",
+    "size": "用于缩放下拉选项内边距的尺寸。",
+    "anchorRef": "用于下拉定位的锚点元素 ref。未提供时，会使用输入框本身。",
+    "inputXStyle": "输入框元素的额外 StyleX 样式。",
+    "xstyle": "应用于输入框的标准 BaseProps StyleX 样式。必须是 `stylex.create()` 的值，不能是内联样式对象。",
+    "inputTabIndex": "原生 tabIndex 的旧式输入框专用别名。提供时优先使用；否则保留原生 tabIndex。",
+    "onKeyDown": "在内部键盘导航之前调用的额外 keydown 处理函数。调用 e.preventDefault() 可跳过内部处理。",
+    "onChangeQuery": "搜索查询文本变化时触发的回调。",
+    "onOpenChange": "下拉列表打开或关闭时的回调。",
+    "menu": "菜单显示的内容。role 'listbox'（默认）是结果列表；其可选的 render({listbox, query, isBusy, isEmptySearch, close}) 会在列表周围放置页眉或提示等信息，用户可操作的任何内容仍是结果，以便方向键能够到达。role 'dialog' 会在以 label 命名的对话框中显示 render({query, close})，该对话框获取焦点；Escape、外部按压或 close() 会将焦点返回到菜单打开时的位置。无论哪种方式，layer 都由 Astryx 管理。从 listbox 切换到 dialog 会保持菜单打开：请在 onChange 中调用 handleRef.open()。",
+    "handleRef": "命令式句柄：open() 打开菜单（dialog 立即打开；listbox 显示或加载其结果），close() 关闭菜单。没有受控的打开状态；onOpenChange 报告变化。",
+    "inputId": "原生 id 的旧式输入框专用别名。提供时优先使用；否则保留原生 id。",
+    "ariaDescribedBy": "原生 aria-describedby 的旧式输入框专用别名。提供时优先使用；否则保留原生属性。",
+    "ariaLabelledBy": "原生 aria-labelledby 的旧式输入框专用别名。提供时优先使用；否则保留原生属性。"
+  }
 };
 
 export const docsDense = {

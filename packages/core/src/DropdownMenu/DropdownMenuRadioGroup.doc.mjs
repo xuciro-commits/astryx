@@ -124,19 +124,54 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'DropdownMenuRadioGroup',
-  displayName: 'Dropdown Menu Radio Group',
-  description:
-    'DropdownMenu 中由调用方控制且有名称的单选组（menuitemradio 的 role="group"）。该组负责值传递、关闭策略、根元素组合和菜单项间距；父 DropdownMenu 负责键盘导航。',
-  propDescriptions: {
-    value: '组中当前选中的值。尚无选中项时传 undefined。',
-    onChange: '所选值变化时触发的回调。',
-    label:
-      '组的无障碍名称，作为 aria-label 应用。即使 aria-labelledby（通过基础属性）指向可见文本，label 仍然必需并作为后备名称。',
-    hasCloseOnSelect: '选择某值是否关闭菜单。默认关闭。',
-    ref: '转发到 role="group" 根元素的 ref。',
-    children: '组成该组的 DropdownMenuRadioItem。',
+  "name": "DropdownMenuRadioGroup",
+  "displayName": "Dropdown Menu Radio Group",
+  "description": "由 DropdownMenuRadioItem 子项组成的受控、具名单选组（role=\"group\"，其中为 menuitemradio）。负责值传播、关闭策略、根组合以及菜单项间距；父级 DropdownMenu 负责键盘导航。",
+  "propDescriptions": {
+    "value": "组中当前选中的值。尚未选中任何项时传入 undefined。",
+    "onChange": "所选值变化时触发的回调。",
+    "label": "组的无障碍名称，作为 `aria-label` 应用，使屏幕阅读器将该组单选按钮作为一个命名集合朗读，例如 \"Sort by\"。即使 `aria-labelledby`（通过基础属性）指向可见文本，也仍为必填；该可见引用会成为计算名称，而 `label` 保留为回退。",
+    "hasCloseOnSelect": "选择值是否关闭菜单。单选项默认在选择时关闭（单选提交）。",
+    "ref": "转发到 role=\"group\" 根节点的 ref。",
+    "children": "组成该组的 DropdownMenuRadioItem。"
   },
+  "usage": {
+    "description": "当多个命令代表同一个互斥选择时，在复合模式 DropdownMenu 中使用 DropdownMenuRadioGroup。将 `value` 保存在调用方状态中，提供简洁的无障碍标签，并将每个选择渲染为 DropdownMenuRadioItem。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "保持 `value` 受控，并通过 `onChange` 更新它，使选中状态跟随调用方数据。"
+      },
+      {
+        "guidance": true,
+        "description": "即使 `aria-labelledby` 指向可见文本，也请提供简洁的 `label`；`label` 仍为必填，并提供 `aria-label` 回退。"
+      },
+      {
+        "guidance": true,
+        "description": "仅当菜单必须保持打开以显示另一个选择或就地结果时，才设置 `hasCloseOnSelect=false`。"
+      },
+      {
+        "guidance": false,
+        "description": "不要在单选组中放置按钮、链接、复选框或任意菜单行。"
+      },
+      {
+        "guidance": false,
+        "description": "不要添加第二个按键处理器或漫游焦点模型；DropdownMenu 负责键盘导航。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "组",
+        "required": true,
+        "description": "role=\"group\" 根节点，负责无障碍名称、受控选择上下文、关闭策略、根输入和项间距。"
+      },
+      {
+        "name": "单选项",
+        "required": true,
+        "description": "DropdownMenuRadioItem 子项；每个子项负责其 menuitemradio 角色、选中状态、内容和指示器绘制。"
+      }
+    ]
+  }
 };
 
 export const docsDense = {

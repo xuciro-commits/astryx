@@ -94,3 +94,30 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useDevWarning",
+  "usage": {
+    "description": "在条件成立期间，每次挂载触发一次仅开发环境的“Component: message”控制台警告。它是组件标记误用的渲染安全方式：直接从渲染主体发出警告会在每次渲染时重复，而用状态来控制又会增加一次重新渲染，因此这里改用 ref 和 Effect。对于组件之外的警告，请使用命令式的 devWarn 工具。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "说明哪里有问题以及构建者应如何修正；消息是警告的全部价值。"
+      },
+      {
+        "guidance": true,
+        "description": "对类型无法表达的组合作出警告，例如两个互斥属性被同时设置。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将其用于用户可见的任何内容或运行时错误处理；它会从生产构建中移除。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "component": "组件或 Hook 名称，用作消息前缀。",
+    "message": "出了什么问题以及如何修复。",
+    "condition": "是否发出警告。"
+  },
+  "returnDescriptions": {}
+};

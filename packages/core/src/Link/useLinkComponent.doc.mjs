@@ -93,3 +93,30 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useLinkComponent",
+  "usage": {
+    "description": "解析由哪个组件渲染链接，使自定义组件中的链接与 Astryx 自身链接一样遵循应用的路由。优先级依次为 as 参数、最近的 LinkProvider 的 component、原生锚点。使用 href（以及 to，适用于会读取 to 的路由器）渲染返回的组件。渲染前，它会按 Link 的 href 规则检查两个目标：被拒绝的目标会渲染为不带目标的锚点，且绝不会用该目标调用自定义路由器。自定义组件会收到 to={href}，除非显式传入了 to。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "用于自定义组件内部的链接，这样接入路由器的 LinkProvider 无需为每个链接传入属性即可覆盖它们。"
+      },
+      {
+        "guidance": true,
+        "description": "对于路由器无法处理的目标（例如文件下载或应用外页面），传入 as='a'。"
+      },
+      {
+        "guidance": false,
+        "description": "在共享组件中直接导入路由器的链接组件；这样该组件会忽略 LinkProvider 和目标检查。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "as": "用于渲染链接的组件，例如路由器的链接组件或 'a'。设置后优先于任何 LinkProvider。"
+  },
+  "returnDescriptions": {
+    "LinkComponent": "解析后的组件：as，否则为最近的 LinkProvider 的 component，否则为原生 'a'。只要解析到的组件不变，该值就保持稳定。渲染前会按 Link 的 href 规则检查 href 和 to；任一被拒绝时，渲染不带目标的锚点，且绝不调用路由器。自定义组件会收到 to={href}，除非显式传入了 to。"
+  }
+};

@@ -1,12 +1,12 @@
 # /packages/core/src
 
-Source code for core UI components.
+核心 UI 组件的源代码。
 
-<!-- SYNC: When files in this directory change, update this document. -->
+<!-- SYNC: 当此目录中的文件发生变化时，更新此文档。 -->
 
-| File/Directory | Role      | Purpose                                                                                                                                         |
-| -------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `index.ts`     | Entry     | Package entry point; re-exports public components, hooks, and types                                                                             |
-| `naming.ts`    | Utility   | Centralized namespace-prefix constants/helpers (CSS classes, data attrs, CSS vars) — single source of truth for the XDS→Astryx prefix migration |
-| `reset.css`    | Styles    | Base CSS reset for consistent cross-browser defaults                                                                                            |
-| `Button/`      | Component | Button component with variants and loading states                                                                                               |
+| 文件/目录   | 角色 | 用途                                                                                              |
+| ----------- | ---- | ------------------------------------------------------------------------------------------------- |
+| `index.ts`  | 入口 | 包入口；重新导出公共组件、hooks 和类型                                                            |
+| `naming.ts` | 工具 | 集中式命名空间前缀常量/辅助函数（CSS 类、data 属性、CSS 变量）——XDS→Astryx 前缀迁移的单一事实来源 |
+| `reset.css` | 样式 | 基础 CSS 重置，用于一致的跨浏览器默认值                                                           |
+| `Button/`   | 组件 | 带变体和加载状态的 Button 组件                                                                    |

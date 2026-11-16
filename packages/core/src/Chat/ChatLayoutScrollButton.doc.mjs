@@ -30,15 +30,15 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'ChatLayoutScrollButton',
-  isHiddenFromOverview: true,
-  displayName: 'Chat Layout Scroll Button',
-  description: '可组合的滚动到底部按钮。可见时淡入，提供标签时展开。',
-  propDescriptions: {
-    isVisible: '按钮是否可见。',
-    label: '可选标签，展开按钮（如"新消息"）。',
-    onClick: '点击处理器。',
-  },
+  "name": "ChatLayoutScrollButton",
+  "isHiddenFromOverview": true,
+  "displayName": "Chat Layout Scroll Button",
+  "description": "浮动“滚动到底部”按钮，当用户滚动离开最新消息时出现。它以紧凑图标按钮的形式淡入，并在有新消息到达时展开显示标签。ChatLayout 默认渲染此组件：向 scrollButton 属性传入自定义元素可覆盖，传入 null 则完全隐藏。",
+  "propDescriptions": {
+    "isVisible": "按钮是否可见。绑定到滚动位置检查，使按钮仅在用户向上滚动时出现。",
+    "label": "用于展开按钮的可选标签（例如 \"New messages\"）。用于提示折叠区域下方有未读内容。",
+    "onClick": "点击处理函数：通常滚动到底部并关闭新消息指示器。"
+  }
 };
 
 export const docsDense = {

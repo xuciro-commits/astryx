@@ -160,41 +160,48 @@ const [isOpen, setIsOpen] = useState(true);
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  usage: {
-    description:
-      '像 DialogHeader 一样放入 Dialog 内 Layout 的 header 插槽。当对话框呈现精选、营销或引导场景，紧凑的 DialogHeader 不够醒目时使用。媒体自动延伸到对话框边缘，关闭按钮浮动在媒体的尾部上角。可见标题是默认的初始焦点目标；内联预览不会移动焦点。安装 @astryxdesign/lab@canary 和 @astryxdesign/core@canary，并导入两个包的 CSS。Lab API 可能在 canary 版本之间变化。',
-    bestPractices: [
+  "name": "DialogHeroHeader",
+  "displayName": "Dialog Hero Header",
+  "description": "实验性的 Dialog 英雄式标题栏，可从 @astryxdesign/lab@canary 获取：标题上方有一个通栏媒体槽，关闭按钮叠加在媒体上。它是 DialogHeader 的高强调度兄弟组件，用于特色、营销或引导式对话框。",
+  "usage": {
+    "description": "像 DialogHeader 一样放进 Dialog 内 Layout 的 header 槽位。当对话框打开的是特色、营销或引导时刻，而紧凑的 DialogHeader 显得过于低调时使用。媒体会自动延伸到对话框边缘，关闭按钮浮动在其右上角。可见标题是默认的初始焦点目标；内联预览不会移动焦点。请安装 @astryxdesign/lab@canary 与 @astryxdesign/core@canary，并导入两个包的 CSS。Lab API 可能在 canary 版本之间变化。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          '让 mediaMode 与媒体的明暗匹配，保证浮动关闭按钮清晰可读：深色图片需要 mediaMode="dark"。',
+        "guidance": true,
+        "description": "设置 `mediaMode` 使其匹配媒体的亮度，以便叠加的关闭按钮保持可读：深色图像需要 `mediaMode=\"dark\"`。"
       },
       {
-        guidance: true,
-        description:
-          '让媒体内容填满插槽（图片用 width 100%）；插槽本身只负责定位和延伸。',
+        "guidance": true,
+        "description": "将媒体内容调整为填满槽位（图片设置 width 100%）；槽位本身只负责定位和通栏延伸。"
       },
       {
-        guidance: true,
-        description:
-          '操作按钮（CTA）放在 LayoutFooter；hero 头部不提供操作插槽。',
+        "guidance": true,
+        "description": "将操作（CTA）放在 LayoutFooter 中；英雄式标题栏不接受 actions 槽位。"
       },
       {
-        guidance: true,
-        description:
-          '当媒体已经在视觉上传达信息时使用 isTitleHidden；标题仍会为屏幕阅读器命名对话框。',
+        "guidance": true,
+        "description": "当媒体已经在视觉上传达信息时使用 `isTitleHidden`；标题仍会为屏幕阅读器命名对话框。"
       },
       {
-        guidance: false,
-        description: '用于常规确认或表单；请改用紧凑的 DialogHeader。',
+        "guidance": false,
+        "description": "不要用于常规确认或表单；请改用紧凑的 DialogHeader。"
       },
       {
-        guidance: false,
-        description:
-          '装饰性媒体缺少空 alt；纯装饰图片请使用 alt="" 让屏幕阅读器跳过。',
-      },
-    ],
+        "guidance": false,
+        "description": "不要传入没有空 alt 的装饰性媒体：对纯装饰图片使用 `alt=\"\"`，以便屏幕阅读器跳过它们。"
+      }
+    ]
   },
+  "propDescriptions": {
+    "title": "对话框标题。字符串会被包装在二级 Heading 中（与 DialogHeader 一致）；传入预先设置样式的 Heading 元素以自定义处理。除非 Dialog 有显式标签，否则通过 `aria-labelledby` 为父级 Dialog 提供无障碍标签。可见标题是默认的初始焦点目标；另一个符合条件后代的自动聚焦请求优先。自定义 Heading 会在自身元素上接收标签和焦点；如果它设置了自己的 id，请用 `aria-labelledby` 命名 Dialog。",
+    "media": "渲染在标题上方的通栏视觉内容（图片、插图或图标）。会拉伸到对话框的内边距边缘；关闭按钮叠加在其右上角。请设置媒体本身尺寸（例如 width 100%）以填满槽位。",
+    "mediaMode": "媒体表面的亮度。底层会组合 MediaTheme，使叠加在媒体上的内容（关闭按钮）采用对比度安全的反转令牌：'dark' 媒体获得浅色叠加内容，'light' 媒体获得深色内容。省略则保持环境主题令牌。",
+    "isTitleHidden": "在视觉上隐藏标题行，同时保持其对屏幕阅读器可用，使对话框仍由标题命名。",
+    "startContent": "放在标题之前的内容（例如图标），与标题行内联。",
+    "maxLines": "标题以省略号截断前的最大行数。仅当 title 为字符串（自动包装在 Heading 中）时适用。",
+    "onOpenChange": "关闭按钮回调，点击关闭按钮时以 false 调用。未提供则不渲染关闭按钮。契约与 DialogHeader 相同。",
+    "hasDivider": "在底部边缘添加主题化边框。默认使用父级 Layout 的 `defaultHasDividers` 上下文值。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

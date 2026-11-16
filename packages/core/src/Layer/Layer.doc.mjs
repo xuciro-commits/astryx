@@ -111,3 +111,39 @@ export const docsDense = {
     },
   ],
 };
+
+export const docsZh = {
+  "name": "Layer",
+  "usage": {
+    "description": "Layer 工具包提供浮层系统使用的应用级 Provider。在应用根节点使用 LayerProvider 进行 toast/layer 配置；大多数浮层 UI 请使用更高层的 Popover、HoverCard 或 Tooltip API。渲染的 layer 内容（而非 Provider 的应用子树）使用主题正文文本默认值，并退出祖先 surface/group 成员关系。在每个 layer 内建立有意的分组，并补全所需的 Provider。每个锚定 layer 都与每条视口边缘保持间距——取 spacing-4 步进或设备安全区域内缩中较大者——并受视口限制，绝不局限于触发器旁边的空间：显式宽度会按其尺寸渲染，在触发器旁放不下时翻转，两侧都放不下时滑入视野。若应用在视口边缘上浮动持久条，请在 LayerProvider 上以 inset 声明一次（blockStart、blockEnd、inlineStart、inlineEnd）；每条边都会为其上的每个锚定 layer 增加该边的间距，并将 toast 视口按相同量移动，默认值为零。inset 是应用配置，不是主题值。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将视口上浮动的持久条在 LayerProvider 上以 inset 声明一次；之后每个锚定 layer 和 toast 都会避开它。"
+      },
+      {
+        "guidance": true,
+        "description": "需要共享 toast/layer 配置时，在应用根节点附近使用一次 LayerProvider。"
+      },
+      {
+        "guidance": true,
+        "description": "常见浮层模式请基于 Popover、HoverCard 和 Tooltip 等更高层组件构建。"
+      },
+      {
+        "guidance": false,
+        "description": "不要嵌套 LayerProvider 来更改 toast 设置：嵌套 Provider 会保留外层 toast 配置，且不会挂载第二个 toast 视口。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "LayerProvider",
+      "description": "toast 和视口 inset 的应用级配置。嵌套 Provider 不会挂载第二个 toast 视口，并会保留外层 toast 配置；声明了 inset 的 Provider 会将其声明的边缘应用到其子树中的锚定 layer。",
+      "propDescriptions": {
+        "children": "可使用共享 layer 上下文的应用子树。",
+        "toast": "Toast 视口配置。控制 position、maxVisible，以及仅用于 toast 的 inset——它会针对通过 useToast 显示的 toast，按边缘覆盖 Provider 的 inset。",
+        "inset": "在视口边缘上浮动的持久条，声明一次：blockStart、blockEnd、inlineStart、inlineEnd 为像素数字或 CSS 长度。每条边都会增加每个锚定 layer 与该边保持的间距，并将 toast 视口按相同量移动。每条边默认值为零。"
+      }
+    }
+  ]
+};

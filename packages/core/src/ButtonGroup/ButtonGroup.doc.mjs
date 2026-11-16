@@ -111,43 +111,134 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  components: [
+  "components": [
     {
-      name: 'ButtonGroup',
-      displayName: 'Button Group',
-      description: '将多个按钮组合在一起，带有连接样式：共享边框、正确的圆角处理（仅外边缘），以及水平或垂直方向。在触摸呈现下（主要指针为粗指针时），按下时按钮组像菜单一样跟踪按压：按下一个按钮并滑过其他按钮，高亮随之移动。松开时所在的按钮执行，在组外松开则什么都不执行。鼠标按下与原生按钮相同。使用手指时，每个按钮的触控目标向 44 px 扩展，最多到与相邻按钮间距的一半，按钮本身不变大。组内的菜单触发器保留自己的打开方式。',
-      propDescriptions: {
-        children: 'Button 或 IconButton 子元素。',
-        label: '按钮组的无障碍标签 (aria-label)。',
-        orientation: '按钮组的布局方向。',
-        size: '组内按钮的默认尺寸。单个按钮可覆盖。',
-        isDisabled: '组内所有按钮是否禁用。',
-        elevation: '整个组的静止阴影深度。连接的按钮共享一个表面，阴影将它们作为整体抬起。',
-        ref: '转发到根元素的引用。',
-        xstyle: 'StyleX 样式，用于布局自定义。必须是 stylex.create() 的值。',
-        'data-testid': '自动化测试的选择器。',
-      },
-    },
+      "name": "ButtonGroup",
+      "displayName": "Button Group",
+      "description": "将多个按钮组合在一起，并提供连接式样式：共享边框、正确的 border-radius 处理（仅在外边缘）以及水平或垂直方向。在触摸呈现方式下，按压的跟踪方式类似菜单：按下一个按钮并滑过其他按钮时，高亮会跟随。抬起时所在的按钮会执行，而在组外抬起则不会执行任何操作。鼠标按压的行为与原生按钮一致。使用手指时，每个按钮的目标会扩展到 44 px，最多达到与相邻按钮间距的一半，而按钮本身不会变大。组内的菜单触发器保持自身的展开行为。",
+      "propDescriptions": {
+        "children": "Button 或 IconButton 子元素。",
+        "label": "组的无障碍标签（aria-label）。",
+        "orientation": "按钮组的布局方向。",
+        "size": "组内按钮的默认尺寸。单个按钮可以覆盖此设置。",
+        "isDisabled": "是否禁用组内所有按钮。",
+        "elevation": "整个组的静止阴影深度。连接的按钮共享一个表面，因此阴影会将它们作为一个整体抬起。适用于浮在内容上方的组。",
+        "ref": "转发到根元素的 ref。",
+        "xstyle": "用于布局自定义的 StyleX 样式。必须是 `stylex.create()` 的值。",
+        "data-testid": "供自动化测试框架使用的测试选择器。"
+      }
+    }
   ],
-  usage: {
-    description:
-      'ButtonGroup 将相关操作连接成一个控件。当多个按钮表示对同一对象的相关操作时使用，如复制/剪切/粘贴，或撤销/重做。',
-    bestPractices: [
-      {guidance: true, description: '将对同一对象执行相关操作的按钮分组，如对选中文本的复制、剪切、粘贴。'},
-      {guidance: true, description: '组内所有按钮使用相同的变体，使其看起来像一个连接的整体。'},
-      {guidance: true, description: '保持组较小（2-4 个按钮）。更多操作请使用工具栏或下拉菜单。'},
-      {guidance: false, description: '不要混合差异很大的操作，将保存按钮和删除按钮放在同一组中会令人困惑。'},
-      {guidance: false, description: '不要使用 ButtonGroup 进行导航，使用 SegmentedControl 或 TabList 切换视图。'},
-      {guidance: false, description: '不要嵌套 ButtonGroup。如需多个组，请并排放置并留有间隔。'},
-      {guidance: true, description: '按钮组的标签应说明这些按钮作用于什么。该标签是按钮组的无障碍名称，屏幕阅读器会在每个成员之前朗读它。'},
-      {guidance: true, description: '按钮组是单个 Tab 停靠点。方向键沿排列方向在成员间移动焦点，Home/End 跳到首尾，禁用成员会被跳过——即 WAI-ARIA APG 的 roving tabindex 技术。'},
-      {guidance: false, description: '不要用禁用整个按钮组来表示操作进行中。请保持按钮组可用，并在发起操作的按钮上显示进度。'},
+  "usage": {
+    "description": "ButtonGroup 将相关操作组合为一个连接的控件。当多个按钮代表彼此相关、在视觉上属于一组的选项或操作时使用，例如复制/剪切/粘贴，或撤销/重做。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "将针对同一对象执行相关操作的按钮分组，例如对选中文本的复制、剪切、粘贴。"
+      },
+      {
+        "guidance": true,
+        "description": "组内所有按钮使用相同的 `variant`，使其看起来像一个连接的整体。"
+      },
+      {
+        "guidance": true,
+        "description": "保持组内按钮较少（2–4 个）。如需更多操作，请改用 Toolbar 或 DropdownMenu。"
+      },
+      {
+        "guidance": false,
+        "description": "不要混用差异过大的操作。同一组内 Save 按钮紧挨 Delete 按钮会让人困惑。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将 ButtonGroup 用于导航。切换视图请使用 SegmentedControl 或 TabList。"
+      },
+      {
+        "guidance": false,
+        "description": "不要嵌套 ButtonGroup。如需多个组，请将它们并排放置并保留间距。"
+      },
+      {
+        "guidance": true,
+        "description": "按按钮所作用的对象为组命名。该标签是组的无障碍名称，屏幕阅读器会在朗读每个成员之前朗读它。"
+      },
+      {
+        "guidance": true,
+        "description": "让整组只占一个 Tab 停靠点。方向键沿方向在成员之间移动，Home/End 跳到两端。这是 WAI-ARIA APG 的 roving tabindex 技术：https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#kbd_roving_tabindex"
+      },
+      {
+        "guidance": false,
+        "description": "不要通过禁用整组来表示操作正在进行。保持组启用，并在发起工作的按钮上显示进度。"
+      }
     ],
-    anatomy: [
-      {name: '按钮', required: true, description: '一个或多个 Button 或 IconButton 子元素，形成连接的组。'},
-      {name: '分隔线', required: false, description: '按钮之间的细边框，由组自动渲染。'},
+    "anatomy": [
+      {
+        "name": "按钮",
+        "required": true,
+        "description": "一个或多个构成连接组的 Button 或 IconButton 子元素。"
+      },
+      {
+        "name": "分隔线",
+        "required": false,
+        "description": "按钮之间的细边框，由组自动渲染。"
+      }
     ],
+    "accessibility": [
+      {
+        "name": "文本标签",
+        "category": "Color contrast",
+        "criterion": "1.4.3 Contrast (Minimum)",
+        "requirement": "4.5:1",
+        "states": [
+          "静止",
+          "悬停",
+          "指针按下"
+        ],
+        "description": "每个按钮中的文本在所有状态下与其背景的对比度都必须至少为 4.5:1。对于悬停和指针按下，请测量应用叠加层后的最终背景。"
+      },
+      {
+        "name": "必要图标或加载弧线",
+        "category": "Color contrast",
+        "criterion": "1.4.11 Non-text Contrast",
+        "requirement": "3:1",
+        "states": [
+          "仅图标",
+          "加载中"
+        ],
+        "description": "替代文本使用的图标与按钮背景的对比度必须至少为 3:1。旋转的加载弧线也必须达到 3:1。可见标签旁的图标无需单独检查。"
+      },
+      {
+        "name": "可见控件边界",
+        "category": "Color contrast",
+        "criterion": "1.4.11 Non-text Contrast",
+        "requirement": "3:1 if needed",
+        "states": [
+          "静止"
+        ],
+        "description": "某些组需要分隔线或边缘来显示每个按钮。该分隔线或边缘的对比度必须至少为 3:1。"
+      },
+      {
+        "name": "键盘焦点指示器",
+        "category": "Color contrast",
+        "criterion": "1.4.11 Non-text Contrast",
+        "requirement": "3:1",
+        "states": [
+          "焦点可见"
+        ],
+        "description": "焦点轮廓与其周围区域的对比度必须至少为 3:1。"
+      },
+      {
+        "name": "禁用外观",
+        "category": "Color contrast",
+        "criterion": "1.4.3 and 1.4.11 exceptions",
+        "requirement": "Not required",
+        "states": [
+          "禁用"
+        ],
+        "description": "禁用控件无需满足这些对比度比例。"
+      }
+    ]
   },
+  "name": "ButtonGroup",
+  "displayName": "Button Group"
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

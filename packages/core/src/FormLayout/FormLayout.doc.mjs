@@ -116,103 +116,104 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'FormLayout',
-  displayName: 'Form Layout',
-  props: [
+  "name": "FormLayout",
+  "displayName": "Form Layout",
+  "props": [
     {
-      name: 'direction',
-      type: "'vertical' | 'horizontal' | 'horizontal-labels'",
-      description:
-        '控制字段排列方式。vertical 从上到下堆叠；horizontal 为每个字段使用一个 1fr 网格轨道，并按逻辑行内方向排列；horizontal-labels 使用 CSS Grid，将标签放在输入框的行内起始侧（当视口宽度 <=480px 时折叠为垂直布局）。',
-      default: "'vertical'",
+      "name": "direction",
+      "type": "'vertical' | 'horizontal' | 'horizontal-labels'",
+      "description": "控制字段排列。Vertical 从上到下堆叠；horizontal 按逻辑行内顺序为每个字段使用一条分数网格轨道；horizontal-labels 使用 CSS Grid，标签位于输入框的行内起始侧（视口 <=480px 时折叠为垂直布局）。",
+      "default": "'vertical'"
     },
     {
-      name: 'defaultOptionality',
-      type: "'optional' | 'required'",
-      description:
-        '表单视为默认的状态，因此仅例外字段显示可选/必填指示器。设为 "optional" 时，仅标记 isRequired 的字段显示指示器；设为 "required" 时，仅标记 isOptional 的字段显示。与默认一致的字段不显示任何内容。设为 "required" 时，未标记的字段仍会暴露 aria-required，使屏幕阅读器与视觉默认一致——仅作用于 aria-required，不改变原生 required 属性。CheckboxInput、Switch 和 CheckboxList 例外：未勾选的复选框、关闭的开关或空的复选框组本身就是一个回答，因此默认值不会赋予它们必填状态。CheckboxInput 或 Switch 只有通过自身的 isRequired 才会成为必填。不设置则保持当前逐字段行为。',
+      "name": "defaultOptionality",
+      "type": "'optional' | 'required'",
+      "description": "表单视为默认的状态，因此只有例外项才显示可选/必填指示。设为 \"optional\" 时，只有标记 isRequired 的字段显示指示；设为 \"required\" 时，只有标记 isOptional 的字段显示指示。与默认状态一致的字段不显示任何指示。在 \"required\" 下，未标记的字段还会暴露 aria-required，使屏幕阅读器的行为与视觉默认值一致；仅使用 aria-required，绝不使用原生的 required 属性。CheckboxInput、Switch 和 CheckboxList 是例外：未勾选的复选框、关闭的开关或空组本身就是一种回答，因此它们不从默认值获得必填状态。CheckboxInput 或 Switch 只能通过自身的 isRequired 设为必填。留空以保持当前的逐字段行为。"
     },
     {
-      name: 'defaultEntryErrorBehavior',
-      type: "'complete' | 'blur-or-enter'",
-      description:
-        "布局中的 DateInput、DateTimeInput、TimeInput 和 NumberInput 字段何时显示自身的输入错误：即字段拒绝的日期、时间或数字。它设定错误何时显示，而不是何时校验，因此不同于 React Aria 的 validationBehavior（原生校验与 ARIA 校验之分），也不会改变调用方的 status。'complete' 在每个字段自身的时机显示错误。'blur-or-enter' 将消息、aria-invalid、无效样式、播报和 onEntryErrorChange 报告保留到按 Enter 或失焦；使输入有效或为空的编辑仍会立即清除错误。NumberInput 在两种取值下都只在按 Enter 或失焦时显示错误。字段自身的 entryErrorBehavior 优先。嵌套的 FormLayout 会为其字段替换该默认值，未设置时即为 'complete'。图层中的内容（例如从表单打开的 Dialog）不继承该默认值。不设置即为 'complete'。",
+      "name": "defaultEntryErrorBehavior",
+      "type": "'complete' | 'blur-or-enter'",
+      "description": "控制布局中的 DateInput、DateTimeInput、TimeInput 和 NumberInput 字段何时显示自身的输入错误（字段拒绝的日期、时间或数字）。它设置错误的显示时机，而不是验证的运行时机，因此不是 React Aria 的 validationBehavior（原生验证与 ARIA 验证之别），也绝不会更改调用方的状态。'complete' 在字段自身的时机显示每个错误。'blur-or-enter' 会将消息、aria-invalid、无效样式、播报和 onEntryErrorChange 报告保持到按下 Enter 或失焦为止；使输入变为有效或空的编辑仍会立即清除错误。无论取哪个值，NumberInput 都只在按下 Enter 或失焦时显示错误。字段自身的 entryErrorBehavior 优先。嵌套的 FormLayout 会替换其字段的默认值，其中未设置表示 'complete'。位于图层中的内容（例如从表单打开的 Dialog）初始不继承该设置。留空表示 'complete'。"
     },
     {
-      name: 'children',
-      type: 'ReactNode',
-      description:
-        '要排列的表单字段。接受 Astryx 输入组件（TextInput、Selector 等）和 Field 包装的自定义控件。',
+      "name": "children",
+      "type": "ReactNode",
+      "description": "要排列的表单字段。接受 Astryx 输入组件（TextInput、Selector 等）以及用 Field 包裹的自定义控件。"
     },
     {
-      name: 'xstyle',
-      type: 'StyleXStyles',
-      description:
-        '用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 的值，而非内联样式对象如 style={{}}。',
-    },
+      "name": "xstyle",
+      "type": "StyleXStyles",
+      "description": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 的值，而不是 style={{}} 这样的内联样式对象。"
+    }
   ],
-  theming: {
-    targets: [{className: 'astryx-form-layout', visualProps: ['direction']}],
+  "theming": {
+    "targets": [
+      {
+        "className": "astryx-form-layout",
+        "visualProps": [
+          "direction"
+        ]
+      }
+    ]
   },
-  usage: {
-    description:
-      'A layout container that arranges form fields with consistent spacing and direction. FormLayout handles where fields go, not state or submission. Wrap it in a native <form> for that; <form> has no Astryx replacement, so it stays a plain element. Supports vertical (default), horizontal, and horizontal-labels directions, and can be nested to mix them.',
-    bestPractices: [
+  "usage": {
+    "description": "以一致的间距和方向排列表单字段的布局容器。FormLayout 只负责字段的摆放位置，不负责状态或提交。如需状态或提交，请将其包裹在原生 <form> 中；<form> 没有 Astryx 替代品，因此保持为普通元素。支持 vertical（默认）、horizontal 和 horizontal-labels 方向，并可嵌套混用。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          "Stack fields vertically for most forms. It's the easiest to scan top to bottom.",
+        "guidance": true,
+        "description": "大多数表单采用垂直堆叠字段，这样最容易从上到下浏览。"
       },
       {
-        guidance: true,
-        description:
-          'Nest a horizontal FormLayout inside a vertical one when fields naturally pair up, like First Name + Last Name or City + State + ZIP.',
+        "guidance": true,
+        "description": "当字段自然成对时（如 First Name + Last Name 或 City + State + ZIP），在垂直 FormLayout 中嵌套水平 FormLayout。"
       },
       {
-        guidance: true,
-        description:
-          'Use horizontal-labels for settings pages where labels sit beside their inputs.',
+        "guidance": true,
+        "description": "在标签位于输入框旁的设置页面中使用 horizontal-labels。"
       },
       {
-        guidance: false,
-        description:
-          "Use FormLayout for form state or submission. It's just layout. Wrap it in a native <form> for that.",
+        "guidance": false,
+        "description": "将 FormLayout 用于表单状态或提交。它只是布局，状态或提交应改用原生 <form> 包裹。"
       },
       {
-        guidance: false,
-        description:
-          'Put unrelated fields side by side in a horizontal layout. Save it for fields that belong together.',
+        "guidance": false,
+        "description": "在水平布局中并排放置不相关的字段。水平布局应留给属于同一组的字段。"
       },
       {
-        guidance: false,
-        description:
-          'Nest horizontal-labels inside another FormLayout. It uses CSS Grid and needs to be the outermost container.',
-      },
+        "guidance": false,
+        "description": "将 horizontal-labels 嵌套在另一个 FormLayout 内。它使用 CSS Grid，必须是最外层容器。"
+      }
     ],
-    anatomy: [
+    "anatomy": [
       {
-        name: 'Layout container',
-        required: true,
-        description:
-          'Owns field arrangement, spacing, direction, and form-level optionality.',
+        "name": "布局容器",
+        "required": true,
+        "description": "负责字段排列、间距、方向以及表单级的可选性。"
       },
       {
-        name: 'Form title',
-        required: false,
-        description: 'Heading that describes the purpose of the form.',
+        "name": "表单标题",
+        "required": false,
+        "description": "描述表单用途的标题。"
       },
       {
-        name: 'Fields',
-        required: true,
-        description: 'Input components with labels for collecting user data.',
+        "name": "字段",
+        "required": true,
+        "description": "带标签、用于收集用户数据的输入组件。"
       },
       {
-        name: 'Footer',
-        required: false,
-        description: 'Contains confirmation buttons such as Submit or Cancel.',
-      },
-    ],
+        "name": "页脚",
+        "required": false,
+        "description": "包含 Submit 或 Cancel 等确认按钮。"
+      }
+    ]
   },
+  "propDescriptions": {
+    "direction": "控制字段排列。Vertical 从上到下堆叠；horizontal 按逻辑行内顺序为每个字段使用一条分数网格轨道；horizontal-labels 使用 CSS Grid，标签位于输入框的行内起始侧（视口 <=480px 时折叠为垂直布局）。",
+    "defaultOptionality": "表单视为默认的状态，因此只有例外项才显示可选/必填指示。设为 \"optional\" 时，只有标记 isRequired 的字段显示指示；设为 \"required\" 时，只有标记 isOptional 的字段显示指示。与默认状态一致的字段不显示任何指示。在 \"required\" 下，未标记的字段还会暴露 aria-required，使屏幕阅读器的行为与视觉默认值一致；仅使用 aria-required，绝不使用原生的 required 属性。CheckboxInput、Switch 和 CheckboxList 是例外：未勾选的复选框、关闭的开关或空组本身就是一种回答，因此它们不从默认值获得必填状态。CheckboxInput 或 Switch 只能通过自身的 isRequired 设为必填。留空以保持当前的逐字段行为。",
+    "defaultEntryErrorBehavior": "控制布局中的 DateInput、DateTimeInput、TimeInput 和 NumberInput 字段何时显示自身的输入错误（字段拒绝的日期、时间或数字）。它设置错误的显示时机，而不是验证的运行时机，因此不是 React Aria 的 validationBehavior（原生验证与 ARIA 验证之别），也绝不会更改调用方的状态。'complete' 在字段自身的时机显示每个错误。'blur-or-enter' 会将消息、aria-invalid、无效样式、播报和 onEntryErrorChange 报告保持到按下 Enter 或失焦为止；使输入变为有效或空的编辑仍会立即清除错误。无论取哪个值，NumberInput 都只在按下 Enter 或失焦时显示错误。字段自身的 entryErrorBehavior 优先。嵌套的 FormLayout 会替换其字段的默认值，其中未设置表示 'complete'。位于图层中的内容（例如从表单打开的 Dialog）初始不继承该设置。留空表示 'complete'。",
+    "children": "要排列的表单字段。接受 Astryx 输入组件（TextInput、Selector 等）以及用 Field 包裹的自定义控件。",
+    "xstyle": "用于布局自定义（外边距、定位、尺寸）的 StyleX 样式。必须是 stylex.create() 的值，而不是 style={{}} 这样的内联样式对象。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

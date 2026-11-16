@@ -236,3 +236,93 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "AlertDialog",
+  "displayName": "Alert Dialog",
+  "description": "一个模态对话框，要求用户确认破坏性操作。",
+  "usage": {
+    "description": "AlertDialog 要求用户在执行破坏性或不可逆操作之前进行确认。用于删除内容、撤销访问权限或放弃未保存的更改等场景。\n\n它实现了 WAI-ARIA APG 的 [Alert Dialog 模式](https://www.w3.org/WAI/ARIA/apg/patterns/alertdialog/)：`role=\"alertdialog\"`、通过 `aria-labelledby` 关联的标题、通过 `aria-describedby` 关联的后果说明；打开时焦点移入对话框，关闭时返回触发元素；点击外部不会关闭对话框。按 Escape 键取消。\n\nAlertDialog 将请求的宽度传递给 Dialog，后者使用令牌间距将表面限制在容器和动态视口内。通用 Dialog 页脚应换行，但 Dialog 不负责操作语义或顺序，这些由使用方的组合方式控制。AlertDialog 负责其确认语义：在 640px 以上，操作按钮水平排列，可能移到另一行；在 640px 及以下，破坏性操作显示在 Cancel 上方，两个按钮填满页脚宽度。按钮标签保持标准的单行行为。断点取决于可用宽度，而不是指针或悬停能力。块级空间受限时，主体区域滚动。\n\n两个操作在任何指针下都作为一个组进行跟踪，就像 iOS 跟踪警告框的操作一样：指针下的操作一经按下便高亮，高亮会随指针从一个操作移动到另一个操作，松开时执行指针下的操作。在两个操作之外松开不会执行任何操作。键盘和辅助技术仍保留每个按钮的点击行为。\n\n如果希望在不管理打开状态的情况下显示警告框，可使用 `useImperativeAlertDialog` Hook：调用 `alert.show(options)`，并在组件树中渲染 `alert.element`。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "让操作按钮的标签具体明确：\"Delete project\" 比 \"OK\" 或 \"Confirm\" 更好。"
+      },
+      {
+        "guidance": true,
+        "description": "在描述中说明将会发生什么，让用户在确认前了解后果。"
+      },
+      {
+        "guidance": true,
+        "description": "让取消按钮作为破坏性最小的焦点目标。在窄屏上，破坏性操作在视觉和结构上都位于 Cancel 上方，但初始焦点仍落在 Cancel 上。"
+      },
+      {
+        "guidance": true,
+        "description": "使用简洁、具体的操作标签。在 640px 以上，完整的按钮可能移到另一行；在 640px 及以下，破坏性操作显示在 Cancel 上方，两个按钮填满页脚宽度。"
+      },
+      {
+        "guidance": false,
+        "description": "将 AlertDialog 用于非破坏性操作；此类场景应改用标准 Dialog。"
+      },
+      {
+        "guidance": false,
+        "description": "仅依靠颜色来提示危险；操作标签本身应说明将会发生什么。"
+      },
+      {
+        "guidance": false,
+        "description": "在工作完成前就从 onAction 关闭对话框；应使用 isActionLoading 让对话框保持打开，并在操作完成后调用 onOpenChange(false)。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "标题",
+        "required": true,
+        "description": "正在询问的问题。渲染为 2 级标题，并通过 aria-labelledby 标记对话框。"
+      },
+      {
+        "name": "描述",
+        "required": true,
+        "description": "用户确认后会发生什么。通过 aria-describedby 关联到对话框。"
+      },
+      {
+        "name": "取消按钮",
+        "required": true,
+        "description": "不作任何操作即关闭的 Ghost 按钮。获得初始焦点，Escape 键的效果相同。"
+      },
+      {
+        "name": "操作按钮",
+        "required": true,
+        "description": "确认操作。默认为破坏性；设置 isActionLoading 时显示加载指示器。"
+      },
+      {
+        "name": "背景遮罩",
+        "required": true,
+        "description": "对话框后方阻止页面交互的覆盖层。点击它不会关闭对话框。"
+      },
+      {
+        "name": "对话框表面",
+        "required": true,
+        "description": "承载标题、描述和按钮的模态面板。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "isOpen": "对话框是否打开。",
+    "onOpenChange": "可见性变化时的回调。",
+    "title": "对话框标题。通过 aria-labelledby 关联。",
+    "description": "后果说明。通过 aria-describedby 关联。",
+    "actionLabel": "操作按钮标签。",
+    "onAction": "点击操作按钮时调用。不会自动关闭。",
+    "cancelLabel": "取消按钮标签。",
+    "actionVariant": "操作按钮变体。",
+    "isActionLoading": "在操作按钮上显示加载指示器。",
+    "width": "请求的对话框宽度。Dialog 会保留此首选宽度，并使用令牌间距将其限制在容器和动态视口内。",
+    "isInline": "以内联方式渲染警告框内容，不采用模态行为。仅用于文档预览和展示。由于不是模态框，内联路径渲染 role=\"group\" 而不是 role=\"alertdialog\"。"
+  },
+  "components": [
+    {
+      "name": "useImperativeAlertDialog",
+      "description": ""
+    }
+  ]
+};

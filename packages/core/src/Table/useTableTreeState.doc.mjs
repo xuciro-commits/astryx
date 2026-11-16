@@ -96,3 +96,20 @@ export const docsDense = {
     treeColumnKey: 'column carrying indent + expander. Defaults to first column.',
   },
 };
+
+export const docsZh = {
+  "name": "useTableTreeState",
+  "description": "useTableTreeData 的状态管理配套 Hook。拥有展开集合（受控或非受控），并将嵌套数据展平为可见行数组；折叠的子树会被卸载而非隐藏，因此表格正文恰好包含可见行。返回 expandAll/collapseAll 辅助函数、用于表头全展开控件的聚合 isAllExpanded 状态（true/false/不确定），以及可直接用于树插件的配置。注意：由于折叠行会被卸载，折叠子树内单元格局部的 React 状态会在折叠时丢失；必须保留的状态请提升。",
+  "propDescriptions": {
+    "data": "嵌套数据：行可以在 childrenKey 下携带子行。扁平数据（任何地方都没有 children）会使插件成为空操作，因此可以在数据变为层级结构之前就采用它。",
+    "idKey": "行 ID 访问器：属性名或返回唯一 id 的函数。",
+    "childrenKey": "保存每行子数组的属性。",
+    "defaultExpandedIds": "非受控模式的初始展开行 id。提供 expandedIds 时忽略。",
+    "expandedIds": "受控的展开行 id 集合。与 onExpandedIdsChange 配合使用。",
+    "onExpandedIdsChange": "每当展开状态变化（两种模式）时，以新的展开集合调用。在懒加载设置中，可在此触发子项获取。",
+    "isItemExpandable": "此行是否应显示展开器？覆盖默认的非空子项检查；用于懒加载，其中行在其子项获取之前就可展开。",
+    "sortSiblings": "展平期间独立地对每个同级组排序；子项始终直接位于其父项下。传入 useTableSortableState 的 applySort 以与列排序组合。",
+    "indent": "每级的缩进步长（spacing-3 / spacing-4 / spacing-6），转发给 useTableTreeData。",
+    "treeColumnKey": "承载缩进 + 展开器的列，转发给 useTableTreeData。默认为第一列。"
+  }
+};

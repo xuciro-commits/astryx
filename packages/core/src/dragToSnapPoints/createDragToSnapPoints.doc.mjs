@@ -137,3 +137,49 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "createDragToSnapPoints",
+  "usage": {
+    "description": "让拖动沿一个轴移动元素，并在手指抬起时将其停靠在吸附点上，就像 iOS 面板停靠在其 detent 上一样：停在离当前位置最近的吸附点；快速轻扫后沿其方向停到下一个吸附点；手指回移时返回起始位置。停靠会延续释放时的速度。底部面板请使用 BottomSheet 的 `snapPoints`；滚动行请使用 Carousel 的 `hasSnap`。在 React 中使用 `useDragToSnapPoints` Hook。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "提供无需拖动的相同位置：调用 `settleTo` 的按钮或按键。"
+      },
+      {
+        "guidance": true,
+        "description": "保持吸附点数量少且彼此相距较远，使释放时能明确选中一个。"
+      },
+      {
+        "guidance": false,
+        "description": "将其用于面板或轮播：它们自己的属性已经按用户预期的方式停靠。"
+      }
+    ],
+    "accessibility": [
+      {
+        "name": "键盘和辅助技术",
+        "category": "Keyboard",
+        "criterion": "",
+        "description": "拖动只是一种操作方式，绝不是唯一方式。为每个吸附点提供键盘和屏幕阅读器可到达的控件，例如 Expand 和 Collapse 按钮，并从中调用 `settleTo`。当位置改变元素显示的内容时，请播报该变化。"
+      },
+      {
+        "name": "减少动态效果",
+        "category": "Content",
+        "criterion": "2.3.3 Animation from Interactions",
+        "description": "当用户要求减少动态效果时，触摸拖动后的停靠会变为向吸附点的短暂交叉淡化；在主指针为粗略指针的设备（如平板）上，任何停靠也是如此；在其他设备上用鼠标或笔拖动后则会立即落位。`settleTo` 在此类设备上会淡化，而在精细主指针下立即落位。手指按下期间，元素仍会跟随手指。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "element": "拖动所移动的元素。它仅沿 `axis` 通过平移移动，因此请像平常一样将其布局在静止位置。",
+    "options.axis": "元素移动所沿的轴。",
+    "options.snapPoints": "沿 `axis` 距元素静止位置的偏移量（px），例如 `[0, 240, 480]`，使用前会排序（`onSettle` 和 `settleTo` 按该顺序计数）；空列表使拖动不执行任何操作。与 BottomSheet 的 `snapPoints` 不同，它们不是视口的比例。",
+    "options.flickThreshold": "超过此速度（px/s）的释放会滑向该方向的下一个吸附点。默认值为针对 UIKit 面板测得的轻扫速度。",
+    "options.onSettle": "元素停靠到吸附点后，以该吸附点的索引调用，无论是拖动还是 `settleTo`。被新拖动中断的停靠不会调用任何内容。"
+  },
+  "returnDescriptions": {
+    "settleTo": "无需拖动即可将元素停靠在 `index` 处的吸附点上，然后调用 `onSettle`。将其连接到按键和按钮：它是键盘路径。吸附点之外的索引不执行任何操作，并在开发环境中发出警告。",
+    "destroy": "移除每个监听器并让元素停在当前位置。移除元素时调用它。"
+  }
+};

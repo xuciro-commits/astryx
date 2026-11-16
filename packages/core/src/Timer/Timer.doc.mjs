@@ -181,3 +181,50 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "Timer",
+  "usage": {
+    "description": "显示活动工作的标准化已用时长，而不会在每个计时周期调度 React 渲染。elapsed 格式在一小时以下按秒更新，一小时后按分钟更新；clock 格式保持秒级精度。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "使用 elapsed 显示可能跨越秒、分钟或小时的紧凑时长文本。"
+      },
+      {
+        "guidance": true,
+        "description": "在秒数在一小时后仍有意义的秒表式界面中使用 clock。"
+      },
+      {
+        "guidance": true,
+        "description": "当操作在 Timer 挂载之前就已开始时传入 startTime，使显示反映完整等待时间。"
+      },
+      {
+        "guidance": false,
+        "description": "不要将 Timer 用于日期、时区或相对日历语言；请改用 Timestamp。"
+      },
+      {
+        "guidance": false,
+        "description": "除非每个计时周期的播报适合特定任务，否则不要添加 aria-live。"
+      }
+    ],
+    "anatomy": [
+      {
+        "name": "已用时间",
+        "required": true,
+        "description": "包含标准化已用时长的语义 time 元素。"
+      }
+    ]
+  },
+  "propDescriptions": {
+    "startTime": "被测量操作开始时的 Unix 时间（毫秒）。省略则从此 Timer 挂载时开始。",
+    "format": "标准时长表示。elapsed 使用紧凑单位并在一小时后丢弃秒；clock 使用 m:ss 或 h:mm:ss。",
+    "type": "语义文本类型。使用与 Timestamp 相同的排版行为。",
+    "size": "显式字体大小覆盖。覆盖 type 中的大小。",
+    "color": "文本颜色。",
+    "weight": "字重覆盖。",
+    "xstyle": "Text 包装层的 StyleX 样式。必须是 stylex.create() 的值。",
+    "className": "Text 包装层的 CSS 类名。样式设置优先使用 xstyle。",
+    "style": "Text 包装层的内联样式。样式设置优先使用 xstyle。"
+  }
+};

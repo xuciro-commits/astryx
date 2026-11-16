@@ -85,3 +85,28 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useScrollLock",
+  "usage": {
+    "description": "激活时锁定页面滚动，并让页面保持原位。页面会设置 `overflow: hidden`（在根元素上，或当视口使用 `body` 自身的 overflow 时设置在 `body` 上），从而阻止滚轮、键盘和滚动条滚动；同时在根元素和 `body` 上设置 `overscroll-behavior-y: none`，在锁定期间阻止过度滚动回弹。当主指针为粗糙指针（手机和平板）时，会取消可能滚动页面的一指平移，因为 iOS Safari 会在手指下滚动 `overflow: hidden` 的页面；覆盖层内部滚动容器可接受的平移、原生范围输入上的拖拽、双指缩放，以及双指缩放页面上的一指拖拽（用于平移缩放后的视图）仍然有效。滚动偏移永远不会改变，因此锁定开始或结束时页面不会跳动，iOS Safari 也会保持其工具栏原状。当隐藏的滚动条占用布局空间（桌面端）时，该 Hook 通过 `scrollbar-gutter: stable` 保持其槽位，因此页面（包括任何 `position: fixed` 的界面元素）不会横向移动。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "打开全屏模态框或对话框时使用，以防止背景内容滚动。"
+      },
+      {
+        "guidance": true,
+        "description": "将控制对话框可见性的同一个布尔值（例如 `isOpen`）作为 `isLocked` 参数传入。"
+      },
+      {
+        "guidance": false,
+        "description": "用于弹出框或工具提示等非模态覆盖层；用户应能滚动离开这些内容。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "isLocked": "是否应锁定页面滚动。"
+  },
+  "returnDescriptions": {}
+};

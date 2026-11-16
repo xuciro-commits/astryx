@@ -361,112 +361,127 @@ function CommentPopover({thread, viewer}) {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */
 export const docsZh = {
-  description:
-    '单独呈现的一个评论线程：首条评论、一级回复、表情回应、编辑历史、受控的输入中与已读元数据，以及回复输入框。适用于文档旁的边注、高亮下方的弹出层，或任何只显示单个线程的界面。',
-  usage: {
-    description:
-      '评论线程展示一段对话：首条评论及其下的回复。用于只显示单个线程的界面，例如文档旁的边注卡片，或从高亮处打开的弹出层。要显示多个线程并提供新评论输入框，请使用 Comments。',
-    bestPractices: [
+  "name": "CommentThread",
+  "displayName": "Comment Thread",
+  "description": "一个独立的评论线程：它的第一条评论、一级回复、反应、编辑历史、受控的输入状态和已读元数据，以及一个回复编辑器。适用于文档旁边的边距评论、高亮下方的浮层，或任何显示单个线程的表面。",
+  "usage": {
+    "description": "评论线程显示一个对话：它的第一条评论及其下的回复。在展示单个线程的表面使用它，例如文档旁边的边距卡片或从高亮打开的浮层。要显示多个线程并为新线程提供编辑器，请使用 Comments。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          '放在卡片或弹出层中时，设置 `container="card"` 并去掉卡片的内边距：线程自带内边距，且不绘制外框线。',
+        "guidance": true,
+        "description": "在卡片或浮层内，设置 `container=\"card\"` 并让卡片没有内边距：线程会提供自己的内边距，并且不绘制外部边框线。"
       },
       {
-        guidance: true,
-        description:
-          '当线程从其他位置打开（例如文档中的高亮）时，控制 `isSelected`。受控选中会展开正文和回复，但不会移动焦点或打开回复输入框。',
+        "guidance": true,
+        "description": "当线程从别处打开时（例如文档中的高亮）控制 `isSelected`。受控选择会显示正文和回复，而不会移动焦点或打开回复编辑器。"
       },
       {
-        guidance: true,
-        description:
-          '在覆盖文档的 Popover 中，传入 `onDismiss`，并在宿主 Popover 上设置 `hasLightDismiss={false}` 和 `hasEscapeDismiss={false}`。这样在线程外按下或按 Escape 会关闭线程；但若回复或编辑中有未保存的文字，第一次只会抖动线程并保留草稿。',
+        "guidance": true,
+        "description": "在文档上方的 Popover 中，传入 `onDismiss` 并在宿主 Popover 上搭配 `hasLightDismiss={false}` 和 `hasEscapeDismiss={false}`。线程外部的按压或 Escape 会关闭它；例外的是，当存在未保存的回复或编辑时，第一次操作会让线程抖动并保留草稿。"
       },
       {
-        guidance: true,
-        description:
-          '将协作状态映射到 `typingUsers` 和 `seenBy`，再通过 `onComposerDraftChange` 发布本地的回复和编辑动态。`seenBy` 默认不显示，除非评论渲染回调展示它。线程从不建立连接，也不会让参与者过期。',
+        "guidance": true,
+        "description": "将你的协作状态映射到 `typingUsers` 和 `seenBy`，然后通过 `onComposerDraftChange` 发布本地回复和编辑活动。除非评论渲染回调呈现它，`seenBy` 保持隐藏。线程永远不会打开连接或使参与者过期。"
       },
       {
-        guidance: false,
-        description:
-          '把多个 CommentThread 与输入框堆叠成讨论区。请使用 Comments，它一次只展开一个线程，并按动态排序线程。',
+        "guidance": false,
+        "description": "堆叠多个 CommentThread 并带一个编辑器来构建讨论。请使用 Comments，它会一次保持一个线程打开，并按活动对线程排序。"
       },
       {
-        guidance: false,
-        description:
-          '用自己的按钮或链接包裹线程来打开它。线程本身已是一个切换控件；再加一个控件会嵌套交互元素。',
+        "guidance": false,
+        "description": "将线程包在你自己的按钮或链接中以打开它。线程本身已经是一个切换控件；第二个控件会嵌套交互元素。"
       },
       {
-        guidance: false,
-        description:
-          '传入 `onDismiss` 时仍保留宿主 Popover 的轻触关闭。浏览器会在线程保留草稿之前关闭 Popover。',
-      },
+        "guidance": false,
+        "description": "在传入 `onDismiss` 时保持宿主 Popover 的轻触关闭开启。浏览器会在、线程来得及保留草稿之前关闭 Popover。"
+      }
     ],
-    accessibility: [
+    "accessibility": [
       {
-        name: 'Escape',
-        category: 'Keyboard',
-        criterion: '2.1.1 Keyboard',
-        description:
-          '传入 `onDismiss` 后，只有当线程内没有打开的图层时，Escape 才会关闭线程。打开的表情选择器、菜单或对话框会先关闭，每次 Escape 只关闭一层。',
+        "name": "Esc 键",
+        "category": "Keyboard",
+        "criterion": "2.1.1 Keyboard",
+        "description": "使用 `onDismiss` 时，仅当线程内部没有打开任何图层时，Escape 才会关闭线程。打开的 emoji 选择器、菜单或对话框会先关闭，一次一个 Escape。"
       },
       {
-        name: '未保存草稿提示',
-        category: 'Semantics',
-        criterion: '4.1.3 Status Messages',
-        description:
-          '当关闭会丢弃未保存的回复或编辑时，线程保持打开，焦点回到草稿，礼貌型实时区域会说明草稿尚未保存，再次关闭将丢弃它。抖动从来不是唯一的提示。',
+        "name": "未保存草稿警告",
+        "category": "Semantics",
+        "criterion": "4.1.3 Status Messages",
+        "description": "当关闭操作将丢弃未保存的回复或编辑时，线程保持打开，焦点返回草稿，礼貌的实时区域会说明草稿未保存，并说明再次关闭会丢弃它。抖动永远不是唯一的信号。"
       },
       {
-        name: '减少动态效果',
-        criterion: '2.3.3 Animation from Interactions',
-        description:
-          '在 `prefers-reduced-motion: reduce` 下线程不会抖动。焦点移动和播报仍会提示草稿已保留。',
-      },
+        "name": "减弱运动",
+        "criterion": "2.3.3 Animation from Interactions",
+        "description": "在 `prefers-reduced-motion: reduce` 下，线程不会抖动。焦点和公告仍会标记保留的草稿。"
+      }
     ],
+    "anatomy": [
+      {
+        "name": "表面",
+        "required": true,
+        "description": "页面上的带边框 Card，或卡片/浮层内不带外部边框线的 Section。在其任何位置按压都会打开线程；视觉隐藏的切换控件承载其名称和焦点。"
+      },
+      {
+        "name": "引用的段落",
+        "required": false,
+        "description": "行内评论所讨论的段落，以高亮色边框的斜体 blockquote 呈现，段落被编辑掉后显示 Outdated 徽章。"
+      },
+      {
+        "name": "第一条评论",
+        "required": true,
+        "description": "头像、头部（名称、时间、Edited、Resolved 以及悬停或聚焦时显示的操作），Markdown 正文在线程打开前钳制为三行，以及反应。"
+      },
+      {
+        "name": "回复",
+        "required": false,
+        "description": "View replies 背后的一级回复，在线程打开时通过头像轨道与第一条评论连接。宿主标记的未读回复会显示，但不会选择线程、移动焦点或打开回复编辑器。"
+      },
+      {
+        "name": "实时状态",
+        "required": false,
+        "description": "受控的输入状态在线程打开时跟随对话，其脉动点位于头像列，其标签位于评论文本行。受控的 `seenBy` 元数据仍可供评论渲染回调使用，但没有默认呈现。"
+      },
+      {
+        "name": "回复编辑器",
+        "required": false,
+        "description": "随线程打开的 CommentComposer，位于查看者头像旁边。"
+      }
+    ]
   },
-  propDescriptions: {
-    comment:
-      '线程：首条评论，携带其回复、表情回应、可选锚点、临时的 `typingUsers`，以及每条评论的 `seenBy` 元数据。`seenBy` 默认不渲染，但评论渲染回调可以使用。',
-    isSelected:
-      '线程是否展开（受控）：正文不截断并显示回复。省略时由线程自行管理选中。宿主控制的选中从不移动焦点或打开回复输入框；查看者点击“回复”才会。',
-    onSelectedChange: '查看者展开或收起线程时调用。',
-    onDismiss:
-      '把锚定宿主的轻触关闭交给线程处理。在线程外按下，或线程内没有图层处理的 Escape，都会调用它。若回复或编辑中有未保存的文字，第一次请求改为抖动线程、把焦点移回草稿并播报；紧接着的下一次请求才会关闭，输入或在线程内按下会重新启用提示。请在宿主 Popover 上同时设置 `hasLightDismiss={false}` 和 `hasEscapeDismiss={false}`。省略时线程不会关闭任何东西。',
-    currentUser: '查看者，用于本人评论的操作和回复头像。',
-    mode: '显示哪些操作，与 Comments 相同。',
-    container:
-      '父级界面：页面上的描边 Card，或卡片、弹出层中不带外框线的 Section。',
-    onSubmit:
-      '发布回复，父级始终是线程的首条评论。被拒绝的 Promise 会恢复草稿，并显示带“重试”的错误。',
-    onComposerDraftChange:
-      '报告线程内部管理的回复和编辑草稿，包括预填内容，以及提交、取消或切换目标后的空值。请按 `context` 分发更新，并在应用中自行控制传输时机。',
-    onSaveEdit: '为查看者自己的评论添加“编辑”，并保存新的 Markdown。',
-    onDelete: '为查看者自己的评论添加“删除”，先在对话框中确认。',
-    onReact: '按稳定的键切换查看者的表情回应。',
-    onRetryComment: '为 `status` 为 `error` 的评论添加“重试”。',
-    onResolveThread: '为未解决的线程添加“标记为已解决”。',
-    onReopenThread: '为已解决的线程添加“重新打开”。',
-    loadVersions: '加载评论的编辑历史，最新的在前。',
-    onUploadImages:
-      '上传在回复输入框中附加、粘贴或拖入的图片，并以 Markdown 图片追加。',
-    isSubmitting: '宿主控制的回复输入框等待状态。',
-    composerPlaceholder: '回复输入框的占位文字。默认为本地化的“回复 <name>…”。',
-    highlightColor: '应用中高亮该线程所引用段落的调色板颜色。',
-    reactionOptions: '“添加表情回应”提供的选项。',
-    agentCommands: '回复可以通过 `/` 命令呼叫的智能体。',
-    composerTriggers: '回复输入框的联想触发器，例如 `@` 人员搜索。',
-    markdownPlugins: '评论正文的块级 Markdown 插件。',
-    markdownInlinePlugins: '评论正文的行内 Markdown 插件，例如提及。',
-    getReplyMention: '回复某条回复时，用提及其作者的内容预填。',
-    hasEmojiPicker: '回复输入框是否提供表情选择器。',
-    renderAnchor: '替换线程引用的段落。',
-    renderBody: '替换评论的 Markdown 正文。',
-    renderVersionBody: '替换编辑历史中某个版本的正文。',
-    renderAdditionalActions: '向评论标题栏添加产品操作。',
-    renderComposer: '替换回复输入框的输入区域，线程仍保留其草稿和状态。',
-  },
+  "propDescriptions": {
+    "comment": "线程：它的第一条评论，携带其回复、反应、可选锚点、临时 `typingUsers` 以及每条评论的 `seenBy` 元数据。`seenBy` 默认不渲染，但仍可供评论渲染回调使用。",
+    "isSelected": "线程是否打开，受控：正文取消钳制并显示回复。省略它以让线程自己管理选择。宿主控制的选择永远不会移动焦点或打开回复编辑器；查看者的 Reply 操作会。",
+    "onSelectedChange": "当查看者打开或关闭线程时调用。",
+    "onDismiss": "将线程的锚定宿主的轻触关闭交给它。线程外部的按压，或线程内部没有图层处理的 Escape 会调用它。当回复或编辑持有未保存文本时，第一次请求会改为抖动线程、将焦点返回草稿并发出公告；下一次连续请求会关闭，在线程内输入或按压会重新启用警告。请在宿主 Popover 上搭配 `hasLightDismiss={false}` 和 `hasEscapeDismiss={false}`。省略它，线程永远不会关闭任何东西。",
+    "currentUser": "查看者，用于自己的评论操作和回复头像。",
+    "mode": "显示哪些操作，与 Comments 相同。",
+    "container": "父级表面：页面上的带边框 Card，或卡片/浮层内不带外部边框线的 Section。",
+    "onSubmit": "发布回复，始终以线程的第一条评论为父级。被拒绝的 Promise 会恢复草稿并显示带 Retry 的错误。",
+    "onComposerDraftChange": "报告内部拥有的回复和编辑草稿，包括种子，以及提交、取消或目标切换后的空值。在你的应用中按 `context` 路由更新，并自行负责传输时机。",
+    "onSaveEdit": "为查看者自己的评论添加 Edit，并保存新的 Markdown。",
+    "onDelete": "为查看者自己的评论添加 Delete，先在对话框中确认。",
+    "onReact": "按稳定键切换查看者的反应。",
+    "onRetryComment": "为 `status` 为 `error` 的评论添加 Retry。",
+    "onResolveThread": "为打开的线程添加 Mark as resolved。",
+    "onReopenThread": "为已解决的线程添加 Reopen。",
+    "loadVersions": "加载评论的编辑历史，最新在前。",
+    "onUploadImages": "上传在回复编辑器中附加、粘贴或拖入的图片，并将其作为 Markdown 图片追加。",
+    "isSubmitting": "回复编辑器的宿主控制待处理状态。",
+    "composerPlaceholder": "回复编辑器的占位符。默认为本地化的 \"Reply to <name>…\"。",
+    "highlightColor": "你的应用用来高亮线程段落的调色板颜色。",
+    "reactionOptions": "Add reaction 提供的反应。",
+    "agentCommands": "回复可以通过 `/` 命令寻址的代理。",
+    "composerTriggers": "回复编辑器的 typeahead 触发器，例如 `@` 人员搜索。",
+    "markdownPlugins": "评论正文的块级 Markdown 插件。",
+    "markdownInlinePlugins": "评论正文的行内 Markdown 插件，例如提及。",
+    "getReplyMention": "为回复的回复预填一条提及其作者的回复。",
+    "hasEmojiPicker": "回复编辑器是否提供 emoji 选择器。",
+    "renderAnchor": "替换线程的引用段落。",
+    "renderBody": "替换评论的 Markdown 正文。",
+    "renderVersionBody": "替换编辑历史中某个版本的正文。",
+    "renderAdditionalActions": "为评论头部添加产品操作。",
+    "renderComposer": "替换回复编辑器的输入框，同时线程保留其草稿和状态。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

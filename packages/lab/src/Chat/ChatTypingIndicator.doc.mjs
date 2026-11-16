@@ -19,12 +19,12 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'ChatTypingIndicator',
-  displayName: 'Chat Typing Indicator',
-  description: '带语法感知标签的三点跳动输入提示："Ana is typing..."、"Ana and Ben are typing..." 或 "Ana and 2 others are typing..."。圆点用 stylex.keyframes 交错跳动，prefers-reduced-motion 下禁用。每个新标签通过共享播报通道（useAnnounce）礼貌播报一次；位于聊天记录（role="log"）内时由记录负责播报。指示器本身不带 live 角色，因此可按条件挂载，既不会被跳过，也不会重复播报。',
-  propDescriptions: {
-    names: '正在输入的人名。一个名字渲染 "is typing"，两个渲染双名，更多折叠为 "and N others"。语句取自 i18n 词条，人名由 Intl.ListFormat 按当前语言拼接，因此措辞与连接词随语言而变。省略或为空时仅渲染动画圆点。',
-  },
+  "name": "ChatTypingIndicator",
+  "displayName": "Chat Typing Indicator",
+  "description": "动态的三点输入提示，带有本地化且符合语法的标签：\"Ana is typing...\"、\"Ana and Ben are typing...\" 或 \"Ana and 2 others are typing...\"。圆点以错开的 stylex.keyframes 延迟弹跳，在 prefers-reduced-motion 下禁用。每个新标签都会通过共享播报通道（useAnnounce）礼貌地播报一次；在聊天日志内，则由日志负责播报。指示器本身不带 live role，因此可以按条件挂载，而不会被跳过或重复听到。",
+  "propDescriptions": {
+    "names": "当前正在输入的人名。一个名字渲染 \"is typing\"，两个名字会渲染两个名字，更多则折叠为 \"and N others\"。句子来自 i18n 目录，名字使用 Intl.ListFormat 连接，因此措辞和连接词遵循活动区域设置。省略或为空时，仅渲染动态圆点。"
+  }
 };
 
 export const docsDense = {

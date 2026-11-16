@@ -1,41 +1,41 @@
 # @astryxdesign/build
 
-Build plugins for Astryx source builds. In the webpack and Vite setups, its babel, PostCSS, and Vite integrations compile Astryx library and product code with separate class name prefixes, which enables independent CSS layers:
+用于 Astryx 源码构建的构建插件。在 webpack 和 Vite 配置中，它的 babel、PostCSS 和 Vite 集成会以不同的类名前缀分别编译 Astryx 库代码和产品代码，从而实现相互独立的 CSS 层：
 
 ```
 reset < astryx-base (library, astryx prefix) < astryx-theme < product (app, x prefix)
 ```
 
-Under Turbopack, `withAstryx()` and `@astryxdesign/build/next/postcss` compile Astryx the way its prebuilt stylesheets are compiled: the same class names, in `@layer astryx-base`.
+在 Turbopack 下，`withAstryx()` 和 `@astryxdesign/build/next/postcss` 会按照编译其预构建样式表的方式来编译 Astryx：相同的类名，位于 `@layer astryx-base` 中。
 
-## Why?
+## 为什么？
 
-StyleX generates atomic CSS: same declaration = same class name. Without separate prefixes, library and product classes collide and can't be placed in independent CSS layers, which breaks theme overrides.
+StyleX 生成原子化 CSS：相同的声明 = 相同的类名。如果没有各自独立的前缀，库代码和产品代码的类名就会冲突，无法放入相互独立的 CSS 层，从而导致主题覆盖失效。
 
-In the webpack and Vite setups, `@astryxdesign/build` solves this by:
+在 webpack 和 Vite 配置中，`@astryxdesign/build` 通过以下方式解决这个问题：
 
-1. Compiling Astryx library code with `astryx` prefix (`.astryx78zum5`)
-2. Compiling product code with default `x` prefix (`.x78zum5`)
-3. Placing each group in its own CSS `@layer`
-4. Rejecting unsupported StyleX declarations instead of silently omitting them
+1. 使用 `astryx` 前缀编译 Astryx 库代码（`.astryx78zum5`）
+2. 使用默认的 `x` 前缀编译产品代码（`.x78zum5`）
+3. 将每组代码放入各自的 CSS `@layer`
+4. 拒绝不支持的 StyleX 声明，而不是静默忽略它们
 
-## Packages
+## 包
 
-| Export                             | Purpose                                      | Platform                     |
-| ---------------------------------- | -------------------------------------------- | ---------------------------- |
-| `@astryxdesign/build/babel`        | Babel plugin: splits class prefixes per file | Next.js, any babel pipeline  |
-| `@astryxdesign/build/postcss`      | PostCSS plugin: compiles + splits CSS layers | Next.js (webpack)            |
-| `@astryxdesign/build/next`         | `withAstryx()`: the Next.js config helper    | Next.js (webpack, Turbopack) |
-| `@astryxdesign/build/next/postcss` | PostCSS plugin: `@astryx;`                   | Next.js (Turbopack)          |
-| `@astryxdesign/build/vite`         | Vite plugin: wraps unplugin + splits layers  | Vite, Storybook              |
+| 导出                               | 用途                                 | 平台                         |
+| ---------------------------------- | ------------------------------------ | ---------------------------- |
+| `@astryxdesign/build/babel`        | Babel 插件：按文件拆分类名前缀       | Next.js、任意 babel 流水线   |
+| `@astryxdesign/build/postcss`      | PostCSS 插件：编译并拆分 CSS 层      | Next.js (webpack)            |
+| `@astryxdesign/build/next`         | `withAstryx()`：Next.js 配置辅助函数 | Next.js (webpack, Turbopack) |
+| `@astryxdesign/build/next/postcss` | PostCSS 插件：`@astryx;`             | Next.js (Turbopack)          |
+| `@astryxdesign/build/vite`         | Vite 插件：封装 unplugin 并拆分层    | Vite、Storybook              |
 
-## Install
+## 安装
 
 ```bash
 npm install -D @astryxdesign/build @stylexjs/babel-plugin @babel/core
 ```
 
-For Vite, also install:
+使用 Vite 时，还需安装：
 
 ```bash
 npm install -D @stylexjs/unplugin
@@ -43,29 +43,24 @@ npm install -D @stylexjs/unplugin
 
 ---
 
-## Next.js Setup (Turbopack)
+## Next.js 配置（Turbopack）
 
-Under Turbopack, the default bundler since Next.js 16, `withAstryx()` compiles the
-Astryx modules your app imports from source as the prebuilt stylesheets are compiled,
-and `@astryxdesign/build/next/postcss` emits each source-built package's prebuilt
-stylesheet from that source: the same rules and selectors, in the same order, inside
-`@layer astryx-base`. Installed and workspace-linked packages both work; Astryx needs
-no Babel config.
+在 Turbopack（Next.js 16 起的默认打包器）下，`withAstryx()` 会按照编译预构建样式表的方式，编译你的应用从源码导入的 Astryx 模块；`@astryxdesign/build/next/postcss` 则从这些源码生成每个源码构建包的预构建样式表：相同的规则和选择器、相同的顺序，位于 `@layer astryx-base` 内。安装的包和通过 workspace 链接的包都适用；Astryx 无需 Babel 配置。
 
-1. `next.config.mjs`, around your config and its own `turbopack.rules`:
+1. `next.config.mjs`，包裹你的配置及其自身的 `turbopack.rules`：
 
    ```js
    import {withAstryx} from '@astryxdesign/build/next';
    export default withAstryx({/* your Next.js config */});
    ```
 
-2. `postcss.config.js`, beside any plugin your app already uses:
+2. `postcss.config.js`，与你的应用已在使用的任何插件并列：
 
    ```js
    module.exports = {plugins: {'@astryxdesign/build/next/postcss': {}}};
    ```
 
-3. Your global stylesheet, with `@astryx;` in place of `astryx.css`, `lab.css`, `charts.css` and `richtext.css` (every installed package with a prebuilt stylesheet builds from source, so import none of them: the build fails on one):
+3. 全局样式表，用 `@astryx;` 替代 `astryx.css`、`lab.css`、`charts.css` 和 `richtext.css`（每个带有预构建样式表的已安装包都会从源码构建，因此不要导入其中任何一个：导入一个就会导致构建失败）：
 
    ```css
    @import '@astryxdesign/core/reset.css';
@@ -74,18 +69,13 @@ no Babel config.
    @astryx;
    ```
 
-   Each package's rules start with the `reset, astryx-base, astryx-theme` layer
-   order, as `reset.css` and the theme do, so the order holds in any chunk order
-   without a line of your own.
+   每个包的规则都以 `reset, astryx-base, astryx-theme` 的层顺序开头，就像 `reset.css` 和主题那样，因此无论分块顺序如何，该顺序都成立，无需你自己写一行代码。
 
-Your own Turbopack rules are kept off Astryx source. Your Babel config file is not,
-and Babel's `ignore` cannot exclude Astryx: to keep it off, set
-`experimental.turbopackUseBuiltinBabel: false` and run `babel-loader` from a
-`turbopack.rules` entry, which `withAstryx()` keeps off Astryx source like any rule.
+你自己的 Turbopack 规则不会作用于 Astryx 源码，但 Babel 配置文件会，而且 Babel 的 `ignore` 无法排除 Astryx：要让它也不作用于 Astryx，请设置 `experimental.turbopackUseBuiltinBabel: false`，并通过 `turbopack.rules` 条目运行 `babel-loader`，`withAstryx()` 会像对待任何规则一样让它不作用于 Astryx 源码。
 
-## Next.js Setup (webpack)
+## Next.js 配置（webpack）
 
-These steps run under `next dev --webpack` and `next build --webpack`.
+以下步骤在 `next dev --webpack` 和 `next build --webpack` 下运行。
 
 ### 1. babel.config.js
 
@@ -118,7 +108,7 @@ module.exports = {
 };
 ```
 
-A custom Babel config turns off Next.js's SWC compiler, and `next/font` needs SWC. Remove `next/font` from your layout (a fresh `create-next-app` layout imports `next/font/google`), or the build fails with `"next/font" requires SWC although Babel is being used`.
+自定义 Babel 配置会关闭 Next.js 的 SWC 编译器，而 `next/font` 需要 SWC。请从布局中移除 `next/font`（新建的 `create-next-app` 布局会导入 `next/font/google`），否则构建会失败并报错 `"next/font" requires SWC although Babel is being used`。
 
 ### 2. postcss.config.js
 
@@ -156,9 +146,7 @@ module.exports = {
 
 ### 3. next.config.mjs
 
-Or `withAstryx()` from `@astryxdesign/build/next`, which sets both of these for you. Use `withAstryx()` when the app has a swizzled copy with an `astryx-swizzle.json` marker: this manual config does not rebuild the copy when its marker appears or goes.
-Either way the work happens in the `webpack` hook, so the build has to run with
-`--webpack` — see the note at the top of this section.
+或者使用 `@astryxdesign/build/next` 中的 `withAstryx()`，它会为你设置好这两项。当应用包含带有 `astryx-swizzle.json` 标记的经 swizzle 处理的副本时，请使用 `withAstryx()`：此手动配置不会在标记出现或消失时重新构建该副本。无论哪种方式，工作都发生在 `webpack` 钩子中，因此构建必须使用 `--webpack` 运行——参见本节顶部的说明。
 
 ```js
 const nextConfig = {
@@ -173,15 +161,15 @@ const nextConfig = {
 export default nextConfig;
 ```
 
-### 4. CSS files
+### 4. CSS 文件
 
-`src/app/layers.css`:
+`src/app/layers.css`：
 
 ```css
 @layer reset, astryx-base, astryx-theme, product;
 ```
 
-`src/app/globals.css`:
+`src/app/globals.css`：
 
 ```css
 @import './layers.css';
@@ -191,7 +179,7 @@ export default nextConfig;
 @stylex;
 ```
 
-> `layers.css` must be a separate file because webpack hoists `@import` content above inline CSS.
+> `layers.css` 必须是单独的文件，因为 webpack 会把 `@import` 内容提升到内联 CSS 之上。
 
 ### 5. Browserslist
 
@@ -203,7 +191,7 @@ export default nextConfig;
 
 ---
 
-## Vite Setup
+## Vite 配置
 
 ```ts
 import {astryxStylex} from '@astryxdesign/build/vite';
@@ -241,40 +229,40 @@ export default defineConfig({
 
 ---
 
-## How it works
+## 工作原理
 
-### Babel plugin (`@astryxdesign/build/babel`)
+### Babel 插件 (`@astryxdesign/build/babel`)
 
-Wraps `@stylexjs/babel-plugin` with two internal instances: one with `classNamePrefix: 'astryx'` for library files, one with default `'x'` for product files. Routes each file to the correct instance based on its path.
+使用两个内部实例封装 `@stylexjs/babel-plugin`：一个用于库文件，`classNamePrefix: 'astryx'`；另一个用于产品文件，使用默认的 `'x'`。根据文件路径将每个文件路由到正确的实例。
 
-Library patterns (configurable):
+库文件匹配模式（可配置）：
 
 - `packages/core/`
 - `packages/themes/`
 - `node_modules/@astryxdesign/`
 
-A swizzled copy is library code too. The Babel, PostCSS, and Vite integrations compile every module under a folder that holds an `astryx-swizzle.json` marker with the library prefix into `@layer astryx-base`, so a theme's component overrides reach the copy as they reach the package component. `astryx swizzle` writes the marker into an output folder it owns (one the copy creates, an empty one, or one it marked before), naming each package the folder's copies came from and its version, such as `{"packages": {"@astryxdesign/core": "0.7.10"}}`. To mark a folder that holds only swizzled copies by hand, add that file to it; the build reads only whether the file is there. Keep the product's own components out of a marked folder. Under webpack, use `withAstryx()` with a marked copy: it makes each app module depend on the marker paths above it, so a dev session or a cached build recompiles a copy when its marker appears or disappears. In another setup that caches transforms, restart the dev server and delete that cache after adding or removing a marker. Turbopack builds do not read the marker yet.
+经 swizzle 处理的副本同样属于库代码。Babel、PostCSS 和 Vite 集成会把包含 `astryx-swizzle.json` 标记的文件夹下的每个模块都以库前缀编译进 `@layer astryx-base`，因此主题对组件的覆盖能像作用于包内组件一样作用于该副本。`astryx swizzle` 会把标记写入它拥有的输出文件夹（由该副本创建的文件夹、空文件夹，或它之前标记过的文件夹），并注明该文件夹中的副本来自哪些包及其版本，例如 `{"packages": {"@astryxdesign/core": "0.7.10"}}`。若要手动标记一个只存放 swizzle 副本的文件夹，请将那个文件添加到其中；构建只读取该文件是否存在。不要把产品自身的组件放进已标记的文件夹。在 webpack 下，请对已标记的副本使用 `withAstryx()`：它会让每个应用模块依赖其上方的标记路径，因此当标记出现或消失时，开发会话或缓存构建会重新编译该副本。在其他会缓存转换结果的配置中，添加或删除标记后，请重启开发服务器并删除该缓存。Turbopack 构建目前还不会读取该标记。
 
-### PostCSS plugin (`@astryxdesign/build/postcss`)
+### PostCSS 插件 (`@astryxdesign/build/postcss`)
 
-Compiles StyleX from both library and product source files in two separate passes with different prefixes. Wraps the results in named `@layer` blocks:
+以不同的前缀分两轮单独编译库和产品源码文件中的 StyleX。将结果包裹在具名的 `@layer` 块中：
 
-- Library rules → `@layer astryx-base`
-- Product rules → `@layer product`
+- 库规则 → `@layer astryx-base`
+- 产品规则 → `@layer product`
 
-### Vite plugin (`@astryxdesign/build/vite`)
+### Vite 插件 (`@astryxdesign/build/vite`)
 
-Wraps `@stylexjs/unplugin` and intercepts the dev CSS endpoint (`/virtual:stylex.css`). Partitions the collected rules by file path and serves split-layer CSS. Production builds write those rules to one cache-safe shared stylesheet and link it from every emitted HTML entry, without cross-loading entry-owned CSS.
+封装 `@stylexjs/unplugin` 并拦截开发用的 CSS 端点（`/virtual:stylex.css`）。按文件路径划分收集到的规则，并提供拆分层的 CSS。生产构建会把这些规则写入一个可安全缓存的共享样式表，并从每个产出的 HTML 入口链接它，而不会交叉加载各入口自有的 CSS。
 
-Unsupported declarations fail the build by default with StyleX's replacement guidance. Set `propertyValidationMode` explicitly in `stylexOverrides` (modern API) or `stylexOptions` (legacy API) only when a migration needs the upstream `warn` or `silent` behavior.
+默认情况下，不支持的声明会使构建失败，并给出 StyleX 的替换指导。只有在迁移需要上游的 `warn` 或 `silent` 行为时，才在 `stylexOverrides`（现代 API）或 `stylexOptions`（旧版 API）中显式设置 `propertyValidationMode`。
 
-A production build also checks the StyleX stylesheet for generated custom properties (`--<prefix><hash>`) that it reads but no stylesheet in the build declares, which browsers drop: a `.stylex.ts` export read in a style that is not a `defineVars`/`defineConsts` value, or one whose module never reached the build. It warns, naming the variable and the rule that reads it. Only stylesheets count as declarations, so a property the app sets at runtime (an inline style) is reported too: give it a name outside the StyleX class-name prefixes.
+生产构建还会检查 StyleX 样式表：其中读取了生成的 CSS 自定义属性（`--<prefix><hash>`），但构建中没有任何样式表声明它们，浏览器会丢弃这些属性。原因可能是：在样式中读取的某个 `.stylex.ts` 导出并非 `defineVars`/`defineConsts` 的值，或者其模块从未进入构建。构建会发出警告，指出变量名以及读取该变量的规则。只有样式表才算声明，因此应用在运行时设置（内联样式）的属性也会被报告：请为其取一个不在 StyleX 类名前缀之内的名称。
 
 ---
 
-## Advanced Options
+## 高级选项
 
-### Babel plugin
+### Babel 插件
 
 ```js
 [
@@ -298,7 +286,7 @@ A production build also checks the StyleX stylesheet for generated custom proper
 ];
 ```
 
-### PostCSS plugin
+### PostCSS 插件
 
 ```js
 '@astryxdesign/build/postcss': {
@@ -313,7 +301,7 @@ A production build also checks the StyleX stylesheet for generated custom proper
 }
 ```
 
-## Related
+## 相关
 
-- [example-nextjs-source](../../apps/example-nextjs-source/): full Next.js source build example
-- [`@stylexjs/babel-plugin`](https://github.com/facebook/stylex): the underlying StyleX compiler
+- [example-nextjs-source](../../apps/example-nextjs-source/)：完整的 Next.js 源码构建示例
+- [`@stylexjs/babel-plugin`](https://github.com/facebook/stylex)：底层 StyleX 编译器

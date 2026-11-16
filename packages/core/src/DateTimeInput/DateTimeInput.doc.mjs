@@ -390,287 +390,377 @@ export const docs = {
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentDoc} */
 export const docsZh = {
-  name: 'DateTimeInput',
-  displayName: 'Date Time Input',
-  usage: {
-    description:
-      'DateTimeInput combines date and time selection in one field. With presentation="adaptive-native" (the default), mouse/trackpad devices use Astryx typed fields and popovers, while coarse-pointer devices use browser/OS date and time controls in the same two-segment field. presentation="native" uses both native controls on every pointer; presentation="adaptive-bottom-sheet" keeps Astryx\'s own surfaces — pointer fields on fine pointers and the coordinated Date/Time bottom sheet on coarse pointers; "popover" and "bottom-sheet" force one Astryx surface on every pointer. The closed segments stay side by side when at least 400px is available and wrap into full-width rows below 400px, independent of viewport width. Use it for scheduling, event creation, deadline setting, or any form field that needs a specific datetime.',
-    bestPractices: [
+  "name": "DateTimeInput",
+  "displayName": "Date Time Input",
+  "usage": {
+    "description": "DateTimeInput 在一个字段中组合日期与时间选择。使用 `presentation=\"adaptive-native\"`（默认值）时，鼠标/触控板设备使用 Astryx 的文本输入字段和弹出面板，而粗指针设备在同一双段字段中使用浏览器/操作系统的日期与时间控件。`presentation=\"native\"` 在任意指针下都使用两个原生控件；`presentation=\"adaptive-bottom-sheet\"` 保留 Astryx 自己的界面——精细指针使用指针字段，粗指针使用协调的日期/时间底部面板；`\"popover\"` 和 `\"bottom-sheet\"` 在任意指针下强制使用单一的 Astryx 界面。当可用宽度至少为 400px 时，收起状态的两个段并排显示；低于 400px 时换行为全宽行，与视口宽度无关。适用于日程安排、创建活动、设置截止时间，或任何需要指定日期时间的表单字段。",
+    "bestPractices": [
       {
-        guidance: true,
-        description:
-          "Base props such as ref, id, data-*, aria-*, and DOM event handlers go to the date input, the element that is focused and announced. A DOM handler runs after DateTimeInput's own handler for the same event and still receives events it handled (including ones it called preventDefault on), so it cannot cancel built-in behavior.",
+        "guidance": true,
+        "description": "诸如 ref、id、data-*、aria-* 和 DOM 事件处理器等基础属性会传给日期输入，也就是被聚焦和朗读的元素。DOM 处理器会在 DateTimeInput 自身对同一事件的处理之后运行，并且仍会接收到它处理过（包括调用了 preventDefault）的事件，因此无法取消内置行为。"
       },
       {
-        guidance: true,
-        description:
-          'Provide clear labels and descriptions so users understand what datetime is expected.',
+        "guidance": true,
+        "description": "提供清晰的标签和描述，使用户理解需要填写什么日期时间。"
       },
       {
-        guidance: true,
-        description:
-          'Use min and max to restrict selectable datetimes to valid ranges.',
+        "guidance": true,
+        "description": "使用 `min` 和 `max` 将可选日期时间限制在有效范围内。"
       },
       {
-        guidance: true,
-        description:
-          'Set min and max on a Buddhist or Minguo calendar field, so a Gregorian year typed by mistake shows an error instead of a date centuries away.',
+        "guidance": true,
+        "description": "在佛历或民国历日历字段上设置 `min` 和 `max`，这样误输入的格里高利年份会显示错误，而不是一个相差数百年的日期。"
       },
       {
-        guidance: true,
-        description:
-          'Use hasClear when the datetime is optional so the user can reset it.',
+        "guidance": true,
+        "description": "当日期时间为可选时使用 `hasClear`，以便用户可以重置。"
       },
       {
-        guidance: true,
-        description:
-          "Leave hourFormat unset so the field follows the InternationalizationProvider locale's hour cycle (12-hour in en-US, 24-hour in en-GB or de-DE). Set it only when the field itself needs a fixed format, and carry a person's own 12/24-hour preference on the provider locale (e.g. 'en-US-u-hc-h23') rather than on each field.",
+        "guidance": true,
+        "description": "保持 `hourFormat` 未设置，使字段遵循 InternationalizationProvider 区域设置的小时制式（en-US 为 12 小时制，en-GB 或 de-DE 为 24 小时制）。仅当字段本身需要固定格式时才设置它；个人对 12/24 小时制的偏好应放在 provider 的 locale 上（例如 'en-US-u-hc-h23'），而不是每个字段上。"
       },
       {
-        guidance: false,
-        description:
-          'Use DateTimeInput when only a date is needed; use DateInput instead.',
+        "guidance": false,
+        "description": "仅在需要日期时不要使用 DateTimeInput；请改用 DateInput。"
       },
       {
-        guidance: false,
-        description:
-          'Use DateTimeInput when only a time is needed; use TimeInput instead.',
+        "guidance": false,
+        "description": "仅在需要时间时不要使用 DateTimeInput；请改用 TimeInput。"
       },
       {
-        guidance: false,
-        description:
-          'Hide the label without surrounding context that makes the field purpose obvious.',
+        "guidance": false,
+        "description": "不要在周围上下文无法让字段用途显而易见的情况下隐藏标签。"
       },
       {
-        guidance: false,
-        description:
-          'Wrap a disabled DateTimeInput in Tooltip to explain why it is disabled. Use the disabledMessage prop instead, which ties the reason to the field.',
-      },
+        "guidance": false,
+        "description": "不要用 Tooltip 包裹禁用的 DateTimeInput 来解释其禁用原因。请改用 `disabledMessage` 属性，它会把原因与字段关联起来。"
+      }
     ],
+    "anatomy": [
+      {
+        "name": "标签",
+        "required": true,
+        "description": "输入上方描述所需日期时间的文本。"
+      },
+      {
+        "name": "段行",
+        "required": true,
+        "description": "无边框的布局行，容纳两个带边框的段，并在容器较窄时将其换行。"
+      },
+      {
+        "name": "日期输入",
+        "required": true,
+        "description": "在精细指针的 Astryx 界面上是带日历弹出面板的文本日期字段；在原生模式下是真正的 input type=date；在粗指针下且 `presentation=\"adaptive-bottom-sheet\"` 时，是打开 Astryx 触摸面板的只读段。"
+      },
+      {
+        "name": "日历图标",
+        "required": true,
+        "description": "打开当前日期界面的按钮：平台选择器、Astryx 日历弹出面板或 Astryx 触摸面板。"
+      },
+      {
+        "name": "日期选择器",
+        "required": false,
+        "description": "原生模式下的浏览器/操作系统选择器；精细指针下为 Astryx 月网格弹出面板；粗指针下且 `presentation=\"adaptive-bottom-sheet\"` 时为 Astryx 底部面板的“日期”面板。"
+      },
+      {
+        "name": "时间输入",
+        "required": true,
+        "description": "默认的分钟精度原生模式下是真正的 input type=time；当需要秒、自定义步进或预设选项时是文本/组合框时间字段；粗指针下且 `presentation=\"adaptive-bottom-sheet\"` 时是打开无障碍时间滚轮的只读段。"
+      },
+      {
+        "name": "时钟图标",
+        "required": true,
+        "description": "时间字形，在 Astryx 指针字段中作为前置标识显示，在原生和触摸面板的时间段中作为选择器提示显示。"
+      },
+      {
+        "name": "时间选项弹出面板",
+        "required": false,
+        "description": "按 `timeOptionInterval` 间隔排列的预设时间列表。设置该属性后，即使 `nativePicker` 原本会选择原生控件，也会保留 Astryx 的文本/组合框时间字段；Astryx 触摸面板则改用滚轮。"
+      },
+      {
+        "name": "时间选项",
+        "required": false,
+        "description": "可选的时间选项弹出面板中一个可选择的预设时间。"
+      },
+      {
+        "name": "清除按钮",
+        "required": false,
+        "description": "重置日期时间值的 × 按钮。"
+      },
+      {
+        "name": "状态消息",
+        "required": false,
+        "description": "输入下方的错误、警告或成功消息。"
+      }
+    ]
   },
-  props: [
-    {name: 'label', type: 'string', description: '标签文本。', required: true},
+  "props": [
     {
-      name: 'isLabelHidden',
-      type: 'boolean',
-      description: '视觉隐藏标签。',
-      default: 'false',
+      "name": "label",
+      "type": "string",
+      "description": "标签文本。",
+      "required": true
     },
     {
-      name: 'description',
-      type: 'string',
-      description: '显示在标签下方的辅助文本。',
+      "name": "isLabelHidden",
+      "type": "boolean",
+      "description": "在视觉上隐藏标签。",
+      "default": "false"
     },
     {
-      name: 'isOptional',
-      type: 'boolean',
-      description: '在标签旁显示"(optional)"指示器。',
-      default: 'false',
+      "name": "description",
+      "type": "string",
+      "description": "显示在标签下方的辅助文本。"
     },
     {
-      name: 'isRequired',
-      type: 'boolean',
-      description: '将字段标记为必填。',
-      default: 'false',
+      "name": "isOptional",
+      "type": "boolean",
+      "description": "在标签旁显示“(可选)”指示。",
+      "default": "false"
     },
     {
-      name: 'isDisabled',
-      type: 'boolean',
-      description:
-        '禁用输入框和选择器。字段仍可聚焦并暴露 `aria-disabled`，但不能输入或打开选择器。',
-      default: 'false',
+      "name": "isRequired",
+      "type": "boolean",
+      "description": "将字段标记为必填。",
+      "default": "false"
     },
     {
-      name: 'disabledMessage',
-      type: 'string',
-      description:
-        '说明输入框为何被禁用。与 isDisabled 一起使用时，在悬停/键盘聚焦时显示提示，并描述日期和时间字段（仍阻止输入和激活）。请使用此属性，而不是用 Tooltip 包裹已禁用的 DateTimeInput。',
+      "name": "isDisabled",
+      "type": "boolean",
+      "description": "禁用输入和选择器。字段仍可聚焦并暴露 `aria-disabled`；输入和打开操作会被阻止。",
+      "default": "false"
     },
     {
-      name: 'value',
-      type: 'ISODateTimeString',
-      description: '选中的日期时间，ISO 8601 格式。',
+      "name": "disabledMessage",
+      "type": "string",
+      "description": "解释输入为何被禁用。与 `isDisabled` 一起使用时，在悬停/键盘聚焦时显示提示，并描述这些字段（激活仍被阻止）。请使用此属性，而不要用 Tooltip 包裹禁用的 DateTimeInput。"
     },
     {
-      name: 'onChange',
-      type: '(value: ISODateTimeString | undefined) => void',
-      description: '选中日期时间变更时调用的回调。',
-      required: true,
+      "name": "value",
+      "type": "ISODateTimeString",
+      "description": "所选日期时间，使用 ISO 8601 格式（YYYY-MM-DDTHH:MM 或 YYYY-MM-DDTHH:MM:SS）。"
     },
     {
-      name: 'changeAction',
-      type: '(value: ISODateTimeString | undefined) => void | Promise<void>',
-      description:
-        '在 onChange 之后触发的异步操作。通过 useTransition 驱动乐观更新。',
+      "name": "onChange",
+      "type": "(value: ISODateTimeString | undefined) => void",
+      "description": "所选日期时间变化时调用的回调。",
+      "required": true
     },
     {
-      name: 'isLoading',
-      type: 'boolean',
-      description: '输入框是否处于加载状态。禁用交互并显示加载指示器。',
-      default: 'false',
+      "name": "changeAction",
+      "type": "(value: ISODateTimeString | undefined) => void | Promise<void>",
+      "description": "在 `onChange` 之后触发的异步操作。通过 `useTransition` 驱动乐观 UI 更新。"
     },
     {
-      name: 'min',
-      type: 'ISODateTimeString',
-      description: '可选择的最早日期时间。同时约束日期和时间选择。',
+      "name": "isLoading",
+      "type": "boolean",
+      "description": "输入是否处于加载状态。禁用交互并显示旋转图标。",
+      "default": "false"
     },
     {
-      name: 'max',
-      type: 'ISODateTimeString',
-      description: '可选择的最晚日期时间。同时约束日期和时间选择。',
+      "name": "min",
+      "type": "ISODateTimeString",
+      "description": "可选的最小日期时间。同时约束日期和时间选择。"
     },
     {
-      name: 'dateConstraints',
-      type: 'Array<(date: Date) => boolean>',
-      description: '自定义约束函数数组，用于禁用特定日期。',
+      "name": "max",
+      "type": "ISODateTimeString",
+      "description": "可选的最大日期时间。同时约束日期和时间选择。"
     },
     {
-      name: 'hasSeconds',
-      type: 'boolean',
-      description:
-        '在时间部分包含秒。即使 nativePicker 选择原生界面，也会保留 Astryx 时间字段，因为 iOS 没有秒滚轮。',
-      default: 'false',
+      "name": "dateConstraints",
+      "type": "Array<(date: Date) => boolean>",
+      "description": "自定义约束函数数组，用于禁用特定日期。"
     },
     {
-      name: 'hourFormat',
-      type: "'12h' | '24h'",
-      description:
-        "控制显示格式。'12h' 使用区域设置的上午/下午用语；'24h' 使用 24 小时制。未设置时遵循 InternationalizationProvider 区域设置的小时制（en-US 为 12 小时制，en-GB 为 24 小时制）；用户自己的偏好可通过区域标签传入（例如 'en-US-u-hc-h23'）。",
-      default: '区域设置的小时制',
+      "name": "hasSeconds",
+      "type": "boolean",
+      "description": "在时间部分包含秒。即使 `nativePicker` 选择原生界面，也会保留 Astryx 的时间字段，因为 iOS 没有秒滚轮。",
+      "default": "false"
     },
     {
-      name: 'timeIncrement',
-      type: '1 | 5 | 10 | 15 | 30',
-      description:
-        'Astryx 可输入时间字段中箭头键的分钟步长。非默认值会在 nativePicker 模式下保留 Astryx 时间字段，因为 iOS 将原生 step 视为验证规则，而不是选择器步长。Astryx 触摸面板使用滚轮。',
-      default: '1',
+      "name": "hourFormat",
+      "type": "'12h' | '24h'",
+      "description": "小时显示格式。'12h' 显示区域设置的日时段；'24h' 使用 24 小时记法。未设置时，遵循 InternationalizationProvider 区域设置的小时制式（en-US 为 12 小时制，en-GB 为 24 小时制）；个人偏好通过区域标签体现（例如 'en-US-u-hc-h23'）。",
+      "default": "区域设置的小时制"
     },
     {
-      name: 'hasClear',
-      type: 'boolean',
-      description: '当有值时显示清除按钮。',
-      default: 'false',
+      "name": "timeIncrement",
+      "type": "1 | 5 | 10 | 15 | 30",
+      "description": "Astryx 文本时间字段中方向键的分钟步进。非默认值会在 `nativePicker` 模式下保留 Astryx 时间字段，因为 iOS 将原生步进视为验证，而不是选择器节奏。Astryx 触摸面板会忽略此属性，它使用滚轮。",
+      "default": "1"
     },
     {
-      name: 'placeholder',
-      type: 'string',
-      description:
-        '日期部分未选择日期时显示的占位符文本。调用方提供的占位符会替代日历格式提示。',
-      default: "'Select a date'",
+      "name": "hasClear",
+      "type": "boolean",
+      "description": "当设置了日期时间值时显示清除按钮。",
+      "default": "false"
     },
     {
-      name: 'calendar',
-      type: "'gregory' | 'iso8601' | 'buddhist' | 'roc' | 'japanese' | 'persian' | 'indian' | 'hebrew' | 'chinese' | 'dangi' | 'coptic' | 'ethiopic' | 'ethioaa' | 'islamic-civil' | 'islamic-tbla' | 'islamic-umalqura'",
-      description:
-        '日期部分读写输入日期所用的历法，也是其弹出日历和底部面板显示的历法。value、onChange、min 和 max 始终为公历 ISO 日期时间。用户按当前语言区域在该历法中的写法输入日期，可使用任意十进制数字；只有输入完整时字段才会报告日期，并会指出该历法中不存在的日期。年份是该历法的年份，因此请为佛历和民国纪年字段设置 min 和 max，以发现误输入的公历年份。gregory、iso8601、buddhist、roc 和 japanese 以外的历法需要 Temporal（原生或由应用加载的 polyfill）；没有 Temporal 时字段显示公历日期。使用 gregory 或 iso8601 以外的历法时，原本显示原生控件的呈现会在精细指针上显示弹出层、在粗指针上显示底部面板，因为原生日期控件只显示公历；底部面板的日期页显示该历法的月份、闰月和带纪元的年份。年号更替的年份按所显示月份的年号标注，如 2019 年 1 月为“平成31”，7 月为“令和元”。',
-      default: "InternationalizationProvider 的历法，否则为 'gregory'",
+      "name": "placeholder",
+      "type": "string",
+      "description": "未选择日期时显示在日期部分的占位文本。调用方提供的占位符会替换日历格式提示。",
+      "default": "'Select a date'"
     },
     {
-      name: 'timePlaceholder',
-      type: 'string',
-      description:
-        '时间部分未选择时间时显示的占位符文本。在触摸设备上，这会显示在未选择时间的闭合时间段中。',
-      default: "'Select a time'",
+      "name": "calendar",
+      "type": "'gregory' | 'iso8601' | 'buddhist' | 'roc' | 'japanese' | 'persian' | 'indian' | 'hebrew' | 'chinese' | 'dangi' | 'coptic' | 'ethiopic' | 'ethioaa' | 'islamic-civil' | 'islamic-tbla' | 'islamic-umalqura'",
+      "description": "日期段以该日历读取和写入所输入的日期，其弹出面板和底部面板也显示该日历。`value`、`onChange`、`min` 和 `max` 始终为格里高利历 ISO 日期时间。人们按区域设置在此日历中的书写方式输入日期，可使用任意十进制数字；字段仅在日期完整时才报告日期，并会指出日历中不存在的日期。年份是该日历的年份，因此在佛历和民国历字段上设置 `min` 和 `max`，以捕获误输入的格里高利年份。除 gregory、iso8601、buddhist、roc 和 japanese 之外的日历需要 Temporal（原生或应用加载的 polyfill）；没有它时字段显示格里高利日期。使用 gregory 或 iso8601 之外的日历时，原本会显示原生控件的呈现方式会在精细指针下显示弹出面板、在粗指针下显示底部面板，因为原生日期控件是格里高利历；底部面板的“日期”面板显示该日历的月份、闰月和纪元年份。纪元发生变化的年份会以所示月份的纪元标注，例如 2019 年 1 月的平成31 和 7 月的令和元。",
+      "default": "InternationalizationProvider 的历法，否则为 'gregory'"
     },
     {
-      name: 'timeLabel',
-      type: 'string',
-      description:
-        '时间部分的无障碍标签。默认为“{label} time”，与字段标签关联且可本地化。',
+      "name": "timePlaceholder",
+      "type": "string",
+      "description": "未选择时间时显示在时间部分的占位文本。在触摸设备上，选择时间之前，它会显示在收起的时间段中。",
+      "default": "'Select a time'"
     },
     {
-      name: 'size',
-      type: "'sm' | 'md' | 'lg'",
-      description: '输入控件的尺寸。',
-      default: "'md'",
+      "name": "timeLabel",
+      "type": "string",
+      "description": "时间部分的无障碍标签。默认值为“{label} time”，因此它与字段标签关联且可本地化。"
     },
     {
-      name: 'status',
-      type: "{type: 'warning' | 'error' | 'success', message?: string}",
-      description:
-        '错误、警告或成功状态的状态指示对象，附带消息。对于字段拒绝的日期（无论是输入的还是在原生控件中选择的），以及按 Enter 或失焦后保留的无法识别或未完成的文本，字段显示自身的错误消息；传入 onEntryErrorChange 时，改为显示带消息的 error 状态。warning 或 success 状态不会替代拒绝消息。时间部分拒绝的输入时间在完整后或按 Enter、失焦时显示，并保留在字段中；除非日期部分正在显示其消息，或带消息的 error 状态显示在其位置，否则显示其自身的错误消息。',
+      "name": "size",
+      "type": "'sm' | 'md' | 'lg'",
+      "description": "输入控件的尺寸。",
+      "default": "'md'"
     },
     {
-      name: 'onEntryErrorChange',
-      type: "(error: {kind: 'unreadable' | 'incomplete' | 'nonexistent' | 'outOfRange' | 'unavailable', text: string, date?: ISODateString} | null) => void",
-      description:
-        "每当日期部分对输入文本的拒绝发生变化时调用，拒绝结束时传入 null。kind 为 'unreadable'、'incomplete'（按 Enter 或失焦也无法补全的部分日期）、'nonexistent'（该日历中不存在的日期）、'outOfRange'（早于 min 的日期或晚于 max 的日期）或 'unavailable'（被 dateConstraints 排除的日期）；text 为输入的文本；date 为文本所指的公历 ISO 日期，用于 'outOfRange' 和 'unavailable'。新的 min、max、dateConstraints 或 value、在日历中选择日期、禁用字段，或按 Enter、失焦改变拒绝时也会调用；同一拒绝不会重复调用；拒绝仍存在时若输入字段被替换（例如展示方式或指针类型改变而显示原生或触控选择器），会传入 null。传入此回调后，带消息的 error 状态会替代字段自身的错误消息；若拒绝开始时该错误消息未变，字段会再播报一次该消息。原生和触控选择器不接受输入文本，因此不会报告拒绝。",
+      "name": "status",
+      "type": "{type: 'warning' | 'error' | 'success', message?: string}",
+      "description": "错误、警告或成功状态的状态指示器对象，包含消息。对于字段拒绝的日期（无论是输入还是通过原生控件选择），以及按 Enter 或失焦后保留的不可读或不完整文本，字段会显示自己的错误消息；使用 `onEntryErrorChange` 时，带消息的错误状态会替代该消息显示。警告或成功永远不会替代拒绝。时间段拒绝的输入时间会在其完整时、或在按 Enter/失焦时显示，并保留在字段中；除非日期段显示其消息，或带消息的错误状态替代显示，否则会显示自己的错误消息。"
     },
     {
-      name: 'entryErrorBehavior',
-      type: "'complete' | 'blur-or-enter'",
-      description:
-        "两个分段何时显示自身的输入错误：即字段拒绝的输入日期或时间。它设定错误何时显示，而不是何时校验，因此不同于 React Aria 的 validationBehavior（原生校验与 ARIA 校验之分），也不会改变调用方的 status。'complete' 立即显示完整输入但日历中不存在或超出范围的日期、完整输入但超出范围的时间，以及原生控件报告的超出范围的时间；其他被拒绝的文本在按 Enter 或失焦时显示。'blur-or-enter' 将每个拒绝保留到在该分段中按 Enter 或失焦：届时消息、aria-invalid、无效样式、播报和日期分段的 onEntryErrorChange 报告一起出现。两种取值下，字段接受的编辑或清空分段的编辑都会立即清除错误；在 'blur-or-enter' 下，输入仍然错误的编辑会保留已显示的错误，直到下一次按 Enter 或失焦。原生控件拒绝的日期在两种取值下都在按 Enter 或失焦时显示。字段自身的取值优先于最近的 FormLayout 的 defaultEntryErrorBehavior。",
-      default:
-        "最近的 FormLayout 的 defaultEntryErrorBehavior，否则为 'complete'",
+      "name": "onEntryErrorChange",
+      "type": "(error: {kind: 'unreadable' | 'incomplete' | 'nonexistent' | 'outOfRange' | 'unavailable', text: string, date?: ISODateString} | null) => void",
+      "description": "每次日期段对输入文本的拒绝发生变化时调用，拒绝结束时会以 `null` 调用。`kind` 为 'unreadable'、'incomplete'（按 Enter 或失焦也无法补全的日期的一部分）、'nonexistent'（日历中不存在的日期）、'outOfRange'（早于 `min` 的日期或晚于 `max` 的日期）或 'unavailable'（被 `dateConstraints` 排除的日期）；`text` 为输入的文本；`date` 为文本所指的格里高利历 ISO 日期，适用于 'outOfRange' 和 'unavailable'。当新的 `min`、`max`、`dateConstraints` 或 `value`、日历选择、禁用字段，或 Enter/失焦改变拒绝状态时也会运行，且对同一拒绝绝不会运行两次；当输入的字段离开而拒绝仍然存在时（例如呈现方式或指针变化显示原生或触摸选择器），它会报告 `null`。使用它时，带消息的错误状态会替代字段自己的消息，而在错误消息未变化时开始的拒绝会朗读该消息一次。原生和触摸选择器不接受输入文本，因此绝不会在其中报告拒绝。"
     },
     {
-      name: 'labelTooltip',
-      type: 'string',
-      description: '通过标签末尾的信息图标显示的提示文本。',
+      "name": "entryErrorBehavior",
+      "type": "'complete' | 'blur-or-enter'",
+      "description": "当两个段都显示各自的输入错误时：字段拒绝的输入日期或时间。它设置错误何时显示，而不是验证何时运行，因此不同于 React Aria 的 validationBehavior（原生验证与 ARIA 验证），也绝不会改变调用方的状态。'complete' 会立即显示日历中不存在或超出范围的完整输入日期、超出范围的完整输入时间，以及原生控件报告超出范围的时间，其他被拒绝的文本则在按 Enter 或失焦时显示。'blur-or-enter' 会将该段的所有拒绝保留到按 Enter 或失焦：消息、aria-invalid、无效样式、朗读以及日期段的 onEntryErrorChange 报告会一起出现。在两种取值下，字段接受的编辑或清空该段的编辑都会立即清除错误；在 'blur-or-enter' 下，使条目仍然错误的编辑会保留已显示的错误，直到下一次按 Enter 或失焦。原生控件拒绝的日期在两种取值下都会在按 Enter 或失焦时显示。字段自己的值优先于最近的 FormLayout 的 defaultEntryErrorBehavior。",
+      "default": "最近的 FormLayout 的 defaultEntryErrorBehavior，否则为 'complete'"
     },
     {
-      name: 'numberOfMonths',
-      type: '1 | 2',
-      description:
-        'Astryx 指针日历弹出层中同时显示的月份数量。原生日期控件和移动触摸面板会忽略此属性；触摸面板的日期部分一次显示一个可滑动月份。',
-      default: '1',
+      "name": "labelTooltip",
+      "type": "string",
+      "description": "通过标签末尾的信息图标显示的提示文本。"
     },
     {
-      name: 'weekStartsOn',
-      type: "0 | 1 | 2 | 3 | 4 | 5 | 6 | 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat'",
-      description:
-        'Astryx 日历中每周的起始日。可为数字（0=周日……6=周六）或三字母星期缩写。原生日期控件会忽略此属性。',
-      default: '0',
+      "name": "numberOfMonths",
+      "type": "1 | 2",
+      "description": "Astryx 指针日历弹出面板中同时显示的月份数。原生日期控件和移动触摸面板会忽略此属性，它们的“日期”面板始终一次显示一个可滑动翻页的月份。",
+      "default": "1"
     },
     {
-      name: 'presentation',
-      type: "'popover' | 'bottom-sheet' | 'native' | 'adaptive-bottom-sheet' | 'adaptive-native'",
-      description:
-        "选择由哪些界面绘制日期和时间选择器。'adaptive-native'（默认）在精细指针上使用 Astryx 文本字段与弹出层、在粗指针上使用浏览器/操作系统控件，并按段回退：hasSeconds、非默认 timeIncrement 或 timeOptionInterval 会保留 Astryx 时间字段；'native' 始终使用两个原生控件且不回退；'adaptive-bottom-sheet' 在精细指针上用弹出层、在粗指针上用 Astryx 协调底部面板；'popover' 与 'bottom-sheet' 在任何指针上强制使用对应 Astryx 界面。每个值都会打开选择器；仅文本字段的呈现只属于 TimeInput。需要 numberOfMonths、weekStartsOn 或可见 dateConstraints 行为时请使用非原生呈现。约束会在提交时执行，min/max 作为提示传给原生控件。hourFormat 格式化关闭状态的时间，而操作系统选择器遵循用户区域设置。使用 gregory 或 iso8601 以外的历法时，'native' 与 'adaptive-native' 在精细指针上使用弹出层、在粗指针上使用底部面板，显式的 'native' 会在开发环境中发出警告。",
-      default: "'adaptive-native'",
+      "name": "weekStartsOn",
+      "type": "0 | 1 | 2 | 3 | 4 | 5 | 6 | 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat'",
+      "description": "Astryx 日历中一周的第一天。可以是数字（0 = 星期日到 6 = 星期六）或三字母的星期名称。原生日期控件会忽略此属性。",
+      "default": "0"
     },
     {
-      name: 'nativePicker',
-      type: "'touch' | 'always' | 'never'",
-      description:
-        "已弃用：请使用 presentation（'touch'='adaptive-native'、'always'='native'、'never'='adaptive-bottom-sheet'）。仍按已发布行为工作；同时设置时以 presentation 为准。使用 gregory 或 iso8601 以外的历法时，'touch' 与 'always' 在精细指针上使用弹出层、在粗指针上使用底部面板。",
-      default: "'touch'",
+      "name": "presentation",
+      "type": "'popover' | 'bottom-sheet' | 'native' | 'adaptive-bottom-sheet' | 'adaptive-native'",
+      "description": "哪些界面绘制日期和时间选择器。'adaptive-native'（默认值）在精细指针下使用 Astryx 的文本字段和弹出面板，在粗指针下使用浏览器/操作系统控件——并带有按段回退：`hasSeconds`、非默认的 `timeIncrement` 或 `timeOptionInterval` 会保留 Astryx 的时间字段，因为 iOS 无法忠实表达它们；'native' 始终使用两个浏览器/操作系统控件，无回退；'adaptive-bottom-sheet' 在精细指针下使用弹出面板，在粗指针下使用 Astryx 协调的底部面板；'popover' 和 'bottom-sheet' 在任意指针下强制使用该 Astryx 界面。每个取值都会打开选择器；仅文本字段是 TimeInput 独有的。当 `numberOfMonths`、`weekStartsOn` 或可见的 `dateConstraints` 行为很重要时，请使用非原生的呈现方式。约束在提交时强制执行；`min`/`max` 作为提示转发。`hourFormat` 格式化收起的时间，而操作系统选择器遵循用户的区域设置。使用 gregory 或 iso8601 之外的日历时，'native' 和 'adaptive-native' 在精细指针下使用弹出面板、在粗指针下使用底部面板，显式指定的 'native' 会在开发环境中发出警告。",
+      "default": "'adaptive-native'"
     },
     {
-      name: 'containerXstyle',
-      type: 'StyleXStyles',
-      description:
-        '作用于包含标签、控件和状态的 Field 容器的 StyleX 样式；containerClassName 与 containerStyle 以类名和内联样式作用于同一容器。没有 Field 容器时（InputGroup 内或 horizontal-labels FormLayout 中）不生效，并在开发环境发出警告。',
+      "name": "nativePicker",
+      "type": "'touch' | 'always' | 'never'",
+      "description": "已弃用：请使用 `presentation`（'touch' = 'adaptive-native'，'always' = 'native'，'never' = 'adaptive-bottom-sheet'）。仍完全按发布时的行为工作；两者都设置时 `presentation` 优先。使用 gregory 或 iso8601 之外的日历时，'touch' 和 'always' 在精细指针下使用弹出面板、在粗指针下使用底部面板。",
+      "default": "'touch'"
     },
     {
-      name: 'controlXstyle',
-      type: 'StyleXStyles',
-      description:
-        '作用于可见控件框（容纳带边框的日期与时间分段及其图标和末端控件的行，而非原生 input）的 StyleX 样式；controlClassName 与 controlStyle 以类名和内联样式作用于同一元素。本组件不接受根级 xstyle、className 和 style。',
+      "name": "containerXstyle",
+      "type": "StyleXStyles",
+      "description": "围绕标签、控件和状态的 Field 盒子的 StyleX 样式。`containerClassName` 和 `containerStyle` 为同一盒子接受类名和内联样式。在没有渲染 Field 盒子的地方无效（开发环境会警告）：InputGroup 内部（请为该组设置样式）以及水平标签的 FormLayout 中。"
     },
+    {
+      "name": "controlXstyle",
+      "type": "StyleXStyles",
+      "description": "视觉控件盒子的 StyleX 样式：容纳带边框的日期和时间段及其图标与末端控件的行，绝不是原生输入。`controlClassName` 和 `controlStyle` 为同一盒子接受类名和内联样式。替代根级 `xstyle`、`className` 和 `style`，此组件不接受这些。"
+    }
   ],
-  theming: {
-    targets: [
+  "theming": {
+    "targets": [
       {
-        className: 'astryx-date-time-input',
-        visualProps: ['size', 'status'],
-        states: ['disabled'],
+        "className": "astryx-date-time-input",
+        "visualProps": [
+          "size",
+          "status"
+        ],
+        "states": [
+          "disabled"
+        ]
       },
       {
-        className: 'astryx-date-time-input-date-segment',
-        visualProps: ['size', 'status'],
+        "className": "astryx-date-time-input-date-segment",
+        "visualProps": [
+          "size",
+          "status"
+        ]
       },
       {
-        className: 'astryx-date-time-input-time-segment',
-        visualProps: ['size', 'status'],
+        "className": "astryx-date-time-input-time-segment",
+        "visualProps": [
+          "size",
+          "status"
+        ]
       },
-      {className: 'astryx-date-time-input-toggle-icon', states: ['state']},
-      {className: 'astryx-date-time-input-clock-icon'},
-      {className: 'astryx-date-time-input-time-listbox'},
-      {className: 'astryx-date-time-input-time-option'},
-    ],
+      {
+        "className": "astryx-date-time-input-toggle-icon",
+        "states": [
+          "state"
+        ]
+      },
+      {
+        "className": "astryx-date-time-input-clock-icon"
+      },
+      {
+        "className": "astryx-date-time-input-time-listbox"
+      },
+      {
+        "className": "astryx-date-time-input-time-option"
+      }
+    ]
   },
+  "propDescriptions": {
+    "label": "标签文本。",
+    "isLabelHidden": "在视觉上隐藏标签。",
+    "description": "显示在标签下方的辅助文本。",
+    "isOptional": "在标签旁显示“(可选)”指示。",
+    "isRequired": "将字段标记为必填。",
+    "isDisabled": "禁用输入和选择器。字段仍可聚焦并暴露 `aria-disabled`；输入和打开操作会被阻止。",
+    "disabledMessage": "解释输入为何被禁用。与 `isDisabled` 一起使用时，在悬停/键盘聚焦时显示提示，并描述这些字段（激活仍被阻止）。请使用此属性，而不要用 Tooltip 包裹禁用的 DateTimeInput。",
+    "value": "所选日期时间，使用 ISO 8601 格式（YYYY-MM-DDTHH:MM 或 YYYY-MM-DDTHH:MM:SS）。",
+    "onChange": "所选日期时间变化时调用的回调。",
+    "changeAction": "在 `onChange` 之后触发的异步操作。通过 `useTransition` 驱动乐观 UI 更新。",
+    "isLoading": "输入是否处于加载状态。禁用交互并显示旋转图标。",
+    "min": "可选的最小日期时间。同时约束日期和时间选择。",
+    "max": "可选的最大日期时间。同时约束日期和时间选择。",
+    "dateConstraints": "自定义约束函数数组，用于禁用特定日期。",
+    "hasSeconds": "在时间部分包含秒。即使 `nativePicker` 选择原生界面，也会保留 Astryx 的时间字段，因为 iOS 没有秒滚轮。",
+    "hourFormat": "小时显示格式。'12h' 显示区域设置的日时段；'24h' 使用 24 小时记法。未设置时，遵循 InternationalizationProvider 区域设置的小时制式（en-US 为 12 小时制，en-GB 为 24 小时制）；个人偏好通过区域标签体现（例如 'en-US-u-hc-h23'）。",
+    "timeIncrement": "Astryx 文本时间字段中方向键的分钟步进。非默认值会在 `nativePicker` 模式下保留 Astryx 时间字段，因为 iOS 将原生步进视为验证，而不是选择器节奏。Astryx 触摸面板会忽略此属性，它使用滚轮。",
+    "timeOptionInterval": "Astryx 精细指针时间字段上预设时间组合框的分钟间隔。设置后即使处于 `nativePicker` 模式也会保留该 Astryx 时间字段，因为操作系统选择器没有等效的预设列表。Astryx 触摸面板使用滚轮。",
+    "hasClear": "当设置了日期时间值时显示清除按钮。",
+    "placeholder": "未选择日期时显示在日期部分的占位文本。调用方提供的占位符会替换日历格式提示。",
+    "calendar": "日期段以该日历读取和写入所输入的日期，其弹出面板和底部面板也显示该日历。`value`、`onChange`、`min` 和 `max` 始终为格里高利历 ISO 日期时间。人们按区域设置在此日历中的书写方式输入日期，可使用任意十进制数字；字段仅在日期完整时才报告日期，并会指出日历中不存在的日期。年份是该日历的年份，因此在佛历和民国历字段上设置 `min` 和 `max`，以捕获误输入的格里高利年份。除 gregory、iso8601、buddhist、roc 和 japanese 之外的日历需要 Temporal（原生或应用加载的 polyfill）；没有它时字段显示格里高利日期。使用 gregory 或 iso8601 之外的日历时，原本会显示原生控件的呈现方式会在精细指针下显示弹出面板、在粗指针下显示底部面板，因为原生日期控件是格里高利历；底部面板的“日期”面板显示该日历的月份、闰月和纪元年份。纪元发生变化的年份会以所示月份的纪元标注，例如 2019 年 1 月的平成31 和 7 月的令和元。",
+    "timePlaceholder": "未选择时间时显示在时间部分的占位文本。在触摸设备上，选择时间之前，它会显示在收起的时间段中。",
+    "timeLabel": "时间部分的无障碍标签。默认值为“{label} time”，因此它与字段标签关联且可本地化。",
+    "size": "输入控件的尺寸。",
+    "status": "错误、警告或成功状态的状态指示器对象，包含消息。对于字段拒绝的日期（无论是输入还是通过原生控件选择），以及按 Enter 或失焦后保留的不可读或不完整文本，字段会显示自己的错误消息；使用 `onEntryErrorChange` 时，带消息的错误状态会替代该消息显示。警告或成功永远不会替代拒绝。时间段拒绝的输入时间会在其完整时、或在按 Enter/失焦时显示，并保留在字段中；除非日期段显示其消息，或带消息的错误状态替代显示，否则会显示自己的错误消息。",
+    "onEntryErrorChange": "每次日期段对输入文本的拒绝发生变化时调用，拒绝结束时会以 `null` 调用。`kind` 为 'unreadable'、'incomplete'（按 Enter 或失焦也无法补全的日期的一部分）、'nonexistent'（日历中不存在的日期）、'outOfRange'（早于 `min` 的日期或晚于 `max` 的日期）或 'unavailable'（被 `dateConstraints` 排除的日期）；`text` 为输入的文本；`date` 为文本所指的格里高利历 ISO 日期，适用于 'outOfRange' 和 'unavailable'。当新的 `min`、`max`、`dateConstraints` 或 `value`、日历选择、禁用字段，或 Enter/失焦改变拒绝状态时也会运行，且对同一拒绝绝不会运行两次；当输入的字段离开而拒绝仍然存在时（例如呈现方式或指针变化显示原生或触摸选择器），它会报告 `null`。使用它时，带消息的错误状态会替代字段自己的消息，而在错误消息未变化时开始的拒绝会朗读该消息一次。原生和触摸选择器不接受输入文本，因此绝不会在其中报告拒绝。",
+    "entryErrorBehavior": "当两个段都显示各自的输入错误时：字段拒绝的输入日期或时间。它设置错误何时显示，而不是验证何时运行，因此不同于 React Aria 的 validationBehavior（原生验证与 ARIA 验证），也绝不会改变调用方的状态。'complete' 会立即显示日历中不存在或超出范围的完整输入日期、超出范围的完整输入时间，以及原生控件报告超出范围的时间，其他被拒绝的文本则在按 Enter 或失焦时显示。'blur-or-enter' 会将该段的所有拒绝保留到按 Enter 或失焦：消息、aria-invalid、无效样式、朗读以及日期段的 onEntryErrorChange 报告会一起出现。在两种取值下，字段接受的编辑或清空该段的编辑都会立即清除错误；在 'blur-or-enter' 下，使条目仍然错误的编辑会保留已显示的错误，直到下一次按 Enter 或失焦。原生控件拒绝的日期在两种取值下都会在按 Enter 或失焦时显示。字段自己的值优先于最近的 FormLayout 的 defaultEntryErrorBehavior。",
+    "labelTooltip": "通过标签末尾的信息图标显示的提示文本。",
+    "numberOfMonths": "Astryx 指针日历弹出面板中同时显示的月份数。原生日期控件和移动触摸面板会忽略此属性，它们的“日期”面板始终一次显示一个可滑动翻页的月份。",
+    "weekStartsOn": "Astryx 日历中一周的第一天。可以是数字（0 = 星期日到 6 = 星期六）或三字母的星期名称。原生日期控件会忽略此属性。",
+    "presentation": "哪些界面绘制日期和时间选择器。'adaptive-native'（默认值）在精细指针下使用 Astryx 的文本字段和弹出面板，在粗指针下使用浏览器/操作系统控件——并带有按段回退：`hasSeconds`、非默认的 `timeIncrement` 或 `timeOptionInterval` 会保留 Astryx 的时间字段，因为 iOS 无法忠实表达它们；'native' 始终使用两个浏览器/操作系统控件，无回退；'adaptive-bottom-sheet' 在精细指针下使用弹出面板，在粗指针下使用 Astryx 协调的底部面板；'popover' 和 'bottom-sheet' 在任意指针下强制使用该 Astryx 界面。每个取值都会打开选择器；仅文本字段是 TimeInput 独有的。当 `numberOfMonths`、`weekStartsOn` 或可见的 `dateConstraints` 行为很重要时，请使用非原生的呈现方式。约束在提交时强制执行；`min`/`max` 作为提示转发。`hourFormat` 格式化收起的时间，而操作系统选择器遵循用户的区域设置。使用 gregory 或 iso8601 之外的日历时，'native' 和 'adaptive-native' 在精细指针下使用弹出面板、在粗指针下使用底部面板，显式指定的 'native' 会在开发环境中发出警告。",
+    "nativePicker": "已弃用：请使用 `presentation`（'touch' = 'adaptive-native'，'always' = 'native'，'never' = 'adaptive-bottom-sheet'）。仍完全按发布时的行为工作；两者都设置时 `presentation` 优先。使用 gregory 或 iso8601 之外的日历时，'touch' 和 'always' 在精细指针下使用弹出面板、在粗指针下使用底部面板。",
+    "width": "字段宽度（数字表示像素，字符串按原样使用，例如 \"100%\"）。会调整整个字段（标签、控件和状态）的尺寸，使其保持对齐。",
+    "containerXstyle": "围绕标签、控件和状态的 Field 盒子的 StyleX 样式。`containerClassName` 和 `containerStyle` 为同一盒子接受类名和内联样式。在没有渲染 Field 盒子的地方无效（开发环境会警告）：InputGroup 内部（请为该组设置样式）以及水平标签的 FormLayout 中。",
+    "controlXstyle": "视觉控件盒子的 StyleX 样式：容纳带边框的日期和时间段及其图标与末端控件的行，绝不是原生输入。`controlClassName` 和 `controlStyle` 为同一盒子接受类名和内联样式。替代根级 `xstyle`、`className` 和 `style`，此组件不接受这些。"
+  }
 };
 
 /** @type {import('@astryxdesign/cli/authoring').ComponentTranslationDoc} */

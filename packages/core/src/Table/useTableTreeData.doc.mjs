@@ -123,3 +123,21 @@ export const docsDense = {
       'true => clicking an expandable row body toggles it (in addition to the chevron). Leaves stay inert; no-op on flat data. Defaults to false.',
   },
 };
+
+export const docsZh = {
+  "name": "useTableTreeData",
+  "description": "Table 的无头树插件：在树列（默认为第一列）中渲染带逐级缩进和展开/折叠箭头的嵌套行，并通过正文行上的 aria-level 和每个展开/折叠按钮上的 aria-expanded 反映层级。可与其他 Table 插件组合：规范的插件顺序将 tree 放在 selection 之前，因此复选框列会落在缩进的树列左侧。向它传入来自 useTableTreeState 的 treeConfig，或为服务端驱动或预先展平的树直接构造配置。当没有可展开的行（扁平数据）时，所有转换都是直通操作，表格渲染与不使用该插件时完全相同。已知限制：树列会包裹其单元格内容，因此 textOverflow=\"truncate\" 的 Tooltip 在树列内不适用。",
+  "propDescriptions": {
+    "getRowMeta": "可见行的结构元数据：{id, level（从 0 开始）, hasChildren, isExpanded}。",
+    "onToggleItem": "切换行的展开状态。",
+    "getRowLabel": "为展开器推导可读的行标识。Astryx 会将其与本地化的展开/折叠措辞组合。省略它或返回空白文本，可保留通用的 \"Expand row\" 和 \"Collapse row\" 标签。",
+    "hasExpandableRows": "数据集中是否有任何行可展开。为 false 时插件为空操作：没有展开器、没有缩进、没有树形 ARIA。",
+    "hasExpandAllControl": "在树列标题中显示全部展开/全部折叠切换。需要 isAllExpanded 以及 onExpandAll/onCollapseAll（均由 useTableTreeState 提供）。",
+    "isAllExpanded": "所有可展开行的聚合展开状态，驱动标题栏的全部展开切换。全部展开时为 true，全部未展开时为 false，部分展开时为 indeterminate。",
+    "onExpandAll": "展开每个可展开行。连接到标题栏控件。",
+    "onCollapseAll": "折叠所有行。连接到标题栏控件。",
+    "indent": "每级缩进步长，映射到 spacing-3 / spacing-4 / spacing-6 令牌。",
+    "treeColumnKey": "承载缩进和展开器的列。默认为第一列。",
+    "hasRowClickExpansion": "为 true 时，除箭头外，点击可展开行的任意位置也会切换其展开状态。这是仅为指针设备提供的便利：键盘和辅助技术用户通过箭头按钮切换。点击交互式单元格内容（按钮、链接、表单控件）或文本选择时不会切换。叶子行保持惰性，在扁平数据上为空操作。"
+  }
+};

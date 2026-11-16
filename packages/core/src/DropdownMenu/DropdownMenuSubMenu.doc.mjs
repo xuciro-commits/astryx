@@ -144,3 +144,27 @@ export const docsDense = {
     ref: 'ref to the trigger row (role="menuitem")',
   },
 };
+
+export const docsZh = {
+  "name": "DropdownMenuSubMenu",
+  "displayName": "Dropdown Menu Submenu",
+  "description": "一个菜单行，激活后会显示其自身项目的嵌套浮出菜单。该行沿用 DropdownMenuItem 的语义（label / icon / description / isDisabled）；其子元素成为浮出菜单内容。浮出菜单在行尾方向打开，并会随视口自动翻转；Right/Enter/Space 打开并聚焦第一个项目，Left/Escape 关闭并将焦点返回触发行（RTL 下 Right/Left 互换）。在手机（粗指针，在菜单打开时判定）上，该行改为钻取：它的行在同一盒子中替换菜单的行，顶部是一个名为 \"Back to <parent>\" 的返回行，Back、Escape 或 ArrowLeft 返回该行。宿主属性和 DOM 事件处理器（aria-*、data-*、id）会传到触发行，即承载 role=\"menuitem\" 和 aria-haspopup=\"menu\" 的元素；调用方的处理器在该行自身的处理器之后运行，打开浮出菜单的按键（打开方向键、Enter、Space）以及点击禁用行除外。对于数据驱动的菜单，请给菜单项一个嵌套的 `items` 数组，而不是直接使用此组件。",
+  "propDescriptions": {
+    "label": "触发行的主标签文本。",
+    "icon": "显示在标签前的图标。有效语义名称见 `astryx docs icons`。",
+    "description": "显示在标签下方的辅助描述文本。",
+    "children": "浮出菜单项目：与顶层使用的相同组件（DropdownMenuItem、嵌套的 DropdownMenuSubMenu、可选择项）。",
+    "isDisabled": "禁用的子菜单会渲染其触发行，但永不打开浮出菜单。",
+    "hasSpinner": "在尖角符号位置显示加载指示器，例如惰性子菜单的子元素正在加载时。",
+    "menuWidth": "浮出菜单的最小宽度。浮出菜单可随内容增长，但上限为可用视口空间。默认为固有尺寸（最小 160px）。",
+    "onOpenChange": "浮出菜单打开或关闭时调用。",
+    "presentation": "子菜单如何显示其行。'flyout' 在行旁打开；'drill-in' 在同一盒子中用这些行和返回行替换菜单的行；'adaptive' 在手指打开菜单时（粗指针，在菜单打开时判定）钻取，否则浮出。",
+    "delay": "悬停指针等待浮出菜单打开的时间，以毫秒为单位。键盘焦点和触摸从不等待。",
+    "hideDelay": "指针离开后浮出菜单保持打开的时间，以毫秒为单位。",
+    "header": "子菜单行上方、菜单之外的内容，例如用于筛选这些行的字段。它保留自己的按键和按压。有 header 或 footer 时，子菜单的表面（浮出菜单，或手机上的钻取视图）是一个以该行命名的模态对话框，位于菜单旁而不是菜单内：该行声明 aria-haspopup=\"dialog\"，Tab 和 Shift+Tab 在 header、行和 footer 之间移动并循环，Escape 返回该行，指针离开浮出菜单时仅在焦点也离开后才关闭。ContextMenu 不显示它。",
+    "footer": "子菜单行下方、菜单之外的内容，例如通往选项管理位置的入口。规则与 header 相同。",
+    "menuDataTestId": "子菜单自身 role=\"menu\" 元素的测试 id：浮出菜单，或手机上的钻取列表。触发行接受 data-testid。",
+    "xstyle": "用于触发行的 StyleX 样式。必须是 stylex.create() 值：不是像 style={{}} 这样的内联样式对象。",
+    "ref": "转发到触发行的 ref，即承载 role=\"menuitem\" 和 aria-haspopup=\"menu\"（有 header 或 footer 时为 \"dialog\"）的元素。"
+  }
+};

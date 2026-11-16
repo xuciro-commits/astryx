@@ -154,67 +154,106 @@ import {Badge} from '@astryxdesign/core/Badge';
 };
 
 export const docsZh = {
-  name: 'DialogHeader',
-  isHiddenFromOverview: true,
-  displayName: 'Dialog Header',
-  description: '对话框头部，包含标题、可选副标题、关闭按钮以及首尾内容插槽。',
-  usage: {
-    description: '使用 DialogHeader 为对话框提供带标签的标题区和可选的关闭控件。',
-    anatomy: [
-      {name: 'Header row', required: true, description: '排列标题区、可选的首尾内容和关闭控件。'},
-      {name: 'Start content', required: false, description: '包装可选的首部内容。'},
-      {name: 'Title block', required: true, description: '组合标题和可选副标题。'},
-      {name: 'End content', required: false, description: '组合可选尾部内容和可选关闭控件。'},
-      {name: 'Close icon', required: false, description: '关闭按钮内的关闭图标。'},
-    ],
+  "name": "DialogHeader",
+  "isHiddenFromOverview": true,
+  "displayName": "Dialog Header",
+  "description": "对话框的标题栏，包含标题、可选副标题、关闭按钮以及起始/结束内容插槽。",
+  "usage": {
+    "description": "使用 DialogHeader 为对话框提供带标签的标题区域和可选的关闭控件。",
+    "anatomy": [
+      {
+        "name": "标题行",
+        "required": true,
+        "description": "排列标题块、可选的起始/结束内容和关闭控件。"
+      },
+      {
+        "name": "起始内容",
+        "required": false,
+        "description": "包裹可选的前置内容。"
+      },
+      {
+        "name": "标题块",
+        "required": true,
+        "description": "组合标题和可选副标题。"
+      },
+      {
+        "name": "结束内容",
+        "required": false,
+        "description": "将可选的后置内容与可选关闭控件组合在一起。"
+      },
+      {
+        "name": "关闭图标",
+        "required": false,
+        "description": "关闭按钮内的可视关闭字形。"
+      }
+    ]
   },
-  props: [
+  "props": [
     {
-      name: 'title',
-      type: 'ReactNode',
-      description: '对话框标题，渲染在可聚焦的 h2 中（打开时获得焦点，其文本内容通过 aria-labelledby 为对话框命名）。请使用非空、非交互的行内内容。',
+      "name": "title",
+      "type": "ReactNode",
+      "description": "对话框标题，渲染在可聚焦的 h2 内（打开时接收焦点；其文本内容通过 aria-labelledby 为对话框命名，除非 Dialog 显式设置了 aria-label/aria-labelledby）。保持其为行内、非交互且非空。"
     },
     {
-      name: 'subtitle',
-      type: 'ReactNode',
-      description: '标题下方的副标题，可包含链接等行内内容；避免使用块级元素。',
+      "name": "subtitle",
+      "type": "ReactNode",
+      "description": "标题下方的副标题。接受 Link 等行内内容；避免使用块级元素。"
     },
     {
-      name: 'onOpenChange',
-      type: '(isOpen: boolean) => unknown',
-      description: '关闭按钮的回调（省略时不显示按钮）。',
+      "name": "onOpenChange",
+      "type": "(isOpen: boolean) => unknown",
+      "description": "关闭按钮回调（省略时不显示按钮）。"
     },
     {
-      name: 'startContent',
-      type: 'ReactNode',
-      description: '标题之前的内容（例如返回按钮）。',
+      "name": "startContent",
+      "type": "ReactNode",
+      "description": "标题之前的内容（例如返回按钮）。"
     },
     {
-      name: 'endContent',
-      type: 'ReactNode',
-      description: '标题之后、关闭按钮之前的内容。',
+      "name": "endContent",
+      "type": "ReactNode",
+      "description": "标题之后、关闭按钮之前的内容。"
     },
     {
-      name: 'endContentEdgeCompensation',
-      type: "'inline' | 'block' | 'all'",
-      description: '选择尾部内容插槽的补偿轴；省略时保留关闭操作的自动补偿。',
+      "name": "endContentEdgeCompensation",
+      "type": "'inline' | 'block' | 'all'",
+      "description": "选择结束内容插槽的补偿轴。省略则保留自动关闭操作补偿。"
     },
     {
-      name: 'hasDivider',
-      type: 'boolean',
-      description: '在底部边缘添加分隔线。',
-      default: 'true',
-    },
+      "name": "hasDivider",
+      "type": "boolean",
+      "description": "在底部边缘添加边框。",
+      "default": "true"
+    }
   ],
-  theming: {
-    targets: [
-      {className: 'astryx-dialog-header'},
-      {className: 'astryx-dialog-header-start-content'},
-      {className: 'astryx-dialog-header-title-block'},
-      {className: 'astryx-dialog-header-end-content'},
-      {className: 'astryx-dialog-header-close-icon'},
-    ],
+  "theming": {
+    "targets": [
+      {
+        "className": "astryx-dialog-header"
+      },
+      {
+        "className": "astryx-dialog-header-start-content"
+      },
+      {
+        "className": "astryx-dialog-header-title-block"
+      },
+      {
+        "className": "astryx-dialog-header-end-content"
+      },
+      {
+        "className": "astryx-dialog-header-close-icon"
+      }
+    ]
   },
+  "propDescriptions": {
+    "title": "对话框标题，渲染在可聚焦的 h2 内（打开时接收焦点；其文本内容通过 aria-labelledby 为对话框命名，除非 Dialog 显式设置了 aria-label/aria-labelledby）。保持其为行内、非交互且非空。",
+    "subtitle": "标题下方的副标题。接受 Link 等行内内容；避免使用块级元素。",
+    "onOpenChange": "关闭按钮回调（省略时不显示按钮）。",
+    "startContent": "标题之前的内容（例如返回按钮）。",
+    "endContent": "标题之后、关闭按钮之前的内容。",
+    "endContentEdgeCompensation": "选择结束内容插槽的补偿轴。省略则保留自动关闭操作补偿。",
+    "hasDivider": "在底部边缘添加边框。"
+  }
 };
 
 export const docsDense = {

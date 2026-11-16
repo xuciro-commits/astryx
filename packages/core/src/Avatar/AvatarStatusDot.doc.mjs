@@ -42,32 +42,33 @@ export const docs = {
 };
 
 export const docsZh = {
-  name: 'AvatarStatusDot',
-  isHiddenFromOverview: true,
-  displayName: 'Avatar Status Dot',
-  description:
-    '尺寸感知的状态指示点，从上下文中读取头像尺寸并等比缩放。每个变体将颜色与独特形状（实心、圆环、横杠）配对，确保状态不仅靠颜色传达（WCAG 1.4.1）。',
-  props: [
+  "name": "AvatarStatusDot",
+  "isHiddenFromOverview": true,
+  "displayName": "Avatar Status Dot",
+  "description": "能感知尺寸的状态指示点，从上下文读取头像尺寸并按比例缩放。每个变体都将颜色与一种内置的独特形状（实心、圆环、减号）配对，因此状态绝不只靠颜色传达（WCAG 1.4.1）。",
+  "props": [
     {
-      name: 'variant',
-      type: "'success' | 'neutral' | 'error'",
-      description:
-        '语义变体，颜色与形状配对：success = 绿色实心点，neutral = 灰色圆环，error = 带横杠的红色点。',
-      default: "'success'",
+      "name": "variant",
+      "type": "'success' | 'neutral' | 'error'",
+      "description": "语义变体，将颜色与独特形状配对：success = 实心绿点，neutral = 灰色圆环，error = 带减号横条的红色圆点。",
+      "default": "'success'"
     },
     {
-      name: 'label',
-      type: 'string',
-      description:
-        '描述状态的无障碍标签。在 Avatar 内会被合成进头像自身的无障碍名称（如 "Jane Doe, Online"）——Avatar 根元素为 role="img"，会裁剪子元素语义，因此合成名称是辅助技术获知状态的途径。独立使用时状态点直接以 role="img" 暴露该标签。',
+      "name": "label",
+      "type": "string",
+      "description": "描述状态的无障碍标签。在 Avatar 内部，它会被组合进头像的无障碍名称（例如 \"Jane Doe, Online\"）；Avatar 根元素为 role=\"img\"，会剪除子元素的语义，因此组合后的名称是状态传达给辅助技术的途径。独立使用状态点时，会直接以该标签暴露 role=\"img\"。"
     },
     {
-      name: 'icon',
-      type: 'ReactNode',
-      description:
-        '居中显示在状态点内的图标（tiny 尺寸时隐藏）。渲染的图标会替换内置形状标记，请为每个状态使用不同的图标。',
-    },
+      "name": "icon",
+      "type": "ReactNode",
+      "description": "居中显示在圆点内的图标（极小尺寸下隐藏）。渲染的图标会替换内置形状字形，因此请为每种状态使用不同的图标。"
+    }
   ],
+  "propDescriptions": {
+    "variant": "语义变体，将颜色与独特形状配对：success = 实心绿点，neutral = 灰色圆环，error = 带减号横条的红色圆点。",
+    "label": "描述状态的无障碍标签。在 Avatar 内部，它会被组合进头像的无障碍名称（例如 \"Jane Doe, Online\"）；Avatar 根元素为 role=\"img\"，会剪除子元素的语义，因此组合后的名称是状态传达给辅助技术的途径。独立使用状态点时，会直接以该标签暴露 role=\"img\"。",
+    "icon": "居中显示在圆点内的图标（极小尺寸下隐藏）。渲染的图标会替换内置形状字形，因此请为每种状态使用不同的图标。"
+  }
 };
 
 export const docsDense = {

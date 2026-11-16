@@ -79,3 +79,52 @@ export const docsDense = {
     ],
   },
 };
+
+export const docsZh = {
+  "name": "useContainerReveal",
+  "usage": {
+    "description": "一个无头的悬停/聚焦显示原语。为容器提供一个作用域触发器，当容器被悬停或获得键盘焦点时，显示（或隐藏）其中的内容：经典的“悬停时行操作出现”模式。显示完全由 CSS 实现：React 中没有悬停状态，悬停永远不会触发重新渲染。调用方不需要为显示本身编写任何 StyleX；该 Hook 会提供容器和内容样式，且嵌套容器会遮蔽其祖先，因此嵌套容器之间永远不会泄漏悬停/焦点。从设计上即可访问：被显示的内容在静止时通过 position 和 opacity 视觉隐藏（从不使用 display:none），因此它保持挂载、保留其在 Tab 顺序中的位置，并被辅助技术宣布；它在 :focus-within 时显示，因此键盘用户 Tab 进入时能看到它；在粗粒度主指针下保持可见（在那里永远不会被悬停门控），并遵循 prefers-reduced-motion。",
+    "bestPractices": [
+      {
+        "guidance": true,
+        "description": "解构 getContainerProps 和 getContentRevealProps；将 getContainerProps() 展开到容器上（通过 mergeProps 与你自己的 stylex.props），并将 getContentRevealProps() 展开到要显示的内容上。"
+      },
+      {
+        "guidance": true,
+        "description": "用于次要可操作项：悬停时显示的行操作（列表或表格行上的编辑/复制/移除）以及卡片或媒体图块上的覆盖控件（例如 Thumbnail 的移除按钮）。"
+      },
+      {
+        "guidance": true,
+        "description": "当消费方属性决定内容是悬停显示还是始终显示时，用 isEnabled 对显示进行门控；它可以随时变化。"
+      },
+      {
+        "guidance": true,
+        "description": "对于绝对定位或覆盖内容，传入 isLayoutPreserved 以预留其盒子并避免出现时的布局偏移。"
+      },
+      {
+        "guidance": true,
+        "description": "在长列表的行上设置 hoverDelay（100-250ms），这样光标穿过列表时不会点亮经过的每一行；键盘和触摸仍会立即显示。"
+      },
+      {
+        "guidance": true,
+        "description": "当指针以外的因素拥有交互时（拖拽、滚动或运动门控、打开的行菜单），使用 forceState；当只有单个元素应忽略容器时，使用 forceVisibility。"
+      },
+      {
+        "guidance": false,
+        "description": "不要越过 API 使用该 Hook 的私有自定义属性（--_reveal-opacity 等）来抑制显示；请使用 forceState / forceVisibility，它们能在重命名后继续工作。"
+      },
+      {
+        "guidance": false,
+        "description": "不要用它隐藏必须始终可发现的内容；请保持关键操作可见，而不是把它们门控在悬停之后。"
+      }
+    ]
+  },
+  "paramDescriptions": {
+    "options": "显示容器的配置对象。可选。",
+    "options.isEnabled": "为 false 时该 Hook 不生效：容器不获得样式，内容 getter 返回空样式，因此内容始终显示。每次渲染都会读取，因此组件可以在挂载后切换它（例如 revealOn === \"hover\"）。"
+  },
+  "returnDescriptions": {
+    "getContainerProps": "展开到容器上，其悬停/聚焦内部会驱动显示。接受 hoverDelay（指针在显示开始前必须停留的毫秒数：类似 Tooltip 和 HoverCard 延迟的悬停意图门控，因此光标扫过列表时不会留下任何绘制）和 forceState（\"active\" | \"inactive\"），在调用方拥有触发器状态时将其固定：运动门控、滚动，或菜单打开的行。\"inactive\" 仍会让位于键盘焦点和粗指针。",
+    "getContentRevealProps": "展开到每个被显示/隐藏的子元素上。接受 isRevealInverted 以改为悬停隐藏而不是悬停显示，isLayoutPreserved 以在隐藏时（仅透明度）预留布局盒并避免布局偏移，以及 forceVisibility（\"shown\" | \"hidden\"）不管容器在做什么都将这一个元素的外观固定。\"hidden\" 会让位于焦点。"
+  }
+};
