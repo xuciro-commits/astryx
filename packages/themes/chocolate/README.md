@@ -1,16 +1,16 @@
 # @astryxdesign/theme-chocolate
 
-Warm chocolate theme with rich brown tones and cozy beige backgrounds. Uses Fraunces for headings, Albert Sans for body text, and [Lucide](https://lucide.dev) icons.
+温暖巧克力主题，采用浓郁的棕色色调与舒适的米色背景。标题使用 Fraunces，正文使用 Albert Sans，并采用 [Lucide](https://lucide.dev) 图标。
 
-## Install
+## 安装
 
 ```bash
 npm install @astryxdesign/theme-chocolate
 ```
 
-## Usage
+## 用法
 
-Wrap your app with `Theme` and pass the theme:
+用 `Theme` 包裹你的应用，并传入主题：
 
 ```tsx
 import {Theme} from '@astryxdesign/core/theme';
@@ -21,37 +21,37 @@ function App() {
 }
 ```
 
-### Import paths
+### 导入路径
 
-| Path                                      | Use case                                                    |
-| ----------------------------------------- | ----------------------------------------------------------- |
-| `@astryxdesign/theme-chocolate`           | Source build (StyleX compilation via `@astryxdesign/build`) |
-| `@astryxdesign/theme-chocolate/built`     | Pre-built dist (Tailwind, plain CSS, or no build step)      |
-| `@astryxdesign/theme-chocolate/theme.css` | Pre-built CSS file (import in your stylesheet)              |
+| 路径                                      | 使用场景                                                |
+| ----------------------------------------- | ------------------------------------------------------- |
+| `@astryxdesign/theme-chocolate`           | 源码构建（通过 `@astryxdesign/build` 进行 StyleX 编译） |
+| `@astryxdesign/theme-chocolate/built`     | 预构建产物（Tailwind、纯 CSS 或无构建步骤）             |
+| `@astryxdesign/theme-chocolate/theme.css` | 预构建的 CSS 文件（在你的样式表中导入）                 |
 
-If you're using `@astryxdesign/build` for StyleX source compilation, import from the bare path. Otherwise, use `/built`.
+如果你使用 `@astryxdesign/build` 进行 StyleX 源码编译，请从裸路径导入；否则请使用 `/built`。
 
-### CSS import
+### CSS 导入
 
-Add the theme CSS to your stylesheet:
+将主题 CSS 添加到你的样式表：
 
 ```css
 @import '@astryxdesign/theme-chocolate/theme.css';
 ```
 
-## Fonts
+## 字体
 
-This theme uses custom typefaces:
+此主题使用自定义字体：
 
-| Role    | Font           |
-| ------- | -------------- |
-| Body    | Albert Sans    |
-| Heading | Fraunces       |
-| Code    | JetBrains Mono |
+| 角色 | 字体           |
+| ---- | -------------- |
+| 正文 | Albert Sans    |
+| 标题 | Fraunces       |
+| 代码 | JetBrains Mono |
 
-**These fonts must be loaded separately.** The theme references them by name but does not bundle the font files.
+**这些字体必须单独加载。** 主题仅按名称引用它们，并不捆绑字体文件。
 
-Add this to your HTML `<head>`:
+将以下内容添加到 HTML 的 `<head>` 中：
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -61,4 +61,4 @@ Add this to your HTML `<head>`:
   href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" />
 ```
 
-Without this, the theme falls back to system fonts.
+如果没有这些内容，主题将回退到系统字体。

@@ -24,6 +24,9 @@
 /* Accessible name for the focusable status icon button inside an input when statusVariant is 'tooltip' and the status type is warning. Activating or focusing the button reveals the warning message in a tooltip. */
 "@astryx.input.statusButton.warning" = "警告详情";
 
+/* Tooltip shown on hover or keyboard focus over the X button inside an input that clears its value. Verb, imperative. Shown alone beside the field, so it names only the action; the screen-reader label names the field separately. */
+"@astryx.inputClearButton.tooltip" = "清除";
+
 /* Screen-reader-only default name for a standalone Spinner's role="status" element, used when the consumer supplies neither `aria-label` nor a visible string label. Present-progressive form. Kept separate from `button.loading` and `typeahead.loading` — translations may diverge. */
 "@astryx.spinner.loading" = "加载中";
 

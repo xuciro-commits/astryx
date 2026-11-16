@@ -1,16 +1,16 @@
 # @astryxdesign/theme-stone
 
-Warm stone and slate theme with earthy neutral tones. Uses Montserrat for headings, Figtree for body text, and [Lucide](https://lucide.dev) icons.
+温暖的石色与板岩主题，带有大地色中性色调。标题使用 Montserrat，正文使用 Figtree，并采用 [Lucide](https://lucide.dev) 图标。
 
-## Install
+## 安装
 
 ```bash
 npm install @astryxdesign/theme-stone
 ```
 
-## Usage
+## 用法
 
-Wrap your app with `Theme` and pass the theme:
+用 `Theme` 包裹你的应用，并传入主题：
 
 ```tsx
 import {Theme} from '@astryxdesign/core/theme';
@@ -21,41 +21,25 @@ function App() {
 }
 ```
 
-### Import paths
+### 导入路径
 
-| Path                                  | Use case                                                    |
-| ------------------------------------- | ----------------------------------------------------------- |
-| `@astryxdesign/theme-stone`           | Source build (StyleX compilation via `@astryxdesign/build`) |
-| `@astryxdesign/theme-stone/built`     | Pre-built dist (Tailwind, plain CSS, or no build step)      |
-| `@astryxdesign/theme-stone/theme.css` | Pre-built CSS file (import in your stylesheet)              |
+| 路径                                  | 使用场景                                                |
+| ------------------------------------- | ------------------------------------------------------- |
+| `@astryxdesign/theme-stone`           | 源码构建（通过 `@astryxdesign/build` 进行 StyleX 编译） |
+| `@astryxdesign/theme-stone/built`     | 预构建产物（Tailwind、纯 CSS 或无构建步骤）             |
+| `@astryxdesign/theme-stone/theme.css` | 预构建的 CSS 文件（在你的样式表中导入）                 |
 
-If you're using `@astryxdesign/build` for StyleX source compilation, import from the bare path. Otherwise, use `/built`.
+如果你使用 `@astryxdesign/build` 进行 StyleX 源码编译，请从裸路径导入；否则请使用 `/built`。
 
-## Approved palette
+## 已批准的调色板
 
-Stone keeps its generation request in `palette.config.json`, the reviewed
-`astryx-oklch-v1` output in `src/stonePalettes.generated.ts`, and the detached
-generation receipt beside it. `stonePaletteRefs.generated.ts` provides the
-small runtime projection consumed by the maintained theme.
+Stone 将生成请求保存在 `palette.config.json` 中，将已审查的 `astryx-oklch-v1` 输出保存在 `src/stonePalettes.generated.ts` 中，并将独立的生成回执放在其旁边。`stonePaletteRefs.generated.ts` 提供由维护中的主题使用的小型运行时投影。
 
-The palette preserves Stone's exact configured neutral and pastel anchors while
-generating separate light and dark ramps. Green, Yellow, Teal, and Cyan use
-reviewed re-seeded midtones rather than preserving their released compatibility
-ramp values. The complete palette remains available for authoring and audits; the
-runtime theme imports only the selected stops in
-`stonePaletteRefs.generated.ts`.
+该调色板保留 Stone 精确配置的中性色和粉彩色锚点，同时生成独立的浅色和深色色阶。Green、Yellow、Teal 和 Cyan 使用经过审查的重新播种中间调，而不保留其已发布的兼容色阶值。完整调色板仍可用于创作和审计；运行时主题仅导入 `stonePaletteRefs.generated.ts` 中选定的色标。
 
-Use semantic theme tokens in components. Stone's theme source maps those roles
-to named palette stops; components never read raw palette values directly. The
-prebuilt theme and CSS contain resolved values. Changing the generated palette
-must include the regenerated receipt, selected-reference module, token diff,
-tests, and visual review. Keep `stoneTheme.ts` and the CLI template copy
-synchronized when changing a mapping.
+在组件中使用语义主题令牌。Stone 的主题源码将这些角色映射到命名的调色板色标；组件从不直接读取原始调色板值。预构建主题和 CSS 包含解析后的值。更改生成的调色板时，必须同时包含重新生成的回执、选定引用模块、令牌差异、测试和视觉审查。更改映射时，保持 `stoneTheme.ts` 与 CLI 模板副本同步。
 
-The bare package export preserves the original `stonePalettes.family[stop]`,
-`stonePalettes.family.hue`, and `stonePalettes.family.chroma` shape. The generated
-light and dark ramps are private authoring artifacts used by the maintained theme,
-tests, and review tooling rather than an expanded public palette API:
+裸包导出保留原始的 `stonePalettes.family[stop]`、`stonePalettes.family.hue` 和 `stonePalettes.family.chroma` 结构。生成的浅色和深色色阶是私有创作产物，供维护中的主题、测试和审查工具使用，而非扩展的公共调色板 API：
 
 ```ts
 import {stonePalettes} from '@astryxdesign/theme-stone';
@@ -63,32 +47,29 @@ import {stonePalettes} from '@astryxdesign/theme-stone';
 const existingSharedRampValue = stonePalettes.orange[90];
 ```
 
-The palette is an authoring and audit reference, not a component styling API,
-chart-color API, or accessibility guarantee. Components should read semantic
-tokens, charts should use the data-visualization color API, and every custom
-foreground/background pair still needs contextual contrast verification.
+该调色板是创作和审计参考，而非组件样式 API、图表颜色 API 或无障碍保证。组件应读取语义令牌，图表应使用数据可视化颜色 API，每一对自定义前景/背景色仍需进行上下文对比度验证。
 
-### CSS import
+### CSS 导入
 
-Add the theme CSS to your stylesheet:
+将主题 CSS 添加到你的样式表：
 
 ```css
 @import '@astryxdesign/theme-stone/theme.css';
 ```
 
-## Fonts
+## 字体
 
-This theme uses custom typefaces:
+此主题使用自定义字体：
 
-| Role    | Font           |
-| ------- | -------------- |
-| Body    | Figtree        |
-| Heading | Montserrat     |
-| Code    | JetBrains Mono |
+| 角色 | 字体           |
+| ---- | -------------- |
+| 正文 | Figtree        |
+| 标题 | Montserrat     |
+| 代码 | JetBrains Mono |
 
-**These fonts must be loaded separately.** The theme references them by name but does not bundle the font files.
+**这些字体必须单独加载。** 主题仅按名称引用它们，并不捆绑字体文件。
 
-Add this to your HTML `<head>`:
+将以下内容添加到 HTML 的 `<head>` 中：
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -98,4 +79,4 @@ Add this to your HTML `<head>`:
   href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" />
 ```
 
-Without this, the theme falls back to system fonts.
+如果没有这些内容，主题将回退到系统字体。

@@ -1,16 +1,16 @@
 # @astryxdesign/theme-neutral
 
-Muted, minimal aesthetic with Figtree typography. Uses [Lucide](https://lucide.dev) icons.
+低调、极简的美学风格，采用 Figtree 字体排印。使用 [Lucide](https://lucide.dev) 图标。
 
-## Install
+## 安装
 
 ```bash
 npm install @astryxdesign/theme-neutral
 ```
 
-## Usage
+## 用法
 
-Wrap your app with `Theme` and pass the theme:
+用 `Theme` 包裹你的应用，并传入主题：
 
 ```tsx
 import {Theme} from '@astryxdesign/core/theme';
@@ -21,29 +21,21 @@ function App() {
 }
 ```
 
-### Import paths
+### 导入路径
 
-| Path                                    | Use case                                                    |
-| --------------------------------------- | ----------------------------------------------------------- |
-| `@astryxdesign/theme-neutral`           | Source build (StyleX compilation via `@astryxdesign/build`) |
-| `@astryxdesign/theme-neutral/built`     | Pre-built dist (Tailwind, plain CSS, or no build step)      |
-| `@astryxdesign/theme-neutral/theme.css` | Pre-built CSS file (import in your stylesheet)              |
+| 路径                                    | 使用场景                                                |
+| --------------------------------------- | ------------------------------------------------------- |
+| `@astryxdesign/theme-neutral`           | 源码构建（通过 `@astryxdesign/build` 进行 StyleX 编译） |
+| `@astryxdesign/theme-neutral/built`     | 预构建产物（Tailwind、纯 CSS 或无构建步骤）             |
+| `@astryxdesign/theme-neutral/theme.css` | 预构建的 CSS 文件（在你的样式表中导入）                 |
 
-If you're using `@astryxdesign/build` for StyleX source compilation, import from the bare path. Otherwise, use `/built`.
+如果你使用 `@astryxdesign/build` 进行 StyleX 源码编译，请从裸路径导入；否则请使用 `/built`。
 
-## Approved palette
+## 已批准的调色板
 
-The repository keeps Neutral's generation request in `palette.config.json`, the
-exact `astryx-oklch-v1` output in `src/neutralPalettes.generated.ts`, and its
-generation receipt beside that file. `src/neutralPalettes.ts` provides the stable
-theme-local import. Neutral currently uses 21 numbered stops in each light and
-dark ramp, but that layout is a Neutral decision rather than a requirement for
-other themes.
+仓库将 Neutral 的生成请求保存在 `palette.config.json` 中，将精确的 `astryx-oklch-v1` 输出保存在 `src/neutralPalettes.generated.ts` 中，并将生成回执放在该文件旁边。`src/neutralPalettes.ts` 提供稳定的主题内导入入口。Neutral 目前在每个浅色和深色色阶中都使用 21 个编号色标，但这一布局是 Neutral 自身的决定，而非对其他主题的要求。
 
-Exact solid endpoints use the same stable palette namespace as the tonal
-families: `neutralPalettes.black` and `neutralPalettes.white`. Theme definitions
-can assign those values directly to semantic tokens without treating a neutral
-ramp endpoint as the named color.
+精确的纯色端点使用与色调家族相同的稳定调色板命名空间：`neutralPalettes.black` 和 `neutralPalettes.white`。主题定义可以将这些值直接赋给语义令牌，而不必将中性色阶的端点视为命名颜色。
 
 ```ts
 import {neutralPalettes} from '@astryxdesign/theme-neutral';
@@ -53,48 +45,37 @@ const tokens = {
 };
 ```
 
-Neutral opts into a muted dark edge for chromatic families. Stops 5 through 25
-use 50% of their realized chroma, then recover smoothly to the standard dark
-recipe at stop 60. Yellow uses a gentler 65% edge multiplier. Light ramps,
-neutral ramps, and stops 60 through 100 remain unchanged.
+Neutral 为彩色家族采用了柔和的深色边缘。色标 5 至 25 使用其实际彩度的 50%，然后在色标 60 处平滑恢复到标准的深色配方。黄色使用更温和的 65% 边缘乘数。浅色色阶、中性色阶以及色标 60 至 100 保持不变。
 
-Neutral is the reference implementation for palette-aware theme templates.
-Templates may follow its ownership, review, and alignment workflow without
-copying its colors or stop layout.
+Neutral 是调色板感知主题模板的参考实现。模板可以遵循其归属、审查和对齐工作流，而无需复制其颜色或色标布局。
 
-Use semantic theme tokens in components. Neutral's theme source maps those roles
-to named palette stops, while the prebuilt theme and CSS contain their resolved
-values. Changing the generated palette must include the regenerated receipt,
-token diff, tests, and visual review.
+在组件中使用语义主题令牌。Neutral 的主题源码将这些角色映射到命名的调色板色标，而预构建主题和 CSS 包含其解析后的值。更改生成的调色板时，必须同时包含重新生成的回执、令牌差异、测试和视觉审查。
 
-The committed request and receipt preserve the generation inputs and provenance.
-CLI regeneration is not yet a supported release workflow; until that tooling
-ships, treat the generated module and receipt as reviewed artifacts rather than
-editing them by hand.
+已提交的请求和回执保留了生成输入与来源信息。CLI 重新生成尚不是受支持的发布工作流；在该工具发布之前，请将生成的模块和回执视为已审查的产物，而不要手动编辑它们。
 
-### CSS import
+### CSS 导入
 
-Add the theme CSS to your stylesheet:
+将主题 CSS 添加到你的样式表：
 
 ```css
 @import '@astryxdesign/theme-neutral/theme.css';
 ```
 
-This is required for component-level theme overrides (colors, radii, typography) to take effect.
+这是组件级主题覆盖（颜色、圆角、字体排印）生效所必需的。
 
-## Fonts
+## 字体
 
-This theme uses a custom typeface:
+此主题使用自定义字体：
 
-| Role    | Font                        |
-| ------- | --------------------------- |
-| Body    | Figtree                     |
-| Heading | Figtree                     |
-| Code    | System monospace (built in) |
+| 角色 | 字体                 |
+| ---- | -------------------- |
+| 正文 | Figtree              |
+| 标题 | Figtree              |
+| 代码 | 系统等宽字体（内置） |
 
-**Figtree must be loaded separately.** The theme references it by name but does not bundle the font files.
+**Figtree 必须单独加载。** 主题仅按名称引用它，并不捆绑字体文件。
 
-Add this to your HTML `<head>`:
+将以下内容添加到 HTML 的 `<head>` 中：
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -104,12 +85,12 @@ Add this to your HTML `<head>`:
   href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" />
 ```
 
-Without this, the theme falls back to system fonts. If you'd rather avoid external font requests entirely (offline apps, no-third-party-request policies), that fallback is a supported choice — the system stack is designed to hold up on its own.
+如果没有这些内容，主题将回退到系统字体。如果你希望完全避免外部字体请求（离线应用、禁止第三方请求的政策），这种回退是受支持的选择——系统字体栈的设计足以独立支撑。
 
-## Related Packages
+## 相关包
 
-| Package                                                                          | Description                               |
-| -------------------------------------------------------------------------------- | ----------------------------------------- |
-| [`@astryxdesign/core`](https://github.com/meta/astryx/tree/main/packages/core)   | Core components and theme system          |
-| [`@astryxdesign/build`](https://github.com/meta/astryx/tree/main/packages/build) | Build plugins for StyleX source builds    |
-| [`@astryxdesign/cli`](https://github.com/meta/astryx/tree/main/packages/cli)     | CLI tooling including `astryx docs theme` |
+| 包                                                                               | 描述                               |
+| -------------------------------------------------------------------------------- | ---------------------------------- |
+| [`@astryxdesign/core`](https://github.com/meta/astryx/tree/main/packages/core)   | 核心组件与主题系统                 |
+| [`@astryxdesign/build`](https://github.com/meta/astryx/tree/main/packages/build) | 用于 StyleX 源码构建的构建插件     |
+| [`@astryxdesign/cli`](https://github.com/meta/astryx/tree/main/packages/cli)     | CLI 工具，包括 `astryx docs theme` |

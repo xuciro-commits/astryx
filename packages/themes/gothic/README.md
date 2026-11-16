@@ -1,18 +1,18 @@
 # @astryxdesign/theme-gothic
 
-**Dark-only** atmospheric gothic theme for Astryx — deep blue-gray surfaces, distressed display heading, and pastel categorical accents that glow against the dark page like illuminated panels. Uses Manufacturing Consent for headings, Fustat for body text, and [Lucide](https://lucide.dev) icons.
+**仅深色**的氛围感哥特主题，专为 Astryx 打造——深蓝灰色表面、做旧质感的展示标题，以及如发光面板般在深色页面上闪耀的粉彩分类点缀。标题使用 Manufacturing Consent，正文使用 Fustat，并采用 [Lucide](https://lucide.dev) 图标。
 
-> Gothic is a single-mode theme: it always renders dark, regardless of the user's system color preference. For best browser-chrome integration (scrollbars, native form controls), pass `mode="dark"` to your `Theme` provider.
+> Gothic 是单模式主题：无论用户的系统颜色偏好如何，它始终渲染为深色。为了获得最佳的浏览器界面集成（滚动条、原生表单控件），请向 `Theme` 提供者传入 `mode="dark"`。
 
-## Install
+## 安装
 
 ```bash
 npm install @astryxdesign/theme-gothic
 ```
 
-## Usage
+## 用法
 
-Wrap your app with `Theme` and pass the theme:
+用 `Theme` 包裹你的应用，并传入主题：
 
 ```tsx
 import {Theme} from '@astryxdesign/core/theme';
@@ -27,53 +27,51 @@ function App() {
 }
 ```
 
-### Import paths
+### 导入路径
 
-| Path                                   | Use case                                                    |
-| -------------------------------------- | ----------------------------------------------------------- |
-| `@astryxdesign/theme-gothic`           | Source build (StyleX compilation via `@astryxdesign/build`) |
-| `@astryxdesign/theme-gothic/built`     | Pre-built dist (Tailwind, plain CSS, or no build step)      |
-| `@astryxdesign/theme-gothic/theme.css` | Pre-built CSS file (import in your stylesheet)              |
+| 路径                                   | 使用场景                                                |
+| -------------------------------------- | ------------------------------------------------------- |
+| `@astryxdesign/theme-gothic`           | 源码构建（通过 `@astryxdesign/build` 进行 StyleX 编译） |
+| `@astryxdesign/theme-gothic/built`     | 预构建产物（Tailwind、纯 CSS 或无构建步骤）             |
+| `@astryxdesign/theme-gothic/theme.css` | 预构建的 CSS 文件（在你的样式表中导入）                 |
 
-If you're using `@astryxdesign/build` for StyleX source compilation, import from the bare path. Otherwise, use `/built`.
+如果你使用 `@astryxdesign/build` 进行 StyleX 源码编译，请从裸路径导入；否则请使用 `/built`。
 
-### CSS import
+### CSS 导入
 
-Add the theme CSS to your stylesheet:
+将主题 CSS 添加到你的样式表：
 
 ```css
 @import '@astryxdesign/theme-gothic/theme.css';
 ```
 
-## Aesthetic
+## 美学
 
-Gothic is dark-only by design: every token is a single value, and the
-output CSS contains no `light-dark()`, so the theme renders identically
-whether the user prefers light or dark.
+Gothic 在设计上仅支持深色：每个令牌都是单一值，输出的 CSS 不包含 `light-dark()`，因此无论用户偏好浅色还是深色，主题的渲染效果都完全一致。
 
-| Aspect      | Choice                                          |
-| ----------- | ----------------------------------------------- |
-| Mode        | Dark only, no light variant                     |
-| Neutral     | Cool blue-gray (#101314 → #E8F1F6)              |
-| Status      | Forest moss, blood crimson, candlelight amber   |
-| Categorical | Pastel-on-dark: light backgrounds, dark text    |
-| Radius      | Subtle rounding (2–24px)                        |
-| Motion      | Slower / theatrical (150ms → 800ms, 0.75 ratio) |
-| Type scale  | 14px base, 1.2 ratio                            |
+| 方面     | 选择                                          |
+| -------- | --------------------------------------------- |
+| 模式     | 仅深色，无浅色变体                            |
+| 中性色   | 冷调蓝灰色（#101314 → #E8F1F6）               |
+| 状态色   | 森林苔藓、血红、烛光琥珀                      |
+| 分类色   | 深色上的粉彩：浅色背景、深色文字              |
+| 圆角     | 轻微圆角（2–24px）                            |
+| 动效     | 更慢 / 更具戏剧性（150ms → 800ms，0.75 比例） |
+| 字号体系 | 基准 14px，比例 1.2                           |
 
-## Fonts
+## 字体
 
-This theme uses custom typefaces:
+此主题使用自定义字体：
 
-| Role    | Font                  | Vibe               |
-| ------- | --------------------- | ------------------ |
-| Body    | Fustat                | Clean modern sans  |
-| Heading | Manufacturing Consent | Distressed display |
-| Code    | JetBrains Mono        | Crisp, monospaced  |
+| 角色 | 字体                  | 风格             |
+| ---- | --------------------- | ---------------- |
+| 正文 | Fustat                | 干净现代的无衬线 |
+| 标题 | Manufacturing Consent | 做旧展示字体     |
+| 代码 | JetBrains Mono        | 清晰、等宽       |
 
-**These fonts must be loaded separately.** The theme references them by name but does not bundle the font files.
+**这些字体必须单独加载。** 主题仅按名称引用它们，并不捆绑字体文件。
 
-Add this to your HTML `<head>`:
+将以下内容添加到 HTML 的 `<head>` 中：
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -83,31 +81,17 @@ Add this to your HTML `<head>`:
   href="https://fonts.googleapis.com/css2?family=Fustat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Manufacturing+Consent&display=swap" />
 ```
 
-Without this, the theme falls back to system fonts (heading falls through Manufacturing Consent → UnifrakturMaguntia → Old English Text MT → serif).
+如果没有这些内容，主题将回退到系统字体（标题会依次回退到 Manufacturing Consent → UnifrakturMaguntia → Old English Text MT → serif）。
 
-## Reviewed palette and compatibility ramp
+## 已审查的调色板与兼容色阶
 
-Gothic keeps its generation request in `palette.config.json`, the reviewed
-`astryx-oklch-v1` output in `src/gothicPalettes.generated.ts`, and the detached
-generation receipt beside it. The maintained theme renders selected values from
-that private generated palette.
+Gothic 将生成请求保存在 `palette.config.json` 中，将已审查的 `astryx-oklch-v1` 输出保存在 `src/gothicPalettes.generated.ts` 中，并将独立的生成回执放在其旁边。维护中的主题会渲染该私有生成调色板中的选定值。
 
-The public `gothicPalettes.family[stop]` export shown below is a frozen released
-compatibility ramp, not the palette the maintained theme renders. Its numeric
-stops and each family's `hue` and `chroma` metadata remain byte-identical in
-`gothicTheme.ts` so existing consumers do not need to migrate.
+下文展示的公共 `gothicPalettes.family[stop]` 导出是冻结的已发布兼容色阶，而不是维护中的主题所渲染的调色板。其数字色标以及每个家族的 `hue` 和 `chroma` 元数据在 `gothicTheme.ts` 中保持字节级一致，因此现有使用者无需迁移。
 
-The palette is dark-only. It preserves Gothic's pastel categorical colors and
-uses deliberate jewel-tone anchors for syntax highlighting. The complete
-generated palette is private authoring data; the runtime theme imports only the
-selected stops in `gothicPaletteRefs.generated.ts`.
+该调色板仅支持深色。它保留 Gothic 的粉彩分类色，并使用精心挑选的宝石色调锚点来进行语法高亮。完整的生成调色板是私有创作数据；运行时主题仅导入 `gothicPaletteRefs.generated.ts` 中选定的色标。
 
-Use semantic theme tokens in components. Gothic's theme source maps the roles
-it owns to named palette stops; components never read raw palette values
-directly. The prebuilt theme and CSS contain resolved values. Changing the
-palette must include the regenerated receipt, selected-reference module, token
-diff, tests, and visual review. Keep `gothicTheme.ts` and the CLI template copy
-synchronized when changing a mapping.
+在组件中使用语义主题令牌。Gothic 的主题源码将其拥有的角色映射到命名的调色板色标；组件从不直接读取原始调色板值。预构建主题和 CSS 包含解析后的值。更改调色板时，必须同时包含重新生成的回执、选定引用模块、令牌差异、测试和视觉审查。更改映射时，保持 `gothicTheme.ts` 与 CLI 模板副本同步。
 
 ```ts
 import {gothicPalettes} from '@astryxdesign/theme-gothic';
@@ -116,7 +100,4 @@ const purple = gothicPalettes.purple[80];
 const neutral = gothicPalettes.neutral[10];
 ```
 
-The palette is an authoring and audit reference, not a component styling API,
-chart-color API, or accessibility guarantee. Components should read semantic
-tokens, charts should use the data-visualization color API, and every custom
-foreground/background pair still needs contextual contrast verification.
+该调色板是创作和审计参考，而非组件样式 API、图表颜色 API 或无障碍保证。组件应读取语义令牌，图表应使用数据可视化颜色 API，每一对自定义前景/背景色仍需进行上下文对比度验证。

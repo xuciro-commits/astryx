@@ -2,13 +2,13 @@
 
 # 0.7.16
 
-#### Documentation
+#### 文档
 
-- Fix the theme README usage examples to import `Theme` from `@astryxdesign/core/theme` instead of the removed `XDSTheme` alias, and refresh the bundled theme lists in the package index and contributor guide. ([#11016](https://github.com/meta/astryx/pull/11016))
+- 修正主题 README 的用法示例，改为从 `@astryxdesign/core/theme` 导入 `Theme`，而不是已移除的 `XDSTheme` 别名；并刷新包索引和贡献者指南中的随附主题列表。([#11016](https://github.com/meta/astryx/pull/11016))
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @karlmoriaty
 
@@ -24,13 +24,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.7.13
 
-#### Fixes
+#### 问题修复
 
-- dependency floors move to current releases: the build package needs autoprefixer 10.6.2, browserslist 4.29.5 and lightningcss 1.33.0; the CLI needs ignore 7.0.14, jscodeshift 17.4.0, linkedom 0.18.15, zod 4.6.7 and @stylexjs/babel-plugin 0.19.1; each theme needs lucide-react 1.66.0. Peer ranges do not change. (#10709)
+- 依赖下限已提升到当前发布版本：构建包需要 autoprefixer 10.6.2、browserslist 4.29.5 和 lightningcss 1.33.0；CLI 需要 ignore 7.0.14、jscodeshift 17.4.0、linkedom 0.18.15、zod 4.6.7 和 @stylexjs/babel-plugin 0.19.1；每个主题需要 lucide-react 1.66.0。peer 版本范围不变。(#10709)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @cixzhang
 
@@ -38,16 +38,16 @@ Thanks to everyone who contributed to this release:
 
 # 0.7.12
 
-#### Fixes
+#### 问题修复
 
-- Butter's buttons take inline padding only and use `Button`'s own block padding. Their height is unchanged. (#10588)
-- Theme packages publish the declarations of their `./theme.css` export. The export pointed `types` at `theme.css.d.ts`, which the package didn't ship, so TypeScript found no types for `import '@astryxdesign/theme-<name>/theme.css'`. The export is unchanged; the file is now published. (#10903)
-- Theme packages declare `"type": "module"`, so bundlers and Node read the `./built` entry as the ES module it is. Before, it was an ES module in a `.js` file in a package without a `type`, which tools that follow the package's `type` read as CommonJS. Every export subpath stays the same. The CommonJS build of the source entry is now `dist/source.cjs` behind the same `require` condition, with its own CommonJS declarations (`dist/source.d.cts`), so TypeScript types each condition in the format it loads. As before, `require('…/built')` loads an ES module, so it needs a Node version with `require(esm)` (22.12 or later). Deep imports that reach past `exports` into `dist/` change too: `dist/source.js` is now `dist/source.cjs`, and a `require` of `dist/<theme>.js` gets an ES module (`require(esm)`, Node 22.12 or later). (#10876)
-- The Butter, Stone and Y2K themes set supporting text (`--text-supporting-size`) in rem instead of a fixed 12px, so it grows when a reader raises the browser's default font size, like the rest of the text. At the default size it is still 12px. The CLI's copies of these themes match. (#10320)
+- Butter 的按钮只采用行内内边距，并使用 `Button` 自身的块级内边距。其高度不变。(#10588)
+- 主题包现在会发布其 `./theme.css` 导出的声明。该导出将 `types` 指向 `theme.css.d.ts`，但包中并未附带该文件，因此 TypeScript 找不到 `import '@astryxdesign/theme-<name>/theme.css'` 的类型。导出本身不变；该文件现在已发布。(#10903)
+- 主题包声明了 `"type": "module"`，因此打包器和 Node 会把 `./built` 入口当作它实际所属的 ES 模块来读取。以前，它是一个没有 `type` 的包中 `.js` 文件里的 ES 模块，遵循包 `type` 的工具会将其读作 CommonJS。所有导出的子路径保持不变。源码入口的 CommonJS 构建现在是在同一 `require` 条件下提供的 `dist/source.cjs`，并带有自己的 CommonJS 声明（`dist/source.d.cts`），因此 TypeScript 会按各条件实际加载的格式为其提供类型。与以前一样，`require('…/built')` 加载的是 ES 模块，因此需要支持 `require(esm)` 的 Node 版本（22.12 或更高）。越过 `exports` 深入 `dist/` 的深层导入也会变化：`dist/source.js` 现在是 `dist/source.cjs`，而 `require` `dist/<theme>.js` 得到的是 ES 模块（`require(esm)`，Node 22.12 或更高）。(#10876)
+- Butter、Stone 和 Y2K 主题将辅助文本（`--text-supporting-size`）以 rem 为单位设置，而不是固定的 12px，因此当读者调高浏览器默认字体大小时它会随之增大，与其余文本一样。在默认字号下仍为 12px。CLI 中这些主题的副本也保持一致。(#10320)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @cixzhang
 
@@ -75,13 +75,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.7.6
 
-#### Fixes
+#### 问题修复
 
-- Published packages no longer include repository test and benchmark files, reducing install size without changing exports. (#9153)
+- 已发布的包不再包含仓库中的测试和基准测试文件，在不改变导出的情况下减小安装体积。(#9153)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @parinith-web
 
@@ -89,33 +89,33 @@ Thanks to everyone who contributed to this release:
 
 # 0.7.5
 
-#### New Features
+#### 新功能
 
-- Status colors are readable everywhere they appear, and Info is a status of its own. Each status (info, success, warning, error) now has a strong fill (`--color-<status>`) with content on it (`--color-on-<status>`, at least 4.5:1), a pale fill (`--color-<status>-muted`) with its content (`--color-on-<status>-muted`), and readable text for the page and cards (`--color-text-<status>`). Status icons (`--color-icon-<status>`) and borders (`--color-border-<status>`) default to the readable text color. The Info roles (`--color-info`, `--color-on-info`, `--color-info-muted`, …) are new and no longer borrow your accent color.
+- 状态色在所有出现的位置都清晰可读，并且 Info 成为独立的状态。每个状态（info、success、warning、error）现在都有一个强填充色（`--color-<status>`）及其上的内容色（`--color-on-<status>`，至少 4.5:1）、一个浅填充色（`--color-<status>-muted`）及其内容色（`--color-on-<status>-muted`），以及用于页面和卡片的可读文本色（`--color-text-<status>`）。状态图标（`--color-icon-<status>`）和边框（`--color-border-<status>`）默认为可读文本色。Info 角色（`--color-info`、`--color-on-info`、`--color-info-muted` 等）是新增的，不再借用你的强调色。
 
-  `--color-success`, `--color-warning`, and `--color-error` and `bg-<status>` keep their meaning as the strong fills. In Tailwind, `bg-info`, `bg-info-muted`, `text-on-<status>`, `text-on-<status>-muted`, and `text-status-<status>` are new; `text-`, `decoration-`, `placeholder-`, and `caret-<status>` now use the readable text shade, and `border-`, `divide-`, `outline-`, and `ring-<status>` use the border shade, while `bg-`, `accent-`, `fill-`, `stroke-<status>`, shadows, and gradients keep the strong fill. For example, Core's light `text-warning` is now `#753F07` instead of `#E9AF08`. To keep the fill color on text, write `text-[var(--color-warning)]`.
+  `--color-success`、`--color-warning` 和 `--color-error` 以及 `bg-<status>` 继续保持其作为强填充色的含义。在 Tailwind 中，`bg-info`、`bg-info-muted`、`text-on-<status>`、`text-on-<status>-muted` 和 `text-status-<status>` 是新增的；`text-`、`decoration-`、`placeholder-` 和 `caret-<status>` 现在使用可读文本色，`border-`、`divide-`、`outline-` 和 `ring-<status>` 使用边框色，而 `bg-`、`accent-`、`fill-`、`stroke-<status>`、阴影和渐变保留强填充色。例如，Core 浅色主题的 `text-warning` 现在是 `#753F07`，而不是 `#E9AF08`。若要在文本上保留填充色，请写 `text-[var(--color-warning)]`。
 
-  What changes on screen:
+  屏幕上会发生的变化：
 
-  - Core's dark Error content (`--color-on-error`) is now `#0A1317` instead of white, so text on dark-mode error fills reaches 4.5:1. Core's Info Badge uses `#0064E0` instead of the accent (`#2694FE` in dark mode).
-  - Status icons (Icon `color="info|success|warning|error"`), Stepper status glyphs, and Chat tool-call status icons use the readable shades. Core's light success icon is now `#09441F` instead of `#0D8626`.
-  - Input and FileInput status borders use the border shades. Core's light warning border is now `#753F07` instead of `#E9AF08`, and Butter's light success and warning input borders reach 3:1.
-  - Banner draws its title, description, icon, and controls in the on-muted colors, and fills Info with `--color-info-muted`.
-  - Status fills keep a visible edge in forced-colors mode.
-  - Content on Chocolate and Matcha success and error fills, and on Stone success, warning, and error fills, now reaches 4.5:1.
-  - Every first-party theme sets a blue Info. Chocolate and Matcha Info Badges move from the accent to that blue; Butter keeps its own Info Badge colors.
-  - Neutral's `--color-success`, `--color-warning`, and `--color-error` are now the fills its Badges already showed, and its `--color-info` is `#0074E2` (`#6D9CFE` in dark mode). Its Badges, StatusDots, progress fills, and Stepper badges look the same; its accent ProgressBar, StatusDot, and Stepper now use Neutral's accent instead of blue.
-  - Neutral no longer defines its undocumented local status tokens. Use the standard roles instead: `--astryx-theme-neutral-color-status-fill-success`, `-status-fill-warning`, and `-status-fill-error` → `--color-success`, `--color-warning`, `--color-error`; `-status-muted-accent` → `--color-info-muted`; `-on-tint-neutral` → `--color-neutral`; the `-on-tint-overlay-*` and `-destructive-overlay-*` tokens → `--color-overlay-hover` and `--color-overlay-pressed`. `--astryx-theme-neutral-color-status-fill-accent` keeps its value but is deprecated.
+  - Core 深色模式的 Error 内容色（`--color-on-error`）现在是 `#0A1317`，而不是白色，因此深色模式错误填充色上的文本达到 4.5:1。Core 的 Info Badge 使用 `#0064E0`，而不是强调色（深色模式下为 `#2694FE`）。
+  - 状态图标（Icon `color="info|success|warning|error"`）、Stepper 的状态字形以及 Chat 的工具调用状态图标使用可读色。Core 浅色模式的 success 图标现在是 `#09441F`，而不是 `#0D8626`。
+  - Input 和 FileInput 的状态边框使用边框色。Core 浅色模式的 warning 边框现在是 `#753F07`，而不是 `#E9AF08`，Butter 浅色模式的 success 和 warning 输入框边框达到 3:1。
+  - Banner 使用 on-muted 颜色绘制其标题、描述、图标和控件，并用 `--color-info-muted` 填充 Info。
+  - 在强制颜色（forced-colors）模式下，状态填充色保留可见的边缘。
+  - Chocolate 和 Matcha 的 success 与 error 填充色上，以及 Stone 的 success、warning 和 error 填充色上的内容色，现在达到 4.5:1。
+  - 每个第一方主题都设置了蓝色的 Info。Chocolate 和 Matcha 的 Info Badge 从强调色改为该蓝色；Butter 保留自己的 Info Badge 颜色。
+  - Neutral 的 `--color-success`、`--color-warning` 和 `--color-error` 现在是其 Badge 早已显示的填充色，其 `--color-info` 为 `#0074E2`（深色模式下为 `#6D9CFE`）。其 Badge、StatusDot、进度填充和 Stepper 徽章外观不变；其强调色 ProgressBar、StatusDot 和 Stepper 现在使用 Neutral 的强调色，而不是蓝色。
+  - Neutral 不再定义其未文档化的本地状态令牌。请改用标准角色：`--astryx-theme-neutral-color-status-fill-success`、`-status-fill-warning` 和 `-status-fill-error` → `--color-success`、`--color-warning`、`--color-error`；`-status-muted-accent` → `--color-info-muted`；`-on-tint-neutral` → `--color-neutral`；`-on-tint-overlay-*` 和 `-destructive-overlay-*` 令牌 → `--color-overlay-hover` 和 `--color-overlay-pressed`。`--astryx-theme-neutral-color-status-fill-accent` 保留其值，但已弃用。
 
-  Custom themes get the content and text roles they don't set: they are derived from the theme's status fills. To keep a component's previous color, set the matching role, for example `--color-icon-success` to your old `--color-success`.
+  自定义主题会获得它们未设置的内容色和文本色角色：这些角色由主题的状态填充色推导而来。要保留某个组件之前的颜色，请设置对应的角色，例如将 `--color-icon-success` 设置为你原来的 `--color-success`。
 
-#### Documentation
+#### 文档
 
-- Package links now point to the project's GitHub home, `meta/astryx`.
+- 包链接现在指向项目的 GitHub 主页 `meta/astryx`。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @cixzhang
 - @rubyycheung
@@ -124,13 +124,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.7.4
 
-#### New Features
+#### 新功能
 
-- Keep Butter's released `butterPalettes` object byte-identical while moving the maintained Light/Dark theme to reviewed named palette stops. Signature Blue `#225BFF`, Butter Yellow `#FDEE8C`, and warm body surfaces remain exact; status fills move from success `#91D143` to `#7BBF7A`, warning `#FFC502` to `#DFCF5B`, error `#FC473B` to `#E56241`, and info `#4883FD` to `#4D82FF`. Info and error content changes from white to warm Neutral `#1D1C11`, the neutral Badge uses Blue `#194CE8`, and light TopNav items use Blue `#225BFF` / `#194CE8`; these palette-first pairs clear normal-text AA. Consumers that need the former appearance can extend `butterTheme` and override the affected color, syntax, shadow, and component values with their previous values. The CLI template ships the same private palette request, receipt, and runtime-sized references. (#7672)
+- 在将维护中的 Light/Dark 主题迁移到经过评审的命名调色板色阶的同时，保持 Butter 已发布的 `butterPalettes` 对象逐字节一致。Signature Blue `#225BFF`、Butter Yellow `#FDEE8C` 和暖色主体表面保持精确不变；状态填充色从 success `#91D143` 变为 `#7BBF7A`，warning `#FFC502` 变为 `#DFCF5B`，error `#FC473B` 变为 `#E56241`，info `#4883FD` 变为 `#4D82FF`。Info 和 error 的内容色从白色改为暖 Neutral `#1D1C11`，中性 Badge 使用 Blue `#194CE8`，浅色 TopNav 项目使用 Blue `#225BFF` / `#194CE8`；这些以调色板为先的配色对达到了普通文本的 AA 标准。需要保持原先外观的使用者可以扩展 `butterTheme`，并用原值覆盖受影响的颜色、语法、阴影和组件值。CLI 模板附带相同的私有调色板请求、回执和运行时尺寸引用。(#7672)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @rubyycheung
 
@@ -138,13 +138,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.7.3
 
-#### Fixes
+#### 问题修复
 
-- The butter, stone, and y2k themes no longer show the secondary hover fill on a disabled `ComplexSelector` trigger, whether the trigger is natively disabled or exposes `aria-disabled="true"`, the focusable form every disabled control now uses. Before, the guard only recognized a natively disabled trigger. The themes `astryx theme eject` copies carry the same guard.
+- butter、stone 和 y2k 主题不再在禁用的 `ComplexSelector` 触发器上显示 secondary 悬停填充，无论该触发器是原生禁用还是暴露 `aria-disabled="true"`（当前所有禁用控件使用的可聚焦形式）。以前，该保护只识别原生禁用的触发器。`astryx theme eject` 复制的主题也带有相同的保护。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @cixzhang
 
@@ -156,13 +156,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.7.1
 
-#### Fixes
+#### 问题修复
 
-- A `secondary` Selector, MultiSelector, or ComplexSelector now matches the theme's secondary Button: under butter, chocolate, gothic, stone, and y2k it takes that Button's border, fill, text color, and hover instead of the default borderless neutral fill, so a toolbar mixing secondary buttons and selectors reads as one set of controls. Disabled and read-only triggers keep a still fill on hover, as a disabled Button does, and a Selector or MultiSelector inside an InputGroup keeps the group's neutral fill and edges. The default theme is unchanged, the selector docs now say `secondary` follows the theme's secondary Button, and themes added with the CLI get the same parity. (#7548)
+- `secondary` 的 Selector、MultiSelector 或 ComplexSelector 现在与主题的 secondary Button 匹配：在 butter、chocolate、gothic、stone 和 y2k 下，它会采用该 Button 的边框、填充、文本颜色和悬停效果，而不是默认的无边框中性填充，因此混合使用 secondary 按钮和选择器的工具栏看起来是一组统一的控件。禁用和只读触发器在悬停时保持填充不变，与禁用的 Button 一样；位于 InputGroup 内的 Selector 或 MultiSelector 会保留该组的中性填充和边缘。默认主题不变，选择器文档现在说明 `secondary` 会跟随主题的 secondary Button，通过 CLI 添加的主题也会获得同样的一致性。(#7548)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @cixzhang
 
@@ -170,16 +170,16 @@ Thanks to everyone who contributed to this release:
 
 # 0.7.0
 
-#### Breaking Changes
+#### 破坏性变更
 
-- On touch devices narrower than the `lg` breakpoint (`(width < 1024px) and (pointer: coarse)`), the 14px-base first-party themes now floor their type base to 16px and re-derive the ratio so Display 1 keeps its desktop size: neutral and chocolate (base 14, ratio 1.2 → 1.1736) and butter and stone (base 14, ratio 1.25 → 1.2225). On phones, body, label and code text rise from 14px to 16px; supporting text, the headings and Display 2 and 3 grow by 1–2px; only Display 1 holds its desktop size. Desktop sizes are unchanged. gothic, matcha and y2k already use a 16px base and need no rule. The CLI's theme templates carry the same rule, so a newly scaffolded theme gets it too. (#6699)
-  An app theme that extends one of these four themes and sets its own `typography.scale` or type-size tokens inherits this rule, and on touch + narrow screens the rule replaces those values (a base-18 child drops to a 16px body and a 42px Display 1). Append your own rule for the same condition with the values you want; a later rule for the same condition wins.
+- 在窄于 `lg` 断点的触摸设备上（`(width < 1024px) and (pointer: coarse)`），以 14px 为基准的第一方主题现在将其字号基准下限提升到 16px，并重新推导比例，以便 Display 1 保持桌面端尺寸：neutral 和 chocolate（基准 14，比例 1.2 → 1.1736），butter 和 stone（基准 14，比例 1.25 → 1.2225）。在手机上，正文、标签和代码文本从 14px 提升到 16px；辅助文本、标题以及 Display 2 和 3 增大 1–2px；只有 Display 1 保持桌面端尺寸。桌面端尺寸不变。gothic、matcha 和 y2k 已经使用 16px 基准，无需此规则。CLI 的主题模板带有相同规则，因此新脚手架创建的主题也会获得该规则。(#6699)
+  扩展这四个主题之一并设置了自身 `typography.scale` 或字号令牌的应用主题会继承此规则，在触摸 + 窄屏下该规则会替换这些值（以 18 为基准的子主题会降为 16px 正文和 42px 的 Display 1）。请为相同条件追加你自己的规则并写入你想要的值；相同条件下较晚的规则胜出。
 
-  Migration: nothing to change to take the new phone scale. To keep the previous 14px phone scale in an app, extend the theme and append a later rule for the same condition: `defineTheme({name: 'app', extends: neutralTheme, adaptations: {rules: [{when: {pointer: 'coarse', width: {below: 'lg'}}, value: {typography: {scale: {base: 14, ratio: 1.2}}}}]}})`. For butter and stone use `ratio: 1.25` and also set `tokens: {'--text-supporting-size': '12px'}` in that rule's value, because those themes pin supporting text at 12px rather than the 11px the scale alone gives. This cannot be rewritten by a codemod: whether an app wants the floor is a product choice.
+  迁移：无需任何改动即可采用新的手机字号比例。若要在应用中保留之前的 14px 手机字号比例，请扩展主题并为相同条件追加一条较晚的规则：`defineTheme({name: 'app', extends: neutralTheme, adaptations: {rules: [{when: {pointer: 'coarse', width: {below: 'lg'}}, value: {typography: {scale: {base: 14, ratio: 1.2}}}}]}})`。对于 butter 和 stone，请使用 `ratio: 1.25`，并在该规则的 value 中同时设置 `tokens: {'--text-supporting-size': '12px'}`，因为这些主题将辅助文本固定为 12px，而不是仅靠比例得到的 11px。这无法通过 codemod 重写：应用是否需要该下限是一个产品决策。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @imdreamrunner
 
@@ -191,13 +191,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.6.7
 
-#### New Features
+#### 新功能
 
-- Each theme package now exports `/fonts.css` beside `/built` and `/theme.css`. Import it when the theme uses non-system fonts.
+- 每个主题包现在在 `/built` 和 `/theme.css` 之外还会导出 `/fonts.css`。当主题使用非系统字体时，请导入它。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @josephfarina
 
@@ -205,16 +205,16 @@ Thanks to everyone who contributed to this release:
 
 # 0.6.6
 
-#### New Features
+#### 新功能
 
-- Add a shared `upload` icon, and use it for FileInput's upload affordance instead of the directional `arrowUp`
-  Themes draw `upload` through `icons.upload`, separately from `arrowUp`, so sort arrows and every other `arrowUp` use stay unchanged. Every bundled theme and theme template draws `upload` in its own icon style. FileInput keeps its icon size, placement, color, and accessibility in both modes; a theme with no `upload` artwork shows the default upload-into-tray glyph there.
+- 新增共享的 `upload` 图标，并将其用于 FileInput 的上传提示，而不是有方向性的 `arrowUp`
+  主题通过 `icons.upload` 绘制 `upload`，与 `arrowUp` 分离，因此排序箭头以及所有其他 `arrowUp` 用法保持不变。每个随附主题和主题模板都以自己的图标风格绘制 `upload`。FileInput 在两种模式下都保持其图标大小、位置、颜色和可访问性；没有 `upload` 图稿的主题会在该处显示默认的“上传到托盘”字形。
 
-  A complete `IconRegistry` may still omit `upload` in this release. The next minor makes it required, so add an `upload` entry to any registry you type as `IconRegistry`.
+  完整的 `IconRegistry` 在本版本中仍可省略 `upload`。下一个小版本会将其设为必需项，因此请为你以 `IconRegistry` 类型声明的任何注册表添加 `upload` 条目。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @rubyycheung
 
@@ -226,13 +226,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.6.4
 
-#### New Features
+#### 新功能
 
-- Ship a typed `ThemeDoc` descriptor beside each first-party theme source. (#6498)
+- 在每个第一方主题源码旁附带一个带类型的 `ThemeDoc` 描述符。(#6498)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @josephfarina
 
@@ -248,13 +248,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.6.1
 
-#### Fixes
+#### 问题修复
 
-- Prefer canonical component target names in maintained themes and new examples while preserving deprecated runtime aliases and released bare prop/state selector classes through the 0.7.0 removal window. Theme discovery labels deprecated targets, theme build warns with each exact canonical replacement, and `astryx upgrade --apply` provides the forward-compatible bare-selector migration. (#6126)
+- 在维护中的主题和新示例中优先使用规范的组件目标名称，同时保留已弃用的运行时别名和已发布的裸 prop/state 选择器类，直到 0.7.0 的移除窗口结束。主题发现会标记已弃用的目标，主题构建会针对每个确切的规范替换项发出警告，`astryx upgrade --apply` 提供向前兼容的裸选择器迁移。(#6126)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @cixzhang
 
@@ -262,9 +262,9 @@ Thanks to everyone who contributed to this release:
 
 # 0.6.0
 
-#### Breaking Changes
+#### 破坏性变更
 
-- Requires `@astryxdesign/core@0.6.0` as part of the coordinated stable release. Upgrade Core and this theme together.
+- 作为协同稳定发布的一部分，要求 `@astryxdesign/core@0.6.0`。请一起升级 Core 和该主题。
 
 ---
 
@@ -274,13 +274,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.5.3
 
-#### Fixes
+#### 问题修复
 
-- Rename built-in syntax theme identifiers. (#5847)
+- 重命名内置语法主题标识符。(#5847)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @rubyycheung
 
@@ -292,13 +292,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.5.1
 
-#### Fixes
+#### 问题修复
 
-- Theme packages no longer ship an unused CommonJS `icons.js` artifact. Their root entry keeps its advertised CommonJS and ESM outputs, while the standalone icon companion used by `/built` is emitted only as `icons.mjs`. (#5512)
+- 主题包不再附带未使用的 CommonJS `icons.js` 产物。其根入口保留其对外公布的 CommonJS 和 ESM 输出，而 `/built` 使用的独立图标配套文件仅以 `icons.mjs` 形式生成。(#5512)
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @jiunshinn
 
@@ -326,13 +326,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.4.3
 
-#### Fixes
+#### 问题修复
 
-- The `/built` entry now loads under Node ESM and externalized SSR (Vite `--ssr`, Remix / React Router v7): it imports `./icons.mjs` instead of the extensionless `./icons` Node cannot resolve.
+- `/built` 入口现在可以在 Node ESM 和外部化 SSR（Vite `--ssr`、Remix / React Router v7）下加载：它导入 `./icons.mjs`，而不是 Node 无法解析的无扩展名 `./icons`。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @AKnassa
 
@@ -340,13 +340,13 @@ Thanks to everyone who contributed to this release:
 
 # 0.4.2
 
-#### Fixes
+#### 问题修复
 
-- `--radius-none` no longer overrides to `0.125rem`. `--radius-none` and `--radius-full` are documented as always fixed (never scaled by a theme), matching `@astryxdesign/core`'s own defaults — each of these themes' radius group bumps swept `--radius-none` along with it by mistake, the same bug fixed for `theme-neutral` in #4856. Anything opting out of rounding via `--radius-none` under these themes now renders with a true `0px` radius again, instead of a silent 2px.
+- `--radius-none` 不再被覆盖为 `0.125rem`。`--radius-none` 和 `--radius-full` 已在文档中说明为始终固定（从不随主题缩放），与 `@astryxdesign/core` 自身的默认值一致——这些主题的圆角组升级曾错误地把 `--radius-none` 也一并改动，这个问题与 #4856 中为 `theme-neutral` 修复的是同一个 bug。在这些主题下任何通过 `--radius-none` 选择不使用圆角的内容，现在会再次以真正的 `0px` 半径渲染，而不是悄悄变成 2px。
 
-#### Contributors
+#### 贡献者
 
-Thanks to everyone who contributed to this release:
+感谢所有为本次发布做出贡献的人：
 
 - @is-jain
 
@@ -410,7 +410,7 @@ Thanks to everyone who contributed to this release:
 
 # 0.0.15
 
-#### Changes
+#### 变更
 
-- Theme polish — color-token and type-scale refinements for visual consistency with the other themes. (#2856)
-- Tracks `@xds/core@0.0.15` (bare-name migration + data-attribute selector surface).
+- 主题打磨——调整颜色令牌和字号比例，以与其他主题保持视觉一致。(#2856)
+- 跟踪 `@xds/core@0.0.15`（裸名称迁移 + 数据属性选择器表面）。

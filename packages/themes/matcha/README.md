@@ -1,16 +1,16 @@
 # @astryxdesign/theme-matcha
 
-Earthy green theme with Playwrite US Trad for headings and DM Sans for body text. Uses [Lucide](https://lucide.dev) icons.
+大地绿色主题，标题使用 Playwrite US Trad，正文使用 DM Sans。使用 [Lucide](https://lucide.dev) 图标。
 
-## Install
+## 安装
 
 ```bash
 npm install @astryxdesign/theme-matcha
 ```
 
-## Usage
+## 用法
 
-Wrap your app with `Theme` and pass the theme:
+用 `Theme` 包裹你的应用，并传入主题：
 
 ```tsx
 import {Theme} from '@astryxdesign/core/theme';
@@ -21,59 +21,45 @@ function App() {
 }
 ```
 
-### Import paths
+### 导入路径
 
-| Path                                   | Use case                                                    |
-| -------------------------------------- | ----------------------------------------------------------- |
-| `@astryxdesign/theme-matcha`           | Source build (StyleX compilation via `@astryxdesign/build`) |
-| `@astryxdesign/theme-matcha/built`     | Pre-built dist (Tailwind, plain CSS, or no build step)      |
-| `@astryxdesign/theme-matcha/theme.css` | Pre-built CSS file (import in your stylesheet)              |
+| 路径                                   | 使用场景                                                |
+| -------------------------------------- | ------------------------------------------------------- |
+| `@astryxdesign/theme-matcha`           | 源码构建（通过 `@astryxdesign/build` 进行 StyleX 编译） |
+| `@astryxdesign/theme-matcha/built`     | 预构建产物（Tailwind、纯 CSS 或无构建步骤）             |
+| `@astryxdesign/theme-matcha/theme.css` | 预构建的 CSS 文件（在你的样式表中导入）                 |
 
-If you're using `@astryxdesign/build` for StyleX source compilation, import from the bare path. Otherwise, use `/built`.
+如果你使用 `@astryxdesign/build` 进行 StyleX 源码编译，请从裸路径导入；否则请使用 `/built`。
 
-### CSS import
+### CSS 导入
 
-Add the theme CSS to your stylesheet:
+将主题 CSS 添加到你的样式表：
 
 ```css
 @import '@astryxdesign/theme-matcha/theme.css';
 ```
 
-## Approved palette
+## 已批准的调色板
 
-Matcha keeps its generation request in `palette.config.json`, the reviewed
-`astryx-oklch-v1` output in `src/matchaPalettes.generated.ts`, and the detached
-generation receipt beside it. The palette uses separate light and dark ramps;
-Tea Gold is generated from an anchorless golden seed so the family stays smooth.
-The runtime theme imports only the selected stops in
-`matchaPaletteRefs.generated.ts`.
+Matcha 将生成请求保存在 `palette.config.json` 中，将已审查的 `astryx-oklch-v1` 输出保存在 `src/matchaPalettes.generated.ts` 中，并将独立的生成回执放在其旁边。该调色板使用独立的浅色和深色色阶；Tea Gold 由无锚点的金色种子生成，因此该家族保持平滑。运行时主题仅导入 `matchaPaletteRefs.generated.ts` 中选定的色标。
 
-Use semantic theme tokens in components. Matcha's theme source maps the color
-roles it owns to named palette stops; components never read raw palette values
-directly. The full palette is a private authoring and audit artifact rather than
-a package export, and the prebuilt theme and CSS contain only resolved values.
-Changing the palette must include the regenerated receipt,
-selected-reference module, token diff, tests, and visual review. Keep
-`matchaTheme.ts` and the CLI template copy synchronized when changing a mapping.
+在组件中使用语义主题令牌。Matcha 的主题源码将其拥有的颜色角色映射到命名的调色板色标；组件从不直接读取原始调色板值。完整调色板是私有的创作和审计产物，而非包导出，且预构建主题和 CSS 仅包含解析后的值。更改调色板时，必须同时包含重新生成的回执、选定引用模块、令牌差异、测试和视觉审查。更改映射时，保持 `matchaTheme.ts` 与 CLI 模板副本同步。
 
-The palette is not a component styling API, chart-color API, or accessibility
-guarantee. Components should read semantic tokens, charts should use the
-data-visualization color API, and every custom foreground/background pair still
-needs contextual contrast verification.
+该调色板不是组件样式 API、图表颜色 API 或无障碍保证。组件应读取语义令牌，图表应使用数据可视化颜色 API，每一对自定义前景/背景色仍需进行上下文对比度验证。
 
-## Fonts
+## 字体
 
-This theme uses custom typefaces:
+此主题使用自定义字体：
 
-| Role    | Font              |
-| ------- | ----------------- |
-| Body    | DM Sans           |
-| Heading | Playwrite US Trad |
-| Code    | JetBrains Mono    |
+| 角色 | 字体              |
+| ---- | ----------------- |
+| 正文 | DM Sans           |
+| 标题 | Playwrite US Trad |
+| 代码 | JetBrains Mono    |
 
-**These fonts must be loaded separately.** The theme references them by name but does not bundle the font files.
+**这些字体必须单独加载。** 主题仅按名称引用它们，并不捆绑字体文件。
 
-Add this to your HTML `<head>`:
+将以下内容添加到 HTML 的 `<head>` 中：
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -83,4 +69,4 @@ Add this to your HTML `<head>`:
   href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Playwrite+US+Trad:wght@100..400&display=swap" />
 ```
 
-Without this, the theme falls back to system fonts.
+如果没有这些内容，主题将回退到系统字体。
