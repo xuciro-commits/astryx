@@ -24,122 +24,113 @@ system_specs: [spec:AST-020]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                   |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Public contract         | A compound-mode group of rows with an optional `title`, `children`, root inputs, and a ref.                                                                                                |
-| Behavior                | Renders one `role="group"` named by its visible heading; the heading is plain text that roving focus and typeahead skip. An untitled group is an unnamed group unless the caller names it. |
-| End-user impact         | Screen-reader users hear a titled cluster of rows as one named group, as sighted users see it; arrow keys move across group boundaries as if the rows were flat.                           |
-| Builder impact          | Builders title compound rows with the same heading look as a data-mode section.                                                                                                            |
-| Compatibility/readiness | Records shipped behavior; no API, default, or DOM change.                                                                                                                                  |
-| Review checks           | Reject a heading that becomes a menu item or a focus stop, a titled group not named by its heading, or a lost section-heading target.                                                      |
-| Governing rules         | `component:DropdownMenu/DEC-6`; `architecture:public-component-api`; `architecture:component-theming-surface`.                                                                             |
+| 领域          | 契约                                                                                                                                     |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共契约      | 复合模式下由行组成的组，带可选的 `title`、`children`、根输入以及 ref。                                                                   |
+| 行为          | 渲染一个由其可见标题命名的 `role="group"`；该标题是纯文本，漫游焦点与 typeahead 都会跳过它。无标题的组是未命名的组，除非调用方为其命名。 |
+| 终端用户影响  | 屏幕阅读器用户把带标题的行簇听成一个命名组，与视力正常用户所见一致；方向键跨组边界移动，如同这些行是扁平的。                             |
+| 构建者影响    | 构建者用与数据模式 section 相同的标题外观为复合行加标题。                                                                                |
+| 兼容性/就绪度 | 记录已发布行为；无 API、默认值或 DOM 变更。                                                                                              |
+| 审查检查      | 拒绝以下情形：标题变成菜单项或焦点停留点，带标题的组未由其标题命名，或 section 标题目标丢失。                                            |
+| 治理规则      | `component:DropdownMenu/DEC-6`；`architecture:public-component-api`；`architecture:component-theming-surface`。                          |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；下面的正文才是权威。
 
 ## Intent
 
-DropdownMenuGroup gives compound-mode menus the titled grouping that data-mode
-`{type: 'section'}` entries already have (`component:DropdownMenu/DEC-6`).
+DropdownMenuGroup 为复合模式菜单提供带标题的分组，数据模式的 `{type: 'section'}` 条目已经具备这种分组（`component:DropdownMenu/DEC-6`）。
 
 ## Compatibility and migration
 
-- Released default preserved: yes.
-- Compatibility class: records shipped behavior; no public prop, default,
-  export, or DOM change.
-- Controlled/uncontrolled behavior: not applicable.
-- Migration decision: none.
+- 已发布的默认值保持不变：是。
+- 兼容性类别：记录已发布行为；无公共 prop、默认值、导出或 DOM 变更。
+- 受控/非受控行为：不适用。
+- 迁移决策：无。
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方的迁移说明应放在使用方文档与发布说明中。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- One `role="group"` root, its name from the heading, and the heading itself
-  with the `dropdown-menu-section-heading` target.
-- Root composition of ref, host attributes, and handlers.
+- 一个 `role="group"` 根、由标题得到的名称，以及带有 `dropdown-menu-section-heading` 目标的标题本身。
+- ref、宿主属性与处理函数的根组合。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Roving focus and typeahead — owned by `component:DropdownMenu`.
-- The rows inside — owned by each row component.
-- Focusable content inside the heading: arrow keys cannot reach it.
+- 漫游焦点与 typeahead —— 由 `component:DropdownMenu` 拥有。
+- 内部的行 —— 由各行的组件拥有。
+- 标题内可获焦点的内容：方向键无法到达它。
 
 ## Public concepts
 
-| Concept | Closed values or states | Meaning                                 | Availability  | Default | Owner     | Stability | Invalid-value behavior                            |
-| ------- | ----------------------- | --------------------------------------- | ------------- | ------- | --------- | --------- | ------------------------------------------------- |
-| Title   | absent; any React node  | A visible heading that names the group. | Compound mode | absent  | component | stable    | Absent renders no heading and no name of its own. |
+| 概念  | 封闭取值或状态        | 含义                 | 可用性   | 默认值 | 所有者    | 稳定性 | 无效值行为                           |
+| ----- | --------------------- | -------------------- | -------- | ------ | --------- | ------ | ------------------------------------ |
+| Title | 缺省；任意 React 节点 | 为组命名的可见标题。 | 复合模式 | 缺省   | component | 稳定   | 缺省时不渲染标题，也没有自己的名称。 |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                    | Basis                                              |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| FR1 | With a `title`, the group is one `role="group"` whose `aria-labelledby` names its visible heading; the heading carries `dropdown-menu-section-heading`, is plain text rather than a menu item, and is skipped by roving focus and typeahead. | DEC-6 of `component:DropdownMenu`; current tests   |
-| FR2 | Without a `title`, the group is an unnamed `role="group"`, or takes the name a caller supplies.                                                                                                                                              | Current tests                                      |
-| FR3 | Arrow keys step across a group boundary as if the rows were flat; a focusable node inside the heading is not reachable by them.                                                                                                              | Current tests                                      |
-| FR4 | A ref and host attributes and handlers reach the group element while it keeps its role and heading name.                                                                                                                                     | `architecture:public-component-api`; current tests |
+| ID  | 不变式                                                                                                                                                                         | 依据                                          |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
+| FR1 | 带 `title` 时，该组是一个 `role="group"`，其 `aria-labelledby` 命名其可见标题；该标题带有 `dropdown-menu-section-heading`，是纯文本而非菜单项，并被漫游焦点与 typeahead 跳过。 | `component:DropdownMenu` 的 DEC-6；当前测试   |
+| FR2 | 不带 `title` 时，该组是未命名的 `role="group"`，或采用调用方提供的名称。                                                                                                       | 当前测试                                      |
+| FR3 | 方向键跨组边界步进，如同这些行是扁平的；标题内可获焦点的节点无法由它们到达。                                                                                                   | 当前测试                                      |
+| FR4 | ref 与宿主属性、处理函数会到达组元素，同时它保留其角色与标题名称。                                                                                                             | `architecture:public-component-api`；当前测试 |
 
 ### Allowed variation
 
-- **AV1 — Heading content.** The title may be any React node.
+- **AV1 — 标题内容。** 标题可以是任意 React 节点。
 
 ### Representative states
 
-| State    | Required invariant               | Allowed variation |
-| -------- | -------------------------------- | ----------------- |
-| Titled   | Named by its heading.            | Title content.    |
-| Untitled | Unnamed, or named by the caller. | —                 |
+| 状态   | 必需的不变式             | 允许的变体 |
+| ------ | ------------------------ | ---------- |
+| 带标题 | 由其标题命名。           | 标题内容。 |
+| 无标题 | 未命名，或由调用方命名。 | —          |
 
 ### Transformation and precedence order
 
-- **ORD1 — Name.** Title heading → caller name → none.
+- **ORD1 — 名称。** 标题文本 → 调用方名称 → 无。
 
 ### Performance and resources
 
-- **PR1 — Render only.** The group owns no state, effect, listener, or
-  observer.
+- **PR1 — 仅渲染。** 该组不拥有任何状态、副作用、监听器或观察器。
 
 ## Accessibility contract
 
-- **AR1 — Named group.** A titled group is announced with its heading's text;
-  the heading is not a menu item.
+- **AR1 — 命名组。** 带标题的组以其标题文本被播报；该标题不是菜单项。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                         | Representation authority | Hierarchy role | Component contract |
-| ---------------- | ---------------------------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Heading          | Labels a cluster of rows like a data-mode section heading. | `component:DropdownMenu` | Supporting     | FR1                |
+| 结构或状态 | 设计要求                                  | 表示权威                 | 层级角色 | 组件契约 |
+| ---------- | ----------------------------------------- | ------------------------ | -------- | -------- |
+| 标题       | 像数据模式的 section 标题那样标识一组行。 | `component:DropdownMenu` | 辅助     | FR1      |
 
-`component:DropdownMenu` maps the `dropdown-menu-section-heading` target in its
-theming anatomy, so this record carries no anatomy-theming map.
+`component:DropdownMenu` 在其主题结构中映射 `dropdown-menu-section-heading` 目标，因此本记录不携带结构-主题映射。
 
 ## Family and system relationships
 
-- `component:DropdownMenu` owns the keyboard model and the section-heading
-  target mapping.
-- `architecture:public-component-api` owns root composition.
+- `component:DropdownMenu` 拥有键盘模型与 section 标题目标映射。
+- `architecture:public-component-api` 拥有根组合。
 
 ## Verification map
 
-| Contract       | Verification                                                                                                                                                                                                                                               | Representative states                    | Mutation or failure expectation                                                                                       | Audit section                           |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| FR1, AR1, ORD1 | `DropdownMenu.test.tsx` DropdownMenuGroup cases ("renders a role=\"group\" named by its heading", "renders the heading with the data-mode theme class", "the heading is not a menuitem and roving focus skips it", "typeahead never lands on the heading") | Titled group                             | A group not named by its heading, a missing heading target, or a heading that takes focus or a typeahead match fails. | `audit:DropdownMenuGroup/semantics`     |
-| FR2            | `DropdownMenu.test.tsx` "an untitled group is an unnamed role=\"group\"" and "an untitled group takes a caller-supplied accessible name"                                                                                                                   | Untitled, with and without a caller name | A name invented for an untitled group, or a dropped caller name, fails.                                               | `audit:DropdownMenuGroup/semantics`     |
-| FR3            | `DropdownMenu.test.tsx` "arrow navigation steps across a group boundary as if the rows were flat" and "a focusable node in the heading is not reachable by the arrow keys"                                                                                 | Two groups; focusable heading content    | A stop at the boundary or a focusable heading node reached by arrows fails.                                           | `audit:DropdownMenuGroup/accessibility` |
-| FR4            | `DropdownMenu.test.tsx` "forwards a ref to the group element" and "forwards host attributes to the group while keeping its role and heading name"                                                                                                          | Ref; host attributes                     | A dropped ref or attribute, or a replaced role or name, fails.                                                        | `audit:DropdownMenuGroup/api`           |
-| PR1            | Evidence gap: no test asserts the absence of lifecycle resources                                                                                                                                                                                           | —                                        | —                                                                                                                     | `audit:DropdownMenuGroup/behavior`      |
+| 契约           | 验证                                                                                                                                                                                                                                                            | 代表性状态                   | 变更或失败预期                                                                  | 审计部分                                |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------- | --------------------------------------- |
+| FR1, AR1, ORD1 | `DropdownMenu.test.tsx` 中 DropdownMenuGroup 的用例（"renders a role=\"group\" named by its heading"、"renders the heading with the data-mode theme class"、"the heading is not a menuitem and roving focus skips it"、"typeahead never lands on the heading"） | 带标题的组                   | 组未由其标题命名、标题目标缺失，或标题获得焦点或被 typeahead 匹配，均判为失败。 | `audit:DropdownMenuGroup/semantics`     |
+| FR2            | `DropdownMenu.test.tsx` 的 "an untitled group is an unnamed role=\"group\"" 与 "an untitled group takes a caller-supplied accessible name"                                                                                                                      | 无标题，带与不带调用方名称   | 为无标题组臆造名称，或丢弃调用方提供的名称，均判为失败。                        | `audit:DropdownMenuGroup/semantics`     |
+| FR3            | `DropdownMenu.test.tsx` 的 "arrow navigation steps across a group boundary as if the rows were flat" 与 "a focusable node in the heading is not reachable by the arrow keys"                                                                                    | 两个组；标题内可获焦点的内容 | 在边界处停留，或方向键到达标题内可获焦点的节点，均判为失败。                    | `audit:DropdownMenuGroup/accessibility` |
+| FR4            | `DropdownMenu.test.tsx` 的 "forwards a ref to the group element" 与 "forwards host attributes to the group while keeping its role and heading name"                                                                                                             | Ref；宿主属性                | 丢弃 ref 或属性，或替换角色或名称，均判为失败。                                 | `audit:DropdownMenuGroup/api`           |
+| PR1            | 证据缺口：没有测试断言生命周期资源不存在                                                                                                                                                                                                                        | —                            | —                                                                               | `audit:DropdownMenuGroup/behavior`      |
 
 ## Decision log
 
-No component-local decision; `component:DropdownMenu/DEC-6` decides the
-component.
+无组件本地决策；`component:DropdownMenu/DEC-6` 决定该组件。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or parent contracts. It links to their owners.
+本文件不重复使用方的 prop 表/示例、当前审计结果、实现步骤或父契约。它链接到它们的所有者。

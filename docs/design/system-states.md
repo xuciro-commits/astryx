@@ -21,104 +21,73 @@ deciding_specs: []
 
 ## User intent
 
-A person should distinguish unavailable, waiting, processing, successful,
-warning, informational, and error conditions without relying on color alone.
-Feedback should use prominence appropriate to its persistence and urgency while
-preserving surrounding layout.
+用户应能在不单纯依赖颜色的情况下区分不可用、等待中、处理中、成功、警告、信息提示和错误这些状态。反馈的突出程度应与其持续性和紧急程度相匹配，同时保持周围布局不变。
 
 ## Design principles
 
-- **DR1 — System state preserves context.** Loading, processing, and status
-  treatments MUST keep enough of the original component's geometry and identity
-  for the person to understand what is affected.
-- **DR2 — Status meaning survives color.** Every semantic status MUST pair color
-  with an icon, label, or other non-color signal.
-- **DR3 — Prominence follows persistence and urgency.** Persistent in-flow
-  feedback SHOULD remain quiet, compact or urgent feedback MAY use a solid
-  treatment, and brief transient feedback MAY use an inverted overlay.
-- **DR4 — One meaning remains recognizable across tiers.** Changing prominence
-  MUST NOT change the underlying success, information, warning, or error meaning.
-- **DR5 — Busy states do not cause layout shift.** Placeholder and processing
-  representations MUST preserve the affected content's expected dimensions.
+- **DR1 — 系统状态保留上下文。** 加载、处理与状态呈现必须保留原组件足够的几何形状与身份特征，使用户能够理解受到影响的内容。
+- **DR2 — 状态含义在脱离颜色后仍然可辨。** 每个语义状态必须将颜色与图标、标签或其他非颜色信号配对。
+- **DR3 — 突出程度取决于持续性与紧急程度。** 常驻的流内反馈应保持低调，紧凑或紧急的反馈可以使用实心呈现，短暂的瞬态反馈可以使用反色覆盖层。
+- **DR4 — 同一含义在各层级保持可识别。** 改变突出程度时，不得改变底层的成功、信息、警告或错误含义。
+- **DR5 — 忙碌状态不引起布局偏移。** 占位符和处理状态的呈现必须保持受影响内容的预期尺寸。
 
 ## Anatomy and hierarchy
 
-| Role                    | Purpose                                              | Required relationship                                    |
-| ----------------------- | ---------------------------------------------------- | -------------------------------------------------------- |
-| affected surface        | Shows what is disabled, waiting, or reporting status | Retains enough geometry to preserve context              |
-| progress representation | Shows that content or an action is unresolved        | Fits the scope and duration of the wait                  |
-| semantic indicator      | Communicates feedback category                       | Pairs color with icon, label, or equivalent cue          |
-| supporting message      | Explains reason, consequence, or next action         | Remains associated with the affected surface             |
-| prominence container    | Scales feedback from in-flow to transient            | Matches persistence and urgency without changing meaning |
+| 角色         | 用途                                       | 必需关系                         |
+| ------------ | ------------------------------------------ | -------------------------------- |
+| 受影响表面   | 显示哪些内容已禁用、正在等待或正在报告状态 | 保留足够的几何形状以维持上下文   |
+| 进度呈现     | 表明内容或操作尚未完成                     | 与等待的范围和持续时间相匹配     |
+| 语义指示器   | 传达反馈类别                               | 将颜色与图标、标签或等效提示配对 |
+| 辅助消息     | 说明原因、后果或下一步操作                 | 与受影响表面保持关联             |
+| 突出程度容器 | 将反馈从流内扩展到瞬态                     | 匹配持续性和紧急程度而不改变含义 |
 
 ## State representation
 
-| State                | Required representation                                                                 | Allowed variation                                                      |
-| -------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| disabled             | Muted, clearly unavailable, and non-interactive; a reason remains available when needed | Components may place the reason according to their family contract     |
-| loading, placeholder | A stable skeleton or structural placeholder stands in for content not yet available     | Shape follows the expected content                                     |
-| processing, in place | A progress indicator appears without changing the control's dimensions                  | Indicator may replace or accompany content when identity remains clear |
-| status, muted        | A quiet semantic surface combines status color with icon or text                        | Used for persistent banners, fields, and in-flow feedback              |
-| status, solid        | A high-prominence semantic fill combines status color with contrasting content          | Used for compact labels or urgent feedback                             |
-| temporal overlay     | A brief inverted surface appears above current content and dismisses                    | Used for transient messages and explanatory overlays                   |
+| 状态         | 必需呈现                                       | 允许的变化                                           |
+| ------------ | ---------------------------------------------- | ---------------------------------------------------- |
+| 禁用         | 弱化、明确不可用且不可交互；需要时仍可获取原因 | 组件可以根据其族契约放置原因                         |
+| 加载、占位符 | 用稳定的骨架屏或结构性占位符代替尚不可用的内容 | 形状跟随预期内容                                     |
+| 处理中、原地 | 显示进度指示器，但不改变控件的尺寸             | 当身份特征仍然清晰时，指示器可以替换内容或与内容并存 |
+| 状态、低调   | 低调的语义表面将状态颜色与图标或文本结合       | 用于常驻提示条、字段和流内反馈                       |
+| 状态、实心   | 高突出的语义填充将状态颜色与对比色内容结合     | 用于紧凑标签或紧急反馈                               |
+| 瞬态覆盖层   | 短暂的反色表面出现在当前内容之上并随后消失     | 用于瞬态消息和说明性覆盖层                           |
 
 ## Responsive and input behavior
 
-- **DR6 — Feedback remains attached under reflow.** Supporting messages and
-  progress representations MUST remain associated with the affected content at
-  narrow widths and across orientation changes.
-- **DR7 — Transient feedback remains operable.** Responsive placement MUST NOT
-  hide dismissal, pause, or follow-up actions where those actions exist.
-- **DR8 — Busy feedback does not depend on motion.** Reduced-motion mode MUST
-  still communicate that work is pending.
+- **DR6 — 反馈在重排后仍保持关联。** 在窄宽度和方向变化时，辅助消息和进度呈现必须与受影响内容保持关联。
+- **DR7 — 瞬态反馈保持可操作。** 在存在关闭、暂停或后续操作的情况下，响应式布局不得隐藏这些操作。
+- **DR8 — 忙碌反馈不依赖于动效。** 减少动效模式仍必须传达工作正在进行中。
 
 ## Accessibility intent
 
-A person should be able to identify status category, affected scope, and any
-available next action without color perception or animation. Disabled reasons
-should remain reachable without enabling the blocked action. Busy content should
-communicate that it is unresolved without repeatedly disrupting reading or focus.
+用户应能在不依赖颜色感知或动画的情况下识别状态类别、受影响范围以及任何可用的下一步操作。禁用原因应保持可获取，而无需启用被阻止的操作。忙碌内容应传达其尚未完成，同时不反复打断阅读或焦点。
 
-ARIA mapping, disabled semantics, busy behavior, dismissal, timing, and live
-announcements remain component and family responsibilities.
+ARIA 映射、禁用语义、忙碌行为、关闭、时序以及实时播报仍属于组件和族的职责。
 
 ## Representative examples
 
-- A field processing a value keeps its width and label while a progress indicator
-  occupies an established end lane.
-- A persistent warning uses a quiet in-flow surface with an icon and message.
-- An urgent transient error uses stronger prominence but preserves the same error
-  meaning and icon language.
+- 正在处理某个值的字段会保持其宽度和标签，同时进度指示器占据既定的末端通道。
+- 常驻警告使用带图标和消息的低调流内表面。
+- 紧急的瞬态错误使用更强的突出程度，但保留相同的错误含义和图标语言。
 
 ## Visual references
 
-No normative assets are included in this seed draft. Representative disabled,
-loading, muted, solid, and transient states should be added under
-`docs/design/assets/system-states/` before promotion.
+本种子草案不包含规范性素材。在提升为正式记录之前，应在 `docs/design/assets/system-states/` 下添加代表性的禁用、加载、低调、实心和瞬态状态。
 
 ## Component contract links
 
-No component contract links are asserted in this seed draft. The listed family
-relationships are candidates for review, not claims that those draft or current
-contracts have adopted these requirements.
+本种子草案未声明任何组件契约链接。所列的族关系是待审查的候选，并不表示那些草稿或当前契约已经采纳这些要求。
 
 ## Decision log
 
-No repository design decision has approved this record yet. It distills the
-system-driven state and prominence vocabulary from the public Design Conventions
-wiki while leaving semantics and mechanics with components and families.
+目前尚无仓库设计决策批准本记录。它提炼了公共 Design Conventions wiki 中由系统驱动的状态与突出程度词汇，同时将语义和机制留给组件与族。
 
 ## Open questions
 
-- **OQ1 — Tier selection.** Which status surfaces have fixed prominence, and
-  which may vary based on product context or severity?
-- **OQ2 — Processing distinction.** When should an unresolved surface use a
-  structural placeholder versus an in-place progress indicator?
-- **OQ3 — Temporal boundary.** Which transient feedback belongs in this shared
-  vocabulary versus a dedicated overlay or notification design record?
+- **OQ1 — 层级选择。** 哪些状态表面具有固定的突出程度，哪些可以因产品上下文或严重程度而变化？
+- **OQ2 — 处理中的区分。** 未完成的表面何时应使用结构性占位符，何时应使用原地进度指示器？
+- **OQ3 — 时间边界。** 哪些瞬态反馈属于这套共享词汇，哪些应归属专门的覆盖层或通知设计记录？
 
 ## Content boundary
 
-This file defines visual distinctions and prominence for system-driven feedback.
-It does not define prop names, ARIA attributes, loading semantics, dismissal or
-timing behavior, token names, audit checks, or consumer usage.
+本文件定义系统驱动反馈的视觉区分和突出程度。它不定义 prop 名称、ARIA 属性、加载语义、关闭或时序行为、token 名称、审计检查或使用方用法。

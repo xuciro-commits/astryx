@@ -50,183 +50,159 @@ affects_consumer_docs: []
 
 ## Intent
 
-People who depend on assistive technology should get the focus and announcement
-outcome Astryx claims, not only plausible test-DOM markup. Astryx proves each
-claim with the strongest evidence it can produce: unit, DOM, accessibility-tree,
-axe, and real-browser checks. Real assistive-technology (AT) observation adds
-proof of what is actually spoken or navigated. It is recommended follow-up when an
-outcome depends on AT behavior.
+依赖辅助技术的用户应当获得 Astryx 所声称的焦点与播报结果，而不只是看起来合理的测试 DOM 标记。Astryx 用它能产生的最强证据来证明每一项声称：单元、DOM、无障碍树、axe 以及真实浏览器检查。真实的辅助技术（AT）观察会补充证据，说明实际朗读或导航到了什么。当某项结果取决于 AT 行为时，它是建议的后续工作。
 
-No requirement in Astryx gates merge or release on evidence that cannot be
-produced. Missing real-AT observation never blocks merge to `main` or a stable
-release.
+Astryx 中没有任何要求把合并或发布卡在无法产生的证据上。缺少真实 AT 观察绝不会阻塞合并到 `main` 或稳定发布。
 
 ## Non-goals
 
-This spec does not:
+本规格不：
 
-- require every accessibility change to run any assistive technology or every browser;
-- gate merge or release on real-AT observation;
-- treat real AT as a substitute for unit, DOM, accessibility-tree, axe, or browser tests that prove different claims more precisely;
-- define consumer accessibility requirements or claim conformance with an entire accessibility standard from one tool or matrix;
-- require a stable announcement transcript when an AT intentionally changes harmless wording but keeps the required information and order;
-- implement release automation, contribution forms, labels, bots, fixtures, or test infrastructure; or
-- copy this policy into contributor or release guidance before those separately owned records exist.
+- 要求每项无障碍改动都运行任何一种辅助技术或每一个浏览器；
+- 把合并或发布卡在真实 AT 观察上；
+- 把真实 AT 当作单元、DOM、无障碍树、axe 或浏览器测试的替代品，那些测试能更精确地证明不同的声称；
+- 定义使用方无障碍要求，或依据单个工具或矩阵声称符合整套无障碍标准；
+- 当 AT 有意改变无害措辞但保留所需信息与顺序时，要求稳定的播报记录；
+- 实现发布自动化、贡献表单、标签、机器人、测试夹具或测试基础设施；或
+- 在那些各自拥有者的记录存在之前，把本政策复制进贡献者或发布指导。
 
 ### Authority boundary
 
-AST-009 supersedes the public [Accessibility Checklist](https://github.com/meta/astryx/wiki/Accessibility-Checklist) only for real-AT follow-up classification, evidence boundaries, the merge and release evidence bar, and durable receipts. The checklist remains the consumer and contributor bar for component accessibility requirements.
+AST-009 仅在真实 AT 后续工作的分类、证据边界、合并与发布证据门槛以及持久回执方面，取代公开的 [Accessibility Checklist](https://github.com/meta/astryx/wiki/Accessibility-Checklist)。该清单仍然是组件无障碍要求方面对使用方与贡献者的门槛。
 
-AST-009 does not own focus-ring appearance, interaction-modality behavior, visual or contrast methodology, browser support, component theming, or overlay behavior. Those stay with [interaction modality](../../architecture/interaction-modality.md), [browser support](../AST-013/spec.md), [component theming](../../architecture/component-theming-surface.md), [theme tokens](../../architecture/theme-tokens.md), [layer runtime](../../architecture/layer-runtime.md), [overlay dismissal](../../families/overlay-dismissal.md), and the owning component records.
+AST-009 不拥有焦点环外观、交互模态行为、视觉或对比度方法、浏览器支持、组件主题化或浮层行为。这些仍归 [interaction modality](../../architecture/interaction-modality.md)、[browser support](../AST-013/spec.md)、[component theming](../../architecture/component-theming-surface.md)、[theme tokens](../../architecture/theme-tokens.md)、[layer runtime](../../architecture/layer-runtime.md)、[overlay dismissal](../../families/overlay-dismissal.md) 以及各拥有者组件记录所有。
 
 ## Requirements
 
 ### When real-AT follow-up is recommended
 
-| ID  | Rule                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1 | The recommendation follows the claimed user outcome. Real AT/browser follow-up is recommended only when the intended outcome depends on AT-specific behavior: how AT exposes or announces focus, AT-specific focus order, spoken/braille output, browse or virtual-cursor behavior, mode changes, or a known AT/browser divergence. A semantic code change or focus-only browser behavior is not the trigger. The recommendation never makes real-AT evidence a merge or release requirement (FR17).                                                                               |
-| FR2 | Focus changes warrant follow-up only for AT-specific outcomes. Real-AT follow-up is recommended when the claim depends on how AT exposes, announces, or orders programmatic, initial, restored, composite, or after-dismissal focus. Focus destination, order, return, keyboard operation, focus-ring styling, a refactor preserving the same browser focus target, or a static `tabIndex` correction does not warrant it by itself. The owning component and [interaction-modality record](../../architecture/interaction-modality.md) define those browser and visual behaviors. |
-| FR3 | Role, name, and description are proved at the accessibility tree. A computed role, accessible name, or description is proved by accessibility-tree evidence. Real-AT follow-up is additionally recommended when the change relies on that semantic being announced during entry or a state transition, changing interaction/browse mode, or resolving a known AT/browser divergence.                                                                                                                                                                                               |
-| FR4 | Announcements are proved by their routing. A live region, status message, alert, validation announcement, or loading/completion transition is proved by DOM and accessibility-tree evidence of which element or channel carries it, its text, its urgency, and how many updates each occasion produces. Real-AT follow-up is recommended when success depends on what is spoken, its order, when it occurs, whether it repeats, or whether it is skipped.                                                                                                                          |
-| FR5 | Virtual-cursor entry warrants follow-up. Real-AT follow-up is recommended when success depends on where screen-reader browse or virtual cursor enters, whether content is discoverable from that entry point, or whether the user can move between browse and interaction modes. Ordinary keyboard Tab order with no browse-mode claim does not warrant it.                                                                                                                                                                                                                        |
-| FR6 | Known divergence widens follow-up. When a changed pattern has a recorded AT/browser divergence, follow-up covers every named side of it until an owner records that the divergence no longer applies. A passing result from one side does not stand in for another known to differ.                                                                                                                                                                                                                                                                                                |
-| FR7 | Other changes use proportionate evidence. Static semantics, keyboard behavior, color/contrast, target size, source order, and similar accessibility changes use the least expensive evidence layer that directly proves the claim. They do not acquire a real-AT follow-up merely because they are accessibility work.                                                                                                                                                                                                                                                             |
-| FR8 | AT-dependent claims are named. A change whose intended outcome depends on AT behavior says so in its record and names the lower-layer evidence that proves what can be proved. It needs no matrix, scenario, or release record to merge.                                                                                                                                                                                                                                                                                                                                           |
+| ID  | 规则                                                                                                                                                                                                                                                                                                                                                                                    |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1 | 建议跟随所声称的用户结果。仅当预期结果取决于 AT 特有行为时，才建议真实 AT/浏览器后续工作：AT 如何暴露或播报焦点、AT 特有的焦点顺序、朗读/盲文输出、浏览或虚拟光标行为、模式切换，或已知的 AT/浏览器差异。语义代码改动或仅涉及焦点的浏览器行为不是触发条件。该建议绝不会让真实 AT 证据成为合并或发布要求（FR17）。                                                                       |
+| FR2 | 焦点改动仅在涉及 AT 特有结果时才需要后续工作。当声称取决于 AT 如何暴露、播报或排序程序化、初始、恢复、复合或关闭后的焦点时，建议真实 AT 后续工作。焦点目标、顺序、返回、键盘操作、焦点环样式、保持相同浏览器焦点目标的重构，或静态的 `tabIndex` 修正，本身都不需要它。拥有者组件与 [interaction-modality record](../../architecture/interaction-modality.md) 定义那些浏览器与视觉行为。 |
+| FR3 | 角色、名称与描述在无障碍树上证明。计算出的角色、无障碍名称或描述由无障碍树证据证明。当改动依赖该语义在进入时或状态转换期间被播报、改变交互/浏览模式，或解决已知的 AT/浏览器差异时，还额外建议真实 AT 后续工作。                                                                                                                                                                         |
+| FR4 | 播报由其路由来证明。实时区域、状态消息、警报、校验播报或加载/完成转换，由 DOM 与无障碍树证据证明：由哪个元素或通道承载它、其文本、其紧急程度，以及每次场合产生多少次更新。当成功取决于朗读了什么、其顺序、发生时点、是否重复或是否被跳过时，建议真实 AT 后续工作。                                                                                                                      |
+| FR5 | 虚拟光标入口需要后续工作。当成功取决于屏幕阅读器浏览或虚拟光标从何处进入、内容是否可从该入口点被发现，或用户能否在浏览模式与交互模式之间移动时，建议真实 AT 后续工作。没有浏览模式声称的普通键盘 Tab 顺序不需要它。                                                                                                                                                                     |
+| FR6 | 已知差异会扩大后续工作。当被改动的模式存在已记录的 AT/浏览器差异时，后续工作覆盖该差异中每一个被点名的方面，直到某位拥有者记录该差异不再适用。一侧的通过结果不能替代另一侧已知存在差异的结果。                                                                                                                                                                                          |
+| FR7 | 其他改动使用相称的证据。静态语义、键盘行为、颜色/对比度、目标尺寸、源顺序以及类似的无障碍改动，使用能直接证明该声称的最便宜证据层。它们不会仅仅因为属于无障碍工作就获得真实 AT 后续工作。                                                                                                                                                                                               |
+| FR8 | 依赖 AT 的声称会被点名。预期结果取决于 AT 行为的改动，在其记录中说明这一点，并点名能证明可证明内容的下层证据。它不需要矩阵、场景或发布记录即可合并。                                                                                                                                                                                                                                    |
 
 ### What each evidence layer proves
 
-This table bounds what each layer may claim. It does not replace evidence required by current component, family, browser-support, visual, theming, or audit records.
+本表界定每一层可以声称什么。它不替代当前组件、family、浏览器支持、视觉、主题化或审计记录所要求的证据。
 
-Each layer is bounded. Passing one layer MUST NOT be described as proving a claim assigned to a later layer.
+每一层都有边界。通过某一层绝不能被描述为证明了分配给更后层的声称。
 
-| Evidence           | It proves                                                                                                                                                           | It does not prove                                                                                                                |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Unit               | State derivation, branch selection, callback effects, application-owned ordering, and deterministic regressions.                                                    | Browser focus navigation, accessibility API exposure, or AT output.                                                              |
-| DOM                | Rendered elements, attributes, ownership markers, source order, and author-supplied ARIA relationships in the tested state.                                         | Computed accessible name/description, platform accessibility mapping, speech, browse mode, or real browser event behavior.       |
-| Accessibility tree | The browser's computed role, name, description, state, relationships, and focused accessible node for the tested engine.                                            | What an AT announces, announcement timing/order, virtual-cursor placement, or behavior in another engine/platform stack.         |
-| axe                | Rules the configured axe version can mechanically detect in the rendered states it was given.                                                                       | Absence of all accessibility defects, task usability, correct focus destination, complete announcements, or AT interoperability. |
-| Real browser       | Actual focus destination/order/return, keyboard and pointer behavior, browser event timing, native semantics, and engine-specific state transitions.                | Speech/braille output, browse or virtual-cursor entry, or AT-specific divergence.                                                |
-| Real AT/browser    | Observed speech/braille content and order, announcement timing/repetition, browse or virtual-cursor entry, mode transitions, and named AT/browser interoperability. | Untested pairings, future versions, or claims outside the recorded scenario.                                                     |
+| 证据           | 它证明什么                                                                                                 | 它不证明什么                                                                    |
+| -------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| 单元           | 状态推导、分支选择、回调副作用、应用自身拥有的顺序，以及确定性的回归。                                     | 浏览器焦点导航、无障碍 API 暴露或 AT 输出。                                     |
+| DOM            | 在受测状态下渲染的元素、属性、所有权标记、源顺序，以及作者提供的 ARIA 关系。                               | 计算出的无障碍名称/描述、平台无障碍映射、语音、浏览模式，或真实浏览器事件行为。 |
+| 无障碍树       | 在受测引擎下，浏览器计算出的角色、名称、描述、状态、关系以及获得焦点的无障碍节点。                         | AT 播报什么、播报时机/顺序、虚拟光标位置，或在另一引擎/平台栈中的行为。         |
+| axe            | 所配置的 axe 版本在其被给定的渲染状态下能机械检测出的规则。                                                | 不存在任何无障碍缺陷、任务可用性、正确的焦点目标、完整的播报，或 AT 互操作性。  |
+| 真实浏览器     | 实际的焦点目标/顺序/返回、键盘与指针行为、浏览器事件时机、原生语义，以及引擎特有的状态转换。               | 语音/盲文输出、浏览或虚拟光标入口，或 AT 特有差异。                             |
+| 真实 AT/浏览器 | 观察到的语音/盲文内容与顺序、播报时机/重复、浏览或虚拟光标入口、模式转换，以及被点名的 AT/浏览器互操作性。 | 未经测试的组合、未来版本，或所记录场景之外的声称。                              |
 
-| ID   | Rule                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR9  | Evidence composes by claim. A change keeps its lower-layer evidence. Real-AT observation, when it runs, adds only the claims it can prove and MUST NOT replace deterministic regression coverage for behavior the lower layers own.                                                                                                                                                                                                                 |
-| FR10 | The tested state is the claimed state. Evidence exercises the transition or state that carries the user outcome, such as opening the surface, moving focus, producing the status update, dismissing and restoring focus, or entering with the virtual cursor. A static baseline that merely contains the component is insufficient.                                                                                                                 |
-| FR11 | Real means the shipping pairing. A real-AT check runs the named assistive technology against the named shipping browser on its supported operating system. A virtual machine, remote machine, or simulator is acceptable only when it runs that actual pairing and preserves the input/mode under test. A DOM emulator, accessibility snapshot, synthetic speech stub, or browser engine standing in for a branded browser is not real-AT evidence. |
+| ID   | 规则                                                                                                                                                                                                                                                                              |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR9  | 证据按声称组合。改动保留其下层证据。真实 AT 观察在运行时，只补充它能证明的声称，且绝不能替代下层所拥有行为的确定性回归覆盖。                                                                                                                                                      |
+| FR10 | 受测状态就是所声称的状态。证据要演练承载用户结果的那次转换或那个状态，例如打开浮层、移动焦点、产生状态更新、关闭并恢复焦点，或使用虚拟光标进入。仅仅包含该组件的静态基线是不够的。                                                                                                |
+| FR11 | 真实意味着随发布的组合。真实 AT 检查在其受支持的操作系统上，让被点名的辅助技术针对被点名的随发布浏览器运行。只有在运行该实际组合并保留受测的输入/模式时，虚拟机、远程机器或模拟器才可接受。DOM 模拟器、无障碍快照、合成语音桩，或替代品牌浏览器的浏览器引擎，都不是真实 AT 证据。 |
 
 ### Representative matrix
 
-When real-AT follow-up runs, its pairings are selected from the outcome and supported platform, not copied in full onto every change.
+当真实 AT 后续工作运行时，其组合根据结果与受支持平台来选择，而不是完整复制到每一项改动上。
 
-| Representative pairing       | Use when the outcome includes                                                                                         |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| NVDA + Chrome on Windows     | Browser-neutral desktop AT-specific focus exposure/order or announcement behavior on the Chromium/Windows stack.      |
-| VoiceOver + Safari on macOS  | Browser-neutral desktop AT-specific focus exposure/order or announcement behavior on the Safari/macOS platform stack. |
-| NVDA + Firefox on Windows    | Gecko-specific behavior or a named NVDA Chrome/Firefox divergence.                                                    |
-| VoiceOver + Safari on iOS    | Touch-driven iOS behavior, mobile Safari, rotor/browse navigation, or iOS-specific divergence.                        |
-| TalkBack + Chrome on Android | Touch-driven Android behavior, Android virtual navigation, or Android-specific divergence.                            |
+| 代表性组合                     | 当结果包含以下内容时使用                                               |
+| ------------------------------ | ---------------------------------------------------------------------- |
+| Windows 上的 NVDA + Chrome     | Chromium/Windows 栈上浏览器中立的桌面 AT 特有焦点暴露/顺序或播报行为。 |
+| macOS 上的 VoiceOver + Safari  | Safari/macOS 平台栈上浏览器中立的桌面 AT 特有焦点暴露/顺序或播报行为。 |
+| Windows 上的 NVDA + Firefox    | Gecko 特有行为，或被点名的 NVDA Chrome/Firefox 差异。                  |
+| iOS 上的 VoiceOver + Safari    | 触摸驱动的 iOS 行为、移动版 Safari、转子/浏览导航，或 iOS 特有差异。   |
+| Android 上的 TalkBack + Chrome | 触摸驱动的 Android 行为、Android 虚拟导航，或 Android 特有差异。       |
 
-| ID   | Rule                                                                                                                                                                                                                                          |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR12 | Desktop-neutral follow-up uses two independent stacks: NVDA + Chrome on Windows and VoiceOver + Safari on macOS. A platform-specific claim uses its matching pairing only unless FR14 expands it.                                             |
-| FR13 | Mobile follow-up uses a matching mobile stack. A mobile or touch/virtual-cursor outcome uses at least one matching mobile pairing, and both iOS and Android only when the claim covers both and there is reason to expect different outcomes. |
-| FR14 | Divergence expands rather than replaces. Every side named in a known divergence is included even when that adds a pairing beyond FR12 or FR13.                                                                                                |
-| FR15 | Versions and modes are part of the result. A receipt names OS, AT, browser, input mode, and material settings or verbosity that affect the result. “Screen reader checked” or a browser name without its AT is not a matrix.                  |
-| FR16 | Representative does not mean exhaustive. Passing the selected pairings supports only the recorded outcome and pairings. It does not claim every AT, browser, verbosity setting, locale, or input method behaves identically.                  |
+| ID   | 规则                                                                                                                                                                    |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR12 | 桌面中立的后续工作使用两个独立栈：Windows 上的 NVDA + Chrome 与 macOS 上的 VoiceOver + Safari。平台特有的声称只使用其匹配组合，除非 FR14 将其扩大。                     |
+| FR13 | 移动端后续工作使用匹配的移动栈。移动端或触摸/虚拟光标结果至少使用一个匹配的移动组合；仅当该声称同时覆盖 iOS 与 Android 且有理由预期不同结果时，才同时使用两者。         |
+| FR14 | 差异会扩大而非替换。已知差异中点名的每一侧都要包含，即使这会在 FR12 或 FR13 之外增加一个组合。                                                                          |
+| FR15 | 版本与模式是结果的一部分。回执要点名操作系统、AT、浏览器、输入模式，以及影响结果的实质设置或详细程度。只说“已检查屏幕阅读器”，或只给浏览器名而没有其 AT，都不构成矩阵。 |
+| FR16 | 代表性并不意味着穷尽。通过所选组合只支持所记录的结果与组合。它不声称每一个 AT、浏览器、详细程度设置、语言区域或输入法行为都相同。                                       |
 
 ### Merge, release, and follow-up
 
-| ID   | Rule                                                                                                                                                                                                                                                                                                                                                        |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR17 | Merge and release need only producible evidence. A change merges to `main` and ships in a stable release once the unit, DOM, accessibility-tree, axe, and real-browser evidence its owning records require passes. Pending, missing, or not-yet-run real-AT observation MUST NOT block merge or stable release, and no record may make it a gate.           |
-| FR18 | Follow-up is tracked, not held. A recommended real-AT follow-up MAY be tracked in a public issue naming the claim, scenario, and pairings. The issue holds no pull request or release.                                                                                                                                                                      |
-| FR19 | Lower layers set the bar where real AT is unavailable. An announcement claim is met at merge by FR4 evidence. Focus-exposure, mode, and virtual-cursor claims are met by the accessibility-tree and real-browser evidence that observes the nearest producible state. That evidence MUST NOT be described as proving speech, timing, or cursor placement.   |
-| FR20 | Failures remain findings. A failed real-AT observation is a defect: it records the user impact and links a fix, and is handled like any other defect. Editing an expected result to match an undesirable observation does not turn failure into pass.                                                                                                       |
-| FR21 | Receipts remain valid until invalidated. A passing receipt stays usable while the tested semantic, focus, announcement, virtual-cursor, or divergence-sensitive path and relevant support claim remain unchanged. A material change to that path, a fix for the observed behavior, or a newly recorded divergence makes it stale. Unrelated commits do not. |
-| FR22 | Stale receipts are labelled. When a later change makes a receipt stale, the tracking record says so and the follow-up returns to recommended. This is information, not a gate.                                                                                                                                                                              |
+| ID   | 规则                                                                                                                                                                                                                                    |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR17 | 合并与发布只需要可产生的证据。一旦其拥有者记录所要求的单元、DOM、无障碍树、axe 与真实浏览器证据通过，改动即可合并到 `main` 并随稳定发布交付。待处理、缺失或尚未运行的真实 AT 观察绝不能阻塞合并或稳定发布，任何记录也不得将其设为门槛。 |
+| FR18 | 后续工作被跟踪，而非被扣留。建议的真实 AT 后续工作可以在一个公开 issue 中跟踪，该 issue 点名其声称、场景与组合。该 issue 不扣留任何拉取请求或发布。                                                                                     |
+| FR19 | 在真实 AT 不可用的地方，由下层设定门槛。播报声称在合并时由 FR4 证据满足。焦点暴露、模式与虚拟光标声称，由观察最近可产生状态的无障碍树与真实浏览器证据满足。该类证据绝不能被描述为证明了语音、时机或光标位置。                           |
+| FR20 | 失败仍然是发现。失败的真实 AT 观察是一个缺陷：它记录用户影响并链接一项修复，并像其他任何缺陷一样处理。把预期结果改成与不理想的观察相符，并不会把失败变成通过。                                                                          |
+| FR21 | 回执在被作废之前一直有效。只要受测的语义、焦点、播报、虚拟光标或差异敏感路径以及相关支持声称保持不变，一份通过的回执就保持可用。对该路径的实质性改动、对已观察行为的修复，或新记录的差异，都会使其过期。无关的提交不会。                |
+| FR22 | 过期回执会被标注。当后续改动使某份回执过期时，跟踪记录会说明这一点，后续工作回到建议状态。这是信息，不是门槛。                                                                                                                          |
 
 ### Durable receipts and evidence storage
 
-| ID   | Rule                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR27 | The textual receipt is durable and public. When a real-AT check runs, its canonical receipt lives in the merged pull request, a linked public tracking issue, or a repository-owned record. It MUST remain readable without access to expiring CI artifacts, private systems, or an unversioned local file.                                                                                                                                                                                                                                               |
-| FR28 | Every receipt is reproducible. It records the source pull request and commit or tested build identifier; stable story, fixture, route, or exact reproduction steps; the claim under test; expected focus destination, semantics, announcement, timing, or virtual-cursor outcome; OS, AT, browser, and relevant settings/versions; input sequence and starting state; observed result, including announcement transcript or focus/cursor destination when applicable; `pass` or `fail`, tester, and date; and linked defect or follow-up when applicable. |
-| FR29 | Text carries the decision-critical facts. Screenshots, recordings, speech logs, and CI artifacts may supplement the receipt. They MUST NOT be the only place that records the pairings, expected outcome, observation, or result. Evidence must contain no private user data or internal-only links.                                                                                                                                                                                                                                                      |
-| FR30 | Reusable scenarios live with the code. When a scenario will be reused or represents a component contract, its stable story or fixture is checked into the repository. A one-off external test page is not the sole reproduction path.                                                                                                                                                                                                                                                                                                                     |
-| FR31 | Guidance projects this spec. Future contributor accessibility guidance links to this spec for follow-up classification, evidence bounds, and receipt requirements. Future release guidance links to this spec for the merge and release evidence bar. Those guides may explain the current workflow but MUST NOT duplicate or redefine this policy.                                                                                                                                                                                                       |
+| ID   | 规则                                                                                                                                                                                                                                                                                                                                         |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR27 | 文本回执是持久且公开的。当真实 AT 检查运行时，其规范回执位于已合并的拉取请求、被链接的公开跟踪 issue，或仓库拥有的记录中。它必须在不访问会过期的 CI 制品、私有系统或未版本化的本地文件的情况下仍可读。                                                                                                                                       |
+| FR28 | 每份回执都可复现。它记录来源拉取请求与提交或受测构建标识；稳定的 story、测试夹具、路由或精确复现步骤；受测的声称；预期的焦点目标、语义、播报、时机或虚拟光标结果；操作系统、AT、浏览器及相关设置/版本；输入序列与起始状态；观察到的结果，适用时包括播报记录或焦点/光标目标；`pass` 或 `fail`、测试者与日期；以及适用时链接的缺陷或后续工作。 |
+| FR29 | 文本承载决策关键事实。截图、录屏、语音日志与 CI 制品可以补充回执。它们绝不能成为唯一记录组合、预期结果、观察或结果的地方。证据不得包含私人用户数据或仅限内部的链接。                                                                                                                                                                         |
+| FR30 | 可复用的场景与代码放在一起。当某个场景将被复用，或它代表一项组件契约时，其稳定的 story 或测试夹具会被检入仓库。一次性的外部测试页面不是唯一的复现路径。                                                                                                                                                                                      |
+| FR31 | 指导内容是本规格的投影。未来的贡献者无障碍指导在后续工作分类、证据边界与回执要求方面链接到本规格。未来的发布指导在合并与发布证据门槛方面链接到本规格。那些指南可以解释当前工作流，但绝不能复制或重新定义本政策。                                                                                                                             |
 
 ### Platform support
 
-- Supported feature/engine floor: [AST-013](../AST-013/spec.md) and the affected component or package own browser support. Follow-up pairings are selected within that support claim.
-- Unsupported behavior: no passing claim is made for an untested pairing; a known supported-pairing divergence follows FR6 and FR14.
-- Browser evidence: Playwright or another real-browser runner proves browser behavior and accessibility-tree exposure. It is real-AT evidence only when the actual named assistive technology is operating against the named browser.
+- 受支持的功能/引擎下限：[AST-013](../AST-013/spec.md) 以及受影响的组件或包拥有浏览器支持。后续组合在该支持声称范围内选择。
+- 不受支持的行为：不对未经测试的组合做出通过声称；已知的受支持组合差异遵循 FR6 与 FR14。
+- 浏览器证据：Playwright 或其他真实浏览器运行器证明浏览器行为与无障碍树暴露。只有当实际的被点名辅助技术针对被点名的浏览器运行时，它才是真实 AT 证据。
 
 ## Current-state impact
 
-- Earlier recorded stable-release holds for read-only Popover initial focus and
-  CommandPalette empty-result announcements are recommended follow-ups. Their
-  checked-in scenarios (`Read-only dialog focus`; `CommandPalette / Audit
-Matrix`) and pairings stay valid for a real-AT run and hold no release.
-- `spec:AST-086` status-announcement fixes merge on FR4 evidence (FR17, FR19).
-- `spec:AST-001`, `spec:AST-020`, `spec:AST-021`, `spec:AST-056`, `spec:AST-086`,
-  `component:FieldStatus`, `module:Table/useTableRowStatus`, and
-  `module:Table/useTableColumnResize` describe real-AT observation as
-  recommended follow-up, not a merge or release requirement.
-- No contributing record owns assistive-technology verification. When one is
-  authored, it links back to `spec:AST-009` rather than copying its policy.
+- 先前记录的针对只读 Popover 初始焦点与 CommandPalette 空结果播报的稳定发布扣留，属于建议的后续工作。其已检入的场景（`Read-only dialog focus`；`CommandPalette / Audit Matrix`）与组合对一次真实 AT 运行仍然有效，且不扣留任何发布。
+- `spec:AST-086` 的状态播报修复依据 FR4 证据合并（FR17、FR19）。
+- `spec:AST-001`、`spec:AST-020`、`spec:AST-021`、`spec:AST-056`、`spec:AST-086`、`component:FieldStatus`、`module:Table/useTableRowStatus` 与 `module:Table/useTableColumnResize` 都把真实 AT 观察描述为建议的后续工作，而非合并或发布要求。
+- 没有贡献记录拥有辅助技术验证。当有人撰写此类记录时，它应链接回 `spec:AST-009`，而不是复制其政策。
 
 ## Verification
 
-| Contract  | Verification                                                     | Representative states                                                                                                       | Mutation or failure expectation                                                                                            |
-| --------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| FR1–FR8   | Classification review against the change's claimed user outcome. | static semantic fix; browser-only focus change; AT-announced autofocus; live update; virtual-cursor entry; known divergence | An AT-dependent claim ships without its lower-layer proof, or an unrelated accessibility fix is sent to real-AT follow-up. |
-| FR9–FR11  | Evidence-map review plus focused tests/observations.             | unit state; DOM attributes; computed tree; axe state; browser focus; spoken/braille result                                  | A lower layer is credited with speech, timing, cursor, or interoperability it cannot observe.                              |
-| FR12–FR16 | Pairings named in a real-AT receipt.                             | desktop-neutral; platform-specific; mobile; known divergent stacks                                                          | A generic “screen reader checked” result substitutes for the required independent or divergent pairing.                    |
-| FR17–FR22 | Merge and release review.                                        | announcement fix with FR4 evidence; pending follow-up issue; failed real-AT observation; stale receipt                      | A pull request or release waits on real-AT evidence, or lower-layer proof is described as proving speech.                  |
-| FR27–FR31 | Receipt completeness and link-durability review.                 | PR receipt; linked issue; reusable checked-in fixture; supplementary recording                                              | Critical evidence exists only in an expired/private artifact, cannot be reproduced, or guidance forks this policy.         |
+| 契约      | 验证                                | 代表性状态                                                                          | 变异或失败预期                                                                         |
+| --------- | ----------------------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| FR1–FR8   | 对照改动所声称用户结果的分类审查。  | 静态语义修复；仅浏览器焦点改动；AT 播报的自动聚焦；实时更新；虚拟光标入口；已知差异 | 依赖 AT 的声称在没有其下层证明的情况下交付，或无关的无障碍修复被送去真实 AT 后续工作。 |
+| FR9–FR11  | 证据映射审查加上针对性的测试/观察。 | 单元状态；DOM 属性；计算树；axe 状态；浏览器焦点；朗读/盲文结果                     | 下层被赋予它无法观察的语音、时机、光标或互操作性。                                     |
+| FR12–FR16 | 真实 AT 回执中点名的组合。          | 桌面中立；平台特有；移动端；已知存在差异的栈                                        | 一个泛泛的“已检查屏幕阅读器”结果，替代了所需的独立或差异组合。                         |
+| FR17–FR22 | 合并与发布审查。                    | 带 FR4 证据的播报修复；待处理的后续 issue；失败的真实 AT 观察；过期回执             | 拉取请求或发布等待真实 AT 证据，或下层证明被描述为证明了语音。                         |
+| FR27–FR31 | 回执完整性与链接持久性审查。        | PR 回执；被链接的 issue；可复用的已检入测试夹具；补充录屏                           | 关键证据只存在于已过期/私有的制品中、无法复现，或指导内容分叉了本政策。                |
 
 ### Completion criteria
 
-A change meets this policy when:
+改动在以下情况下满足本政策：
 
-- an AT-dependent claim is named under FR8;
-- each claim has evidence from the producible layer that can observe it under FR4, FR9–FR11, and FR19;
-- no merge or release waited on real-AT observation under FR17; and
-- any real-AT receipt that exists is durable and reproducible under FR27–FR29.
+- 依赖 AT 的声称已按 FR8 点名；
+- 每项声称都有证据，来自按 FR4、FR9–FR11 与 FR19 能够观察它的可产生层；
+- 没有合并或发布按 FR17 等待真实 AT 观察；且
+- 任何存在的真实 AT 回执，在 FR27–FR29 下都是持久且可复现的。
 
 ## Decision log
 
 ### DEC-1 — Real-AT follow-up is outcome-triggered, not category-wide
 
-**Reference:** `spec:AST-009/DEC-1` · **Decider:** `cixzhang`, `2026-08-31`
-**Decision:** FR1–FR8 recommend real AT/browser follow-up for AT-specific focus exposure/order, announcement behavior, virtual-cursor entry, or known divergence. Focus destination, keyboard behavior, focus appearance, and other accessibility changes use the evidence and authority that directly own their claim.
-**User-impact rationale:** AT-dependent outcomes get targeted attention without making unrelated changes run costly shallow checks. **Rejected:** running every AT on every accessibility change.
+**参考：** `spec:AST-009/DEC-1` · **决定者：** `cixzhang`，`2026-08-31` **决策：** FR1–FR8 针对 AT 特有的焦点暴露/顺序、播报行为、虚拟光标入口或已知差异，建议真实 AT/浏览器后续工作。焦点目标、键盘行为、焦点外观以及其他无障碍改动，使用直接拥有其声称的证据与权威。 **用户影响理由：** 依赖 AT 的结果得到有针对性的关注，同时不会让无关改动去运行昂贵而浅层的检查。**已否决：** 在每一项无障碍改动上运行每一种 AT。
 
 ### DEC-2 — Evidence layers keep distinct proof boundaries
 
-**Reference:** `spec:AST-009/DEC-2` · **Decider:** `cixzhang`, `2026-08-31`
-**Decision:** Unit, DOM, accessibility-tree, axe, browser, and real-AT evidence each prove a different boundary. Changes compose needed layers instead of treating one tool as general accessibility proof.
-**User-impact rationale:** People must get the heard or navigated result, not only plausible markup or a green automated check. **Rejected:** describing a green axe run, plausible ARIA, or an accessibility snapshot as proof of what a person hears or where their virtual cursor enters.
+**参考：** `spec:AST-009/DEC-2` · **决定者：** `cixzhang`，`2026-08-31` **决策：** 单元、DOM、无障碍树、axe、浏览器与真实 AT 证据各自证明不同的边界。改动组合所需的层，而不是把单个工具当作通用的无障碍证明。 **用户影响理由：** 用户必须得到听到或导航到的结果，而不只是看起来合理的标记或一次绿色的自动检查。**已否决：** 把一次绿色的 axe 运行、看起来合理的 ARIA，或一张无障碍快照描述为一个人听到什么、其虚拟光标从何处进入的证明。
 
 ### DEC-3 — The real-AT matrix is representative and claim-specific
 
-**Reference:** `spec:AST-009/DEC-3` · **Decider:** `cixzhang`, `2026-08-31`
-**Decision:** Desktop-neutral follow-up uses NVDA + Chrome on Windows and VoiceOver + Safari on macOS. Mobile, platform-specific, and known-divergent claims select or expand that matrix according to the affected outcome. Passing results make no universal compatibility claim.
-**User-impact rationale:** The pairings cover the claim without implying untested AT, browser, verbosity, locale, or input behavior. **Rejected:** one fixed exhaustive matrix for every change, or one convenient pairing standing in for a stack already known to behave differently.
+**参考：** `spec:AST-009/DEC-3` · **决定者：** `cixzhang`，`2026-08-31` **决策：** 桌面中立的后续工作使用 Windows 上的 NVDA + Chrome 与 macOS 上的 VoiceOver + Safari。移动端、平台特有与已知存在差异的声称，根据受影响的结果选择或扩大该矩阵。通过结果不做出任何通用兼容性声称。 **用户影响理由：** 这些组合覆盖该声称，同时不暗示未经测试的 AT、浏览器、详细程度、语言区域或输入行为。**已否决：** 对每项改动使用一份固定的穷尽矩阵，或用某个方便的组合替代一个已知行为不同的栈。
 
 ### DEC-4 — Real-AT evidence never gates merge or release
 
-**Reference:** `spec:AST-009/DEC-4` · **Decider:** `cixzhang`, `2026-10-22`
-**Decision:** Merge and stable release require only evidence Astryx can produce. DOM, accessibility-tree, axe, and real-browser evidence set the bar; real-AT observation is recommended follow-up (FR17–FR19).
-**User-impact rationale:** A requirement no contributor can meet stalls the fixes that remove known accessibility defects, which keeps those defects in front of users longer. **Rejected:** holding stable releases until named real-AT receipts pass.
+**参考：** `spec:AST-009/DEC-4` · **决定者：** `cixzhang`，`2026-10-22` **决策：** 合并与稳定发布只要求 Astryx 能产生的证据。DOM、无障碍树、axe 与真实浏览器证据设定门槛；真实 AT 观察是建议的后续工作（FR17–FR19）。 **用户影响理由：** 一项没有贡献者能满足的要求会拖住那些移除已知无障碍缺陷的修复，从而使这些缺陷更久地留在用户面前。**已否决：** 扣留稳定发布，直到被点名的真实 AT 回执通过。
 
 ### DEC-5 — Real-AT receipts stay durable at the change boundary
 
-**Reference:** `spec:AST-009/DEC-5` · **Decider:** `cixzhang`, `2026-08-31`
-**Decision:** When a real-AT check runs, the change or linked tracking record carries a reproducible textual receipt with build identity and result. Expiring artifacts may supplement it but cannot own its facts.
-**User-impact rationale:** Future contributors and maintainers can audit what was observed and on which build. **Rejected:** private notes, local files, or transient CI artifacts as the only record.
+**参考：** `spec:AST-009/DEC-5` · **决定者：** `cixzhang`，`2026-08-31` **决策：** 当真实 AT 检查运行时，该改动或被链接的跟踪记录携带一份可复现的文本回执，包含构建标识与结果。会过期的制品可以补充它，但不能拥有它的事实。 **用户影响理由：** 未来的贡献者与维护者可以审计观察到了什么、在哪个构建上观察到。**已否决：** 把私有笔记、本地文件或临时 CI 制品作为唯一记录。
 
 ## Open questions
 
-None.
+无。

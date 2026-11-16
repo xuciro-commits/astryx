@@ -20,149 +20,73 @@ affects_consumer_docs: [theme]
 
 ## Intent
 
-A theme package author should be able to compile one related theme family without
-shipping each member's repeated resolved declarations. The caller selects the family
-and supplies one stable key. The build emits one `<key>.css` containing every member,
-one `<key>.js` exporting every complete member, and one matching `<key>.d.ts`.
-Consumers load the CSS once and switch themes by identity.
+主题包作者应当能够编译一个相关的主题族，而无需附带每个成员重复的已解析声明。调用方选择该族并提供一个稳定的键。构建产出一个包含所有成员的 `<key>.css`、一个导出每个完整成员的 `<key>.js`，以及一个与之匹配的 `<key>.d.ts`。使用方只需加载一次 CSS，然后按标识切换主题。
 
-Public [PR #5687](https://github.com/meta/astryx/pull/5687) demonstrates the user
-need and the required cascade result. Its separately loaded base and member files are
-not the accepted output: they can be incomplete, depend on load order, omit a
-zero-delta member, and produce invalid JavaScript when source bindings collide. A
-replacement uses one aggregate output trio so consumers never assemble the family.
+公开的 [PR #5687](https://github.com/meta/astryx/pull/5687) 展示了这一用户需求以及所需的层叠结果。其分别加载的基础文件与成员文件并非已接受的输出：它们可能不完整、依赖加载顺序、遗漏零差异成员，并在源码绑定冲突时生成无效的 JavaScript。替代方案使用一套聚合输出三件套，使使用方永远无需自行组装该族。
 
 ## Non-goals
 
-- Implement the compiler, CLI, or generated artifacts in this specification pull
-  request.
-- Add a new command, response field, error code, or per-member family entrypoint.
-- Strengthen the existing theme build's filesystem failure, cleanup, or publication
-  guarantees.
-- Add or change the portable/global token vocabulary, component APIs, or theme values.
+- 在本规格的 pull request 中实现编译器、CLI 或生成的产物。
+- 新增命令、响应字段、错误码或逐成员的族入口点。
+- 强化现有主题构建在文件系统故障、清理或发布方面的保证。
+- 新增或更改可移植/全局 token 词汇、组件 API 或主题值。
 
 ## Requirements
 
 ### Inputs and outputs
 
-- **FR1 — Selected themes form one valid lineage.** The selected themes MUST form one
-  connected, acyclic `extends` tree with exactly one root. Every selected non-root
-  member's parent MUST also be selected. Duplicate names or identities, missing
-  ancestors, and cycles MUST fail before family output is published. Descendants at
-  any depth are valid; a family is not limited to one root and its direct children.
-- **FR2 — The CLI emits one caller-keyed output trio.** The stable command shape is:
+- **FR1 — 选定的主题构成一条有效谱系。** 选定的主题必须构成一棵连通的、无环的 `extends` 树，且恰好只有一个根。每个选定的非根成员的父级也必须被选中。重名或重复标识、缺失祖先以及环必须在族输出发布之前失败。任意深度的后代都有效；一个族不限于一个根及其直接子级。
+- **FR2 — CLI 产出一套由调用方指定键的输出三件套。** 稳定的命令形态为：
 
   ```sh
   astryx theme build --family <base> <children...> --family-key <key>
   ```
 
-  `--family-key <key>` is required with `--family` and is refused without it before any
-  output is written. It names only `<key>.css`, `<key>.js`, and `<key>.d.ts`. The family
-  key is only the filename stem: it does not change a member's identity or serialized
-  `data.name`, and it establishes no second output-directory convention. The key uses
-  the existing safe lower-kebab filename rules. Family mode composes with `--check`,
-  and is refused with `--watch` and `--out`; other options retain the owning build's
-  existing semantics. It adds no response field or error code; any future response
-  change follows `spec:AST-017`.
+  `--family-key <key>` 与 `--family` 一起使用时为必需，缺少它会在写入任何输出之前被拒绝。它只命名 `<key>.css`、`<key>.js` 与 `<key>.d.ts`。族键只是文件名主干：它不改变成员的标识或序列化的 `data.name`，也不确立第二套输出目录约定。该键沿用现有的安全小写 kebab 文件名规则。族模式与 `--check` 组合使用，但与 `--watch` 和 `--out` 一起使用时会被拒绝；其他选项保留所属构建的既有语义。它不新增响应字段或错误码；任何未来的响应变更都遵循 `spec:AST-017`。
 
 ### Observable family behavior
 
-- **FR3 — One stylesheet is complete for every member.** `<key>.css` MUST contain all
-  theme-authored CSS needed by every selected member. For each member, every generated
-  declaration and resulting computed style MUST match that member's complete standalone
-  build across every supported theme surface. Completeness follows `spec:AST-066`: a
-  member contributes only its explicitly authored `--color-data-*` overrides; canonical
-  defaults come from the consuming StyleX data-variable group, outside theme build. A
-  consumer MUST NOT load, order, or discover another family stylesheet.
-- **FR4 — Theme identity selects the correct cascade.** After `<key>.css` loads,
-  selecting or switching a member requires only changing the theme identity. A
-  descendant's differing values MUST win over inherited values without consumer
-  specificity work or stylesheet-order requirements. Nested roots follow
-  `spec:AST-066`: same and different identities inherit every unspecified data value,
-  while a child replaces only the subset it explicitly authors. Sibling roots stay
-  isolated, and unrelated same-layer stylesheets produce the same winners in either
-  physical order.
-- **FR5 — Deterministic output preserves zero-delta members.** Equivalent selected
-  sets MUST produce byte-identical CSS, JavaScript, and declarations regardless of
-  argument order. A member with no visual delta still has its selectable identity,
-  complete JavaScript export, and declaration.
-- **FR6 — JavaScript and types expose every complete member.** `<key>.js` MUST be a
-  CSS-free standard ESM module with one complete resolved export for every selected
-  member. It MUST parse and import when separate theme sources reuse the same local
-  binding name. `<key>.d.ts` MUST describe every member export under supported
-  TypeScript module resolution. CSS, JavaScript, and type readiness remain independent.
+- **FR3 — 一份样式表对每个成员都是完整的。** `<key>.css` 必须包含每个选定成员所需的全部主题编写的 CSS。对每个成员而言，每条生成的声明以及由此产生的计算样式，必须在所有受支持的主题表面上与该成员完整的独立构建一致。完整性遵循 `spec:AST-066`：成员只贡献其显式编写的 `--color-data-*` 覆盖；规范默认值来自使用方的 StyleX 数据变量组，位于主题构建之外。使用方不得加载、排序或发现另一个族样式表。
+- **FR4 — 主题标识选择正确的层叠。** 在 `<key>.css` 加载之后，选择或切换成员只需更改主题标识。后代的差异值必须胜过继承值，而无需使用方做特异性处理或依赖样式表顺序。嵌套根遵循 `spec:AST-066`：相同与不同标识都继承每个未指定的数据值，而子级只替换其显式编写的那部分子集。兄弟根保持隔离，无关的同层样式表在两种物理顺序下都产生相同的胜出者。
+- **FR5 — 确定性输出保留零差异成员。** 等价的选定集合必须产生字节完全相同的 CSS、JavaScript 和声明，与参数顺序无关。没有视觉差异的成员仍保有其可选标识、完整的 JavaScript 导出和声明。
+- **FR6 — JavaScript 与类型暴露每个完整成员。** `<key>.js` 必须是一个不含 CSS 的标准 ESM 模块，为每个选定成员提供一个完整的已解析导出。当不同的主题源码复用相同的本地绑定名时，它必须能够解析并导入。`<key>.d.ts` 必须在受支持的 TypeScript 模块解析下描述每个成员导出。CSS、JavaScript 与类型的就绪状态保持相互独立。
 
 ### Failure, check, and compatibility
 
-- **FR7 — Success means one complete keyed result.** An invalid lineage, key, or
-  member MUST fail before the command reports success. A successful build MUST expose
-  all three expected keyed files with current bytes. A failed build MUST NOT report
-  success for a mixed, missing, or stale expected set. This defines no stronger
-  durability guarantee than the existing theme build.
-- **FR8 — `--check` verifies the expected keyed outputs.** With the same family
-  selection and key, `--check` MUST regenerate the expected CSS, JavaScript, and
-  declaration output and compare those three files using the existing theme-build
-  check semantics. It MUST report missing or outdated expected files without writing
-  generated output. This contract does not add detection or cleanup of unrelated or
-  extra files.
-- **FR9 — Existing command and artifact paths remain compatible.** Standalone and
-  ordinary multi-file commands, output names, generated JavaScript/types, theme names,
-  inheritance, and consumer import paths keep their meaning. `spec:AST-066` intentionally
-  removes canonical data defaults from every theme-build mode and leaves only authored
-  scoped data overrides; family mode MUST NOT preserve the superseded raw global-data
-  block. Family selection itself remains opt-in.
+- **FR7 — 成功意味着一个完整的带键结果。** 无效的谱系、键或成员必须在命令报告成功之前失败。成功的构建必须暴露全部三个预期的带键文件，且字节为最新。对于混杂、缺失或陈旧的预期集合，失败的构建不得报告成功。这并未定义比现有主题构建更强的持久性保证。
+- **FR8 — `--check` 校验预期的带键输出。** 在相同的族选择与键下，`--check` 必须重新生成预期的 CSS、JavaScript 和声明输出，并使用现有主题构建校验语义比较这三个文件。它必须报告缺失或过期的预期文件，且不写入生成的输出。本契约不新增对无关文件或多余文件的检测或清理。
+- **FR9 — 现有命令与产物路径保持兼容。** 独立的与普通的多文件命令、输出名称、生成的 JavaScript/类型、主题名称、继承关系以及使用方导入路径都保持其含义。`spec:AST-066` 有意从每一种主题构建模式中移除规范数据默认值，只留下各成员编写的带作用域数据覆盖；族模式不得保留已被取代的原始全局数据块。族选择本身仍保持按需启用。
 
 ### Evidence and implementation relationship
 
-- **FR10 — PR #5687 is evidence, not the replacement implementation.** Its duplication
-  measurements, lineage evidence, and cascade experiments may inform replacement work.
-  Its public base-plus-member consumption model is superseded. The replacement MUST
-  satisfy the completeness, load-order, zero-delta, and binding-safety behavior above
-  through one aggregate CSS/JS/d.ts output.
+- **FR10 — PR #5687 是证据，而非替代实现。** 其重复度量、谱系证据和层叠实验可以为替代工作提供参考。其公开的“基础加成员”消费模型已被取代。替代实现必须通过一套聚合的 CSS/JS/d.ts 输出满足上述完整性、加载顺序、零差异与绑定安全行为。
 
 ## Current-state impact
 
-Current `main` builds one complete CSS, JavaScript, and declaration set per theme.
-Implementing this accepted amendment adds the opt-in family command behavior above.
-`spec:AST-066` separately removes canonical data defaults from standalone and family
-theme CSS, leaves only each member's authored scoped data overrides, and assigns
-canonical default emission to the public StyleX consumer graph. It does not change the
-keyed trio, member exports, declarations, or selection command.
+当前的 `main` 为每个主题构建一套完整的 CSS、JavaScript 和声明。实施这项已接受的修订即新增上述按需启用的族命令行为。`spec:AST-066` 另行从独立与族主题 CSS 中移除规范数据默认值，只保留每个成员编写的带作用域数据覆盖，并将规范默认值的产出指派给公开的 StyleX 使用方图。它不改变带键三件套、成员导出、声明或选择命令。
 
-This specification changes no runtime, compiler, CLI, generated artifact, or package by
-itself and adds no Changeset.
+本规格本身不改变任何运行时、编译器、CLI、生成的产物或包，也不新增 Changeset。
 
 ## Verification
 
-| Contract | Required evidence                                                       | Failure signal                                                                                                                                                                                |
-| -------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1–FR2  | graph and CLI composition tests                                         | a missing ancestor or cycle builds; the key changes identity; family mode emits anything other than the keyed trio                                                                            |
-| FR3–FR5  | standalone-equivalence fixtures plus real Chromium                      | a component, prose, adaptation, on-media, authored data subset, nested same/different identity, sibling-root, reversed-order, or zero-delta state differs; argument order changes bytes       |
-| FR6      | ESM parse/import, TypeScript, and binding-collision fixtures            | an export is incomplete or absent; reused local names break parsing; declarations disagree with exports                                                                                       |
-| FR7–FR9  | invalid-input, write-failure, check, and standalone regression fixtures | invalid input reports success; a successful build exposes mixed, missing, or stale bytes; check falsely passes them; standalone output changes beyond the `spec:AST-066` data-default removal |
+| 契约    | 所需证据                                       | 失败信号                                                                                                                             |
+| ------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| FR1–FR2 | 图与 CLI 组合测试                              | 缺失祖先或存在环仍能构建；键改变了标识；族模式产出除带键三件套之外的任何内容                                                         |
+| FR3–FR5 | 独立等价测试夹具加上真实 Chromium              | 组件、正文、适配、on-media 状态、编写的数据子集、嵌套的相同/不同标识、兄弟根、逆序或零差异状态出现差异；参数顺序改变了字节           |
+| FR6     | ESM 解析/导入、TypeScript 以及绑定冲突测试夹具 | 导出不完整或缺失；复用的本地名破坏了解析；声明与导出不一致                                                                           |
+| FR7–FR9 | 无效输入、写入失败、校验以及独立回归测试夹具   | 无效输入报告成功；成功的构建暴露混杂、缺失或陈旧字节；校验错误地判定它们通过；独立输出的变化超出 `spec:AST-066` 的数据默认值移除范围 |
 
-Real-browser verification MUST load only `<key>.css` in addition to the ordinary
-consumer StyleX output and exercise every selected identity, representative components
-and prose, on-media behavior, each member's authored data subset, a parent-authored data
-override across nested same and different identities, sibling roots, a zero-delta member,
-and an unrelated same-layer stylesheet in both orders.
-Structural tests MUST prove deterministic bytes, zero canonical data defaults in family
-CSS, complete ESM exports, matching types, and collision-safe imports. Existing
-standalone fixtures MUST retain every behavior outside `spec:AST-066`.
+真实浏览器验证必须仅在普通使用方 StyleX 输出之外加载 `<key>.css`，并覆盖每个选定标识、代表性组件与正文、on-media 行为、每个成员编写的数据子集、跨嵌套相同与不同标识的、由父级编写的数据覆盖、兄弟根、一个零差异成员，以及一个无关的同层样式表在两种顺序下的表现。结构测试必须证明字节确定、族 CSS 中零规范数据默认值、完整的 ESM 导出、匹配的类型以及冲突安全的导入。现有独立测试夹具必须保留 `spec:AST-066` 之外的全部行为。
 
 ### Completion criteria
 
-This specification remains `accepted` until one replacement implementation proves:
+在有一个替代实现证明以下各项之前，本规格保持为 `accepted`：
 
-- one deterministic keyed CSS/JS/d.ts trio for direct and nested descendants;
-- complete standalone-equivalent theme behavior from that single stylesheet, including
-  `spec:AST-066` authored sparse data overrides, zero canonical defaults, and nested
-  inheritance;
-- selectable zero-delta members and collision-safe aggregate JavaScript/types;
-- build and `--check` cannot report success for mixed, missing, or stale expected
-  keyed files; and
-- real Chromium behavior plus standalone builds unchanged outside the
-  `spec:AST-066` canonical-data-default removal.
+- 针对直接与嵌套后代的一个确定性的带键 CSS/JS/d.ts 三件套；
+- 由该单一样式表获得完整的、与独立构建等价的主题行为，包括 `spec:AST-066` 编写的稀疏数据覆盖、零规范默认值以及嵌套继承；
+- 可选择的零差异成员以及冲突安全的聚合 JavaScript/类型；
+- 构建与 `--check` 无法对混杂、缺失或陈旧的预期带键文件报告成功；以及
+- 真实 Chromium 行为，以及独立构建在 `spec:AST-066` 规范数据默认值移除之外保持不变。
 
 ## Decision log
 
@@ -170,48 +94,32 @@ This specification remains `accepted` until one replacement implementation prove
 
 **Decider:** `cixzhang`, `2026-10-01`
 
-`spec:AST-066` changes the standalone behavior against which family members are
-measured: canonical data defaults come from a retained public StyleX variable group,
-while every theme identity emits only its authored data subset. This amendment updates
-FR3, FR4, FR9, verification, and DEC-2 without changing the family command, keyed output
-trio, graph contract, or complete-member principle.
+`spec:AST-066` 改变了用于衡量族成员的独立行为基准：规范数据默认值来自保留的公开 StyleX 变量组，而每个主题标识只产出其编写的数据子集。本修订更新 FR3、FR4、FR9、验证与 DEC-2，但不改变族命令、带键输出三件套、图契约或完整成员原则。
 
 ### Amendment — Keep the specification at the observable boundary
 
 **Decider:** `cixzhang`, `2026-09-12`
 
-The accepted 2026-09-11 text coupled the family output contract to a second internal
-architecture. This amendment removes that design from the behavior contract. No
-earlier family-specific internal architecture requirement remains in force; only the
-observable requirements in this amended record govern.
+已接受的 2026-09-11 文本将族输出契约与第二个内部架构耦合。本修订将该设计从行为契约中移除。不再有任何先前的族专属内部架构要求生效；只有本修订记录中可观察的要求具有约束力。
 
-The amendment retains the one-file family result, deterministic order, nested lineage,
-zero-delta identity, complete aggregate exports, binding safety, correct cascade, and
-real-browser proof.
+本修订保留单文件族结果、确定性顺序、嵌套谱系、零差异标识、完整的聚合导出、绑定安全、正确的层叠以及真实浏览器证明。
 
 ### DEC-1 — Emit one keyed family output trio
 
 **Reference:** `spec:AST-034/DEC-1`
-**Decider:** `cixzhang`, `2026-09-11`; amended `2026-09-12`
 
-The family command emits `<key>.css`, `<key>.js`, and `<key>.d.ts`. The CSS contains all
-members, the ESM exports every complete member, and the declaration describes those
-exports. The required `--family-key` changes filenames only. Per-member family output
-and consumer runtime assembly are rejected because they return graph and load-order
-work to the consumer.
+**Decider:** `cixzhang`, `2026-09-11`; 修订于 `2026-09-12`
+
+族命令产出 `<key>.css`、`<key>.js` 与 `<key>.d.ts`。CSS 包含所有成员，ESM 导出每个完整成员，声明描述这些导出。必需的 `--family-key` 只更改文件名。逐成员的族输出以及使用方运行时组装被否决，因为它们把图与加载顺序的工作推回给使用方。
 
 ### DEC-2 — Preserve complete member behavior in one stylesheet
 
 **Reference:** `spec:AST-034/DEC-2`
-**Decider:** `cixzhang`, `2026-09-11`; amended `2026-09-12`
 
-Every selected identity produces the same observable theme CSS behavior as its complete
-standalone build. Descendant differences win without a consumer-managed load order or
-specificity escalation, including for components, prose, adaptations, and on-media
-behavior. Under `spec:AST-066`, canonical data defaults come from the retained public
-StyleX group; same and different nested identities inherit every unspecified value and
-override only their authored subset. Family CSS contains no canonical data defaults.
+**Decider:** `cixzhang`, `2026-09-11`; 修订于 `2026-09-12`
+
+每个选定标识产出与其完整独立构建相同的可观察主题 CSS 行为。后代差异胜出，无需使用方管理加载顺序或提升特异性，包括针对组件、正文、适配以及on-media 行为。在 `spec:AST-066` 下，规范数据默认值来自保留的公开 StyleX 组；相同与不同的嵌套标识都继承每个未指定的值，并且只覆盖其编写的子集。族 CSS 不包含任何规范数据默认值。
 
 ## Open questions
 
-None.
+无。

@@ -69,354 +69,126 @@ deciding_specs:
 }
 ```
 
-This record defines how one theme definition becomes usable styles.
+本记录定义一份主题定义如何变成可用的样式。
 
 ## Purpose
 
-A theme author defines a theme once. On the web, using the theme at runtime and
-building it ahead of time must produce the same CSS behavior.
+主题作者只需定义一次主题。在 Web 上，运行时使用主题与提前构建主题必须产生相同的 CSS 行为。
 
-Other platforms may need different output. For example, a future native compiler
-may produce style objects instead of CSS. It should still start from the same
-theme definition.
+其他平台可能需要不同的输出。例如，未来的原生编译器可能生成样式对象而不是 CSS。它仍应从同一份主题定义开始。
 
 ## System model
 
-The compiler receives a `DefinedTheme` from the theme-authoring system.
+编译器从主题编写系统接收一个 `DefinedTheme`。
 
-The current web compiler works like this:
+当前 Web 编译器的工作方式如下：
 
-1. `generateThemeRules` turns portable tokens, theme-local tokens, and component
-   overrides into CSS rules.
-2. Ordered adaptation rules compile to separate media blocks after root rules.
-   Blocks preserve author order and are never merged or value-diffed; media-surface
-   overrides compile after them.
-3. The same code adds state rules, media-surface rules, scopes, and layers.
-4. The `Theme` provider mounts those rules when a theme was not built ahead of
-   time.
-5. The CLI saves those rules into CSS and packages the related JavaScript and
-   types.
-6. A built theme preserves local-token ownership, effective width points,
-   generative-axis metadata, and normalized ordered rules, and is marked so the
-   provider does not compile or inject it again.
-7. A built theme carries its function icon entries, `componentIcons` functions,
-   and `iconVariants` list in its JavaScript, so built resolution returns the
-   same nodes as the runtime theme. A function the build cannot carry fails the
-   build.
+1. `generateThemeRules` 将可移植 token、主题本地 token 和组件覆盖转换为 CSS 规则。
+2. 有序的适配规则在根规则之后编译成单独的媒体块。块保留作者顺序，从不合并或做值差异比较；媒体表面覆盖在它们之后编译。
+3. 同一代码添加状态规则、媒体表面规则、作用域和图层。
+4. `Theme` 提供者在主题未提前构建时挂载这些规则。
+5. CLI 将这些规则保存为 CSS，并打包相关的 JavaScript 和类型。
+6. 构建后的主题保留本地 token 所有权、生效宽度点、生成轴元数据和规范化后的有序规则，并带有标记，使提供者不会再次编译或注入它。
+7. 构建后的主题在其 JavaScript 中携带函数图标条目、`componentIcons` 函数和 `iconVariants` 列表，因此构建后的解析返回与运行时主题相同的节点。构建无法携带的函数会使构建失败。
 
-For top-level declarations in base component target rules, the compiler preserves
-generic CSS properties as written. When a guaranteed property needs to reach
-internal painters, the checked registry additionally translates it into one or
-more private variables and may replace the source declaration when applying it to
-the target element would be wrong. Reviewed public semantic custom properties
-pass through as direct author input. Direct private `--_*` input is prohibited by
-the contract; current runtime, build, pseudo-rule, and media-surface conformance
-gaps are listed below.
+对于基础组件目标规则中的顶层声明，编译器按原样保留通用 CSS 属性。当保证属性需要到达内部绘制器时，受检查的注册表还会将其翻译成一个或多个私有变量，并且当把源声明应用到目标元素上会产生错误结果时，可能会替换源声明。经评审的公共语义自定义属性作为直接作者输入通过。契约禁止直接输入私有 `--_*`；当前的运行时、构建、伪规则和媒体表面一致性缺口列在下方。
 
-A future platform compiler may turn the same theme into a different output type.
-Platform-specific details stay inside that compiler.
+未来的平台编译器可以将同一主题转换为不同的输出类型。平台特定的细节留在该编译器内部。
 
 ## Boundaries and invariants
 
-- **INV1 — One definition can have many outputs.** Authors do not maintain
-  separate definitions for the same shared theme intent.
-- **INV2 — Web has one compiler.** Runtime and static builds call the same code to
-  turn a theme into CSS.
-- **INV3 — Mounting and saving do not change the rules.** The provider mounts
-  compiled CSS. The CLI saves and packages it. Neither creates different theme
-  behavior.
-- **INV4 — Web uses one cascade contract.** Runtime and built CSS use the same
-  scopes, `astryx-theme` layer, component overrides, and consumer precedence.
-- **INV5 — Guaranteed properties remain observable.** The compiler preserves a
-  guaranteed target property directly when that produces the promised effect. If
-  internal structure prevents that, one checked registry entry may route,
-  transform, or fan the public property out to one or more private component
-  variables; the implementation choice cannot change the property's promised
-  meaning.
-- **INV6 — Private variables stay private.** Private `--_*` variables are
-  compiler/component implementation details. Theme authors use the guaranteed
-  property that owns them. Runtime and built authoring paths must reject direct
-  private values rather than emitting them as plausible output.
-- **INV7 — Public semantic variables pass through deliberately.** A reviewed
-  public custom property is direct author input only when the component-theming
-  contract admits it because no guaranteed CSS property expresses the need. The
-  compiler must preserve it without turning private machinery into public API.
-- **INV8 — Generic properties do not become promises by compiling.** The generic
-  styling pipeline may emit properties outside a target's guaranteed set. Output
-  alone does not make their effect or compatibility part of the public contract.
-- **INV9 — Platform details stay out of shared authoring.** CSS selectors, layers,
-  scopes, and custom properties belong to the web compiler. A native compiler
-  may use native style objects.
-- **INV10 — Shared intent keeps the same meaning.** A token or supported component
-  override means the same thing across outputs. Platform-only features have an
-  explicit support boundary.
-- **INV11 — Theme-local names remain exact and prefix-independent.** For an enrolled
-  theme, the compiler emits the normalized `localTokens` map beside portable
-  declarations without rewriting names or values. A prefix neither grants nor
-  restricts ownership. Exact references to effective enrolled declarations retain
-  owner, lineage, collision, and cycle validation; non-exact references remain
-  external. Runtime and static output use the same rules, and invalid enrolled input
-  is rejected before either path writes partial CSS.
-- **INV12 — Adaptation order is observable.** Root declarations emit first,
-  adaptation blocks remain separate in authored order, and media-surface overrides
-  emit last. Duplicate conditions and later root-restoring writes are preserved
-  exactly; runtime and static output use the same blocks.
+- **INV1 — 一个定义可以有多种输出。** 作者不为同一共享主题意图维护单独的定义。
+- **INV2 — Web 只有一个编译器。** 运行时和静态构建调用同一代码将主题转为 CSS。
+- **INV3 — 挂载和保存不改变规则。** 提供者挂载编译后的 CSS。CLI 保存并打包它。两者都不会创建不同的主题行为。
+- **INV4 — Web 使用一个层叠契约。** 运行时和构建后的 CSS 使用相同的作用域、`astryx-theme` 图层、组件覆盖和使用方优先级。
+- **INV5 — 保证属性保持可观察。** 当直接保留保证的目标属性能够产生承诺的效果时，编译器直接保留该属性。如果内部结构阻碍这一点，则一个受检查的注册表条目可以将公共属性路由、转换或扇出到一个或多个私有组件变量；实现选择不能改变该属性所承诺的含义。
+- **INV6 — 私有变量保持私有。** 私有 `--_*` 变量是编译器/组件实现细节。主题作者使用拥有它们的保证属性。运行时的和构建后的编写路径必须拒绝直接私有值，而不是将它们作为看似合理的输出输出。
+- **INV7 — 公共语义变量有意通过。** 仅当组件主题化契约因为没有任何保证的 CSS 属性能够表达该需求而准入某个经评审的公共自定义属性时，它才是直接作者输入。编译器必须保留它，而不把私有机制变成公共 API。
+- **INV8 — 通用属性不会因为编译而成为承诺。** 通用样式管道可以输出目标保证集之外的属性。仅凭输出本身，不会使其效果或兼容性成为公共契约的一部分。
+- **INV9 — 平台细节留在共享编写之外。** CSS 选择器、图层、作用域和自定义属性属于 Web 编译器。原生编译器可以使用原生样式对象。
+- **INV10 — 共享意图保持相同含义。** 一个 token 或受支持的组件覆盖在跨输出时含义相同。仅平台特性具有明确的支持边界。
+- **INV11 — 主题本地名称保持精确且与前缀无关。** 对于已入册的主题，编译器在可移植声明旁输出规范化的 `localTokens` 映射，而不重写名称或值。前缀既不授予也不限制所有权。对生效的已入册声明的精确引用保留所有者、谱系、冲突和循环验证；非精确引用保持为外部引用。运行时和静态输出使用相同规则，无效的已入册输入会在任一路径写出部分 CSS 之前被拒绝。
+- **INV12 — 适配顺序是可观察的。** 根声明首先输出，适配块按作者顺序保持独立，媒体表面覆盖最后输出。重复条件和后来恢复根值的写入被精确保留；运行时和静态输出使用相同的块。
 
-- **INV13 — A declaration stays inside its boundary.** The web compiler rejects
-  only an authored property name or value that would escape or invalidate its CSS
-  declaration/rule boundary. It drops that declaration and continues generating the
-  rest of the theme, including inherited and conditional surfaces. The boundary
-  check preserves valid authored CSS bytes, including quoted semicolons/braces,
-  data URLs, escapes, closed comments, nested functions, vendor-prefixed names, and
-  `!important`. It is not a property-value grammar validator. Legacy unenrolled
-  token values retain their historical string interpolation; this check must not
-  introduce a crash for values such as `null`. Existing construction validation,
-  including atomic enrolled local-token validation, remains separate and unchanged.
-- **INV14 — Reporting does not change compilation.** Dropped declarations produce
-  runtime warnings and appear in the existing static-build receipt's `warnings`.
-  The existing `generateThemeRules`, `generateThemeRulesSplit`, `generateThemeCSS`,
-  `generateOnMediaCSS`, and `generateAdaptationCSS` operations may accept one
-  optional `warnings?: string[]` collector. Supplying it only appends warning text
-  instead of writing that text to the console; it does not change generated CSS,
-  clear existing array entries, change validation, or mutate the theme. Omission
-  retains normal runtime warning behavior. This transport does not introduce a
-  callback API, exported diagnostics/options types, theme metadata, or a structured
-  diagnostics schema. A CLI paired with an older core retains that core's existing
-  compilation behavior; it does not pretend to detect drops the older core cannot
-  report.
-- **INV15 — Built icon resolution matches runtime.** A built theme resolves every
-  icon request and slot request to the same node as its runtime theme, and its
-  public icon and slot exports are the same node-valued and static views. Build
-  tooling that generates or subsets icon artwork enumerates a theme's requests as
-  every entry's key with each of the four sizes and either no variant or one
-  variant that entry can receive under `spec:AST-087` FR4; it never enumerates a
-  variant the entry cannot receive, such as a name only a child theme lists for
-  an entry it inherits.
-- **INV16 — Generated compatibility roles preserve declaration locality and the
-  CSS cascade.** When the web compiler derives a status role from another public
-  token, the alias is emitted inside the theme scope where its semantic source is
-  effective, including reachable adaptation and media combinations. A nested
-  theme derives from its nearest provider rather than retaining its parent's alias.
-  Authored destination roles, source order, `!important`, `inherit`, concrete
-  values, and cycles retain their normal CSS meaning. Runtime and static output
-  use the same derivation.
-- **INV17 — Theme generation establishes every status role.** For each
-  `architecture:theme-tokens` INV11 content or text role a theme does not set,
-  the web compiler derives one in the theme's generated CSS, at runtime and in
-  the theme build, so a theme that sets only its status fills still compiles to
-  a complete status set. The normalized `DefinedTheme` keeps only the tokens
-  the theme sets; non-CSS resolution (`architecture:theme-tokens` INV6) applies
-  the same derivation. A role the theme inherits through `extends` counts as
-  set; a role its parent only derived is derived again from the child's own
-  colours:
-  - `--color-on-<status>` is the theme's light or dark content colour
-    (`--color-on-dark` or `--color-on-light`), whichever contrasts more with
-    the theme's `--color-<status>`; when neither reaches 4.5:1 on it, it is
-    pure white or black, whichever contrasts more.
-  - `--color-text-<status>` is the fill's hue at the lightness that reaches
-    4.5:1 against the theme's default page and card surfaces in each colour
-    mode.
-  - `--color-icon-<status>` and `--color-border-<status>` alias
-    `--color-text-<status>`, so a theme's text value, set or derived, reaches
-    them unless the theme sets them too.
-  - `--color-on-<status>-muted` is the fill's hue at the lightness that reaches
-    4.5:1 on the theme's pale status fill over the default surface.
+- **INV13 — 声明留在其边界内。** Web 编译器只拒绝那些会逃逸或使 CSS 声明/规则边界失效的作者属性名或值。它会丢弃该声明并继续生成主题的其余部分，包括继承和条件表面。边界检查保留有效的作者 CSS 字节，包括带引号的分号/花括号、data URL、转义、闭合注释、嵌套函数、厂商前缀名称和 `!important`。它不是属性值语法验证器。旧版未入册的 token 值保留其历史字符串插值；此检查不得为 `null` 之类的值引入崩溃。现有的构造验证（包括原子化的已入册本地 token 验证）保持独立且不变。
+- **INV14 — 报告不改变编译。** 被丢弃的声明产生运行时警告，并出现在现有静态构建回执的 `warnings` 中。现有的 `generateThemeRules`、`generateThemeRulesSplit`、`generateThemeCSS`、`generateOnMediaCSS` 和 `generateAdaptationCSS` 操作可以接受一个可选的 `warnings?: string[]` 收集器。提供它只会追加警告文本，而不是将该文本写入控制台；它不会改变生成的 CSS、清除现有数组条目、改变验证或改变主题。省略它会保留正常的运行时警告行为。这种传输不会引入回调 API、导出的诊断/选项类型、主题元数据或结构化诊断 schema。与旧核心配对的 CLI 会保留该核心现有的编译行为；它不会假装检测旧核心无法报告的丢弃。
+- **INV15 — 构建后的图标解析与运行时匹配。** 构建后的主题将每个图标请求和插槽请求解析为与其运行时主题相同的节点，其公共图标和插槽导出是相同的节点值和静态视图。生成或子集化图标图稿的构建工具会将主题的请求枚举为每个条目的 key 与四个尺寸中的每一个，以及没有 variant 或该条目在 `spec:AST-087` FR4 下可以接收的一个 variant；它绝不会枚举条目无法接收的 variant，例如只有子主题为其继承的条目列出的名称。
+- **INV16 — 生成的兼容角色保留声明局部性和 CSS 层叠。** 当 Web 编译器从另一个公共 token 派生状态角色时，别名会在其语义源生效的主题作用域内输出，包括可到达的适配和媒体组合。嵌套主题从其最近的提供者派生，而不是保留其父主题的别名。作者编写的目标角色、源顺序、`!important`、`inherit`、具体值和循环保留其正常 CSS 含义。运行时和静态输出使用相同的派生。
+- **INV17 — 主题生成建立每个状态角色。** 对于主题未设置的每个 `architecture:theme-tokens` INV11 内容或文本角色，Web 编译器会在主题生成的 CSS 中派生一个，无论是在运行时还是在主题构建中，因此只设置状态填充色的主题仍会编译出完整的状态集。规范化的 `DefinedTheme` 只保留主题设置的 token；非 CSS 解析（`architecture:theme-tokens` INV6）应用相同的派生。主题通过 `extends` 继承的角色算作已设置；其父主题仅派生过的角色会从子主题自己的颜色再次派生：
+  - `--color-on-<status>` 是主题的浅色或深色内容颜色（`--color-on-dark` 或 `--color-on-light`），取其中与主题的 `--color-<status>` 对比度更高者；当两者在该颜色上的对比度都达不到 4.5:1 时，取纯白色或黑色中对比度更高者。
+  - `--color-text-<status>` 是填充色的色相，其亮度在每种颜色模式下相对主题默认页面和卡片表面达到 4.5:1。
+  - `--color-icon-<status>` 和 `--color-border-<status>` 别名到 `--color-text-<status>`，因此主题的文本值（设置的或派生的）会到达它们，除非主题也设置了它们。
+  - `--color-on-<status>-muted` 是填充色的色相，其亮度在默认表面上的主题浅色状态填充上达到 4.5:1。
 
-  Fills are never derived: a `--color-<status>` or `--color-<status>-muted` the
-  theme does not set is Core's. A role is derived again when the theme sets a
-  colour it is measured against: the fill, the pale fill, the default page or
-  card surface, or the light and dark content colours. When the fill is not
-  chromatic, the text and pale-fill content take Core's own hue for that
-  status, so derived text stays chromatic. When a colour these computations
-  measure is not a concrete colour, such as an unresolved reference, it cannot
-  be measured, so for that status the text and pale-fill content roles alias
-  the theme's matching hue text token (`--color-text-blue`, `-green`,
-  `-yellow`, or `-red`) and `--color-on-<status>` keeps the theme's or Core's
-  value. Those aliases carry the theme's own values: they are not derived
-  values, so INV11's floors bind them only in Core and first-party themes,
-  which use concrete colours. A value the theme sets always wins over a derived
-  one. A derived value is emitted in the scope where its source is set
-  (INV16), and runtime and static output derive the same values.
+  填充色从不派生：主题未设置的 `--color-<status>` 或 `--color-<status>-muted` 属于 Core。当主题设置了某个用于测量的颜色——填充色、浅色填充色、默认页面或卡片表面，或浅色和深色内容颜色——时会再次派生角色。当填充色不是彩色时，文本和浅色填充内容采用 Core 为该状态自己的色相，因此派生的文本保持彩色。当这些计算所测量的某个颜色不是具体颜色（例如未解析的引用）时，就无法测量，因此对于该状态，文本和浅色填充内容角色会别名到主题匹配的色相文本 token（`--color-text-blue`、`-green`、`-yellow` 或 `-red`），而 `--color-on-<status>` 保留主题或 Core 的值。这些别名携带主题自己的值：它们不是派生值，因此 INV11 的下限只约束 Core 和第一方主题，而这些主题使用具体颜色。主题设置的值总是优先于派生值。派生值在其源被设置的作用域中输出（INV16），运行时和静态输出派生相同的值。
 
-- **INV18 — A color-mode block applies only in its mode.** The web compiler
-  writes a component style key's `@light` or `@dark` block (properties,
-  pseudo-class overrides, and pseudo-elements) as rules that match only where
-  the element's color mode is that mode, as Theme resolves it. Outside media
-  surfaces the theme root's `data-theme` decides, and a root mode other than
-  `light` or `dark` follows the system preference. Inside the theme's media
-  surfaces a block applies as the `onDark` and `onLight` overrides do: inside
-  any surface of its mode, so where surfaces of both modes enclose an element
-  both blocks apply and the light block wins a property both set. The mode
-  conditions sit on the style key's selector before any pseudo-class, press
-  state, or pseudo-element, add no specificity, and add no scope proximity, so
-  a block weighs the same on a surface as at the root. The rules follow the
-  style key's own, so in its mode the block wins over the style key's values,
-  and in the other mode it writes nothing: every other rule, including the
-  base layer's rules in context, applies there as it would without the block.
-  A block takes the same derived variables and container padding as the style
-  key. On a media surface only the block of the surface's mode is written. A
-  theme without color-mode blocks has no mode rules in its CSS.
+- **INV18 — 颜色模式块仅在其模式下应用。** Web 编译器将组件样式 key 的 `@light` 或 `@dark` 块（属性、伪类覆盖和伪元素）写成仅在元素的颜色模式为该模式时匹配的规则，具体由 Theme 解析。在媒体表面之外，主题根的 `data-theme` 决定；除 `light` 或 `dark` 之外的根模式遵循系统偏好。在主题的媒体表面内部，块的应用方式与 `onDark` 和 `onLight` 覆盖相同：在其模式的任何表面内部，因此当两种模式的表面都包围某个元素时，两个块都会应用，而浅色块在两者都设置的属性上获胜。模式条件位于样式 key 的选择器上，在任何伪类、按下状态或伪元素之前，不增加特异性，也不增加作用域邻近性，因此块在表面上的权重与在根上相同。这些规则跟随样式 key 自己的规则，因此在其模式下块胜过样式 key 的值，而在另一模式下它不写入任何内容：所有其他规则，包括上下文中基础层的规则，都像没有该块一样在那里应用。块采用与样式 key 相同的派生变量和容器内边距。在媒体表面上只写入该表面模式的块。没有颜色模式块的主题在其 CSS 中没有模式规则。
 
-This record does not own:
+本记录不拥有：
 
-- token names and defaults, including the meanings of theme-local names;
-- `DefineThemeInput`, local-token enrollment and lineage, inheritance, or
-  authoring precedence;
-- which component parts and properties are public theme APIs; or
-- provider nesting, root synchronization, and DOM observation after compilation.
+- token 名称和默认值，包括主题本地名称的含义；
+- `DefineThemeInput`、本地 token 入册与谱系、继承或编写优先级；
+- 哪些组件部件和属性是公共主题 API；或
+- 编译后的提供者嵌套、根同步和 DOM 观察。
 
 ## Change coupling
 
-- Any change to how a web theme becomes CSS belongs in the shared compiler and
-  is tested through both runtime mounting and CLI-built output. The Theme
-  provider and CLI may mount or package compiled rules; they must not implement
-  their own theme-to-CSS transformations.
-- Adding or changing a guaranteed property path uses the target's exact
-  `guaranteedProperties` declaration and adds representative compiler and runtime
-  evidence that the property produces its promised effect on that target's
-  anatomy part. Catalog membership alone is not a guarantee. If private expansion
-  is needed, update the checked registry and component metadata in the same
-  change.
-- Adding or changing a public semantic custom property verifies direct runtime
-  and built output, default/fallback behavior, and rejection of any private alias.
-- Generic-property pass-through remains best effort and must not be documented or
-  tested as a compatibility guarantee unless the component-theming record admits
-  that property into the guaranteed set.
-- Changing scope or layer output tests both source and distribution builds.
-- Changing local-token emission or packaging verifies exact-name runtime/static
-  parity, atomic failure, and preservation of built-theme lineage metadata.
-- Changing adaptation output verifies authored block order, duplicate conditions,
-  root-restoring writes, media-surface precedence, derived component lowering,
-  and source/built extension parity.
-- The CLI and core version independently, so a CLI that compiles adaptations
-  against a core that does not is a supported pairing rather than a broken
-  install. That pairing is bounded to the adaptation capability, not a general
-  compatibility scheme for arbitrary older cores: a theme with no adaptation
-  intent builds and emits the same CSS it always did, while valid rules, a custom
-  width map, and present-but-malformed adaptation metadata all count as intent
-  and fail with `ERR_CORE_INCOMPATIBLE` before any output is generated. A
-  complete default width map with no rules is a no-op on both paths, because that
-  is what core writes onto every resolved theme and every shipped built theme.
-  Neither path may emit CSS with adaptation rules missing. Intent is read from
-  resolved metadata when available; because a core that predates adaptations
-  erases it, the build also records each raw `defineTheme()` input and associates
-  it with the theme it produced. Only the selected theme's lineage decides, so an
-  unused adaptive theme elsewhere in the graph does not fail a plain build. If
-  that selected lineage contains an unobserved source package — whether the
-  async fallback bypassed interception or CommonJS reached a core namespace that
-  could not be wrapped — the build fails closed. Built package artifacts remain
-  observable through their retained metadata. Captured raw typography, color,
-  radius, and motion metadata is also retained when the old core omits `__axes`,
-  so a current-core child extending the artifact resolves partial adaptation
-  axes exactly as it would from source. Generated CSS is identical across the
-  two cores for a theme with no adaptation intent; generated JavaScript and
-  `@generated` provenance may differ because they record resolved metadata and
-  the core version, so `--check` can legitimately report drift after an upgrade.
-- Adding a platform compiler names the shared concepts it supports and tests
-  that they keep the same meaning. Unsupported concepts fail clearly instead of
-  disappearing.
-- Declaration-boundary changes verify positive and negative scanner cases, local
-  dropping with surviving neighbors, legacy token generation, and runtime/build
-  parity across tokens, local tokens, variants, pseudo states, media surfaces,
-  adaptations, inheritance, and Heading fallback rules. Collector tests verify
-  append-only text, unchanged CSS with/without a collector, and build receipts.
-- Build packaging may change without changing compiled theme behavior.
+- 任何关于 Web 主题如何变成 CSS 的变更都属于共享编译器，并要通过运行时挂载和 CLI 构建输出进行测试。Theme 提供者和 CLI 可以挂载或打包编译后的规则；它们不得实现自己的主题到 CSS 转换。
+- 添加或更改保证属性路径会使用目标的确切 `guaranteedProperties` 声明，并添加代表性的编译器和运行时证据，证明该属性在目标的解剖部件上产生其承诺的效果。仅加入目录不是保证。如果需要私有扩展，在同一次变更中更新受检查的注册表和组件元数据。
+- 添加或更改公共语义自定义属性会验证直接的运行时和构建输出、默认/回退行为，以及对任何私有别名的拒绝。
+- 通用属性透传保持尽力而为，不得将其记录或测试为兼容性保证，除非组件主题化记录将该属性准入到保证集。
+- 更改作用域或图层输出会测试源构建和分发构建。
+- 更改本地 token 输出或打包会验证精确名称的运行时/静态一致性、原子失败以及构建后主题谱系元数据的保留。
+- 更改适配输出会验证作者块顺序、重复条件、恢复根值的写入、媒体表面优先级、派生组件降级以及源/构建扩展一致性。
+- CLI 和 Core 独立进行版本管理，因此 CLI 针对不支持适配的 Core 编译适配是一种受支持的配对，而不是损坏的安装。该配对仅限于适配能力，不是面向任意旧核心的通用兼容方案：没有适配意图的主题会像以往一样构建并输出相同的 CSS，而有效规则、自定义宽度映射以及存在但格式错误的适配元数据都算作有意图，并在生成任何输出之前以 `ERR_CORE_INCOMPATIBLE` 失败。没有规则的完整默认宽度映射在两条路径上都是空操作，因为 Core 会把它写到每个已解析主题和每个已发布的构建后主题上。任一路径都不得输出缺少适配规则的 CSS。意图在有解析元数据时从解析元数据读取；因为早于适配的 Core 会抹掉它，构建还会记录每个原始 `defineTheme()` 输入，并将其与其产生的主题关联。只有所选主题的谱系才做决定，因此图中其他地方未使用的自适应主题不会导致普通构建失败。如果该所选谱系包含未观察到的源包——无论异步回退绕过了拦截，还是 CommonJS 进入了无法包装的 Core 命名空间——构建会失败关闭。构建后的包产物仍可通过其保留的元数据观察。当旧 Core 省略 `__axes` 时，捕获的原始排版、颜色、圆角和动效元数据也会保留，因此扩展该产物的当前 Core 子主题会像从源码一样准确解析部分适配轴。对于没有适配意图的主题，两个 Core 生成的 CSS 相同；生成的 JavaScript 和 `@generated` 来源可能不同，因为它们记录解析元数据和 Core 版本，所以 `--check` 在升级后合法地报告漂移。
+- 添加平台编译器会命名它支持的共享概念，并测试它们保持相同含义。不受支持的概念会明确失败，而不是消失。
+- 声明边界变更会验证正反扫描器案例、带幸存邻居的本地丢弃、旧 token 生成，以及跨 token、本地 token、变体、伪状态、媒体表面、适配、继承和 Heading 回退规则的运行时/构建一致性。收集器测试会验证只追加文本、在有/无收集器时 CSS 不变，以及构建回执。
+- 构建打包可以在不改变编译后主题行为的情况下变化。
 
 ## Owning code
 
-- `generateThemeRules.ts` owns the web compiler and canonical CSS output,
-  including portable and theme-local declarations in the same scoped block.
-- `Theme.tsx` mounts compiled CSS for themes that were not built ahead of time.
-- `derivedVarRegistry.ts` owns checked mappings from guaranteed public properties
-  to private component variables.
-- Component `.doc.mjs` `theming.derived[]` mirrors those mappings;
-  `theming.vars[]` distinguishes reviewed public semantic variables from private
-  implementation variables.
-- `packages/cli/api/theme/build/build.mjs` saves and packages compiled CSS. Its
-  private-variable diagnostic is currently non-blocking; rejecting that input is
-  a named conformance gap, not existing enforcement. It also owns the
-  adaptation-capability check for the installed core: baseline generation is
-  required, and `generateAdaptationCSS` is demanded by valid or malformed
-  adaptation intent in authored, resolved, or built input.
-  `core-interception.mjs` owns capturing authored input and its generative axes:
-  it hands the loading theme a core whose `defineTheme` is wrapped to record each
-  raw input against the theme it returned, and reports loader paths it could not
-  cover so erased intent never passes as clean.
-- Future platform compilers consume the same `DefinedTheme` behind this boundary.
+- `generateThemeRules.ts` 拥有 Web 编译器和规范 CSS 输出，包括同一作用域块中的可移植声明和主题本地声明。
+- `Theme.tsx` 为未提前构建的主题挂载编译后的 CSS。
+- `derivedVarRegistry.ts` 拥有从保证公共属性到私有组件变量的受检查映射。
+- 组件 `.doc.mjs` 的 `theming.derived[]` 镜像这些映射；`theming.vars[]` 区分经评审的公共语义变量和私有实现变量。
+- `packages/cli/api/theme/build/build.mjs` 保存并打包编译后的 CSS。其私有变量诊断目前是非阻塞的；拒绝该输入是一个已命名的一致性缺口，而不是现有强制执行。它还拥有对已安装 Core 的适配能力检查：基线生成是必需的，而 `generateAdaptationCSS` 由作者编写、已解析或构建输入中的有效或格式错误的适配意图所要求。`core-interception.mjs` 拥有捕获作者输入及其生成轴：它交给加载主题一个 Core，其 `defineTheme` 被包装以针对其返回的主题记录每个原始输入，并报告它无法覆盖的加载器路径，使被抹掉的意图绝不会作为干净结果通过。
+- 未来的平台编译器在此边界之后消费相同的 `DefinedTheme`。
 
 ## Deciding specs
 
-AST-006 decisions 2 and 4, as amended on 2026-09-12, establish
-prefix-independent local-token names and atomic shared validation for enrolled themes.
-AST-012 decisions 3 and 4 establish ordered adaptation blocks and source/built metadata
-parity. AST-087 decisions 2 and 9 establish function icon entries and the finite,
-theme-level variant list that built resolution and icon-artwork tooling use. The system owner separately selected one definition with platform-specific
-outputs and the guaranteed, best-effort, public-semantic, and private implementation
-tiers.
+AST-006 的决定 2 和 4（于 2026-09-12 修订）确立了与前缀无关的本地 token 名称和已入册主题的原子共享验证。AST-012 的决定 3 和 4 确立了有序适配块和源/构建元数据一致性。AST-087 的决定 2 和 9 确立了函数图标条目以及构建后解析和图标图稿工具使用的有限主题级 variant 列表。系统所有者另外选择了带平台特定输出的一份定义，以及保证、尽力而为、公共语义和私有实现四个层级。
 
 ## Verification
 
-| Invariant        | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                               | Failure signal                                                                                                                                                                                                                                                                                    |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| INV1, INV2, INV3 | Compiler imports and runtime/build comparison fixtures                                                                                                                                                                                                                                                                                                                                                                                                 | Runtime and build use different theme-to-CSS logic or produce different web rules                                                                                                                                                                                                                 |
-| INV4             | `generateThemeRules.test.ts` and source/distribution cascade tests                                                                                                                                                                                                                                                                                                                                                                                     | Scope or layer order differs by output path                                                                                                                                                                                                                                                       |
-| INV5             | Existing per-property fixtures (partial; gap below)                                                                                                                                                                                                                                                                                                                                                                                                    | A guaranteed property compiles but does not produce its promised observable effect                                                                                                                                                                                                                |
-| INV6, INV7       | Existing registry and CLI public-variable tests (partial)                                                                                                                                                                                                                                                                                                                                                                                              | Private variables become authorable, or a reviewed public semantic variable fails build/runtime                                                                                                                                                                                                   |
-| INV8             | Component target metadata and compatibility review                                                                                                                                                                                                                                                                                                                                                                                                     | Successful generic emission is treated as a guaranteed public behavior                                                                                                                                                                                                                            |
-| INV9, INV10      | Platform compiler tests when another compiler ships                                                                                                                                                                                                                                                                                                                                                                                                    | CSS details enter shared authoring, or shared theme intent silently disappears                                                                                                                                                                                                                    |
-| INV11            | `defineTheme.test.ts` and `build.test.mjs` local-token fixtures                                                                                                                                                                                                                                                                                                                                                                                        | Runtime/static output rewrites a local name, disagrees, or leaves partial output after failure                                                                                                                                                                                                    |
-| INV12            | `themeAdaptations.test.ts` and CLI adaptation build fixtures                                                                                                                                                                                                                                                                                                                                                                                           | Rule blocks merge/reorder/drop, surfaces lose precedence, or runtime/static CSS diverges                                                                                                                                                                                                          |
-| INV18            | `colorModeBlocks.test.ts` output tests, `build-theme.color-mode-blocks.test.mjs` (CLI-built CSS), and `colorModeBlocks.a11y.chromium.spec.ts` (the ColorModeBlocks story: the Theme's mode, system preference, a mode that is neither, nested Theme, media surfaces one and more deep, explicit Text and Heading props alike at the root and on a surface, a press, Pagination's current page and a text field's status border kept in the other mode) | A mode block applies in the other mode, overrides a base-layer rule there, or changes CSS for a theme without blocks                                                                                                                                                                              |
-| INV13, INV14     | Declaration scanner, generator, Theme mounting, CLI receipt tests, and the existing theme-family Chromium guard                                                                                                                                                                                                                                                                                                                                        | One unsafe declaration corrupts neighbors, valid CSS changes, legacy token generation crashes, or reporting changes CSS                                                                                                                                                                           |
-| Built themes     | Theme and CLI build tests                                                                                                                                                                                                                                                                                                                                                                                                                              | Runtime recompiles a built theme, or built output omits canonical rules                                                                                                                                                                                                                           |
-| INV15            | CLI build fixtures with function entries, slot functions, a variant list, and an inherited entry under a replaced list, compared with runtime resolution                                                                                                                                                                                                                                                                                               | Built and runtime icons differ, a function is dropped silently, or tooling enumerates a variant an entry cannot receive                                                                                                                                                                           |
-| INV16            | Root, adaptation, media, nested-theme, and CLI-built status-alias fixtures                                                                                                                                                                                                                                                                                                                                                                             | A generated role escapes its source scope, overrides an authored role, changes cascade meaning, cycles, or differs by output path                                                                                                                                                                 |
-| INV17            | A minimal custom theme that sets only its four status fills, compiled at runtime and through the CLI build, plus themes that set a light fill, a grey fill, an unresolved fill, an unresolved card surface, only a surface, only a hue text token, a fill only inside an adaptation rule, and one that `extends` a theme setting a status role, each also read through non-CSS resolution                                                              | A content or text role is missing, misses an INV11 floor in light or dark mode, is grey, ignores a value the theme set, or differs between runtime, build, and non-CSS resolution; an icon or border role does not follow the text role; a fill is derived; or an inherited role is derived again |
+| Invariant        | Evidence                                                                                                                                                                                                                                                                                                                                            | Failure signal                                                                                                                                                                             |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| INV1, INV2, INV3 | 编译器导入以及运行时/构建比较夹具                                                                                                                                                                                                                                                                                                                   | 运行时和构建使用不同的主题到 CSS 逻辑，或产生不同的 Web 规则                                                                                                                               |
+| INV4             | `generateThemeRules.test.ts` 和源/分发层叠测试                                                                                                                                                                                                                                                                                                      | 作用域或图层顺序因输出路径而异                                                                                                                                                             |
+| INV5             | 现有的逐属性夹具（部分；缺口见下）                                                                                                                                                                                                                                                                                                                  | 保证属性编译后没有产生其承诺的可观察效果                                                                                                                                                   |
+| INV6, INV7       | 现有的注册表和 CLI 公共变量测试（部分）                                                                                                                                                                                                                                                                                                             | 私有变量变得可编写，或经评审的公共语义变量在构建/运行时失败                                                                                                                                |
+| INV8             | 组件目标元数据和兼容性评审                                                                                                                                                                                                                                                                                                                          | 成功的通用输出被视为保证的公共行为                                                                                                                                                         |
+| INV9, INV10      | 另一个编译器发布时的平台编译器测试                                                                                                                                                                                                                                                                                                                  | CSS 细节进入共享编写，或共享主题意图静默消失                                                                                                                                               |
+| INV11            | `defineTheme.test.ts` 和 `build.test.mjs` 本地 token 夹具                                                                                                                                                                                                                                                                                           | 运行时/静态输出重写本地名称、结果不一致，或在失败后留下部分输出                                                                                                                            |
+| INV12            | `themeAdaptations.test.ts` 和 CLI 适配构建夹具                                                                                                                                                                                                                                                                                                      | 规则块合并/重排/丢弃、表面失去优先级，或运行时/静态 CSS 分歧                                                                                                                               |
+| INV18            | `colorModeBlocks.test.ts` 输出测试、`build-theme.color-mode-blocks.test.mjs`（CLI 构建的 CSS）和 `colorModeBlocks.a11y.chromium.spec.ts`（ColorModeBlocks 故事：Theme 的模式、系统偏好、两者皆非的模式、嵌套 Theme、一层及多层媒体表面、根上和表面上显式 Text 与 Heading props、一次按下、Pagination 的当前页和文本字段的状态边框在另一模式下保持） | 模式块在另一模式下应用、在那里覆盖基础层规则，或改变没有块的主题的 CSS                                                                                                                     |
+| INV13, INV14     | 声明扫描器、生成器、Theme 挂载、CLI 回执测试和现有主题族 Chromium 防护                                                                                                                                                                                                                                                                              | 一个不安全的声明破坏邻居、有效 CSS 改变、旧 token 生成崩溃，或报告改变 CSS                                                                                                                 |
+| Built themes     | 主题和 CLI 构建测试                                                                                                                                                                                                                                                                                                                                 | 运行时重新编译构建后的主题，或构建输出缺少规范规则                                                                                                                                         |
+| INV15            | 带函数条目、插槽函数、variant 列表以及在替换列表下继承条目的 CLI 构建夹具，并与运行时解析比较                                                                                                                                                                                                                                                       | 构建后的图标与运行时不同、函数被静默丢弃，或工具枚举条目无法接收的 variant                                                                                                                 |
+| INV16            | 根、适配、媒体、嵌套主题和 CLI 构建的状态别名夹具                                                                                                                                                                                                                                                                                                   | 生成的角色逃逸其源作用域、覆盖作者角色、改变层叠含义、循环，或因输出路径而异                                                                                                               |
+| INV17            | 一个只设置四个状态填充色的最小自定义主题，在运行时和通过 CLI 构建编译，另加设置浅色填充、灰色填充、未解析填充、未解析卡片表面、仅表面、仅色相文本 token、仅在适配规则内设置填充，以及 `extends` 一个设置状态角色的主题，每个都还经非 CSS 解析读取                                                                                                   | 内容或文本角色缺失、在浅色或深色模式下未达到 INV11 下限、呈灰色、忽略主题设置的值，或在运行时、构建和非 CSS 解析之间不同；图标或边框角色不跟随文本角色；填充被派生；或继承的角色被再次派生 |
 
 ## Known conformance and verification gaps
 
-Inside an `onDark`/`onLight` media surface, which sits on content the compiler
-cannot measure, a status fill the theme sets there gets its derived content, but
-its text and pale-fill content reach their roles as INV16 aliases rather than
-derived values. Inside adaptation rules, each rule's derived
-values combine the root with that rule alone, so rules that match together and
-each set a measured colour do not yet derive from their combination.
+在 `onDark`/`onLight` 媒体表面内部，由于该表面位于编译器无法测量的内容上，主题在那里设置的状态填充会获得其派生的内容色，但其文本和浅色填充内容通过 INV16 别名而非派生值达到其角色。在适配规则内部，每条规则的派生值只将该规则与根组合，因此同时匹配且各自设置测量颜色的规则尚不能从它们的组合中派生。
 
-Declaration-boundary enforcement and the warnings-array collector in INV13–INV14
-are accepted but not yet shipped. Their verification obligations above describe
-implementation acceptance, not existing enforcement.
+INV13–INV14 中的声明边界强制执行和 warnings 数组收集器已接受但尚未发布。上面的验证义务描述的是实现验收，而不是现有的强制执行。
 
-Prefix-independent `localTokens` key acceptance is accepted but unshipped. The current
-compiler still requires the original theme-derived prefix and uses that prefix to
-classify local references. Until implementation lands, INV11's prefix-independent
-clauses are current authority but not enforcement; exact-name emission and the existing
-enrollment, owner, lineage, collision, cycle, and legacy-unenrolled behavior remain
-shipped.
+与前缀无关的 `localTokens` key 接受已接受但未发布。当前编译器仍要求原始的、由主题派生的前缀，并使用该前缀对本地引用进行分类。在实现落地之前，INV11 的与前缀无关的条款是当前权威，但不是强制执行；精确名称输出以及现有的入册、所有者、谱系、冲突、循环和旧版未入册行为仍然已发布。
 
-The remaining invariants above describe the approved current contract. The following
-shipped behavior does not yet conform and must not be treated as enforcement:
+上面的其余不变量描述了已批准的当前契约。以下已发布行为尚不符合，且不得被视为强制执行：
 
-- **Private author input is not rejected end to end.** `themeBuild` reports direct
-  `--_*` values as errors in its receipt/log, but continues compiling and emits
-  them. Its validation checks only the top-level declarations under
-  `components`; nested pseudo declarations and media-surface components bypass
-  it. Runtime `defineTheme` has no equivalent validation and accepts them. The
-  follow-up must reject direct private variables recursively before CSS
-  generation across both paths and prove runtime/static parity.
-- **Nested pseudo component declarations bypass derived expansion.** Top-level
-  component declarations at the root, in adaptations, and under
-  `onDark.components` / `onLight.components` use `derivedVarRegistry`, including
-  `replaces` and container expansion. Nested pseudo declarations on those
-  surfaces still serialize properties directly. The follow-up must route nested
-  pseudos through the same component-declaration lowering path, with parity
-  fixtures for a normal mapping, `replaces`, and container padding.
-- **Guaranteed-property coverage is not machine-complete.** The shared catalog is
-  normative, but the component-doc schema has no per-target
-  `guaranteedProperties` declarations. CI therefore cannot prove that a target
-  rationally supports its selected catalog subset or reviewed additions. The
-  follow-up must add and migrate that metadata, then fail when a declared
-  target/property pair lacks both output-path and observable runtime evidence.
+- **私有作者输入未端到端拒绝。** `themeBuild` 在其回执/日志中将直接 `--_*` 值报告为错误，但继续编译并输出它们。它的验证只检查 `components` 下的顶层声明；嵌套伪声明和媒体表面组件绕过了它。运行时的 `defineTheme` 没有等效验证并接受它们。后续工作必须在两条路径的 CSS 生成之前递归拒绝直接私有变量，并证明运行时/静态一致性。
+- **嵌套伪组件声明绕过派生展开。** 根、适配中以及 `onDark.components` / `onLight.components` 下的顶层组件声明使用 `derivedVarRegistry`，包括 `replaces` 和容器展开。这些表面上的嵌套伪声明仍直接序列化属性。后续工作必须将嵌套伪声明路由到相同的组件声明降级路径，并为普通映射、`replaces` 和容器内边距提供一致性夹具。
+- **保证属性覆盖不是机器完备的。** 共享目录是规范性的，但组件文档 schema 没有逐目标的 `guaranteedProperties` 声明。因此 CI 无法证明某个目标合理地支持其选定的目录子集或经评审的附加项。后续工作必须添加并迁移该元数据，然后在声明的目标/属性对缺少输出路径和可观察运行时证据时失败。
 
-These invariants are the approved rules governing implementation and review. The
-nonconformities above are shipped defects against that contract, not proposed
-behavior.
+这些不变量是治理实现与评审的已批准规则。上面的不符合项是针对该契约的已发布缺陷，不是提议的行为。

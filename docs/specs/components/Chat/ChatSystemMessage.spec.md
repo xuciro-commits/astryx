@@ -38,159 +38,134 @@ system_specs: [spec:AST-029, spec:AST-086]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                            |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `ChatSystemMessage` with required `children`, `variant` (`default`, `divider`; default `default`), optional `icon`, `ref`, `xstyle`, `className`, `style`, and root DOM props.      |
-| Behavior                | `default` renders a centered row of optional icon content and the children, wrapping long text. `divider` renders the children as a labelled horizontal Divider and ignores `icon`. |
-| End-user impact         | Readers can tell system notices apart from sender messages and see labelled date or section breaks; a notice added to a chat log is announced once, by the log.                     |
-| Builder impact          | None.                                                                                                                                                                               |
-| Compatibility/readiness | Records shipped behavior; no public change. No implementation gap; one owner question stays open.                                                                                   |
-| Review checks           | Reject a live role on the row, a lost separator or its name, dropped root inputs, or a change that settles the divider-icon question without its owner.                             |
-| Governing rules         | `spec:AST-086` FR4; `component:Divider`; `architecture:public-component-api`; `architecture:component-theming-surface`; `architecture:theme-tokens`.                                |
+| Area          | Contract                                                                                                                                                        |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共契约      | `ChatSystemMessage`，必填 `children`、`variant`（`default`、`divider`；默认 `default`），可选 `icon`、`ref`、`xstyle`、`className`、`style`，以及根 DOM props。 |
+| 行为          | `default` 渲染一行居中的内容，其中可选图标内容位于 children 之前，并对长文本换行。`divider` 将 children 渲染为带标签的水平 Divider，并忽略 `icon`。             |
+| 最终用户影响  | 读者能把系统通知与发送者消息区分开，并看到带标签的日期或分节分隔；添加到聊天日志中的通知由该日志播报一次。                                                      |
+| 构建者影响    | 无。                                                                                                                                                            |
+| 兼容性/就绪度 | 记录已发布的行为；无公共变更。无实现缺口；仍有一个所有者问题待定。                                                                                              |
+| 审查检查      | 拒绝根行上的 live role、丢失的分隔符或其名称、丢失的根输入，或未经其所有者就解决 divider-icon 问题的改动。                                                      |
+| 管辖规则      | `spec:AST-086` FR4；`component:Divider`；`architecture:public-component-api`；`architecture:component-theming-surface`；`architecture:theme-tokens`。           |
 
-This table is a review projection; the body below is authoritative.
+此表是审查投影；以下正文具有权威性。
 
 ## Intent
 
-ChatSystemMessage presents short non-sender content in a chat transcript, such
-as "conversation started" or a date break. It keeps system notices apart from
-sender messages and hands labelled separators to Divider. Consumer usage lives
-in `ChatSystemMessage.doc.mjs`.
+ChatSystemMessage 在聊天记录中呈现简短的非发送者内容，例如“conversation started”或日期分隔。它把系统通知与发送者消息区分开，并将带标签的分隔符交给 Divider。使用方用法见 `ChatSystemMessage.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public change
-- Controlled/uncontrolled behavior: not applicable; the component owns no state
-- Migration decision: none
+- 已发布的默认值保持不变：`yes`
+- 兼容性类别：记录已发布的行为；无公共变更
+- 受控/非受控行为：不适用；该组件不持有状态
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The root row, its `chat-system-message` target, and choosing between the
-  centered row and the Divider composition (FR1, FR2, FR5).
-- Wrapping long default-variant content and keeping icon content from
-  shrinking (FR1).
-- Root ref, DOM props, and styling (FR4).
+- 根行、其 `chat-system-message` 目标，以及在居中行与 Divider 组合之间做选择（FR1、FR2、FR5）。
+- 对默认变体的长内容换行，并防止图标内容收缩（FR1）。
+- 根 ref、DOM props 与样式（FR4）。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Announcing the notice — a chat log announces content added inside it
-  (`spec:AST-086` FR4).
-- The separator's rule, label placement, role, name, and label partitions —
-  owned by `component:Divider`.
-- Sender identity, transcript order, and scrolling.
-- The meaning of caller content and icon artwork.
+- 播报通知 —— 由聊天日志播报添加到其内部的内容（`spec:AST-086` FR4）。
+- 分隔符的线、标签位置、role、name 与标签分区 —— 由 `component:Divider` 拥有。
+- 发送者身份、记录顺序与滚动。
+- 调用方内容与图标图形的含义。
 
 ## Public concepts
 
-| Concept      | Closed values or states | Meaning                                                   | Availability by variant/orientation/state          | Default   | Owner                         | Stability | Invalid-value behavior           |
-| ------------ | ----------------------- | --------------------------------------------------------- | -------------------------------------------------- | --------- | ----------------------------- | --------- | -------------------------------- |
-| Presentation | `default`, `divider`    | A centered notice row or a labelled horizontal separator. | Every render.                                      | `default` | `component:ChatSystemMessage` | Stable    | TypeScript rejects other values. |
-| Icon         | omitted; a React node   | Optional artwork before the notice.                       | Rendered by `default`; ignored by `divider` (OQ1). | omitted   | `component:ChatSystemMessage` | Stable    | Not applicable.                  |
+| Concept | Closed values or states | Meaning                                    | Availability by variant/orientation/state     | Default   | Owner                         | Stability | Invalid-value behavior  |
+| ------- | ----------------------- | ------------------------------------------ | --------------------------------------------- | --------- | ----------------------------- | --------- | ----------------------- |
+| 呈现    | `default`、`divider`    | 一行居中的通知，或一个带标签的水平分隔符。 | 每次渲染。                                    | `default` | `component:ChatSystemMessage` | 稳定      | TypeScript 拒绝其他值。 |
+| 图标    | 省略；一个 React 节点   | 通知之前的可选图形。                       | 由 `default` 渲染；由 `divider` 忽略（OQ1）。 | 省略      | `component:ChatSystemMessage` | 稳定      | 不适用。                |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                   | Basis                    |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| FR1 | `default` renders a centered row with `icon`, when given, before the children; the children wrap within the available inline space, the icon does not shrink, and no divider rule is drawn. | Current source and tests |
-| FR2 | `divider` renders the children as the label of a horizontal `component:Divider` inside the root, so the separator is named by its label; `icon` is not rendered (OQ1).                      | Current source and tests |
-| FR3 | The root carries no live role of its own in either variant; a chat log announces a notice added inside it (`spec:AST-086` FR4).                                                             | `spec:AST-086`; tests    |
-| FR4 | `ref`, DOM, data, and ARIA props, including a caller `role`, `className`, `style`, and `xstyle` reach the root in both variants.                                                            | Current source and tests |
-| FR5 | The root carries the `chat-system-message` target and reflects `variant`.                                                                                                                   | Current source and tests |
+| ID  | Invariant                                                                                                                       | Basis                |
+| --- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| FR1 | `default` 渲染一行居中的内容，若给出 `icon` 则位于 children 之前；children 在可用的行内空间内换行，图标不收缩，且不绘制分隔线。 | 当前源码与测试       |
+| FR2 | `divider` 将 children 渲染为根内部水平 `component:Divider` 的标签，因此该分隔符由其标签命名；`icon` 不渲染（OQ1）。             | 当前源码与测试       |
+| FR3 | 在两种变体中，根都不携带自身的 live role；聊天日志播报添加到其内部的通知（`spec:AST-086` FR4）。                                | `spec:AST-086`；测试 |
+| FR4 | `ref`、DOM、data 与 ARIA props，包括调用方的 `role`、`className`、`style` 与 `xstyle`，在两种变体中都能到达根。                 | 当前源码与测试       |
+| FR5 | 根携带 `chat-system-message` 目标并反映 `variant`。                                                                             | 当前源码与测试       |
 
 ### Allowed variation
 
-- **AV1 — Content.** Text and other React content vary; Divider owns how empty
-  and numeric labels render in the `divider` variant.
-- **AV2 — Theme.** Semantic color, spacing, and typography tokens resolve per
-  theme.
+- **AV1 — 内容。** 文字与其他 React 内容可变；空标签与数字标签在 `divider` 变体中如何渲染由 Divider 拥有。
+- **AV2 — 主题。** 语义颜色、间距与排版 token 按主题解析。
 
 ### Representative states
 
-| State                 | Required invariant                            | Allowed variation |
-| --------------------- | --------------------------------------------- | ----------------- |
-| Default               | Centered notice; no rule; no live role.       | Content.          |
-| Default with icon     | Icon before the content.                      | Artwork.          |
-| Default, long content | Content wraps with no horizontal overflow.    | Locale.           |
-| Divider               | A separator named by its label; no live role. | Label.            |
-| Divider with icon     | The icon is not rendered (OQ1).               | —                 |
+| State            | Required invariant                       | Allowed variation |
+| ---------------- | ---------------------------------------- | ----------------- |
+| 默认             | 居中的通知；无分隔线；无 live role。     | 内容。            |
+| 带图标的默认     | 图标位于内容之前。                       | 图形。            |
+| 默认，长内容     | 内容换行且无水平溢出。                   | 语言环境。        |
+| Divider          | 一个由其标签命名的分隔符；无 live role。 | 标签。            |
+| 带图标的 Divider | 图标不渲染（OQ1）。                      | —                 |
 
 ### Transformation and precedence order
 
-- **ORD1 — Variant.** `divider` selects the Divider composition; otherwise the
-  centered row renders.
+- **ORD1 — 变体。** `divider` 选择 Divider 组合；否则渲染居中行。
 
 ### Performance and resources
 
-- **PR1 — Render only.** The component adds no state, Effect, observer,
-  listener, or timer.
+- **PR1 — 仅渲染。** 该组件不添加任何状态、Effect、观察器、监听器或计时器。
 
 ## Accessibility contract
 
-- **AR1 — No live role.** The notice is ordinary transcript content; the
-  enclosing log announces it (FR3).
-- **AR2 — Separator.** The `divider` variant exposes a separator named by its
-  label through Divider (FR2).
-- **AR3 — Noninteractive.** The component adds no focus target, keyboard
-  command, or pointer action.
+- **AR1 — 无 live role。** 该通知是普通的记录内容；由外层日志播报它（FR3）。
+- **AR2 — 分隔符。** `divider` 变体通过 Divider 暴露一个由其标签命名的分隔符（FR2）。
+- **AR3 — 非交互。** 该组件不添加焦点目标、键盘命令或指针操作。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                               | Representation authority | Hierarchy role | Component contract |
-| ---------------- | ------------------------------------------------ | ------------------------ | -------------- | ------------------ |
-| System message   | A centered, concise non-sender row.              | Current source and docs  | Supporting     | FR1, FR5           |
-| Icon             | Optional artwork before the notice.              | Current source and docs  | Supporting     | FR1                |
-| Divider          | A labelled separator for date or section breaks. | `component:Divider`      | Supporting     | FR2                |
+| Anatomy or state | Design requirement                 | Representation authority | Hierarchy role | Component contract |
+| ---------------- | ---------------------------------- | ------------------------ | -------------- | ------------------ |
+| 系统消息         | 一行居中的简洁非发送者内容。       | 当前源码与文档           | 支撑性         | FR1、FR5           |
+| 图标             | 通知之前的可选图形。               | 当前源码与文档           | 支撑性         | FR1                |
+| Divider          | 用于日期或分节分隔的带标签分隔符。 | `component:Divider`      | 支撑性         | FR2                |
 
-No anatomy-theming map is recorded yet; the block is optional during
-migration, so the map is deferred.
+尚未记录解剖结构-主题映射；该块在迁移期间为可选，因此该映射暂缓。
 
 ## Family and system relationships
 
-- `component:Divider` owns the separator's structure, role, name, paint, and
-  label partitions.
-- `spec:AST-086` FR4 assigns announcement of content added inside a live
-  container to that container.
-- `architecture:public-component-api` owns root passthrough and styling
-  composition; `architecture:theme-tokens` owns the token vocabulary.
-- `spec:AST-029` owns the audit evidence inventory this record's verification
-  map follows.
+- `component:Divider` 拥有分隔符的结构、role、name、绘制与标签分区。
+- `spec:AST-086` FR4 将播报添加到 live 容器内部的内容的职责分配给该容器。
+- `architecture:public-component-api` 拥有根透传与样式组合；`architecture:theme-tokens` 拥有 token 词汇表。
+- `spec:AST-029` 拥有本记录验证图所遵循的审计证据清单。
 
 ## Verification map
 
-| Contract | Verification                                                                                                                                                                      | Representative states                       | Mutation or failure expectation                          | Audit section                           |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | -------------------------------------------------------- | --------------------------------------- |
-| FR1      | `ChatSystemMessage.test.tsx` children and icon tests                                                                                                                              | default; default with icon                  | Missing content or icon fails.                           | `audit:ChatSystemMessage/behavior`      |
-| FR2, AR2 | `ChatSystemMessage.test.tsx` divider, separator-name, divider-icon, and numeric-zero label tests; `ChatSystemMessage.a11y.chromium.spec.ts` state matrix (horizontal orientation) | divider; divider with icon                  | A missing separator, wrong name, or rendered icon fails. | `audit:ChatSystemMessage/accessibility` |
-| FR3, AR1 | `ChatSystemMessage.test.tsx` no-live-role tests                                                                                                                                   | both variants                               | A live role on the root fails.                           | `audit:ChatSystemMessage/accessibility` |
-| FR4      | `ChatSystemMessage.test.tsx` "preserves the complete root passthrough seam" for each variant                                                                                      | ref, data, ARIA, role, class, style, xstyle | A dropped input fails.                                   | `audit:ChatSystemMessage/public-api`    |
-| FR5      | `ChatSystemMessage.test.tsx` "preserves the complete root passthrough seam" for each variant                                                                                      | both variants                               | A missing reflected variant fails.                       | `audit:ChatSystemMessage/theming`       |
-| FR1      | `ChatSystemMessage.a11y.chromium.spec.ts` 320px coarse-pointer reflow test                                                                                                        | long content at 320 CSS px                  | Horizontal overflow fails.                               | `audit:ChatSystemMessage/responsive`    |
+| Contract | Verification                                                                                                                                                   | Representative states                       | Mutation or failure expectation          | Audit section                           |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ---------------------------------------- | --------------------------------------- |
+| FR1      | `ChatSystemMessage.test.tsx` 的 children 与图标测试                                                                                                            | 默认；带图标的默认                          | 缺失内容或图标会失败。                   | `audit:ChatSystemMessage/behavior`      |
+| FR2, AR2 | `ChatSystemMessage.test.tsx` 的 divider、separator-name、divider-icon 与 numeric-zero 标签测试；`ChatSystemMessage.a11y.chromium.spec.ts` 状态矩阵（水平方向） | divider；带图标的 divider                   | 分隔符缺失、名称错误或图标被渲染会失败。 | `audit:ChatSystemMessage/accessibility` |
+| FR3, AR1 | `ChatSystemMessage.test.tsx` 的 no-live-role 测试                                                                                                              | 两种变体                                    | 根上存在 live role 会失败。              | `audit:ChatSystemMessage/accessibility` |
+| FR4      | `ChatSystemMessage.test.tsx` 的“preserves the complete root passthrough seam”各变体测试                                                                        | ref、data、ARIA、role、class、style、xstyle | 丢失输入会失败。                         | `audit:ChatSystemMessage/public-api`    |
+| FR5      | `ChatSystemMessage.test.tsx` 的“preserves the complete root passthrough seam”各变体测试                                                                        | 两种变体                                    | 缺少所反映的 variant 会失败。            | `audit:ChatSystemMessage/theming`       |
+| FR1      | `ChatSystemMessage.a11y.chromium.spec.ts` 的 320px 粗指针重排测试                                                                                              | 320 CSS px 下的长内容                       | 水平溢出会失败。                         | `audit:ChatSystemMessage/responsive`    |
 
-Read from source, with no focused test yet:
+以下内容来自源码阅读，尚无针对性测试：
 
-- FR1: centering, no divider rule in the default row, the icon rendering
-  before the content, and the icon not shrinking.
-- FR5: the `chat-system-message` target on the root.
-- PR1, AR3: no state, Effect, or interaction of the component's own.
+- FR1：居中、默认行中无分隔线、图标在内容之前渲染，以及图标不收缩。
+- FR5：根上的 `chat-system-message` 目标。
+- PR1、AR3：组件自身没有状态、Effect 或交互。
 
 ## Decision log
 
-No component-local decision is recorded.
+未记录组件本地决策。
 
 ## Open questions
 
-- **OQ1 — What should `icon` do with `variant="divider"`?** (`human-api`)
-  Today it is accepted and not rendered. Rendering it with the label, a
-  breaking type restriction under `architecture:public-component-api` INV9, or
-  keeping the no-op with documentation and a development warning each change
-  the public contract.
+- **OQ1 — `icon` 在 `variant="divider"` 时应做什么？**（`human-api`）目前它被接受且不渲染。随标签一起渲染它、在 `architecture:public-component-api` INV9 下做出破坏性的类型限制，或保留该空操作并加上文档与开发警告，这三种做法都会改变公共契约。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables or examples, or Divider's
-rules. It links to their owners.
+本文件不重复使用方的 prop 表或示例，也不重复 Divider 的规则。它链接到它们的拥有者。

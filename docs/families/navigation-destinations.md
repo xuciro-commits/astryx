@@ -71,187 +71,102 @@ deciding_specs: [spec:AST-005/DEC-1, spec:AST-005/DEC-2, spec:AST-005/DEC-3]
 
 ## Intent
 
-People should receive the same safe navigation behavior from every Astryx
-component that accepts or derives a destination. A component's visual role,
-router integration, or enlarged click target must not determine whether a
-blocked destination can execute.
+人们应当从每个接受或派生目标的 Astryx 组件获得相同的安全导航行为。组件的视觉角色、router 集成或扩大的点击目标，不得决定被阻止的目标是否能够执行。
 
 ## Membership rule
 
-A component belongs when Astryx accepts or derives a destination that the
-component can render, delegate, or activate as navigation. Membership follows
-that observable responsibility rather than the component's visual category or
-which shared hook it currently uses.
+当 Astryx 接受或派生一个组件可以渲染、委托或激活为导航的目标时，该组件即属于此契约。成员资格遵循这一可观察的职责，而不是组件的视觉类别或它当前使用哪个共享 hook。
 
-A component that only lays out caller-owned links does not join. A component that
-creates a fixed same-document link from an Astryx-owned ID does not join unless
-it also accepts caller-controlled destination text. Caller-owned JSX, plugin
-renderers, and callbacks are outside the boundary after Astryx hands over
-control.
+仅布局调用方拥有的链接的组件不加入。从 Astryx 拥有的 ID 创建固定的同文档链接的组件不加入，除非它还接受调用方控制的目标文本。调用方拥有的 JSX、插件渲染器和回调在 Astryx 移交控制之后属于边界之外。
 
-- **Current members:** Avatar; BreadcrumbItem; Button link mode; Citation;
-  ClickableCard; DropdownMenuItem link rows (and the data-mode item they render,
-  in the pointer menu and the touch sheet); Item; Link; ListItem; Markdown
-  links; NavHeadingMenuItem; Pagination page links;
-  SideNavHeading and SideNavItem; navigation-mode Tab; Token link mode;
-  TopNavHeading, TopNavItem, TopNavMenu, TopNavMegaMenuItem, and
-  TopNavMegaMenuFeaturedCard; and TreeListItem.
-- **Collaborators:** `useLinkComponent`, `LinkProvider`,
-  `useClickableContainer`, React DOM's native-anchor sanitizer, and Markdown's
-  parser/render boundary.
-- **Excluded:** Outline's Astryx-generated `#id` links; AppShell's fixed
-  skip-to-content fragment; arbitrary links supplied as children; Markdown
-  plugin output; image/media/resource URLs, except Markdown image URLs, which
-  Markdown's parser decides with its link rule (`spec:AST-005/DEC-3`); and
-  components that only compose a member without accepting or deriving its
-  destination.
+- **当前成员：** Avatar；BreadcrumbItem；Button 链接模式；Citation；ClickableCard；DropdownMenuItem 链接行（以及它们在指针菜单和触摸面板中渲染的 data 模式条目）；Item；Link；ListItem；Markdown 链接；NavHeadingMenuItem；Pagination 页面链接；SideNavHeading 和 SideNavItem；导航模式下的 Tab；Token 链接模式；TopNavHeading、TopNavItem、TopNavMenu、TopNavMegaMenuItem 和 TopNavMegaMenuFeaturedCard；以及 TreeListItem。
+- **协作者：** `useLinkComponent`、`LinkProvider`、`useClickableContainer`、React DOM 的原生 anchor 清理器，以及 Markdown 的解析器/渲染边界。
+- **排除：** Outline 由 Astryx 生成的 `#id` 链接；AppShell 固定的跳到内容片段；作为 children 提供的任意链接；Markdown 插件输出；图片/媒体/资源 URL，但 Markdown 图片 URL 除外，它们由 Markdown 的解析器依据其链接规则决定（`spec:AST-005/DEC-3`）；以及仅组合成员而不接受或派生其目标的组件。
 
-Membership is open-ended. A newly shipped Core component that meets the rule
-must be added here even when it delegates to an existing member or shared hook.
+成员资格是开放式的。新发布的符合规则的 Core 组件必须添加到这里，即使它委托给现有成员或共享 hook 也是如此。
 
 ## Shared owner
 
-- `spec:AST-005` owns the normalized blocked-scheme rule for every navigation
-  destination. This family owns its application across members.
-- `useLinkComponent` owns destination handoff to native and custom link
-  components, including the router-facing `href` and `to` seams. Accepted
-  structured destinations retain object identity. Rejected destinations render
-  inertly without invoking the custom component.
-- `useClickableContainer` owns imperative navigation from enlarged surfaces,
-  including same-tab, new-tab, modifier-click, middle-click, and delegated
-  activation. Every activation preserves the same accept/block result.
-- Markdown owns parsing untrusted source into a destination and preserving the
-  same navigation decision through rendering. Markdown's parser owns that
-  decision for links and images with one rule: the shared navigation rule plus
-  every `data:` URL. The renderer renders only parsed nodes
-  (`spec:AST-005/DEC-3`).
-- Native anchors follow the full shared navigation rule. React DOM's own
-  sanitization is not an exception to any blocked scheme.
+- `spec:AST-005` 拥有适用于每个导航目标的规范化阻止 scheme 规则。此 family 拥有其在各成员上的应用。
+- `useLinkComponent` 拥有向原生和自定义链接组件的目标交接，包括面向 router 的 `href` 和 `to` 接缝。已接受的结构化目标保留对象标识。被拒绝的目标会以惰性方式渲染，而不调用自定义组件。
+- `useClickableContainer` 拥有从扩大表面发起的命令式导航，包括同标签页、新标签页、修饰键点击、中键点击和委托激活。每次激活都保留相同的接受/阻止结果。
+- Markdown 拥有将不可信源解析为目标，并在渲染过程中保留相同导航决定的能力。Markdown 的解析器用一条规则为链接和图片拥有该决定：共享导航规则加上每个 `data:` URL。渲染器只渲染已解析的节点（`spec:AST-005/DEC-3`）。
+- 原生 anchor 遵循完整的共享导航规则。React DOM 自身的清理不是任何被阻止 scheme 的例外。
 
 ## Canonical concepts
 
-| Concept            | Values or states                                           | Default semantics                                                                        | Stability |
-| ------------------ | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------- |
-| destination source | caller prop, parsed content, Astryx-derived                | caller/parsed values require inspection; fixed Astryx fragments are safe by construction | current   |
-| sink               | native anchor, custom router, imperative browser API       | every Astryx-owned sink enforces the same navigation decision                            | current   |
-| decision           | accepted or blocked                                        | accepted destinations keep existing behavior; blocked destinations do not navigate       | current   |
-| activation         | plain, new-tab, modified, middle-click, programmatic proxy | activation method does not change the decision                                           | current   |
-| resource kind      | navigation or embedded/fetched resource                    | this family owns navigation only                                                         | current   |
+| 概念     | 值或状态                                     | 默认语义                                                  | 稳定性  |
+| -------- | -------------------------------------------- | --------------------------------------------------------- | ------- |
+| 目标来源 | 调用方 prop、解析内容、Astryx 派生           | 调用方/解析值需要检查；固定的 Astryx 片段在构造上是安全的 | current |
+| 接收端   | 原生 anchor、自定义 router、命令式浏览器 API | 每个 Astryx 拥有的接收端都执行相同的导航决定              | current |
+| 决定     | 接受或阻止                                   | 已接受的目标保留现有行为；被阻止的目标不导航              | current |
+| 激活     | 普通、新标签页、修饰键、中键点击、编程式代理 | 激活方式不改变决定                                        | current |
+| 资源类型 | 导航或嵌入/获取的资源                        | 此 family 只拥有导航                                      | current |
 
 ## Cross-component invariants
 
-- **FR1 — Every caller-controlled navigation destination is decided before its
-  sink.** No member may render a native navigation destination or pass one to a
-  custom router or imperative browser API before the shared rule runs.
-- **FR2 — Alternate rendering keeps the rule.** Replacing a native anchor through
-  `LinkProvider` or `as` does not bypass destination handling.
-- **FR3 — Alternate activation keeps the rule.** `_blank`, Cmd/Ctrl-click,
-  middle-click, same-tab assignment, and delegated surface clicks produce the
-  same accept/block decision.
-- **FR4 — Blocked schemes cannot execute.** After browser-compatible scheme
-  normalization, `javascript:`, `vbscript:`, and `data:text/html` do not become
-  navigation, including through native anchors. The parser owns Markdown link
-  and image URL safety: it also blocks every `data:` URL, of any media type, in
-  links and images. The renderer keeps a check only at a real bypass path, if
-  one exists.
-- **FR5 — Accepted destinations retain browser behavior.** Relative paths,
-  fragments, protocol-relative destinations, HTTP(S), mailto, tel, and safe custom
-  schemes retain native and router navigation, targets, downloads, and browser
-  affordances. Accepted structured router destinations retain their fields and
-  object identity. For Markdown, the parser owns which link and image URLs are
-  accepted; a `data:` URL is not one.
-- **FR6 — Both custom-router props are sinks.** A supplied `href` and explicit
-  `to` are checked independently, including the scheme-bearing fields of
-  supported structured forms (`href`, `pathname`, and `protocol`) and the
-  destination they form. If either supplied destination is rejected, the result
-  is inert: the custom router is not invoked, even with `undefined`, and there is
-  no fallback to the other destination. Accepted explicit `to` values keep their
-  documented precedence when every supplied destination is accepted.
-- **FR7 — Disabled and rejected are distinct.** Members keep their own disabled
-  semantics. Rejecting a destination prevents navigation without inventing a
-  disabled state, label, or visual treatment.
-- **FR8 — Resource handling does not inherit navigation policy.** Images, media,
-  CSS URLs, fetch targets, and downloaded content use their own sink-specific
-  contracts. An accepted link's existing download behavior is preserved. A member
-  that handles both navigation and resources applies this family only to its
-  navigation path. Markdown is the exception: its parser applies its link rule
-  to image URLs too (`spec:AST-005/DEC-3`).
+- **FR1 — 每个调用方控制的导航目标都在到达其接收端之前被决定。** 在共享规则运行之前，任何成员都不得渲染原生导航目标，或将其传递给自定义 router 或命令式浏览器 API。
+- **FR2 — 替代渲染保留规则。** 通过 `LinkProvider` 或 `as` 替换原生 anchor 不会绕过目标处理。
+- **FR3 — 替代激活保留规则。** `_blank`、Cmd/Ctrl 点击、中键点击、同标签页赋值和委托表面点击产生相同的接受/阻止决定。
+- **FR4 — 被阻止的 scheme 不能执行。** 经过浏览器兼容的 scheme 规范化后，`javascript:`、`vbscript:` 和 `data:text/html` 不会成为导航，包括通过原生 anchor。解析器拥有 Markdown 链接和图片 URL 的安全性：它还会在链接和图片中阻止任何媒体类型的每个 `data:` URL。渲染器仅在存在真实绕过路径时保留检查。
+- **FR5 — 已接受的目标保留浏览器行为。** 相对路径、片段、协议相对目标、HTTP(S)、mailto、tel 和安全的自定义 scheme 保留原生和 router 导航、目标、下载及浏览器可供性。已接受的结构化 router 目标保留其字段和对象标识。对于 Markdown，解析器拥有哪些链接和图片 URL 被接受；`data:` URL 不属于其中之一。
+- **FR6 — 两个自定义 router prop 都是接收端。** 提供的 `href` 和显式 `to` 会被独立检查，包括受支持结构化形式的携带 scheme 的字段（`href`、`pathname` 和 `protocol`）以及它们形成的目标。如果任一提供的目标被拒绝，结果就是惰性的：即使使用 `undefined` 也不会调用自定义 router，并且不会回退到另一个目标。当每个提供的目标都被接受时，已接受的显式 `to` 值保留其文档化的优先级。
+- **FR7 — 禁用与被拒绝是不同的。** 成员保留自己的禁用语义。拒绝目标会阻止导航，但不会凭空创建禁用状态、标签或视觉处理。
+- **FR8 — 资源处理不继承导航策略。** 图片、媒体、CSS URL、fetch 目标和下载内容使用各自接收端特定的契约。已接受链接的现有下载行为会被保留。同时处理导航和资源的成员仅将本 family 应用于其导航路径。Markdown 是例外：其解析器也将其链接规则应用于图片 URL（`spec:AST-005/DEC-3`）。
 
 ## Allowed component variation
 
-- **AV1 — Rejected presentation.** Markdown may render rejected source as text;
-  a custom-link member renders inert content without invoking its custom router;
-  an enlarged surface may simply omit navigation. Each member preserves its own
-  non-navigation structure and accessibility contract. No component bypass prop
-  is provided; exceptional behavior belongs to caller-owned custom rendering
-  outside this contract.
-- **AV2 — Native versus router navigation.** Members may use React DOM anchors,
-  provider-level router components, per-component `as` overrides, or imperative
-  browser APIs when their public contract requires that mode.
-- **AV3 — Destination vocabulary.** Public APIs may expose `href`, structured
-  item data containing `href`, a Citation `url`, or parsed Markdown syntax. The
-  shared behavior does not require renaming released props.
-- **AV4 — Target and relationship.** Members retain their existing `target`,
-  `rel`, referrer, download, and external-link presentation behavior after a
-  destination is accepted.
-- **AV5 — Embedded resources.** Citation may separately own image or resource
-  policy. Markdown's image URLs follow its parser's link rule
-  (`spec:AST-005/DEC-3`). Neither alters this family's navigation matrix for
-  other members.
+- **AV1 — 被拒绝的呈现。** Markdown 可以将被拒绝的源渲染为文本；自定义链接成员渲染惰性内容而不调用其自定义 router；扩大表面可以简单地省略导航。每个成员保留自己的非导航结构和无障碍契约。不提供组件绕过 prop；例外行为属于本契约之外的调用方拥有的自定义渲染。
+- **AV2 — 原生与 router 导航。** 当成员的公共契约要求该模式时，成员可以使用 React DOM anchor、provider 级 router 组件、逐组件 `as` 覆盖或命令式浏览器 API。
+- **AV3 — 目标词汇。** 公共 API 可以暴露 `href`、包含 `href` 的结构化条目数据、Citation 的 `url` 或解析后的 Markdown 语法。共享行为不要求重命名已发布的 prop。
+- **AV4 — 目标与关系。** 目标被接受后，成员保留其现有的 `target`、`rel`、referrer、download 和外部链接呈现行为。
+- **AV5 — 嵌入资源。** Citation 可以单独拥有图片或资源策略。Markdown 的图片 URL 遵循其解析器的链接规则（`spec:AST-005/DEC-3`）。两者都不改变本 family 对其他成员的导航矩阵。
 
 ## Representative matrix
 
-| Member and state                                    | Shared invariant                                          | Deliberate variation                                                       |
-| --------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `component:Link` / native anchor                    | all three blocked destination prefixes remain inert       | accepted destinations retain native anchor affordances                     |
-| `component:Link` / custom provider or `as`          | either rejected `href`/`to` prevents router invocation    | router owns accepted client-side navigation and receives unchanged objects |
-| `component:ClickableCard` / plain or modified click | every imperative or delegated exit uses the same decision | visible Card structure and nested-interactive handling remain local        |
-| `component:Token` / link with remove action         | surface activation and hidden link agree                  | remove action remains an independent sibling control                       |
-| `component:Markdown` / parsed link                  | blocked source does not become navigation                 | rejected source may render as text; the parser decides link and image URLs |
-| navigation aggregate / member item                  | item destination uses the shared owner                    | tree, tab, breadcrumb, side-nav, top-nav, and menu semantics remain local  |
-| `component:Citation` / linked source                | blocked URL does not execute                              | native-anchor path and citation presentation remain local                  |
+| 成员与状态                                   | 共享不变量                                    | 有意的差异                                                      |
+| -------------------------------------------- | --------------------------------------------- | --------------------------------------------------------------- |
+| `component:Link` / 原生 anchor               | 所有三个被阻止的目标前缀保持惰性              | 已接受的目标保留原生 anchor 可供性                              |
+| `component:Link` / 自定义 provider 或 `as`   | 任一被拒绝的 `href`/`to` 都会阻止 router 调用 | router 拥有已接受的客户端导航并接收未改变的对象                 |
+| `component:ClickableCard` / 普通或修饰键点击 | 每个命令式或委托出口都使用相同的决定          | 可见的 Card 结构和嵌套交互处理保持在本地                        |
+| `component:Token` / 带移除操作的链接         | 表面激活和隐藏链接保持一致                    | 移除操作仍然是独立的同级控件                                    |
+| `component:Markdown` / 已解析链接            | 被阻止的源不会成为导航                        | 被拒绝的源可以渲染为文本；解析器决定链接和图片 URL              |
+| 导航聚合 / 成员条目                          | 条目目标使用共享所有者                        | tree、tab、breadcrumb、side-nav、top-nav 和 menu 语义保持在本地 |
+| `component:Citation` / 链接源                | 被阻止的 URL 不会执行                         | 原生 anchor 路径和引用呈现保持在本地                            |
 
 ## Adoption and exceptions
 
-| Components or surface                             | Required adoption                                                                                                                                                          |
-| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Markdown parsed and rendered links                | The parser applies the shared navigation decision and also blocks every `data:` URL; the renderer renders only parsed nodes. Image URLs follow the same parser rule (AV5). |
-| Native React anchors, including Citation          | The full blocked-scheme rule holds; React DOM's `javascript:` protection alone is not sufficient.                                                                          |
-| `useLinkComponent` custom provider and `as` paths | Both supplied destinations and supported structured forms, including `protocol`, obey the rule; rejection never invokes the router.                                        |
-| `useClickableContainer` imperative paths          | Same-tab, new-tab, modifier, middle-click, and delegated activation agree; non-navigation consumer callbacks remain available.                                             |
-| Components composing the two shared hooks         | Both delegated destinations and any separately rendered native anchor meet the full rule.                                                                                  |
+| 组件或表面                                      | 必需的采用                                                                                                         |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Markdown 已解析和已渲染的链接                   | 解析器应用共享导航决定，并额外阻止每个 `data:` URL；渲染器只渲染已解析节点。图片 URL 遵循相同的解析器规则（AV5）。 |
+| 原生 React anchor，包括 Citation                | 完整的阻止 scheme 规则适用；仅靠 React DOM 的 `javascript:` 保护并不足够。                                         |
+| `useLinkComponent` 自定义 provider 和 `as` 路径 | 两个提供的目标以及受支持的结构化形式（包括 `protocol`）都遵守规则；拒绝永远不会调用 router。                       |
+| `useClickableContainer` 命令式路径              | 同标签页、新标签页、修饰键、中键点击和委托激活保持一致；非导航的消费方回调仍然可用。                               |
+| 组合两个共享 hook 的组件                        | 委托目标和任何单独渲染的原生 anchor 都满足完整规则。                                                               |
 
-These are required outcomes, not a claim of completed verification. Adoption is
-complete only after exact-head evidence covers every applicable row. Neither a
-native-anchor React-only check, unchecked scheme-bearing fields, nor invoking a
-router with an undefined rejected destination is an approved exception.
+这些是必需的结果，而不是已完成验证的声明。只有在 exact-head 证据覆盖每个适用行之后，采用才算完成。原生 anchor 的仅 React 检查、未检查的携带 scheme 的字段，或用 undefined 的被拒绝目标调用 router，都不是已批准的例外。
 
 ## Verification map
 
-| Contract           | Verification                                                                                        | Representative members and states                                                                                                                                       | Mutation or failure expectation                                                                                                                                               |
-| ------------------ | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR4, FR5           | `safeUrl.test.ts`                                                                                   | string and structured destinations; mixed case; controls; relative, fragment, protocol-relative, ordinary, safe custom schemes, and `data:image/*`; separate `protocol` | The shared rule accepts a blocked destination or rejects an ordinary one, including when a protocol is separate from its pathname.                                            |
-| FR1, FR2, FR6      | `useLinkComponent.test.tsx` and `apps/docsite/src/__tests__/link-navigation.test.ts`                | native Link, Button, navigation members; provider and `as`; safe/rejected `href` and `to` in either combination; structured destinations and object identity            | A rejected destination invokes the router (including with `undefined` or fallback), an accepted object loses identity, or a real router throws while rendering inert content. |
-| FR1, FR3, FR4, FR5 | `useClickableContainer.test.tsx` and real Chromium navigation coverage                              | ClickableCard and Token shapes; native Link; plain, `_blank`, Cmd/Ctrl-click, middle-click, delegated activation; accepted downloads                                    | A rejected destination remains activatable, a blocked native, imperative, or delegated navigation occurs, or an accepted destination loses an activation mode.                |
-| FR4, FR5           | `parser.test.ts`, `urlSchemes.test.ts`, `Markdown.test.tsx`, and `Markdown.renderBoundary.test.tsx` | parsed, reference, autolink, and transformed built-in links; mixed case; controls; ordinary schemes; every `data:` URL in links and images                              | Markdown accepts a blocked scheme or any `data:` URL in a link, rejects an ordinary navigation destination, or renders a rejected node as navigation.                         |
-| FR1, IR3           | source/member audit required by `spec:AST-005`                                                      | every caller-controlled Core navigation destination                                                                                                                     | A new sink or destination-bearing component ships outside this member snapshot                                                                                                |
-| FR7, FR8           | member-focused behavior and resource suites                                                         | disabled link modes; Markdown links and images under one parser rule; Citation link versus image                                                                        | Destination rejection changes disabled semantics or navigation policy silently becomes resource policy                                                                        |
+| 契约               | 验证                                                                                              | 代表性成员和状态                                                                                                             | 变异或失败预期                                                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| FR4, FR5           | `safeUrl.test.ts`                                                                                 | 字符串和结构化目标；混合大小写；控制字符；相对、片段、协议相对、普通、安全自定义 scheme 和 `data:image/*`；单独的 `protocol` | 共享规则接受被阻止的目标或拒绝普通目标，包括协议与其 pathname 分离的情况。                                       |
+| FR1, FR2, FR6      | `useLinkComponent.test.tsx` 和 `apps/docsite/src/__tests__/link-navigation.test.ts`               | 原生 Link、Button、导航成员；provider 和 `as`；任一组合中的安全/被拒绝 `href` 和 `to`；结构化目标和对象标识                  | 被拒绝的目标调用 router（包括使用 `undefined` 或回退），已接受对象失去标识，或真实 router 在渲染惰性内容时抛出。 |
+| FR1, FR3, FR4, FR5 | `useClickableContainer.test.tsx` 和真实 Chromium 导航覆盖                                         | ClickableCard 和 Token 形态；原生 Link；普通、`_blank`、Cmd/Ctrl 点击、中键点击、委托激活；已接受的下载                      | 被拒绝的目标仍可激活，发生被阻止的原生、命令式或委托导航，或已接受的目标失去激活模式。                           |
+| FR4, FR5           | `parser.test.ts`、`urlSchemes.test.ts`、`Markdown.test.tsx` 和 `Markdown.renderBoundary.test.tsx` | 解析过的、引用式、自动链接和转换后的内置链接；混合大小写；控制字符；普通 scheme；链接和图片中的每个 `data:` URL              | Markdown 在链接中接受被阻止的 scheme 或任何 `data:` URL，拒绝普通导航目标，或将被拒绝的节点渲染为导航。          |
+| FR1, IR3           | `spec:AST-005` 所要求的源/成员审计                                                                | 每个调用方控制的 Core 导航目标                                                                                               | 新的接收端或携带目标的组件在此成员快照之外发布                                                                   |
+| FR7, FR8           | 以成员为中心的行为和资源测试套件                                                                  | 禁用的链接模式；同一解析器规则下的 Markdown 链接和图片；Citation 链接与图片                                                  | 目标拒绝改变禁用语义，或导航策略悄悄变成资源策略                                                                 |
 
 ## Decision links
 
-- `spec:AST-005/DEC-1` — destination safety follows every navigation sink.
-- `spec:AST-005/DEC-2` — embedded resources remain a separate policy.
-- `spec:AST-005/DEC-3` — Markdown's parser owns its URL safety and blocks every
-  `data:` URL.
+- `spec:AST-005/DEC-1` — 目标安全性遵循每个导航接收端。
+- `spec:AST-005/DEC-2` — 嵌入资源保持为单独的策略。
+- `spec:AST-005/DEC-3` — Markdown 的解析器拥有其 URL 安全性，并阻止每个 `data:` URL。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file owns navigation-destination membership, the cross-component
-accept/block result, and adoption of the shared sinks. It does not duplicate
-component prop tables, router implementation details, component-local disabled
-or rendering behavior, embedded-resource policy, current audit results, or the
-system-spec rationale.
+本文件拥有导航目标的成员资格、跨组件的接受/阻止结果以及共享接收端的采用。它不重复组件 prop 表、router 实现细节、组件局部的禁用或渲染行为、嵌入资源策略、当前审计结果或 system spec 的理由。

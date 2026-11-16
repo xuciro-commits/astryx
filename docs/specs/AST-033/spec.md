@@ -55,478 +55,224 @@ affects_consumer_docs: [docsite]
 
 ## Intent
 
-People using the Astryx Docsite should see truthful projections of the owning
-product catalogs and one current interaction state. Links, browser history, visible
-content, analytics, and latest/canary presentation should agree about what the person
-selected and what is actually available.
+使用 Astryx Docsite 的人应当看到所属产品目录的真实投影，以及同一个当前的交互状态。链接、浏览器历史、可见内容、分析以及 latest/canary 呈现，应当就这个人选择了什么以及实际可用的内容是什么达成一致。
 
-This contract owns shared Docsite interaction and product-data rules. It makes
-ordinary fixes that restore those rules reviewable without inventing a specification
-for each bug.
+本契约拥有共享的 Docsite 交互规则与产品数据规则。它让恢复这些规则的普通修复无需为每个缺陷发明一份规格即可被审查。
 
 ## Non-goals
 
-- Defining upstream component, template, theme, package, or catalog authoring
-  schemas. This contract begins at the registry boundary the Docsite consumes.
-- Defining template fixture preview and copy behavior owned by `spec:AST-028`.
-- Choosing visual design, animation, layout, or copy for an individual Docsite page.
-- Choosing a telemetry vendor, transport, retention policy, or dashboard.
-- Adding a package API, theme target, or consumer runtime.
-- Treating one pull request, bug, or current implementation mechanism as authority.
+- 定义上游组件、模板、主题、包或目录的创作 schema。本契约从 Docsite 所消费的注册表边界开始。
+- 定义由 `spec:AST-028` 拥有的模板测试夹具预览与复制行为。
+- 为单个 Docsite 页面选择视觉设计、动画、布局或文案。
+- 选择遥测供应商、传输方式、保留策略或仪表板。
+- 新增包 API、主题目标或使用方运行时。
+- 把某个 pull request、缺陷或当前实现机制当作权威。
 
 ## Requirements
 
 ### Canonical product data
 
-- **FR1 — Upstream owners supply product facts.** Canonical component, template,
-  theme, package, and catalog owners define item identity, package ownership,
-  taxonomy, readiness, release-channel admission, and explicit visibility. Route
-  owners define stable destinations. The Docsite pipeline and generated registries
-  materialize those facts; they MUST NOT invent a second identity, classification,
-  readiness state, availability rule, or visibility rule. When no current upstream
-  owner defines a needed fact, the Docsite reports or routes that authority gap
-  rather than deciding it in view code.
-- **FR2 — Projections preserve catalog facts.** Gallery, sidebar, direct
-  routes, detail pages, preview, playground handoff, and Docsite API projections
-  MUST derive membership and canonical item facts from the generated registries. A
-  surface MAY define local display order, shorten labels, or derive display-only
-  groups from canonical fields with a deterministic fallback. Those presentation
-  choices MUST NOT change catalog membership or be exported or reused as canonical
-  taxonomy. Site search answers with the CLI's own search: the build stores the
-  candidates that `exportSearchIndex()` of the CLI package the site builds with
-  gathers in the site's project, and the site's search endpoint ranks them with
-  that package's `rankSearchIndex()` and returns its results in the CLI's order,
-  so the site and `astryx search` give one answer. The endpoint gathers nothing
-  when it answers: a search server that starts reads no docs or packages. The
-  stored candidates are that CLI's own gather, made and ranked by one CLI
-  version, and they stay on the server. The generated registries stay the source
-  for the pages and links those results open.
-- **FR3 — Availability and visibility are separate projections.** Availability
-  means that a named Docsite operation has the source, loader, route, or handoff
-  required to present an admitted item on the current content line. Visibility means
-  that an otherwise available item is listed on a named surface. A visibility field MUST name or
-  document the projections it excludes. Hiding an item from an overview MUST NOT
-  silently remove its direct route, search result, preview, or playground
-  availability, and a projection MUST NOT infer those effects from a similar flag.
-  Missing, invalid, or contradictory admission metadata fails closed rather than
-  making an unavailable item appear usable.
+- **FR1 — 上游所有者提供产品事实。** 规范的组件、模板、主题、包与目录所有者定义条目身份、包所有权、分类法、就绪状态、发布通道准入以及显式可见性。路由所有者定义稳定目的地。Docsite 流水线与生成的注册表物化这些事实；它们不得发明第二套身份、分类、就绪状态、可用性规则或可见性规则。当没有任何当前上游所有者定义某项需要的事实时，Docsite 报告或路由该权威缺口，而不是在视图代码中决定它。
+- **FR2 — 投影保留目录事实。** 画廊、侧边栏、直接路由、详情页、预览、playground 交接以及 Docsite API 投影必须从生成的注册表推导成员资格与规范条目事实。表面可以定义本地显示顺序、缩短标签，或依据规范字段配合确定性回退推导仅用于显示的组。这些呈现选择不得改变目录成员资格，也不得被导出或复用为规范分类法。站点搜索用 CLI 自身的搜索来回答：构建过程存储候选集，这些候选集由站点所构建使用的 CLI 包中的 `exportSearchIndex()` 在站点的项目中收集，站点的搜索端点用该包的 `rankSearchIndex()` 对它们排序，并按 CLI 的顺序返回其结果，因此站点与 `astryx search` 给出同一个答案。该端点在作答时不收集任何内容：启动的搜索服务器不读取任何文档或包。存储的候选集是该 CLI 自身的收集结果，由同一个 CLI 版本生成并排序，并且留在服务器上。生成的注册表仍然是这些结果所打开的页面与链接的来源。
+- **FR3 — 可用性与可见性是相互独立的投影。** 可用性指某个具名的 Docsite 操作具备在当前内容线路上呈现一个已准入条目所需的源、加载器、路由或交接。可见性指一个本来可用的条目被列在某个具名表面上。可见性字段必须指明或记录它所排除的投影。从概览中隐藏某个条目不得静默移除其直接路由、搜索结果、预览或 playground 可用性，投影也不得依据类似标志推断这些效果。缺失、无效或矛盾的准入元数据应当失败关闭，而不是让一个不可用的条目看起来可用。
 
 ### Latest, canary, and readiness
 
-- **FR4 — Release channel, readiness, and visibility are distinct.** Package
-  `canaryOnly` metadata owns package release-channel admission. Generated components
-  currently project that package channel as `isReady: false`; they do not author an
-  independent component-readiness field. Template `isReady` remains
-  template-authored item readiness. Explicit visibility metadata owns where an
-  admitted item is listed. No projection invents another channel, readiness, or
-  visibility state.
-- **FR5 — Each build identifies its actual content sources.** `latest` pins
-  published stable package metadata and package documentation. Canary, local
-  development, and pull-request previews may read configured workspace/canary
-  packages. Executable CLI templates and blocks, their live examples, long-form CLI
-  docs, and Docsite-authored content remain workspace-backed on both targets where
-  the pipeline currently declares that boundary. A projection MUST NOT describe
-  workspace-backed content as release-pinned merely because the build target is
-  `latest`. Site search is workspace-backed on both targets: it ranks with the
-  CLI the site builds with, over the workspace docs and packages that CLI reads
-  when the site is built, the same source as the site's CLI reference pages. On
-  `latest` it leaves out integrations without published docs, and a result whose
-  page is not published links to the nearest published index page.
-- **FR6 — Canary status is projected once at the owning level.** A surface SHOULD
-  group canary status at the package or category level when children share it,
-  instead of repeating a marker on every item. The install command, search result,
-  detail page, and API output MUST remain consistent with the same channel and
-  readiness facts. Visibility remains an independent projection.
+- **FR4 — 发布通道、就绪状态与可见性彼此不同。** 包的 `canaryOnly` 元数据拥有包发布通道准入。生成的组件当前把该包通道投影为 `isReady: false`；它们不编写独立的组件就绪字段。模板的 `isReady` 仍为模板编写的条目就绪状态。显式可见性元数据拥有已准入条目的列出位置。任何投影都不得发明另一个通道、就绪状态或可见性状态。
+- **FR5 — 每次构建都标明其实际的内容来源。** `latest` 固定已发布的稳定包元数据与包文档。Canary、本地开发以及 pull request 预览可以读取配置的 workspace/canary 包。可执行的 CLI 模板与 block、其实时示例、长篇 CLI 文档以及 Docsite 编写的内容，在流水线当前声明该边界的两条目标上都仍由 workspace 支撑。投影不得仅仅因为构建目标是 `latest` 就把由 workspace 支撑的内容描述为发布固定。站点搜索在两条目标上都由 workspace 支撑：它使用站点所构建使用的 CLI 排序，基于该 CLI 在站点构建时读取的 workspace 文档与包，与站点的 CLI 参考页面是同一来源。在 `latest` 上，它排除没有已发布文档的集成，若某个结果的页面未发布，则链接到最近的已发布索引页。
+- **FR6 — 金丝雀状态在拥有它的层级上只投影一次。** 当子项共享同一金丝雀状态时，表面应当按包或类别层级对其进行分组，而不是在每个条目上重复标记。安装命令、搜索结果、详情页与 API 输出必须与同一通道和就绪事实保持一致。可见性仍是一个独立的投影。
 
 ### Navigation and browser history
 
-- **FR7 — Docsite destination actions use the shared navigation contract.** An
-  action whose result is a URL or another addressable Docsite state is a navigation
-  destination. `family:navigation-destinations` owns destination acceptance and
-  supported native/router behavior, including real `href`/`to` sinks and browser
-  affordances. A click handler MAY add analytics but MUST NOT become a second or
-  only navigation mechanism.
-- **FR8 — Addressable state has one canonical URL per surface.** A component,
-  template, theme, tab, or other state intended for direct linking or restoration
-  MUST have one canonical URL encoding on its owning surface. Historical or
-  convenience aliases MAY redirect or normalize to it. Direct load, in-app open and
-  close, soft navigation, Back, and Forward MUST agree. Catalog-backed identities
-  resolve through the owning registry; route-local tabs and other view values resolve
-  through the route owner rather than embedding or duplicating product data.
-- **FR9 — Primary selection pushes; secondary view state replaces.** Selecting a
-  different primary catalog item creates a history entry, and Back and Forward
-  traverse those selections. URL-encoded tabs, pickers, filters, sort order, and
-  canonicalization replace the current entry. Purely local transient presentation
-  state need not enter the URL. A surface MUST NOT use replacement merely to avoid
-  restoring a primary addressable selection.
+- **FR7 — Docsite 目的地操作使用共享的导航契约。** 结果是一个 URL 或另一个可寻址 Docsite 状态的操作，属于导航目的地。`family:navigation-destinations` 拥有目的地接受以及受支持的原生/路由行为，包括真实的 `href`/`to` 汇聚点与浏览器可供性。点击处理器可以附加分析，但不得成为第二种或唯一的导航机制。
+- **FR8 — 可寻址状态在其表面上只有一个规范 URL。** 打算用于直接链接或还原的组件、模板、主题、标签页或其他状态，必须在其所属表面上具有一种规范 URL 编码。历史别名或便利别名可以重定向或归一化到它。直接加载、应用内打开与关闭、软导航、后退与前进必须保持一致。由目录支撑的身份通过所属注册表解析；路由本地标签页与其他视图取值通过路由所有者解析，而不是嵌入或复制产品数据。
+- **FR9 — 主选择入栈；次级视图状态替换。** 选择另一个主目录条目会创建一个历史条目，后退与前进在这些选择之间穿行。URL 编码的标签页、选择器、过滤器、排序顺序与归一化替换当前条目。纯粹本地的瞬态呈现状态无需进入 URL。表面不得仅为避免还原某个主可寻址选择而使用替换。
 
 ### Selection and asynchronous work
 
-- **FR10 — Current selection owns visible content.** Header, body, actions, command,
-  accessible name, and analytics context for a selected item MUST resolve from the
-  same current committed selection. Opening, reopening, deep linking, URL
-  restoration, or direct selection MUST NOT show content from a previously selected
-  item.
-- **FR11 — Deferred content is scoped to its initiating transition.** A transition
-  MAY retain the previous content beneath an explicit pending treatment only while
-  the exact navigation that initiated that work remains current. Closing,
-  cancellation, a newer selection, a newer navigation, or unmount supersedes that
-  work. Closed or superseded work MUST NOT repaint visible content, replace current
-  metadata, move focus, update the canonical URL, or emit a success event.
-- **FR12 — Selection-affecting async completion commits through current
-  ownership.** Async work that can repaint a selected preview or commit
-  selection-owned metadata, focus, or URL state MUST verify that its request still
-  owns that selection before committing. Request identity or cancellation is
-  implementation-owned; global pending state without request ownership is
-  insufficient. General Docsite request lifetime and external synchronization remain
-  with this record and the owning Docsite component;
-  `architecture:react-component-runtime` supplies analogous Core/Lab lifecycle
-  constraints but does not own `apps/docsite`. Copy, save, export, and share
-  settlement timing remains with FR15.
+- **FR10 — 当前选择拥有可见内容。** 某个已选中条目的头部、正文、操作、命令、无障碍名称与分析上下文必须从同一个当前已提交的选择解析。打开、重新打开、深度链接、URL 还原或直接选择不得显示此前已选中条目的内容。
+- **FR11 — 延迟内容的作用域限定在发起它的那次过渡内。** 一次过渡可以只在发起该工作的那次确切导航仍然当前时，才在显式的待定处理之下保留先前的内容。关闭、取消、更新的选择、更新的导航或卸载会取代该工作。已关闭或被取代的工作不得重新绘制可见内容、替换当前元数据、移动焦点、更新规范 URL 或发出成功事件。
+- **FR12 — 影响选择的异步完成通过当前所有权提交。** 可能重新绘制已选中预览，或提交选择所拥有的元数据、焦点或 URL 状态的异步工作，必须在提交前确认其请求仍然拥有该选择。请求身份或取消由实现拥有；没有请求所有权的全局待定状态是不够的。Docsite 通用请求生命周期与外部同步仍归本记录与拥有的 Docsite 组件；`architecture:react-component-runtime` 提供类似的 Core/Lab 生命周期约束，但不拥有 `apps/docsite`。复制、保存、导出与分享的结算时机仍归 FR15。
 
 ### Interaction analytics
 
-- **FR13 — One typed module owns custom analytics.** The shared Docsite analytics
-  module owns the small custom event vocabulary and property schema. Item, package,
-  and category properties use canonical registry identifiers. Every finite
-  code-owned dimension—including page, target, source, type, direction, tab, view,
-  and toggle value—uses a closed code-owned vocabulary rather than an unrestricted
-  caller string. Events MUST NOT include user-authored source, free-form content,
-  URL fragments, or other personally identifying or unexpectedly high-cardinality
-  data.
-- **FR14 — The semantic action owner emits once.** The code that accepts or commits
-  a direct user action emits at most one matching custom event. Rendering,
-  hydration, effects, URL restoration, router synchronization, prefetch, background
-  work, and automatic page loading emit no custom interaction event. Root analytics
-  owns automatic page views.
-- **FR15 — Event timing follows the claim.** Navigation intent may log when a valid
-  user activation is accepted because the real link owns completion. Copy, export,
-  save, share, and similar success claims log only after the operation succeeds.
-  Cancelled, rejected, failed, ignored, closed, or superseded work MUST NOT emit a
-  success event.
+- **FR13 — 一个带类型的模块拥有自定义分析。** 共享的 Docsite 分析模块拥有小的自定义事件词汇表与属性 schema。条目、包与类别属性使用规范注册表标识符。每个有限的、由代码拥有的维度——包括页面、目标、来源、类型、方向、标签页、视图与开关值——都使用封闭的、由代码拥有的词汇表，而不是不受限制的调用方字符串。事件不得包含用户编写的源码、自由形式内容、URL 片段，或其他可识别个人身份或意外高基数的数据。
+- **FR14 — 语义操作所有者只发出一次。** 接受或提交某个直接用户操作的代码最多发出一个匹配的自定义事件。渲染、水合、副作用、URL 还原、路由同步、预取、后台工作与自动页面加载不发出任何自定义交互事件。根分析拥有自动页面视图。
+- **FR15 — 事件时机跟随其声明。** 导航意图可以在一个有效用户激活被接受时记录，因为真正的链接拥有完成。复制、导出、保存、分享及类似的成功声明只在操作成功之后记录。已取消、已拒绝、失败、被忽略、已关闭或被取代的工作不得发出成功事件。
 
 ### Playground storage and parent-page isolation
 
-- **FR16 — Production playground code is isolated from storage and the parent page.**
-  Production previews, including deployed pull-request previews, MUST execute
-  user-authored code with an opaque origin, without access to the Docsite's
-  origin-bound storage or parent-page DOM. Local storage may be blocked entirely;
-  previewed code has no persistence guarantee. The playground MUST explain these
-  restrictions to users. Local development MAY differ, but MUST NOT stand in for
-  production isolation evidence.
+- **FR16 — 生产 playground 代码与存储及父页面隔离。** 生产预览（包括已部署的 pull request 预览）必须以不透明源执行用户编写的代码，且无法访问 Docsite 的源绑定存储或父页面 DOM。本地存储可能被完全阻止；被预览的代码没有持久化保证。playground 必须向用户说明这些限制。本地开发可以有所不同，但不得替代生产隔离证据。
 
-  Reload or hostile navigation may reset preview runtime state. The playground
-  MUST recover a trusted preview with the editor's current code and active
-  theme/mode. Replacement content MUST NOT receive editor source, theme state, or
-  authority to edit the parent merely because it occupies the preview.
+  重新加载或恶意导航可能重置预览运行时状态。playground 必须以编辑器当前的代码与生效的主题/模式恢复一个受信任的预览。替换内容不得仅因占据预览就获得编辑器源码、主题状态或编辑父页面的权限。
 
-  Changes to this boundary require real production-browser evidence for storage
-  and parent-DOM denial, trusted recovery after reload and hostile navigation,
-  and restoration of current code and theme/mode.
+  对该边界的更改需要真实生产浏览器证据，覆盖存储与父 DOM 拒绝、重新加载与恶意导航之后的受信任恢复，以及当前代码与主题/模式的还原。
 
 ### Published surfaces and deployment identity
 
-- **FR17 — Production has one exact-head owner.** The canonical production
-  Docsite origin MUST serve the documentation, `/storybook/`, and `/sandbox/`
-  from the same successful main-branch deployment. A build that cannot stage
-  either static application MUST fail rather than publish a partial release.
-  The Docsite MUST expose real links to both applications.
-- **FR18 — Static application routes remain addressable.** Storybook manager and
-  iframe URLs, Sandbox route directories and embeds, static assets, query
-  parameters, and fragments MUST survive direct load on their canonical paths.
-  Route normalization MAY preserve or remove a trailing slash, but MUST retain
-  the selected application state and MUST NOT fall through to unrelated Docsite
-  content.
-- **FR19 — Canonical and indexing metadata match the surface.** Production entry
-  and addressable route pages identify their `https://astryx.atmeta.com`
-  canonical URL. Pull-request previews, standalone Storybook frames, Sandbox
-  embeds, and compatibility pages MUST be `noindex`; a preview MUST NOT claim a
-  production canonical URL.
-- **FR20 — Deployment identity is exact and generated.** Every Vercel Preview
-  and Production build MUST expose its complete 40-character source commit and
-  deployment environment at `/version.json`. Missing source identity fails the
-  build. Generated identity and staged applications MUST NOT enter source
-  control.
-- **FR21 — The former Pages origin is one compatibility surface.** GitHub Pages
-  MUST serve only a small, accessible, responsive landing page and equivalent
-  deep-path recovery page. Documentation is the primary canonical destination;
-  Storybook and Sandbox are labeled secondary destinations. An old Storybook or
-  Sandbox path MAY be carried into the corresponding link with its query and
-  fragment, but the compatibility page MUST NOT automatically redirect, build
-  either application, or host CI evidence.
+- **FR17 — 生产环境只有一个精确头部所有者。** 规范的生产 Docsite 源必须由同一次成功的 main 分支部署来提供文档、`/storybook/` 与 `/sandbox/`。无法暂存任一静态应用的构建必须失败，而不是发布一个部分发布版本。Docsite 必须暴露指向这两个应用的真实链接。
+- **FR18 — 静态应用路由保持可寻址。** Storybook 管理器与 iframe URL、Sandbox 路由目录与嵌入、静态资源、查询参数与片段必须在其规范路径上经得起直接加载。路由归一化可以保留或移除尾部斜杠，但必须保留所选应用状态，且不得落到不相关的 Docsite 内容上。
+- **FR19 — 规范元数据与索引元数据须与表面相符。** 生产入口页与可寻址路由页标识其 `https://astryx.atmeta.com` 规范 URL。pull request 预览、独立的 Storybook 框架、Sandbox 嵌入与兼容页面必须为 `noindex`；预览不得声明生产规范 URL。
+- **FR20 — 部署身份是精确且生成的。** 每次 Vercel 预览与生产构建必须在 `/version.json` 暴露其完整的 40 字符源提交与部署环境。缺失源身份会使构建失败。生成的标识与暂存的应用不得进入源码控制。
+- **FR21 — 原 Pages 源是一处兼容表面。** GitHub Pages 必须只提供一个小的、无障碍的、响应式的落地页以及等价的深路径恢复页。文档是首要的规范目的地；Storybook 与 Sandbox 是标注的次级目的地。旧的 Storybook 或 Sandbox 路径可以连同其查询与片段被带入相应链接，但兼容页面不得自动重定向、构建任一应用或托管 CI 证据。
 
 ### Blog posts
 
-- **FR22 — Blog posts render runnable example blocks.** A fenced code block in
-  a blog post's Markdown whose info string is `tsx live` renders a runnable
-  example through the Docsite's existing live-example renderer, the playground
-  preview frame (`/playground/preview`), which compiles the block's source in
-  the browser and resolves its imports against the generated preview scope.
-  The example runs sandboxed so a post cannot break the page: each block gets
-  its own frame with the FR16 boundary, an `allow-scripts`-only sandbox with an
-  opaque origin, so its styles and scripts stay inside that frame, and a
-  compile or runtime error shows inside the frame while the rest of the post
-  renders. An example may import published Astryx packages and post-local
-  example assets that live beside the post's Markdown file, such as docs-only
-  demo components like tarot cards; those assets are not Astryx components,
-  are not exported from any package, enter no catalog, and resolve only for
-  their own post. The plain-text post route shows a static fallback in place
-  of the running example: the block's source as an ordinary code block, read
-  the way the page reads fences (inside blockquotes and list items too, and
-  never inside another fenced block). RSS items carry the post's description
-  and no body, so no example reaches the feed. A post's example assets live in a folder named after the post,
-  beside its Markdown file, and load only in the frames of that post's live
-  examples. Test fixture posts under `src/content/blog/fixtures/` are served
-  on the canary only and never listed in the blog index, feed, or sitemap.
+- **FR22 — 博客文章渲染可运行的示例块。** 博客文章 Markdown 中信息字符串为 `tsx live` 的围栏代码块，通过 Docsite 既有的实时示例渲染器渲染为可运行的示例，即 playground 预览框架（`/playground/preview`），该框架在浏览器中编译该块的源码，并针对生成的预览作用域解析其导入。示例在沙箱中运行，因此文章无法破坏页面：每个块都有自己的框架并带 FR16 边界，一个仅含 `allow-scripts`、具有不透明源的沙箱，因此其样式与脚本留在该框架内部，而编译错误或运行时错误在框架内显示，文章其余部分照常渲染。示例可以导入已发布的 Astryx 包，以及位于文章 Markdown 文件旁的帖子本地示例资源，例如塔罗牌这类仅供文档使用的演示组件；这些资源不是 Astryx 组件，不从任何包导出，不进入任何目录，且只为其自身文章解析。纯文本文章路由在运行示例的位置显示静态回退：该块的源码作为一个普通代码块，按页面读取围栏的方式读取（在 blockquote 与列表项内也是如此，且绝不在另一个围栏块内部）。RSS 条目携带文章描述而不携带正文，因此没有任何示例进入 feed。文章的示例资源位于以该文章命名的文件夹中，与该文章的 Markdown 文件相邻，并且只在该文章实时示例的框架中加载。`src/content/blog/fixtures/` 下的测试夹具文章仅在金丝雀上提供，且绝不在博客索引、feed 或 sitemap 中列出。
 
 ### Example code
 
-- **FR23 — Example source replaces demo contents the way copy does.** In a
-  motion or gesture example, a real Astryx component may wrap docs-only demo
-  contents, such as `<Card><PlayingCardContents /></Card>`. The live example
-  renders the original. Every surface that hands out the example's source
-  carries it after the demo-content element replacement of `spec:AST-028`
-  FR13: each demo-content element becomes a generic placeholder, the source
-  keeps no reference to the code that defines it, and the outer component keeps
-  its props and behavior. A demo-content wrapper that only adds docs-only
-  presentation around a real component, such as a usage hint, is removed rather
-  than replaced: the source keeps the wrapped component and its props as if the
-  wrapper were absent. Surfaces that only hand out source run that
-  replacement alone, so each keeps its fixture media:
-  the Code tab and its copy action; Open in Playground, which opens and runs
-  that replaced source, so the playground shows the placeholder; the Sandbox
-  code view and its Copy source action; and the MCP server's `get()`, whose
-  component result carries the showcase example's source and one more
-  example's source and whose template result carries the template's example
-  sources or, without them, its page source. The shadcn Install item writes
-  the example into the consumer's project, so it is a copy under
-  `spec:AST-028` FR13 and its registry item carries the source with fixture
-  media and demo-content elements both replaced. Integration-package blocks
-  display `template show` output, so their displayed code has fixture media
-  replaced.
+- **FR23 — 示例源码替换演示内容的方式与复制相同。** 在动效或手势示例中，真实的 Astryx 组件可以包裹仅供文档使用的演示内容，例如 `<Card><PlayingCardContents /></Card>`。实时示例渲染原始内容。每一个分发示例源码的表面，都在按 `spec:AST-028` FR13 完成演示内容元素替换之后携带它：每个演示内容元素变成一个通用占位符，源码不保留对定义该元素的代码的任何引用，外层组件保留其 props 与行为。仅围绕真实组件添加仅供文档使用呈现的演示内容包装器（例如用法提示）会被移除而不是替换：源码保留被包裹的组件及其 props，就好像该包装器不存在。仅分发源码的表面只执行该替换，因此各自保留其测试夹具媒体：Code 标签页及其复制操作；Open in Playground，它打开并运行该已替换的源码，因此 playground 显示占位符；Sandbox 代码视图及其 Copy source 操作；以及 MCP 服务器的 `get()`，其组件结果携带 showcase 示例的源码与另一个示例的源码，其模板结果携带模板的示例源码，或在其缺失时携带其页面源码。shadcn Install 条目把示例写入使用方的项目，因此它是在 `spec:AST-028` FR13 之下的一次复制，其注册表条目携带的源码中测试夹具媒体与演示内容元素两者都被替换。集成包的 block 显示 `template show` 输出，因此其显示的代码已替换测试夹具媒体。
 
 ### Authority routing
 
-`architecture:knowledge-contracts` owns public-delta routing and change disposition.
-This record supplies the expected Docsite behavior; it does not pre-approve a pull
-request because its title says bug fix. Reviewers map every observable delta to the
-applicable current owner. A new interaction model, exception, public API, event
-meaning, visibility axis, taxonomy, or data owner remains a separate contract delta.
+`architecture:knowledge-contracts` 拥有公共增量路由与变更处置。本记录提供预期的 Docsite 行为；它不因为某个 pull request 的标题写着缺陷修复就预先批准它。审查者把每一处可观察的增量映射到适用的当前所有者。新的交互模型、例外、公共 API、事件含义、可见性轴、分类法或数据所有者仍属于独立的契约增量。
 
 ### Platform support
 
-- Supported feature/engine floor: the Docsite's current supported browsers and
-  Next.js router integration.
-- Unsupported behavior: a client that cannot preserve a real link or canonical URL
-  MUST retain a usable full-page navigation; it MUST NOT substitute a click-only
-  control or silently lose the destination.
-- Browser evidence: real Chromium verifies link affordances, Back/Forward,
-  selection restoration, focus, and pending/close/supersession behavior. DOM-only
-  evidence does not prove browser history or painted stale-content absence.
+- 受支持的功能/引擎下限：Docsite 当前受支持的浏览器与 Next.js 路由集成。
+- 不受支持的行为：无法保留真实链接或规范 URL 的客户端必须保留可用的整页导航；它不得替换为仅点击控件，也不得静默丢失目的地。
+- 浏览器证据：真实 Chromium 验证链接可供性、后退/前进、选择还原、焦点以及待定/关闭/取代行为。仅 DOM 证据无法证明浏览器历史，也不能证明所绘制的陈旧内容不存在。
 
 ## Current-state impact
 
-The current Docsite already generates package, component, template, docs, block,
-theme, and component-preview registries from repository metadata. Published package metadata
-and package docs use the latest/canary content roots, while executable templates,
-blocks, examples, long-form CLI docs, and Docsite-authored content remain
-workspace-backed.
-Most navigation actions expose real links, and one analytics module owns a small
-event vocabulary.
+当前 Docsite 已经从仓库元数据生成包、组件、模板、文档、block、主题与组件预览注册表。已发布的包元数据与包文档使用 latest/canary 内容根，而可执行模板、block、示例、长篇 CLI 文档以及 Docsite 编写的内容仍由 workspace 支撑。多数导航操作暴露真实链接，并且一个分析模块拥有一个小的事件词汇表。
 
-Known conformance gaps remain implementation work:
+已知的符合性缺口仍属实现工作：
 
-- some gallery and playground membership/classification data remains in page- or
-  script-local lists instead of canonical metadata or generated registries, and
-  template live-preview membership remains in a hand-maintained map;
-- template readiness and visibility are not projected consistently across gallery,
-  search, direct routes, preview, and playground;
-- primary theme selection currently replaces history, and theme search results
-  collapse every selected theme to bare `/themes`, which restores the default seed
-  instead of the searched identity;
-- addressable template previews have canonical `?preview=` URLs, but gallery cards
-  and Preview buttons remain click-only controls rather than link-backed
-  destinations;
-- primary template preview selection currently replaces history rather than creating
-  a browsing step;
-- template preview may retain a deferred prior selection outside the exact pending
-  navigation that owns it;
-- analytics still permits unrestricted string context for item, package, category,
-  source, type, tab, view, and toggle-value fields, and nested template-preview
-  activation can reach the same semantic action twice; and
-- existing interaction tests do not yet cover the complete primary-selection,
-  Back/Forward, close, cancellation, and supersession matrix.
+- 部分画廊与 playground 的成员资格/分类数据仍留在页面本地或脚本本地列表中，而不是规范元数据或生成的注册表中，模板实时预览的成员资格仍留在一张手工维护的映射表中；
+- 模板就绪状态与可见性在画廊、搜索、直接路由、预览与 playground 之间的投影不一致；
+- 主主题选择当前会替换历史，主题搜索结果把每个选中的主题折叠为裸 `/themes`，从而还原默认种子而不是被搜索的身份；
+- 可寻址模板预览已有规范的 `?preview=` URL，但画廊卡片与 Preview 按钮仍是仅点击控件，而不是由链接支撑的目的地；
+- 主模板预览选择当前会替换历史，而不是创建一个浏览步骤；
+- 模板预览可能在拥有它的那次确切待定导航之外保留一个延迟的先前选择；
+- 分析仍允许条目、包、类别、来源、类型、标签页、视图与开关值字段使用不受限制的字符串上下文，且嵌套的模板预览激活可以两次到达同一个语义操作；以及
+- 现有交互测试尚未覆盖完整的主选择、后退/前进、关闭、取消与取代矩阵。
 
-The Code tab, Open in Playground, the Sandbox code view, and the MCP server's
-`get()` carry example source after the demo-content element replacement, with
-fixture media kept. The shadcn Install item carries it with demo-content
-elements and fixture media both replaced (FR23).
+Code 标签页、Open in Playground、Sandbox 代码视图以及 MCP 服务器的 `get()` 在演示内容元素替换之后携带示例源码，并保留测试夹具媒体。shadcn Install 条目携带它时，演示内容元素与测试夹具媒体两者都被替换（FR23）。
 
-Stable Storybook and Sandbox currently use a split deployment: pull-request
-previews are staged inside the Vercel Docsite, while stable main is rebuilt and
-published through a separate GitHub Pages branch. That duplicates application
-builds, leaves production ownership ambiguous, and makes the former Pages origin
-carry unrelated preview and evidence storage.
+Stable Storybook 与 Sandbox 当前使用拆分部署：pull request 预览暂存在 Vercel Docsite 内，而稳定 main 通过单独的 GitHub Pages 分支重建并发布。这重复了应用构建，使生产所有权不明确，并让原 Pages 源承载不相关的预览与证据存储。
 
-The accepted target makes Vercel the one production owner for all three surfaces
-and reduces GitHub Pages to the FR21 compatibility page. It adds no package or
-consumer runtime API; `/version.json` is deployment evidence for verifying the
-exact source already serving those public surfaces.
+已接受的目标让 Vercel 成为全部三个表面的唯一生产所有者，并把 GitHub Pages 缩减为 FR21 兼容页面。它不新增任何包或使用方运行时 API；`/version.json` 是用于验证已在服务这些公共表面的精确源码的部署证据。
 
 ## Verification
 
-| Contract  | Verification                                                                                                                                                                                     | Representative states                                                                                                                                                                                                                                                                                                                                                                                                                                      | Mutation or failure expectation                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1–FR3   | generator/data-extraction tests plus cross-projection inventory; search endpoint parity with `astryx search --json`, and a read record of its first requests                                     | package, component, template, theme; gallery, sidebar, search, direct route, preview, playground                                                                                                                                                                                                                                                                                                                                                           | a local map changes membership or a canonical item fact, availability and visibility collapse into one projection, or the search endpoint gathers when it answers                                                                                                                                                                                                                                                                                                         |
-| FR4–FR6   | latest/canary generation and projection tests                                                                                                                                                    | stable package, canary-only package, ready/unready item, overview-hidden item, invalid integration metadata                                                                                                                                                                                                                                                                                                                                                | latest exposes canary package docs, workspace-backed content is called release-pinned, a second readiness state appears, or projections disagree                                                                                                                                                                                                                                                                                                                          |
-| FR7–FR9   | navigation-family checks plus real-browser navigation/history tests                                                                                                                              | direct link, modified click, new tab, deep link, primary selection, secondary tab/filter, canonicalization, Back/Forward                                                                                                                                                                                                                                                                                                                                   | Docsite misclassifies a destination, canonical identity diverges, primary selections replace one another, or secondary state clutters history                                                                                                                                                                                                                                                                                                                             |
-| FR10–FR12 | selection/transition tests plus real-browser visible-content checks                                                                                                                              | initial open, reopen, deep link, direct selection, pending previous/next, close, supersede, reject, unmount                                                                                                                                                                                                                                                                                                                                                | header/body/actions disagree, stale content paints without its owning pending state, or obsolete selection work commits after supersession                                                                                                                                                                                                                                                                                                                                |
-| FR13–FR15 | analytics schema and interaction tests with transport spies                                                                                                                                      | navigation intent, successful/failed copy, cancel, URL restoration, render/effect, duplicate activation                                                                                                                                                                                                                                                                                                                                                    | event names/properties drift, free-form/high-cardinality data is logged, a passive lifecycle emits, success logs on failure, or one action emits twice                                                                                                                                                                                                                                                                                                                    |
-| FR16      | production-browser playground isolation and recovery tests                                                                                                                                       | direct load, reload, hostile navigation, storage and parent-DOM denial                                                                                                                                                                                                                                                                                                                                                                                     | preview code reaches parent/storage or trusted recovery restores stale source/theme                                                                                                                                                                                                                                                                                                                                                                                       |
-| FR17–FR21 | exact-head Vercel build, route/asset probes, metadata checks, and Pages landing contract                                                                                                         | production and PR Preview; Storybook manager/frame; Sandbox route/embed; old root/deep path; desktop/mobile; light/dark                                                                                                                                                                                                                                                                                                                                    | one app is absent or stale, a direct asset/route fails, metadata claims the wrong owner, identity drifts, or Pages hosts more than the compatibility page                                                                                                                                                                                                                                                                                                                 |
-| FR22      | `e2e/blog-live-examples.spec.ts` (real-browser post, plain-text route, feed, sitemap, and index checks) and `blog-live-examples.test.tsx` (fence rule, static fallback, fixture listing, runner) | a post with a `tsx live` block; that post's plain-text route; a block importing a post-local asset; a block that fails to compile or throws; live fences in a blockquote, a list item, and quoted inside a longer fence                                                                                                                                                                                                                                    | the live block does not run in the browser, the text route shows anything but the source fallback for a fence the page runs, a post-local import fails to resolve, a broken example breaks the page outside its frame, or the feed, sitemap, or index lists the fixture                                                                                                                                                                                                   |
-| FR23      | Output checks for each surface plus real-browser live-example check                                                                                                                              | a motion or gesture example whose `Card` wraps a demo-content element; one whose `Card` sits in a docs-only hint wrapper; its Code tab and copied text; its Open in Playground source; its Sandbox code view and copied source; its MCP `get()` component and template results; its shadcn registry item and the `.astryx/<item>.json` receipt it installs; an example with fixture media; an integration-package block's displayed code; its live preview | any of those surfaces still references a demo-content element or the code that defines it, or keeps a docs-only wrapper or its hint text; the outer component or its props change; fixture media changes on a surface that only hands out source; the shadcn registry item or an integration-package block's displayed code still references `/template-assets/`, or the installed receipt is not the released v2 shape; or the live preview stops rendering the original |
+| 契约      | 验证                                                                                                                                                                       | 代表性状态                                                                                                                                                                                                                                                                                                                           | 变更或失败预期                                                                                                                                                                                                                                                                                      |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1–FR3   | 生成器/数据提取测试，加上跨投影清单；搜索端点与 `astryx search --json` 的对等性，以及其最初若干请求的读取记录                                                              | 包、组件、模板、主题；画廊、侧边栏、搜索、直接路由、预览、playground                                                                                                                                                                                                                                                                 | 本地映射改变了成员资格或某个规范条目事实，可用性与可见性坍缩为一处投影，或搜索端点在作答时进行收集                                                                                                                                                                                                  |
+| FR4–FR6   | latest/canary 生成与投影测试                                                                                                                                               | 稳定包、仅金丝雀包、已就绪/未就绪条目、概览隐藏条目、无效集成元数据                                                                                                                                                                                                                                                                  | latest 暴露金丝雀包文档，由 workspace 支撑的内容被称作发布固定，出现第二种就绪状态，或各投影彼此不一致                                                                                                                                                                                              |
+| FR7–FR9   | 导航族检查，加上真实浏览器导航/历史测试                                                                                                                                    | 直接链接、修饰键点击、新标签页、深度链接、主选择、次级标签页/过滤器、归一化、后退/前进                                                                                                                                                                                                                                               | Docsite 错误分类某个目的地，规范身份发生分歧，主选择互相替换，或次级状态弄乱历史                                                                                                                                                                                                                    |
+| FR10–FR12 | 选择/过渡测试，加上真实浏览器可见内容检查                                                                                                                                  | 首次打开、重新打开、深度链接、直接选择、待定的上一个/下一个、关闭、取代、拒绝、卸载                                                                                                                                                                                                                                                  | 头部/正文/操作不一致，陈旧内容在没有其所属待定状态的情况下绘制，或已过时的选择工作在被取代之后提交                                                                                                                                                                                                  |
+| FR13–FR15 | 带传输探针的分析 schema 与交互测试                                                                                                                                         | 导航意图、成功/失败复制、取消、URL 还原、渲染/副作用、重复激活                                                                                                                                                                                                                                                                       | 事件名称/属性漂移，记录了自由形式/高基数数据，被动生命周期发出事件，失败时记录成功，或同一操作发出两次                                                                                                                                                                                              |
+| FR16      | 生产浏览器 playground 隔离与恢复测试                                                                                                                                       | 直接加载、重新加载、恶意导航、存储与父 DOM 拒绝                                                                                                                                                                                                                                                                                      | 预览代码触达父页面/存储，或受信任恢复还原了过时的源码/主题                                                                                                                                                                                                                                          |
+| FR17–FR21 | 精确头部 Vercel 构建、路由/资源探测、元数据检查与 Pages 落地契约                                                                                                           | 生产与 PR 预览；Storybook 管理器/框架；Sandbox 路由/嵌入；旧根路径/深路径；桌面/移动；浅色/深色                                                                                                                                                                                                                                      | 某个应用缺失或过时，直接访问资源/路由失败，元数据声明了错误的所有者，身份漂移，或 Pages 托管了超出兼容页面的内容                                                                                                                                                                                    |
+| FR22      | `e2e/blog-live-examples.spec.ts`（真实浏览器中的文章、纯文本路由、feed、sitemap 与索引检查）与 `blog-live-examples.test.tsx`（围栏规则、静态回退、测试夹具的列出、运行器） | 含 `tsx live` 块的文章；该文章的纯文本路由；导入帖子本地资源的块；编译失败或抛错的块；位于 blockquote、列表项中以及被引用于更长围栏内的实时围栏                                                                                                                                                                                      | 实时块未在浏览器中运行，文本路由对页面会运行的围栏显示了源码回退之外的内容，帖子本地导入无法解析，损坏的示例在其框架之外破坏了页面，或 feed、sitemap、索引列出了该测试夹具                                                                                                                          |
+| FR23      | 每个表面的输出检查，加上真实浏览器实时示例检查                                                                                                                             | `Card` 包裹演示内容元素的动效或手势示例；`Card` 位于仅供文档使用提示包装器中的示例；其 Code 标签页与复制的文本；其 Open in Playground 源码；其 Sandbox 代码视图与复制的源码；其 MCP `get()` 组件与模板结果；其 shadcn 注册表条目及其安装的 `.astryx/<item>.json` 收据；带测试夹具媒体的示例；某个集成包 block 显示的代码；其实时预览 | 上述任一表面仍引用演示内容元素或定义它的代码，或保留仅供文档使用的包装器或其提示文本；外层组件或其 props 发生变化；在仅分发源码的表面上测试夹具媒体发生变化；shadcn 注册表条目或某个集成包 block 显示的代码仍引用 `/template-assets/`，或安装的收据不是已发布的 v2 形状；或实时预览不再渲染原始内容 |
 
 ## Decision log
 
 ### DEC-1 — Product data has one registry-backed owner
 
-**Reference:** `spec:AST-033/DEC-1`
-**Decider:** `cixzhang`, `2026-09-09`
+**引用：**`spec:AST-033/DEC-1`
 
-Upstream canonical metadata and catalog owners define product facts. Generated
-registries materialize those facts for the Docsite; views project them without
-creating another catalog.
+**决策者：**`cixzhang`, `2026-09-09`
 
-Rejected: page-owned item lists, parallel membership/classification maps, and a
-generator inventing product policy absent an upstream owner.
+上游规范元数据与目录所有者定义产品事实。生成的注册表为 Docsite 物化这些事实；视图投影它们而不创建另一个目录。
 
-Site search is governed by DEC-8.
+已否决：页面拥有的条目列表、并行的成员资格/分类映射，以及在没有上游所有者的情况下发明产品策略的生成器。
+
+站点搜索由 DEC-8 管辖。
 
 ### DEC-2 — Browser history follows semantic weight
 
-**Reference:** `spec:AST-033/DEC-2`
-**Decider:** `cixzhang`, `2026-05-01`
+**引用：**`spec:AST-033/DEC-2`
 
-Primary catalog-item selection is navigation and pushes history. URL-encoded
-secondary tabs, pickers, filters, sort order, and canonicalization replace the
-current entry. Purely local transient presentation need not enter the URL. This lets
-Back and Forward follow the person's browsing path without making secondary controls
-tedious.
+**决策者：**`cixzhang`, `2026-05-01`
 
-Rejected: replacing primary selections, pushing every secondary adjustment, and
-putting non-addressable transient presentation into history.
+主目录条目选择属于导航，并入栈历史。URL 编码的次级标签页、选择器、过滤器、排序顺序与归一化替换当前条目。纯粹本地的瞬态呈现无需进入 URL。这让后退与前进跟随这个人的浏览路径，而不会让次级控件变得繁琐。
+
+已否决：替换主选择、把每一次次级调整都入栈，以及把不可寻址的瞬态呈现放入历史。
 
 ### DEC-3 — Custom analytics belongs to direct user actions
 
-**Reference:** `spec:AST-033/DEC-3`
-**Decider:** `cixzhang`, `2026-06-10`
+**引用：**`spec:AST-033/DEC-3`
 
-One typed vocabulary records direct interaction. Root analytics owns automatic page
-views; renders, effects, and URL restoration do not manufacture custom engagement.
-Success events follow success.
+**决策者：**`cixzhang`, `2026-06-10`
 
-Rejected: page-load effects duplicating automatic analytics and optimistic copy/save
-success events that fire before completion.
+一个带类型的词汇表记录直接交互。根分析拥有自动页面视图；渲染、副作用与 URL 还原不制造自定义互动。成功事件跟随成功。
+
+已否决：重复自动分析的页面加载副作用，以及在完成之前就触发的乐观复制/保存成功事件。
 
 ### DEC-4 — Canary channel and readiness remain separate
 
-**Reference:** `spec:AST-033/DEC-4`
-**Decider:** `cixzhang`, `2026-09-06`
+**引用：**`spec:AST-033/DEC-4`
 
-Canary-only packages are publicly visible on the canary line for pre-promotion
-vetting and absent from latest package documentation. Package channel may project
-component `isReady: false`; Docsite views do not invent another unstable state, and
-visibility stays independent.
+**决策者：**`cixzhang`, `2026-09-06`
 
-Rejected: parallel unstable flags, hidden canary-only content, and page-local canary
-allowlists.
+仅金丝雀包在金丝雀线路上公开可见，用于提升前的审查，并且不出现在 latest 包文档中。包通道可以投影组件 `isReady: false`；Docsite 视图不发明另一个不稳定状态，且可见性保持独立。
+
+已否决：并行的不稳定标志、隐藏仅金丝雀内容，以及页面本地的金丝雀允许列表。
 
 ### DEC-5 — Current selection outranks stale async work
 
-**Reference:** `spec:AST-033/DEC-5`
-**Decider:** `cixzhang`, `2026-09-09`
+**引用：**`spec:AST-033/DEC-5`
 
-The current committed selection owns visible content. Deferred content is allowed
-only for the exact pending transition that retains it, with an explicit pending
-treatment. Closing or superseding the transition ends that authority.
+**决策者：**`cixzhang`, `2026-09-09`
 
-Rejected: one global pending/deferred value repainting a newly opened, closed, or
-newer selection.
+当前已提交的选择拥有可见内容。延迟内容仅允许用于保留它的那次确切待定过渡，并带显式待定处理。关闭或取代该过渡会终止该权限。
+
+已否决：用一个全局待定/延迟取值重新绘制新打开、已关闭或更新的选择。
 
 ### DEC-6 — Trying code does not require persistence or parent-page access
 
-**Reference:** `spec:AST-033/DEC-6`
-**Decider:** `cixzhang`, `2026-09-23`
+**引用：**`spec:AST-033/DEC-6`
 
-The playground is for trying Astryx code, not storing local data. Production
-previews have an opaque origin and no access to the Docsite's origin-bound
-storage or parent-page DOM. Previewed code has no persistence guarantee;
-restrictions are explained to users. Development may differ. Reload and hostile
-navigation recover a trusted preview with current editor code and theme/mode.
+**决策者：**`cixzhang`, `2026-09-23`
 
-Rejected: treating local persistence or parent-page DOM access as a playground
-guarantee.
+playground 用于尝试 Astryx 代码，而不是存储本地数据。生产预览具有不透明源，且无法访问 Docsite 的源绑定存储或父页面 DOM。被预览的代码没有持久化保证；限制会向用户说明。开发环境可以有所不同。重新加载与恶意导航会以当前编辑器代码与主题/模式恢复一个受信任的预览。
+
+已否决：把本地持久化或父页面 DOM 访问当作 playground 保证。
 
 ### DEC-7 — Vercel owns every maintained production surface
 
-**Reference:** `spec:AST-033/DEC-7`
-**Decider:** `cixzhang`, `2026-09-29`
+**引用：**`spec:AST-033/DEC-7`
 
-The production Docsite, Storybook, and Sandbox ship together from the exact main
-commit on the canonical Vercel origin. GitHub Pages remains only as one noindex
-compatibility landing for old bookmarks, with documentation first and direct
-Storybook and Sandbox destinations alongside it. Pull-request previews keep the
-same Vercel paths and remain non-canonical.
+**决策者：**`cixzhang`, `2026-09-29`
 
-Rejected: continuing a second stable-app build on `gh-pages`, silently dropping
-old bookmarks, automatically redirecting every old deep path without recovery
-choice, and using the compatibility origin for visual or test evidence.
+生产 Docsite、Storybook 与 Sandbox 从规范 Vercel 源上的精确 main 提交一起发布。GitHub Pages 仅作为面向旧书签的一个 `noindex` 兼容落地页保留，文档优先，并配以直接的 Storybook 与 Sandbox 目的地。pull request 预览保持相同的 Vercel 路径，且仍为非规范。
+
+已否决：在 `gh-pages` 上继续第二次稳定应用构建、静默丢弃旧书签、在没有恢复选择的情况下自动重定向每个旧深路径，以及把兼容源用于视觉或测试证据。
 
 ### DEC-8 — Site search uses the CLI's search
 
-**Reference:** `spec:AST-033/DEC-8`
-**Decider:** `josephfarina`, `2026-10-21`
+**引用：**`spec:AST-033/DEC-8`
 
-Maintainer decision: site search uses the CLI's search instead of a separate index
-derived from the registries, and reads the workspace docs the site builds with on
-every target, so each search improvement reaches the live site. One ranking implementation means every search
-improvement reaches the site with no copy to keep in sync. A parity test holds the
-endpoint equal to `astryx search --json` for the site's project.
+**决策者：**`josephfarina`, `2026-10-21`
 
-Rejected: a site-owned index or ranking, and a browser copy of the CLI's search
-data that has to track every CLI release.
+维护者决定：站点搜索使用 CLI 的搜索，而不是从注册表派生的独立索引，并且在每条目标上都读取站点所构建使用的 workspace 文档，使每一处搜索改进都到达线上站点。一个排序实现意味着每一处搜索改进无需同步副本即可到达站点。一项对等性测试使该端点与站点项目的 `astryx search --json` 保持相等。
+
+已否决：站点拥有的索引或排序，以及必须跟踪每次 CLI 发布的、CLI 搜索数据的浏览器副本。
 
 ### DEC-9 — Blog posts run examples in the existing sandboxed renderer
 
-**Reference:** `spec:AST-033/DEC-9`
-**Decider:** `cixzhang`, `2026-11-01`
+**引用：**`spec:AST-033/DEC-9`
 
-Blog posts support runnable HTML blocks inside the post, so a post can
-demonstrate Astryx with demo material that is not an Astryx component, such as
-tarot cards. A `tsx live` fence runs through the playground preview frame and
-its FR16 isolation, so a post example and a playground session share one
-renderer and one sandbox boundary. Post-local demo assets stay beside the post
-and outside every package and catalog.
+**决策者：**`cixzhang`, `2026-11-01`
 
-Rejected: a second blog-only renderer that would need its own isolation.
+博客文章在文章内部支持可运行的 HTML 块，因此一篇文章可以用并非 Astryx 组件的演示材料（例如塔罗牌）来演示 Astryx。`tsx live` 围栏通过 playground 预览框架及其 FR16 隔离运行，因此文章示例与 playground 会话共用一个渲染器与一条沙箱边界。文章本地演示资源留在文章旁边，并在每个包与目录之外。
+
+已否决：需要自身隔离的第二个仅用于博客的渲染器。
 
 ### DEC-10 — Example code replaces demo contents the way copy does
 
-**Reference:** `spec:AST-033/DEC-10`
-**Decider:** `cixzhang`, `2026-11-01`
+**引用：**`spec:AST-033/DEC-10`
 
-Motion and gesture examples may show docs-only demo contents, such as a
-playing-card face, inside a real Astryx component, without a second copy of
-each example to maintain. Every surface that hands out example source runs the
-CLI copy's demo-content element replacement (`spec:AST-028/DEC-4`), so the demo
-contents a person or agent reads, copies, opens, or installs are the generic
-placeholders a CLI copy writes. Surfaces that only hand out source run no other
-copy step. The shadcn Install item writes into the consumer's project, so it is
-a copy and also replaces fixture media.
+**决策者：**`cixzhang`, `2026-11-01`
 
-Rejected: a docs-only duplicate of each example, which adds documents to keep in sync.
+动效与手势示例可以在真实 Astryx 组件内部显示仅供文档使用的演示内容（例如扑克牌面），而无需为每个示例维护第二份副本。每个分发示例源码的表面都执行 CLI 复制中的演示内容元素替换（`spec:AST-028/DEC-4`），因此人们或 agent 读取、复制、打开或安装的演示内容，都是 CLI 复制所写入的通用占位符。仅分发源码的表面不执行其他复制步骤。shadcn Install 条目写入使用方的项目，因此它是一次复制，并且也替换测试夹具媒体。
+
+已否决：为每个示例做一份仅供文档使用的副本，因为那会增加需要保持同步的文档。
 
 ## Open questions
 
-None.
+没有。

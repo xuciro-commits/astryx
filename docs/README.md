@@ -1,163 +1,66 @@
-# Astryx knowledge map
+# Astryx 知识地图
 
-This directory holds maintainer knowledge that must be reviewable with the code
-it governs. Consumer documentation remains in component `.doc.mjs` files and
-`packages/cli/assets/docs/`.
+本目录存放维护者知识，这些知识必须能与其所治理的代码一起审查。消费方文档仍保留在组件 `.doc.mjs` 文件和 `packages/cli/assets/docs/` 中。
 
-## Placement
+## 放置
 
-- `architecture/`: the shipped system, its boundaries, and invariants.
-- `contributing/`: practical contributor workflows that project current owner records without replacing them.
-- `design/`: human-owned visual and interaction specifications.
-- `themes/`: guidance and index for package-local theme specifications.
-- `families/`: contracts shared by sibling components.
-- `specs/`: consequential proposed or shipped system changes and their decisions.
-- `specs/components/`: component and module contracts, one folder per component.
-- `templates/knowledge/`: authoring templates. Templates never live among records.
-- `schemas/knowledge/`: versioned structural requirements for templates and records.
+- `architecture/`：已交付的系统、其边界和不变量。
+- `contributing/`：实用的贡献者工作流，它们投影当前所有者记录而不替换它们。
+- `design/`：人工拥有的视觉和交互规范。
+- `themes/`：包本地主题规范的指南和索引。
+- `families/`：由同级组件共享的契约。
+- `specs/`：有重大影响的提议或已交付系统变更及其决策。
+- `specs/components/`：组件和模块契约，每个组件一个文件夹。
+- `templates/knowledge/`：编写模板。模板从不与记录放在一起。
+- `schemas/knowledge/`：模板和记录的版本化结构要求。
 
-Every component's records, for every package and platform, live together in
-one folder, `specs/components/<ComponentRoot>/`, named after the folder that
-holds the component's code. The tree mirrors the source tree of the package
-registered by `scripts/component-packages.cjs`:
+每个组件的记录（无论哪个包和平台）都集中在一个文件夹 `specs/components/<ComponentRoot>/` 中，该文件夹以存放组件代码的文件夹命名。该树镜像 `scripts/component-packages.cjs` 注册的包的源码树：
 
-- a directory-layout package (`core`, `lab`) keeps
-  `packages/<package>/src/<ComponentRoot>/`, and its records are
-  `specs/components/<ComponentRoot>/<PublicName>.spec.md`;
-- a flat package (`charts`, `richtext`, `vega`) keeps
-  `packages/<package>/src/<PublicName>.tsx`, and its record is
-  `specs/components/<PublicName>/<PublicName>.spec.md`;
-- a platform implementation's record sits beside the core record as
-  `specs/components/<ComponentRoot>/<PublicName>.<language>.spec.md`, for
-  example `specs/components/Avatar/Avatar.swift.spec.md`.
+- 目录布局的包（`core`、`lab`）保留 `packages/<package>/src/<ComponentRoot>/`，其记录为 `specs/components/<ComponentRoot>/<PublicName>.spec.md`；
+- 扁平包（`charts`、`richtext`、`vega`）保留 `packages/<package>/src/<PublicName>.tsx`，其记录为 `specs/components/<PublicName>/<PublicName>.spec.md`；
+- 平台实现的记录与核心记录并排放置，形式为 `specs/components/<ComponentRoot>/<PublicName>.<language>.spec.md`，例如 `specs/components/Avatar/Avatar.swift.spec.md`。
 
-`<PublicName>` normally matches the root; a public member such as
-`NavMenu/NavHeadingMenu.spec.md` is valid only when an exact top-level or full
-inline consumer-doc entry in that root declares the same public name. In a flat
-package, the public named export and matching TSX module define the component
-boundary. When two packages keep a folder with the same name, the record belongs
-to the package that holds its code.
+`<PublicName>` 通常与根一致；像 `NavMenu/NavHeadingMenu.spec.md` 这样的公共成员，仅当该根中某个确切的顶层或完整内联消费方文档条目声明了相同的公共名称时才有效。在扁平包中，公共命名导出和匹配的 TSX 模块定义组件边界。当两个包保留同名文件夹时，记录属于持有其代码的包。
 
-Independently contractible public hooks, plugins, utilities, and subsystems use
-`kind: module` records named `<PublicName>.spec.md` at least one directory below
-the same component folder, usually in `modules/` (`specs/components/Dialog/modules/DialogHeader.spec.md`)
-or in a plugin's own folder (`specs/components/Table/plugins/rowStatus/useTableRowStatus.spec.md`).
-The subdirectory need not match where the module's code sits; lookup reaches the
-record by the code's file name or its `verified_by` evidence. Their canonical id is
-`module:<ParentComponent>/<PublicName>`; the module's `parent_component` and the
-parent component's `modules` list must agree. Private transform helpers do not
-require records.
+可独立缔约的公共 hook、插件、工具和子系统使用 `kind: module` 记录，命名为 `<PublicName>.spec.md`，至少位于同一组件文件夹下一级目录，通常在 `modules/`（`specs/components/Dialog/modules/DialogHeader.spec.md`）或插件自己的文件夹中（`specs/components/Table/plugins/rowStatus/useTableRowStatus.spec.md`）。子目录不必与模块代码所在位置一致；查找通过代码的文件名或其 `verified_by` 证据到达记录。它们的规范 ID 是 `module:<ParentComponent>/<PublicName>`；模块的 `parent_component` 和父组件的 `modules` 列表必须一致。私有转换辅助函数不需要记录。
 
-Component record discovery and PR routing ignore hidden path segments,
-`*.generated.spec.md`, and fixture, test, generated, build-output, coverage, and
-`node_modules` directories. Those files are not knowledge records or spec-only
-changes. Theme contracts live beside the package as
-`packages/themes/<theme>/<theme>.spec.md`.
+组件记录发现和 PR 路由会忽略隐藏路径段、`*.generated.spec.md`，以及 fixture、test、generated、build-output、coverage 和 `node_modules` 目录。这些文件不是知识记录，也不是仅规范变更。主题契约位于包旁，形式为 `packages/themes/<theme>/<theme>.spec.md`。
 
-## Authority
+## 权威性
 
-Every knowledge record declares `authority: draft | current | archived`.
+每条知识记录都声明 `authority: draft | current | archived`。
 
-- `draft` documents are not policy; unresolved evidence and owner decisions are
-  recorded as blockers inside the document.
-- Initial promotion to `current` requires explicit owner approval recorded in
-  the document metadata. Any current `.github/ENGOWNERS` member may approve every
-  record kind; current design and theme records and normative design assets also
-  accept current `.github/DESIGNOWNERS` members. Legacy v1 `owners` metadata is
-  descriptive and does not grant approval rights.
-- Pull requests that create, change, or archive a `current` record wait on the
-  review gate, `review-required`, until an owner approves their content with
-  `/approve-spec <full-sha>` or a review (`architecture:knowledge-contracts`
-  DEC-14). Draft-only records need no owner approval.
-- Only `current` documents guide implementation and review.
-- A specification describes durable ideal behavior independently of any one pull
-  request. Pull requests and issues may appear only as clearly non-authoritative
-  examples, historical evidence, or references. A specification never exists to
-  approve, reject, classify, designate, or authorize a particular pull request.
-- Before creating or materially expanding a record, search current records and
-  open pull requests by canonical owner/id, affected paths and exported symbols,
-  and semantic behavior terms. Extend or project the existing canonical owner by
-  default; create a new record only for a distinct fact boundary and explain why.
-- Current records rely only on other current records. `modules` and
-  `parent_component` are structural ownership links, so they may connect active
-  draft/current records without making draft behavior authoritative. Other draft
-  relationships are listed on the candidate record; promotion updates affected
-  backlinks under owner review.
-- `archived` documents declare `archive_reason` (`superseded`, `withdrawn`, or
-  `historical`) and link `superseded_by` when a replacement exists.
+- `draft` 文档不是策略；未解决的证据和所有者决策在文档内部记录为阻塞项。
+- 首次提升为 `current` 需要记录在文档元数据中的明确所有者批准。任何当前 `.github/ENGOWNERS` 成员都可以批准每种记录类型；当前设计和主题记录以及规范性设计资产也接受当前 `.github/DESIGNOWNERS` 成员。旧版 v1 `owners` 元数据是描述性的，不授予批准权限。
+- 创建、更改或归档 `current` 记录的拉取请求会等待审查门禁 `review-required`，直到所有者通过 `/approve-spec <full-sha>` 或一次审查批准其内容（`architecture:knowledge-contracts` DEC-14）。仅草稿记录不需要所有者批准。
+- 只有 `current` 文档指导实现和审查。
+- 规范描述持久的理想行为，独立于任何单个拉取请求。拉取请求和 issue 只能作为明确的非权威示例、历史证据或引用出现。规范从不用于批准、拒绝、分类、指定或授权某个特定拉取请求。
+- 在创建或实质性扩展记录之前，按规范所有者/ID、受影响的路径和导出符号以及语义行为术语搜索当前记录和打开的拉取请求。默认扩展现有规范所有者或对其进行投影；仅当存在不同的事实边界时才创建新记录，并解释原因。
+- 当前记录只依赖其他当前记录。`modules` 和 `parent_component` 是结构所有权链接，因此它们可以连接活跃的草稿/当前记录，而不会使草稿行为具有权威性。其他草稿关系列在候选记录上；提升时在所有者审查下更新受影响的反向链接。
+- `archived` 文档声明 `archive_reason`（`superseded`、`withdrawn` 或 `historical`），并在存在替代时链接 `superseded_by`。
 
-## Templates and schemas
+## 模板与 schema
 
-Templates create documents; schemas keep existing documents structurally
-aligned. They are intentionally separate:
+模板创建文档；schema 使现有文档保持结构一致。它们有意分开：
 
-- `template_version` records the authoring form used to create a document.
-- `schema_version` records the contract the document must satisfy.
-- Editorial template changes may increment only `template_version`.
-- Adding or changing required metadata or sections creates a new
-  `schema_version`; published schema files are immutable.
-- Every active record (`draft` or `current`) must use the latest schema that
-  defines its kind. Adding a new kind does not migrate unrelated records;
-  structurally changing an existing kind migrates only active records of that
-  kind. Archived records may retain an older schema that remains checked in.
+- `template_version` 记录创建文档所用的编写形式。
+- `schema_version` 记录文档必须满足的契约。
+- 编辑性模板变更只能递增 `template_version`。
+- 添加或更改必需元数据或小节会创建新的 `schema_version`；已发布的 schema 文件不可变。
+- 每个活跃记录（`draft` 或 `current`）必须使用定义其类型的最新 schema。添加新类型不会迁移无关记录；对现有类型进行结构性更改只会迁移该类型的活跃记录。归档记录可以保留仍在版本控制中的较旧 schema。
 
-Published schema versions may extend an earlier schema. The checker composes the
-chain and tracks the latest version that defines each record kind. A new kind is
-therefore additive; changing an existing kind migrates only that kind.
+已发布的 schema 版本可以扩展较早的 schema。检查器会组合链并跟踪定义每种记录类型的最新版本。因此新类型是增量的；更改现有类型只会迁移该类型。
 
-An optional `review-applicability:v1` JSON block can route selected claims from a
-record as cross-cutting review baselines. This is an independently versioned
-metadata overlay, like `anatomy-theming:v1`, so adding it does not change a
-record kind's required shape or migrate records that do not opt in. The block
-must declare `scope: "global"` and map each semantic trigger to one or more exact
-claim ids from the same record. Validation rejects malformed, empty, duplicate,
-or stale claim routes. Routing requires the reviewed head, verifies the supplied
-base authority commit is its `origin/main` merge base, includes only
-`authority: current` records, and returns only the matched claims; draft records
-and nonmatching routes are omitted.
+可选的 `review-applicability:v1` JSON 块可以将记录中的选定主张路由为横切审查基线。这是一个独立版本化的元数据叠加层，类似于 `anatomy-theming:v1`，因此添加它不会改变记录类型的必需形状，也不会迁移未选择加入的记录。该块必须声明 `scope: "global"`，并将每个语义触发器映射到同一记录中的一个或多个确切主张 ID。验证会拒绝格式错误、为空、重复或过时的主张路由。路由需要受审查的头，验证所提供的基权威提交是其 `origin/main` 合并基，只包含 `authority: current` 的记录，并仅返回匹配的主张；草稿记录和不匹配的路由会被省略。
 
-An optional `path-applicability:v1` JSON block lists the repository paths a
-record governs when no placement, path field, name, or inherited link reaches
-them: `{"paths": ["apps/docsite/**"]}`. Patterns are repository-relative globs:
-`**` is a whole segment spanning any depth, `*` matches within one segment, and
-`?` matches one character. Like `review-applicability:v1`, it is an
-independently versioned overlay, so opting in does not migrate a record kind.
-A pattern must start with a literal path segment. Validation rejects
-malformed, unsafe, repeated, whole-repository, and no-match patterns. A match only locates the record for a path; claim scope and
-precedence are unchanged. `pnpm check:knowledge` also fails when a current record
-is reached from no tracked path that is not itself a record
-(`architecture:knowledge-contracts` INV25 and INV26).
+可选的 `path-applicability:v1` JSON 块列出记录在没有任何放置位置、路径字段、名称或继承链接可达时所治理的仓库路径：`{"paths": ["apps/docsite/**"]}`。模式是仓库相对 glob：`**` 是跨越任意深度的整个路径段，`*` 在一个路径段内匹配，`?` 匹配一个字符。与 `review-applicability:v1` 一样，它是独立版本化的叠加层，因此选择加入不会迁移记录类型。模式必须以字面路径段开头。验证会拒绝格式错误、不安全、重复、整仓库和无匹配的模式。匹配只定位路径对应的记录；主张范围和优先级保持不变。当当前记录无法从任何本身不是记录的受跟踪路径到达时，`pnpm check:knowledge` 也会失败（`architecture:knowledge-contracts` INV25 和 INV26）。
 
-New record kinds should prefer one typed relationship list over parallel fields.
-If `system-spec` receives a future schema revision, replace its legacy
-`affects_*` fields with one typed `affects` list containing ids such as
-`architecture:*`, `family:*`, `theme:*`, and `contributing:*`; this PR does not
-change the v1 system-spec shape.
+新的记录类型应优先使用一个类型化关系列表，而不是并行字段。如果 `system-spec` 未来获得 schema 修订，将其遗留的 `affects_*` 字段替换为一个类型化的 `affects` 列表，包含 `architecture:*`、`family:*`、`theme:*` 和 `contributing:*` 等 ID；本 PR 不改变 v1 system-spec 形状。
 
-Run `pnpm specs:for <path>` to list the current records linked to any repository
-path: the record's own placement, `applies_to` and `verified_by` entries, family
-and design membership, `affects_consumer_docs` ids, system-spec numbers the file
-cites in its text (not inside a record path), and the references those records
-inherit. Only visible records are followed, so a draft never adds a link unless
-`--include-draft` is passed. A reference scoped to one claim or
-decision (`spec:AST-NNN/FR3`) lists that claim, not the whole record. The specs that
-decided a linked record are listed separately, as are the global claims the
-matched component and module triggers route (the same selection as
-`review-global-baselines.mjs`). With `--diff origin/main` (or
-`--diff <base>..<head>`) it reads the change, lists its files when none are
-named, and puts first the claims whose owning record's `concerns` the added
-lines match. The default view lists the claims and the linked record ids; `--records`
-shows how each record links. A path with no linked record is reported as
-such. Records are read from the working tree, so on a pull-request branch the
-result includes that branch's proposed records and is not review authority.
-`pnpm specs:for --unrouted` lists tracked files with no governing record;
-`--unreached` lists current records that no other path reaches.
+运行 `pnpm specs:for <path>` 可列出与任意仓库路径关联的当前记录：记录自身的放置位置、`applies_to` 和 `verified_by` 条目、家族和设计成员资格、`affects_consumer_docs` ID、文件正文中引用的 system-spec 编号（不在记录路径内），以及这些记录继承的引用。只跟随可见记录，因此除非传入 `--include-draft`，草稿永远不会添加链接。范围限定到单个主张或决策的引用（`spec:AST-NNN/FR3`）列出该主张，而不是整个记录。决定某条关联记录的规范会单独列出，匹配的组件和模块触发器路由的全局主张也是如此（与 `review-global-baselines.mjs` 相同的选择）。使用 `--diff origin/main`（或 `--diff <base>..<head>`）时，它会读取变更，在未指定文件时列出其文件，并将新增行匹配其所属记录的 `concerns` 的主张放在最前面。默认视图列出主张和关联记录 ID；`--records` 显示每条记录如何链接。没有关联记录的路径会按此报告。记录从工作树读取，因此在拉取请求分支上，结果包含该分支提议的记录，且不是审查权威。`pnpm specs:for --unrouted` 列出没有治理记录的受跟踪文件；`--unreached` 列出没有其他路径到达的当前记录。
 
-Run `pnpm check:knowledge` to validate templates and records. Pure spec-record
-pull requests do not add Changesets because they do not publish package changes.
+运行 `pnpm check:knowledge` 以验证模板和记录。纯规范记录拉取请求不添加 Changesets，因为它们不发布包变更。
 
-## Visibility
+## 可见性
 
-This repository and its wiki are public. Internal operations, credentials,
-services, routing, schedules, and private recovery procedures stay in an
-access-controlled private home and must not be named or linked here.
+本仓库及其 wiki 是公开的。内部运营、凭据、服务、路由、计划和私有恢复程序留在访问受控的私有主页中，不得在此命名或链接。

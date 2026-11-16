@@ -29,120 +29,108 @@ system_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                     |
-| ----------------------- | -------------------------------------------------------------------------------------------- |
-| Public contract         | `children`, root `BaseProps`, and a `ref`.                                                   |
-| Behavior                | Renders the table's body section as a native `tbody` carrying the `table-body` target.       |
-| End-user impact         | Assistive technology reads the body section as part of the table's structure.                |
-| Builder impact          | None; the record describes shipped behavior.                                                 |
-| Compatibility/readiness | Released behavior recorded as current; no API, default, or output changes.                   |
-| Review checks           | Reject a non-`tbody` element, a lost target, or caller props or `ref` that miss the element. |
-| Governing rules         | `architecture:public-component-api` INV5–INV8; `architecture:component-theming-surface`.     |
+| 领域          | 契约                                                                                      |
+| ------------- | ----------------------------------------------------------------------------------------- |
+| 公共契约      | `children`、根 `BaseProps`，以及一个 `ref`。                                              |
+| 行为          | 将表格的主体区段渲染为原生 `tbody`，并携带 `table-body` 目标。                            |
+| 最终用户影响  | 辅助技术将主体区段作为表格结构的一部分读取。                                              |
+| 构建者影响    | 无；本条记录描述的是已发布行为。                                                          |
+| 兼容性/就绪度 | 已发布行为被记录为 current；无 API、默认值或输出变更。                                    |
+| 审查检查      | 拒绝非 `tbody` 元素、丢失的目标，或未落到该元素上的调用方 props 或 `ref`。                |
+| 治理规则      | `architecture:public-component-api` INV5–INV8；`architecture:component-theming-surface`。 |
 
-This table is a review projection; the body below is authoritative.
+此表是审查侧的投影；下方正文具有权威性。
 
 ## Intent
 
-TableBody is the body section a caller composes inside a children-mode Table. It
-owns the native `tbody` element; the caller owns the rows inside it.
+TableBody 是调用方在 children 模式的 Table 内部组合的主体区段。它拥有原生 `tbody` 元素；其内部的行由调用方拥有。
 
-Consumer syntax and examples belong in `TableBody.doc.mjs`.
+使用方的语法与示例属于 `TableBody.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public prop, default, DOM,
-  target, or styling output changes.
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 已发布默认值保持不变：`yes`
+- 兼容类别：记录已发布行为；无公共 prop、默认值、DOM、目标或样式输出的变更。
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方的迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The `tbody` element, which carries the `table-body` target that `component:Table`
-  owns and maps.
+- `tbody` 元素，它携带由 `component:Table` 拥有并映射的 `table-body` 目标。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Rows — owned by `component:TableRow`; cells — owned by `component:TableCell`
-  and `component:TableHeaderCell`; and the caller's content.
-- Table appearance, data mode, and plugins — owned by `component:Table`.
+- 行 —— 由 `component:TableRow` 拥有；单元格 —— 由 `component:TableCell` 和 `component:TableHeaderCell` 拥有；以及调用方的内容。
+- 表格外观、数据模式和插件 —— 由 `component:Table` 拥有。
 
 ## Public concepts
 
-| Concept | Closed values or states | Meaning                       | Availability by variant/orientation/state | Default | Owner  | Stability | Invalid-value behavior |
-| ------- | ----------------------- | ----------------------------- | ----------------------------------------- | ------- | ------ | --------- | ---------------------- |
-| Content | ReactNode (rows)        | The rows of the body section. | Children-mode Table                       | none    | caller | Stable    | —                      |
+| 概念 | 封闭取值或状态  | 含义           | 按变体/方向/状态的实际可用性 | 默认值 | 所有者 | 稳定性 | 无效值行为 |
+| ---- | --------------- | -------------- | ---------------------------- | ------ | ------ | ------ | ---------- |
+| 内容 | ReactNode（行） | 主体区段的行。 | children 模式的 Table        | 无     | 调用方 | 稳定   | —          |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                          | Basis                                                                   |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| FR1 | TableBody renders one `tbody` carrying the `table-body` target and holding its children, and adds no styles of its own.                                            | Current source and tests                                                |
-| FR2 | `ref` reaches the `tbody`; supported DOM, data, ARIA, and event props reach it after the component's attributes; `xstyle`, `className`, and `style` compose on it. | Current source and tests; `architecture:public-component-api` INV5–INV8 |
+| ID  | 不变式                                                                                                                                  | 依据                                                          |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| FR1 | TableBody 渲染一个 `tbody`，它携带 `table-body` 目标并容纳其 children，且自身不添加任何样式。                                           | 当前源码与测试                                                |
+| FR2 | `ref` 会到达 `tbody`；受支持的 DOM、data、ARIA 和事件 props 在组件自身属性之后到达该元素；`xstyle`、`className` 和 `style` 在其上组合。 | 当前源码与测试；`architecture:public-component-api` INV5–INV8 |
 
 ### Allowed variation
 
-- **AV1 — Rows.** Any rows may fill the body section.
+- **AV1 — 行。** 任何行都可以填充主体区段。
 
 ### Representative states
 
-| State      | Required invariant                 | Allowed variation |
-| ---------- | ---------------------------------- | ----------------- |
-| In a Table | A `tbody` in the table's children. | Rows.             |
+| 状态          | 必需的不变式                     | 允许的变化 |
+| ------------- | -------------------------------- | ---------- |
+| 位于 Table 中 | 表格 children 中的一个 `tbody`。 | 行。       |
 
 ### Transformation and precedence order
 
-- **ORD1 — Root composition.** Target and caller styling compose, then caller
-  props apply.
+- **ORD1 — 根组合。** 目标与调用方样式先组合，随后应用调用方 props。
 
 ### Performance and resources
 
-- **PR1 — No resources.** TableBody holds no state and adds no listener or
-  observer.
+- **PR1 — 无资源。** TableBody 不持有状态，也不添加监听器或观察器。
 
 ## Accessibility contract
 
-- **AR1 — Native section semantics.** The `tbody` keeps its native table
-  section role; TableBody adds no role of its own.
+- **AR1 — 原生区段语义。** `tbody` 保留其原生表格区段角色；TableBody 不添加自身的角色。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement        | Representation authority | Hierarchy role | Component contract |
-| ---------------- | ------------------------- | ------------------------ | -------------- | ------------------ |
-| Body section     | The table's body section. | Current source and docs  | Supporting     | FR1                |
+| 结构或状态 | 设计要求         | 表征权威       | 层级角色 | 组件契约 |
+| ---------- | ---------------- | -------------- | -------- | -------- |
+| 主体区段   | 表格的主体区段。 | 当前源码与文档 | 支撑性   | FR1      |
 
-Theming: the `tbody` carries the `table-body` target, which `Table.doc.mjs`
-maps as the Body section part of `component:Table`. `TableBody.doc.mjs` declares no
-anatomy of its own, so no anatomy-theming block is declared here.
+主题化：`tbody` 携带 `table-body` 目标，`Table.doc.mjs` 将其映射为 `component:Table` 的 Body section 部分。`TableBody.doc.mjs` 未声明自身的结构，因此此处不声明结构主题化区块。
 
 ## Family and system relationships
 
-- `component:Table` owns appearance, data mode, plugins, and the target
-  mapping.
-- `architecture:public-component-api` owns caller-input routing; FR2 applies
-  it.
+- `component:Table` 拥有外观、数据模式、插件以及目标映射。
+- `architecture:public-component-api` 拥有调用方输入路由；FR2 应用该规则。
 
 ## Verification map
 
-| Contract  | Verification                                                           | Representative states | Mutation or failure expectation                                                                                                                                                                                | Audit section              |
-| --------- | ---------------------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| FR1, AR1  | `Table.test.tsx` children-mode section tests; `themingTargets.test.ts` | Children mode         | A missing `tbody` in the table's children fails. Gap: no test asserts the `table-body` class or that TableBody adds no role or styles. `themingTargets.test.ts` catches only a renamed or undocumented target. | `audit:TableBody/anatomy`  |
-| FR2, ORD1 | `Table.test.tsx` section rest-forwarding test                          | `data-testid`, `id`   | A dropped `data-testid` or `id` fails. Gap: no test covers `ref`, event props, `className`, `style`, or `xstyle`.                                                                                              | `audit:TableBody/api`      |
-| PR1       | Source review                                                          | Every state           | Gap: no automated check fails if TableBody adds state or a listener.                                                                                                                                           | `audit:TableBody/behavior` |
+| 契约      | 验证                                                                | 代表性状态          | 变异或失败预期                                                                                                                                                          | 审计区段                   |
+| --------- | ------------------------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| FR1, AR1  | `Table.test.tsx` 的 children 模式区段测试；`themingTargets.test.ts` | children 模式       | 表格 children 中缺少 `tbody` 会失败。缺口：没有测试断言 `table-body` 类名，或断言 TableBody 不添加角色或样式。`themingTargets.test.ts` 只能捕获被重命名或未记录的目标。 | `audit:TableBody/anatomy`  |
+| FR2, ORD1 | `Table.test.tsx` 的区段剩余属性转发测试                             | `data-testid`、`id` | 丢失 `data-testid` 或 `id` 会失败。缺口：没有测试覆盖 `ref`、事件 props、`className`、`style` 或 `xstyle`。                                                             | `audit:TableBody/api`      |
+| PR1       | 源码审查                                                            | 每个状态            | 缺口：如果 TableBody 添加了状态或监听器，没有任何自动化检查会失败。                                                                                                     | `audit:TableBody/behavior` |
 
 ## Decision log
 
-None recorded. The record describes shipped behavior.
+未记录任何决策。本条记录描述的是已发布行为。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or Table rules. It links to their owners.
+本文件不复制使用方的 prop 表格/示例、当前审计结果、实现步骤或 Table 规则，而是链接到这些内容的所属记录。

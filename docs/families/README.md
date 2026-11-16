@@ -1,9 +1,5 @@
-# Component family contracts
+# 组件族契约
 
-Family contracts own behavior shared by sibling components, such as input
-sizing, end lanes, overlay dismissal, or status presentation. A component spec
-links to its family instead of copying the shared rule.
+族契约负责定义同级组件之间共享的行为，例如输入控件尺寸、尾部区域、浮层关闭或状态呈现。组件规格链接到其所属的族，而不是复制共享规则。
 
-New records start as `draft`. They become `current` only after explicit owner
-approval. Archived records remain for context and state why they no longer
-govern. Use `docs/templates/knowledge/family-contract.md`.
+新记录以 `draft` 开始。只有在负责人明确批准后，它们才会变为 `current`。已归档的记录作为背景保留，并说明其为何不再具有约束力。使用 `docs/templates/knowledge/family-contract.md`。

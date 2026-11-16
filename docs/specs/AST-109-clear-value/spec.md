@@ -30,39 +30,20 @@ affects_consumer_docs: [Selector]
 
 ## Intent
 
-Clearing a `Selector` returns it to its starting point, and the caller says
-what that point is. A filter whose starting point is "Everyone" clears to
-"Everyone", not to a blank field. The row that stands for the starting point
-stays in the list while a search narrows it, so a person can always get back
-from the list itself.
+清除 `Selector` 会把它带回起始点，而由调用方说明该起始点是什么。起始点为“Everyone”的筛选器清除后回到“Everyone”，而不是回到空白字段。代表该起始点的那一行在搜索收窄列表时始终留在列表中，因此用户总能从列表本身回到该起始点。
 
 ## Members
 
-This rule applies to `Selector` only. Its value type is `string`, its clear
-option (FR4) is the option whose `value` is `clearValue`, and equality is
-string equality. Every other member of `family:input-fields`, including
-`Typeahead`, `Tokenizer`, `MultiSelector`, and `ComplexSelector`, keeps a plain
-boolean `hasClear` with no `clearValue`.
+本规则仅适用于 `Selector`。它的值类型是 `string`，其清除选项（FR4）是 `value` 为 `clearValue` 的那个选项，相等性判断为字符串相等。`family:input-fields` 的其他每个成员，包括 `Typeahead`、`Tokenizer`、`MultiSelector` 和 `ComplexSelector`，都保留不带 `clearValue` 的普通布尔 `hasClear`。
 
 ## Non-goals
 
-- A reset concept separate from clear. There is one clear job, one prop for
-  it, and `hasClear`'s `clearValue` names where it lands.
-- A default value or uncontrolled mode. `Selector` is controlled and has no
-  `defaultValue`.
-- Search matching and query normalization. `spec:AST-056` FR4 owns the matching
-  floor.
-- `hasClear`'s object form on any input other than `Selector`: `Typeahead`,
-  `Tokenizer`, `MultiSelector`, `ComplexSelector`, `PowerSearch`, and text,
-  number, date, time, and file inputs.
-- Equivalent internal implementations remain valid when they satisfy this
-  contract.
-- Internal modules, files, function names, algorithms, data structures, storage
-  layouts, manifests, journals, locks, transaction protocols, and CI job/workflow
-  topology belong in architecture or implementation unless callers or
-  interoperating systems intentionally depend on that exact mechanism as a public
-  protocol. In that case, state who depends on it and why an equivalent
-  implementation would not satisfy the contract.
+- 与清除分离的重置概念。清除只有一项职责、一个 prop，由 `hasClear` 的 `clearValue` 指明落到哪里。
+- 默认值或非受控模式。`Selector` 是受控的，没有 `defaultValue`。
+- 搜索匹配与查询归一化。匹配下限由 `spec:AST-056` FR4 拥有。
+- 在除 `Selector` 之外的任何输入上使用 `hasClear` 的对象形式：`Typeahead`、`Tokenizer`、`MultiSelector`、`ComplexSelector`、`PowerSearch`，以及文本、数字、日期、时间与文件输入。
+- 等效的内部实现只要满足本契约就仍然有效。
+- 内部模块、文件、函数名、算法、数据结构、存储布局、清单、日志、锁、事务协议以及 CI 作业/工作流拓扑属于架构或实现，除非调用方或互操作的系统有意把该确切机制作为公共协议来依赖。在这种情况下，要说明谁依赖它，以及为什么等效实现无法满足契约。
 
 ## Public contract
 
@@ -83,138 +64,87 @@ boolean `hasClear` with no `clearValue`.
 
 ## Requirements
 
-- **FR1 — `hasClear={{clearValue}}` is where clear lands.** `Selector`'s
-  `hasClear` accepts `boolean | {clearValue: string}`. `true` behaves as it
-  does today: clear reports `null`. The object form turns clear on and makes
-  every clear path report `clearValue` through `onChange` and `changeAction`:
-  the trigger's clear button, Delete and Backspace on the trigger, and choosing
-  the clear option (FR4). `false` and absent keep their current meaning.
-- **FR2 — Types follow the object form, and existing callers are unchanged.**
-  With `hasClear={{clearValue}}`, `value`, `onChange`, and `changeAction` take
-  `string` without `null`. With `true`, `false`, or no `hasClear`, the types
-  stay exactly as shipped, including `null` under `hasClear`.
-- **FR3 — At the clear value there is nothing to clear.** While the value
-  equals `clearValue`, the trigger's clear button is hidden, as it is hidden
-  while the value is empty today. The trigger shows the value as it shows any
-  value: that option's label and icon, and `placeholder` is not shown.
-- **FR4 — The clear option stays in the list.** The option whose `value`
-  equals `clearValue` is the clear option. Search never hides it, including a
-  query that matches nothing, where the empty-search message renders after it.
-  It is not a result: result-count announcements and the empty-search state
-  count matching items only. While a query is active, the default highlight
-  lands on the first matching item, never on the clear option, so Enter never
-  chooses it by accident; arrow keys reach it. It keeps the caller's position
-  among top-level entries. A `clearValue` that matches no option pins nothing
-  and warns in development.
-- **FR5 — Choosing the clear option is choosing a value.** It uses the option
-  row's anatomy, size, press model, touch target, theme target, and
-  presentations, and closed-trigger type-to-find matches its label. Choosing it
-  closes the surface and returns focus to the trigger (`component:Selector`
-  FR1). The clear button returns focus as it does today.
-- **FR6 — Disabled, read-only, required, and forms keep their meaning.** Clear
-  stays unavailable while `Selector` is disabled or read-only
-  (`component:Selector` FR6). An empty `clearValue` fails `isRequired`
-  validation as an empty value does today; a non-empty one does not. With
-  `htmlName`, the submitted value after clear is `clearValue`.
+- **FR1 — `hasClear={{clearValue}}` 决定清除落到哪里。** `Selector` 的 `hasClear` 接受 `boolean | {clearValue: string}`。`true` 的行为与今日一致：清除上报 `null`。对象形式会开启清除，并让每条清除路径都通过 `onChange` 和 `changeAction` 上报 `clearValue`：触发器的清除按钮、触发器上的 Delete 与 Backspace，以及选择清除选项（FR4）。`false` 与缺省保持其当前含义。
+- **FR2 — 类型跟随对象形式，现有调用方保持不变。** 使用 `hasClear={{clearValue}}` 时，`value`、`onChange` 和 `changeAction` 接受不含 `null` 的 `string`。使用 `true`、`false` 或不带 `hasClear` 时，类型与已发布版本完全一致，包括 `hasClear` 下的 `null`。
+- **FR3 — 处于清除值时无可清除。** 当值等于 `clearValue` 时，触发器的清除按钮隐藏，与今日值为空时隐藏一致。触发器像显示任何值一样显示该值：该选项的标签与图标，且不显示 `placeholder`。
+- **FR4 — 清除选项留在列表中。** `value` 等于 `clearValue` 的选项就是清除选项。搜索从不隐藏它，包括匹配不到任何内容的查询——此时空搜索结果提示会渲染在它之后。它不算作结果：结果数量播报与空搜索状态只统计匹配项。查询处于活动状态时，默认高亮落在第一个匹配项上，绝不落在清除选项上，因此 Enter 绝不会误选它；方向键可以到达它。它保留调用方在顶层条目中的位置。匹配不到任何选项的 `clearValue` 不固定任何项，并在开发环境给出警告。
+- **FR5 — 选择清除选项就是选择一个值。** 它使用选项行的解剖结构、尺寸、按压模型、触摸目标、主题目标和呈现方式，关闭状态下触发器的输入查找会匹配其标签。选择它会关闭浮层并把焦点返回触发器（`component:Selector` FR1）。清除按钮像今日一样返回焦点。
+- **FR6 — 禁用、只读、必填与表单保持其含义。** `Selector` 被禁用或只读时，清除保持不可用（`component:Selector` FR6）。空 `clearValue` 会像今日空值一样未通过 `isRequired` 校验；非空 `clearValue` 则不。带 `htmlName` 时，清除后提交的值是 `clearValue`。
 
 ### Accessibility contract
 
-- **AR1 — Name and state.** The clear option's accessible name is its label,
-  and its selected state is exposed while the value equals `clearValue`. The
-  clear button's accessible name and tooltip are unchanged (`family:input-fields`
-  FR11).
-- **AR2 — Focus.** As FR5: choosing the clear option returns focus to the
-  trigger, and the clear button keeps its existing focus return.
-- **AR3 — Announcement.** Clear announces nothing extra: the trigger reads the
-  new value, as for any choice.
-- **AR4 — Motion.** Nothing here adds motion. Each surface's own motion and
-  reduced-motion behavior apply.
+- **AR1 — 名称与状态。** 清除选项的可访问名称是其标签，当值等于 `clearValue` 时会暴露其选中状态。清除按钮的可访问名称与 tooltip 保持不变（`family:input-fields` FR11）。
+- **AR2 — 焦点。** 如同 FR5：选择清除选项会把焦点返回触发器，清除按钮保持其现有的焦点返回行为。
+- **AR3 — 播报。** 清除不额外播报任何内容：触发器像对待任何选择一样朗读新值。
+- **AR4 — 动效。** 此处不新增任何动效。各浮层自身的动效与减少动效行为继续适用。
 
 ### Platform support
 
-- Supported feature/engine floor: every supported browser and renderer.
-  Nothing here is behind a capability check.
-- Unsupported behavior: none.
-- Browser evidence: type tests for FR2; DOM and accessibility-tree assertions
-  for names, selected state, focus, and announcements; real-Chromium
-  interaction for the press model in the popover and the bottom sheet.
+- 支持的功能/引擎下限：所有受支持的浏览器与渲染器。此处没有任何内容位于能力检查之后。
+- 不支持的行为：无。
+- 浏览器证据：针对 FR2 的类型测试；针对名称、选中状态、焦点与播报的 DOM 和无障碍树断言；针对弹出层与底部面板中按压模型的真实 Chromium 交互。
 
 ## Current-state impact
 
-- `family:input-fields` names the `{clearValue}` form of `hasClear` in its
-  adoption table for `Selector` only, and cites this record. Every other
-  member's `hasClear` stays a boolean.
-- `component:Selector` names the clear option and FR3's clear-button rule.
-- `Selector`'s `.doc.mjs` documents `hasClear`'s object form and its type
-  narrowing.
-- `Selector` keeps one internal clear path; its current internal name does not
-  constrain the public prop.
+- `family:input-fields` 仅在其采用表中为 `Selector` 列出 `hasClear` 的 `{clearValue}` 形式，并引用本记录。其他每个成员的 `hasClear` 都保持布尔值。
+- `component:Selector` 列出清除选项与 FR3 的清除按钮规则。
+- `Selector` 的 `.doc.mjs` 记录 `hasClear` 的对象形式及其类型收窄。
+- `Selector` 保留一条内部清除路径；其当前内部名称不约束公共 prop。
 
 ## Verification
 
-| Contract | Verification                                                  | Representative states                                                                 | Mutation or failure expectation                                                                                     |
-| -------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| FR1      | `Selector` callback and Action suites                         | Clear button, Delete/Backspace, clear option; `hasClear` `true` and `{clearValue}`    | Any clear path reports something other than `clearValue` under the object form, or anything but `null` under `true` |
-| FR2      | `Selector` type tests                                         | No `hasClear`; `true`; `{clearValue}`                                                 | `null` is accepted with the object form, or any shipped signature changes without it                                |
-| FR3      | Trigger rendering suites                                      | Value equals `clearValue`; differs; empty                                             | The clear button shows at `clearValue`, or the trigger shows `placeholder` there                                    |
-| FR4      | Search suites with live-region assertions                     | No query; matches; no match; Enter in the search input; a `clearValue` with no option | The row is filtered, counted, highlighted by default under a query, or chosen by Enter                              |
-| FR5      | Interaction suites in popover and bottom sheet; real-Chromium | Pointer, touch, keyboard; type-to-find                                                | The row diverges from option-row behavior, or focus lands elsewhere                                                 |
-| FR6      | Disabled, read-only, required, and form suites                | Disabled; read-only; required with empty and non-empty `clearValue`; `htmlName`       | Clear is reachable, required validation is wrong, or the submitted value differs                                    |
-| AR1–AR4  | Accessibility-tree, focus, and announcement assertions        | `Selector` at and away from `clearValue`                                              | The name or state is missing, focus moves elsewhere, or an extra announcement fires                                 |
+| Contract | Verification                                    | Representative states                                                        | Mutation or failure expectation                                                          |
+| -------- | ----------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| FR1      | `Selector` 回调与 Action 测试套件               | 清除按钮、Delete/Backspace、清除选项；`hasClear` 为 `true` 与 `{clearValue}` | 对象形式下任何清除路径上报 `clearValue` 之外的值，或 `true` 下上报 `null` 之外的任何内容 |
+| FR2      | `Selector` 类型测试                             | 无 `hasClear`；`true`；`{clearValue}`                                        | 对象形式下接受 `null`，或缺少它时任何已发布签名发生变化                                  |
+| FR3      | 触发器渲染测试套件                              | 值等于 `clearValue`；不相等；为空                                            | 在 `clearValue` 处仍显示清除按钮，或触发器在该处显示 `placeholder`                       |
+| FR4      | 带 live-region 断言的搜索测试套件               | 无查询；有匹配；无匹配；在搜索输入中按 Enter；`clearValue` 没有对应选项      | 该行被过滤、被计数、在查询下被默认高亮，或被 Enter 选中                                  |
+| FR5      | 弹出层与底部面板中的交互测试套件；真实 Chromium | 指针、触摸、键盘；输入查找                                                   | 该行偏离选项行行为，或焦点落到别处                                                       |
+| FR6      | 禁用、只读、必填与表单测试套件                  | 禁用；只读；必填且 `clearValue` 为空与非空；`htmlName`                       | 清除可达、必填校验错误，或提交的值不同                                                   |
+| AR1–AR4  | 无障碍树、焦点与播报断言                        | `Selector` 处于与离开 `clearValue` 处                                        | 名称或状态缺失、焦点移到别处，或触发额外播报                                             |
 
-Known verification gap: none of these suites exist on `main`.
+已知验证缺口：这些测试套件在 `main` 上均不存在。
 
 ## Decision log
 
 ### DEC-1 — Going back is clear, to a value the caller names on `hasClear`
 
 **Reference:** `spec:AST-109/DEC-1`
+
 **Decider:** `cixzhang`, `2026-10-28`
 
-Clear already means "go back to the starting point"; the object form of
-`hasClear` lets the caller say where that is, so one job keeps one prop
-(`architecture:public-component-api` INV21). The object is plain configuration
-on the existing switch, not an anatomy setting (INV18), it adds no visual
-boolean (INV20), and it costs nothing at runtime (INV19).
+清除已经意味着“回到起始点”；`hasClear` 的对象形式让调用方说明起始点在哪里，因此一项职责只保留一个 prop（`architecture:public-component-api` INV21）。该对象是现有开关上的普通配置，不是解剖设置（INV18），它不新增可视布尔值（INV20），并且在运行时没有成本（INV19）。
 
-Rejected: a separate reset value or row, because it shares clear's job.
-Rejected: a separate `clearValue` prop, because two props would switch one job.
+拒绝：单独的重置值或行，因为它与清除共享同一职责。拒绝：单独的 `clearValue` prop，因为两个 prop 会切换同一项职责。
 
 ### DEC-2 — The clear option is the option that holds the clear value
 
 **Reference:** `spec:AST-109/DEC-2`
+
 **Decider:** pending
 
-The option already carries the clear value's label and icon, so it is the row
-that stays in the list. No new entry kind or label prop exists.
+该选项已经带有清除值的标签与图标，因此它就是留在列表中的那一行。不存在新的条目类型或 label prop。
 
-Rejected: a dedicated clear entry in `options`, because it names the clear
-state a second time beside the option that holds the value.
+拒绝：在 `options` 中设置专用的清除条目，因为它会在持有该值的选项旁边第二次命名清除状态。
 
 ### DEC-3 — Types narrow only with the object form
 
 **Reference:** `spec:AST-109/DEC-3`
+
 **Decider:** `cixzhang`, `2026-10-28`
 
-With `hasClear={{clearValue}}` `Selector` never reports `null`, so its types
-say so. With any other `hasClear` value nothing changes, so the object form is
-additive.
+使用 `hasClear={{clearValue}}` 时，`Selector` 绝不上报 `null`，因此其类型也如此声明。使用任何其他 `hasClear` 值时什么都不变，因此对象形式是增量式的。
 
 ### DEC-4 — The clear value is `Selector`'s alone
 
 **Reference:** `spec:AST-109/DEC-4`
+
 **Decider:** `cixzhang`, `2026-10-29`
 
-`hasClear`'s object form and the clear option belong to `Selector`, whose
-filters start at a real value such as "Everyone". `Typeahead`, `Tokenizer`, and
-every other input keep a plain boolean `hasClear`. `PowerSearch` is not a
-selector.
+`hasClear` 的对象形式与清除选项属于 `Selector`，它的筛选从诸如“Everyone”这样的真实值开始。`Typeahead`、`Tokenizer` 以及所有其他输入都保留普通的布尔 `hasClear`。`PowerSearch` 不是 selector。
 
-Rejected: the object form across the selector family, because only `Selector`
-needs clear to land on a real value.
+拒绝：在整个 selector 家族中使用对象形式，因为只有 `Selector` 需要清除落到真实值上。
 
 ## Open questions
 
-- **OQ1 — Does `hasClear`'s object form extend to `MultiSelector` or
-  `ComplexSelector`?** (`human-api`) Until ruled, both keep a plain boolean
-  `hasClear`.
+- **OQ1 — `hasClear` 的对象形式是否扩展到 `MultiSelector` 或 `ComplexSelector`？**（`human-api`）在裁定之前，两者都保留普通的布尔 `hasClear`。

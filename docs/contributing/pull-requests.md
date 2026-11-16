@@ -1,115 +1,80 @@
-# Pull requests: one primary intent
+# 拉取请求：单一主要意图
 
-A pull request should make one reviewable change for one reason. Choose the template that matches its primary intent; supporting tests and docs belong with that intent, but unrelated API, visual, layout, behavior, or policy changes do not.
+一个拉取请求应当为一个原因做出一个可审查的变更。选择与其主要意图匹配的模板；配套的测试和文档属于该意图，但无关的 API、视觉、布局、行为或策略变更不属于。
 
-GitHub uses the default template automatically. To choose another, add `?template=<file>.md` to the new-pull-request URL, or copy the matching file from `.github/PULL_REQUEST_TEMPLATE/` into the description.
+GitHub 会自动使用默认模板。要选择其他模板，请在新拉取请求 URL 后添加 `?template=<file>.md`，或将 `.github/PULL_REQUEST_TEMPLATE/` 中匹配的文件复制到描述中。
 
-Any pull request that creates or changes a knowledge record — a `docs/specs/<id>/spec.md`, a family, design, theme, or architecture record, or a component or module record under `docs/specs/components/` — reports the results of the rubric in [Writing specification records](spec-writing.md) in its description, whichever template it uses. `specification.md` carries the `## Writing rubric results` section; copy it into another template when that pull request also touches a record.
+任何创建或更改知识记录的拉取请求——`docs/specs/<id>/spec.md`、family、design、theme 或 architecture 记录，或 `docs/specs/components/` 下的组件或模块记录——无论使用哪个模板，都要在描述中报告[编写规范记录](spec-writing.md)中评分准则的结果。`specification.md` 带有 `## Writing rubric results` 部分；当该拉取请求同时涉及记录时，请将它复制到另一个模板中。
 
-| Primary intent                                       | Template           | Minimum evidence                                                                                                                 |
-| ---------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| Restore broken behavior                              | `bug-fix.md`       | reproduction, expected authority, before/after result, unchanged representative path                                             |
-| Correct or intentionally change appearance           | `visual-update.md` | current visual authority or owner decision, real-browser before/after pixels, relevant state matrix                              |
-| Add a capability                                     | `new-feature.md`   | user need, current specification, complete public delta, behavior and compatibility evidence                                     |
-| Correct contributor or consumer documentation        | `documentation.md` | reader impact, source of truth, rendered or generated result                                                                     |
-| Record a durable decision                            | `specification.md` | exact unresolved claim, existing authority searched, decision, rejected alternatives, explicit non-goals, writing rubric results |
-| Change tooling, tests, CI, or repository maintenance | `maintenance.md`   | operational problem, failure proof, success proof, unchanged product behavior                                                    |
-| Anything else                                        | `other.md`         | primary intent, user or maintainer impact, authority, evidence                                                                   |
+| 主要意图                      | 模板               | 最低证据                                                                                   |
+| ----------------------------- | ------------------ | ------------------------------------------------------------------------------------------ |
+| 恢复损坏的行为                | `bug-fix.md`       | 复现、预期的权威依据、变更前后结果、未变化的代表性路径                                     |
+| 纠正或有意更改外观            | `visual-update.md` | 当前视觉权威依据或所有者决定、真实浏览器变更前后像素、相关状态矩阵                         |
+| 添加能力                      | `new-feature.md`   | 用户需求、当前规范、完整的公共增量、行为与兼容性证据                                       |
+| 纠正贡献者或使用者文档        | `documentation.md` | 读者影响、事实来源、渲染或生成的结果                                                       |
+| 记录一项持久决定              | `specification.md` | 确切未解决的声明、已搜索的现有权威、决定、被拒绝的替代方案、明确的非目标、写作评分准则结果 |
+| 更改工具、测试、CI 或仓库维护 | `maintenance.md`   | 运维问题、失败证明、成功证明、未改变的产品行为                                             |
+| 其他任何内容                  | `other.md`         | 主要意图、用户或维护者影响、权威依据、证据                                                 |
 
-## Explain only what authority does not already say
+## 只解释权威尚未说明的内容
 
-The pull request and current records are the first source for context. Do not copy
-them into another summary. Fill only what is missing:
+拉取请求和当前记录是上下文的第一来源。不要将它们复制到另一份摘要中。只填写缺失的内容：
 
-- Trace the problem through three why questions: why it occurs, why it harms the
-  affected task, and why that harm matters.
-- Map the proposed solution and every primary or supporting delta back to that
-  problem. Remove or split a tagalong that does not clearly contribute.
-- State who is affected, in what supported state, and what behavior the change
-  enables or prevents.
-- When public API changes, show representative before and after callsites,
-  defaults and compatibility, and every additional decision the caller must make.
+- 通过三个 why 问题追踪问题：为什么发生、为什么损害受影响的任务，以及为什么这种损害重要。
+- 将提议的解决方案以及每一个主要或支持性增量映射回该问题。移除或拆分没有明确贡献的搭车变更。
+- 说明谁受影响、处于什么受支持状态，以及该变更启用或阻止什么行为。
+- 当公共 API 变化时，展示代表性的变更前后调用点、默认值与兼容性，以及调用方必须做出的每一项额外决定。
 
-These explanations help reviewers apply current authority; they do not create it.
-Product behavior remains owned by the applicable current component, module,
-family, design, theme, architecture, or system record. API caller burden follows
-`spec:AST-002`.
+这些解释帮助审查者应用当前权威；它们不会创建权威。产品行为仍由适用的当前 component、module、family、design、theme、architecture 或 system 记录拥有。API 调用方负担遵循 `spec:AST-002`。
 
-Reviews also load any `current` cross-cutting claims whose machine-readable global
-route matches the change's semantic triggers. The direct component, module, or
-family owner still resolves the exact delta first; a global route contributes only
-its listed claim and never grants authority to the rest of that record. Review
-receipts identify the matched record, claim, trigger, and reason.
+审查还会加载任何 `current` 的横切声明，其机器可读的全局路由与变更的语义触发条件匹配。直接组件、模块或家族所有者仍首先解析确切的增量；全局路由只贡献其列出的声明，且从不授予该记录其余部分的权威。审查回执标识匹配的记录、声明、触发条件和原因。
 
-## Keep the intent atomic
+## 保持意图原子化
 
-Before requesting review, partition every observable delta:
+在请求审查之前，划分每个可观察的增量：
 
-- **Primary:** the reason this pull request exists.
-- **Supporting:** evidence or documentation required to make the primary change complete.
-- **Tagalong:** independently removable behavior, visual, API, layout, policy, or cleanup.
+- **主要：** 该拉取请求存在的原因。
+- **支持：** 使主要变更完整所需的证据或文档。
+- **搭车：** 可独立移除的行为、视觉、API、布局、策略或清理。
 
-Remove or split tagalongs. A bug fix does not become a feature because a nearby affordance could also improve. A feature does not absorb unrelated cleanup because the same file is open.
+移除或拆分搭车变更。一个 bug 修复不会因为附近的一处可供性也可能改善就变成功能。一个功能不会因为同一个文件已打开就吸收无关的清理。
 
-## Reviews contract scope; they do not expand it
+## 审查收缩范围，而不是扩大范围
 
-The opening primary intent sets the scope ceiling. The first submitted
-implementation is a baseline for detecting later review-driven growth, not approval
-for its tagalongs. A review request may make that intent correct and safe, require
-evidence it needs, or remove/split a delta already in the pull request. It must not make a narrow
-change absorb adjacent policy, migrations, sibling conformance, new API, or cleanup
-merely because review discovered them.
+初始的主要意图设定范围上限。首次提交的实现是检测后续由审查驱动的增长的基线，而不是对其搭车变更的批准。审查请求可以使该意图正确且安全、要求它所需的证据，或移除/拆分已在拉取请求中的增量。它不得仅仅因为审查发现了相邻的策略、迁移、同级一致性、新 API 或清理，就让一个狭窄的变更吸收这些内容。
 
-If an earlier review caused the pull request to grow, the next pass should unwind or
-split those additions rather than treating them as the new primary intent. Broader
-work stays only when the original change cannot be correct or safe without it; then
-request the smallest safe correction or a narrower mechanism.
+如果较早的审查导致拉取请求增长，下一轮应当回退或拆分这些新增内容，而不是将它们当作新的主要意图。更广泛的工作只有在原始变更没有它就无法正确或安全时才保留；此时应请求最小的安全修正或更窄的机制。
 
-## Use specifications last, not first
+## 最后使用规范，而不是最先
 
-Review should produce the smallest ideal change that can land:
+审查应产生可以落地的最小理想变更：
 
-1. Apply current component, module, family, design, theme, architecture, and system authority to each delta.
-2. If a delta violates current authority, conform or remove it. Do not propose changing the specification merely to rescue the implementation.
-3. If a delta is unsettled but separable, remove or split it and keep reviewing the primary intent, except an undeclared public API row, which goes to human review for an owner's decision rather than being removed or split (`architecture:knowledge-contracts` change coupling step 6).
-4. Propose a specification only for a surviving, intentional durable decision the team wants to pursue.
+1. 将当前 component、module、family、design、theme、architecture 和 system 权威应用到每个增量。
+2. 如果增量违反当前权威，使其符合或移除它。不要仅仅为了挽救实现而提议更改规范。
+3. 如果增量尚未确定但可分离，移除或拆分它，并继续审查主要意图；未声明的公共 API 行除外，这类行交由人工审查由所有者决定，而不是移除或拆分（`architecture:knowledge-contracts` 变更耦合第 6 步）。
+4. 仅为团队希望推进的、存续的、有意的持久决定提议规范。
 
-A current record governs only its explicit claims inside its ownership boundary. It does not imply that the whole named component or module is fully specified.
+当前记录仅在其所有权边界内管辖其明确声明。它不意味着整个具名组件或模块都已完全规范化。
 
-## Visual corrections
+## 视觉修正
 
-A visual change does not automatically need a new specification. It may proceed as a correction when current component, family, design, theme, or objective accessibility authority already settles the exact outcome. Show that authority and verify the affected state with real-browser pixels, plus representative unchanged states.
+视觉变更不会自动需要新规范。当当前 component、family、design、theme 或目标无障碍权威已经确定了确切结果时，它可以作为修正继续进行。展示该权威，并用真实浏览器像素验证受影响状态，以及代表性的未改变状态。
 
-For routine component-local or module-local intent, cite and reuse an existing
-`DD` row when one applies. A team DESIGNOWNER may amend or add the optional
-`Design decisions` table in the component/module spec in the same atomic
-appearance-only pull request as the pixels and evidence. Add a row only for
-stable intent a future redesign must reconsider; exact pixel tuning stays in
-code and evidence, and shared or cross-component rules stay in `docs/design/`.
+对于常规的组件局部或模块局部意图，在适用时引用并重用现有 `DD` 行。团队 DESIGNOWNER 可以在与像素和证据相同的原子性仅外观拉取请求中，修改或添加组件/模块规范中的可选 `Design decisions` 表。仅为未来重新设计必须重新考虑的稳定意图添加行；确切的像素调整留在代码和证据中，共享或跨组件的规则留在 `docs/design/` 中。
 
-External contributors keep the normal contribution flow and are never asked to
-author specifications. If authority is missing, a maintainer records the owner
-ruling. A human request supplies intent, but it becomes current committed
-authority only after an owner approves its content.
+外部贡献者遵循正常贡献流程，永远不会被要求编写规范。如果缺少权威，由维护者记录所有者裁决。人工请求提供意图，但只有在所有者批准其内容后才成为当前已提交的权威。
 
-A new visual representation, subjective direction, or interaction model remains a design decision. Put a shared decision in its own design specification; keep a durable component-local decision in the owning component/module table.
+新的视觉表现、主观方向或交互模型仍然是设计决定。将共享决定放在其自己的设计规范中；将持久的组件局部决定保留在拥有该组件的 component/module 表中。
 
-## Review evidence
+## 审查证据
 
-[Knowledge contracts: review evidence placement](../architecture/knowledge-contracts.md#review-evidence-placement)
-owns where one-off evidence lives and how cleanup preserves historical links.
-Attach manual screenshots and their receipts to the pull request, or link a
-public retained copy outside the implementation branch. Keep reusable fixtures,
-accepted baselines, and media used by public documentation in their owning source
-paths. Evidence storage does not relax the matching template's evidence bar.
+[知识契约：审查证据的放置](../architecture/knowledge-contracts.md#review-evidence-placement)拥有一次性证据的存放位置，以及清理如何保留历史链接。将手动截图及其回执附加到拉取请求，或链接实现分支之外的公开保留副本。将可复用夹具、已接受的基线和公共文档使用的媒体保留在其拥有的源路径中。证据存储不会放宽匹配模板的证据标准。
 
-## Review your change before you ask for review
+## 在请求审查之前审查你的变更
 
-Review reads each pull request against the current records and the checklist
-below. Run the same pass first. Each finding you fix before review saves a
-review round.
+审查会将每个拉取请求与当前记录和下面的检查清单进行对照。先运行同样的流程。你在审查前修复的每个发现都能节省一轮审查。
 
-### Run the pre-review report
+### 运行预审查报告
 
 ```bash
 pnpm review:pre                       # the working tree against origin/main
@@ -118,149 +83,78 @@ pnpm review:pre --head HEAD           # committed work only
 pnpm review:pre --json                # the same report as JSON
 ```
 
-The report reads only the local repository. It prints:
+报告只读取本地仓库。它会打印：
 
-- each changed file and its class: record, owner-gated record, published
-  package code, other package file, Lab, or repository;
-- the current records that govern those files, and the claims that the files
-  cite or that the added lines route;
-- the global baseline claims that the linked components' review triggers route,
-  read at the merge base;
-- the authored line count, with advice when the lines outside templates are
-  over the size guideline, and whether the change merges into the base;
-- the findings for items i to l, each with its file and line, the rule, and
-  the fix;
-- the checklist items that apply to this change, each with its reason.
+- 每个更改的文件及其类别：record、owner-gated record、published package code、other package file、Lab 或 repository；
+- 管辖这些文件的当前记录，以及文件引用或新增行路由到的声明；
+- 链接组件的审查触发条件所路由的全局基线声明，在合并基处读取；
+- 编写的行数，当模板之外的行超过规模指引时给出建议，以及变更是否合并到基线；
+- 条目 i 到 l 的发现，每个都带有其文件和行号、规则和修复方法；
+- 适用于此变更的检查清单条目，每个都带有原因。
 
-The report is a lookup. The records decide acceptance, not the report. A
-finding is a lead to check, not a verdict.
+报告是一个查找工具。记录决定是否接受，而不是报告。发现是待检查的线索，而不是裁决。
 
-### Find the governing records by hand
+### 手动查找管辖记录
 
-| Command                                                                                                            | What it answers                                                                           |
-| ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| `pnpm specs:for <path>`                                                                                            | The records linked to one path, the specs that decided them, and the routed global claims |
-| `pnpm specs:for --diff origin/main`                                                                                | The same for every changed file, with the claims that the added lines route first         |
-| `node scripts/review-global-baselines.mjs --authority-commit <base-sha> --review-head <head-sha> --triggers <a,b>` | The current global claims for the review triggers, read at the merge base                 |
-| `pnpm check:knowledge`                                                                                             | Whether records and templates are valid after you edit one                                |
-| `git diff --name-only origin/main... \| node .github/scripts/change-scope.cjs --classify-paths`                    | Which changed paths are spec records, and which need a spec owner's approval              |
+| 命令                                                                                                               | 它回答的问题                                                   |
+| ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| `pnpm specs:for <path>`                                                                                            | 链接到单个路径的记录、决定这些记录的规范，以及路由到的全局声明 |
+| `pnpm specs:for --diff origin/main`                                                                                | 对每个更改文件执行相同操作，并首先列出新增行路由到的声明       |
+| `node scripts/review-global-baselines.mjs --authority-commit <base-sha> --review-head <head-sha> --triggers <a,b>` | 审查触发条件对应的当前全局声明，在合并基处读取                 |
+| `pnpm check:knowledge`                                                                                             | 编辑记录后，记录和模板是否有效                                 |
+| `git diff --name-only origin/main... \| node .github/scripts/change-scope.cjs --classify-paths`                    | 哪些更改路径是规范记录，以及哪些需要规范所有者批准             |
 
-### Pre-review checklist
+### 预审查检查清单
 
-First apply the protocol above: one primary intent, no tagalongs, and
-specifications last. Then check each item that the report lists. Item d applies
-to every pull request. The report checks items i to l automatically and lists
-each finding at its file and line.
+先应用上面的协议：单一主要意图、无搭车变更、规范最后。然后检查报告列出的每个条目。条目 d 适用于每个拉取请求。报告会自动检查条目 i 到 l，并在每个发现处列出其文件和行号。
 
-- **a. API delta.** A current record decides each added or changed row of the
-  pull request's API delta, which the review bot posts at the start of its
-  summary notes. The record is current at the merge base or changes in the
-  same pull request. A row that no record decides goes to an owner for a
-  decision; review does not ask you to remove it
-  ([`architecture:public-component-api`](../architecture/public-component-api.md#boundaries-and-invariants)
-  INV24 and INV25).
-  A new internal module or hook that another component can import (a package
-  `internal/` export, or a hook used outside the component that owns it) and
-  that no record defines gets REQUEST_CHANGES:
-  it needs an owner API decision, with the delta as usage, why it is needed,
-  and why existing modules are not enough
-  ([`architecture:knowledge-contracts`](../architecture/knowledge-contracts.md#contract-before-escalation)
-  step 5 and DEC-22).
-- **b. Behavior.** Each observable behavior change in a published package
-  cites the current record and clause that settle it. If nothing changes
-  behavior, write "No behavior change" in the description. A clause settles
-  only what its text states. A clause that only names a prop, key, or slot, or
-  a general baseline such as a WCAG level, does not settle the wording, default,
-  fallback, or result that ships. Catalogs, Changesets, stories, and comments
-  are not records. An unsettled behavior goes to an owner. Lab is not a stable
-  public promise, so a Lab-only change skips this item
-  ([Authority](../../AGENTS.md#authority);
-  [`architecture:knowledge-contracts` contract before escalation](../architecture/knowledge-contracts.md#contract-before-escalation)).
-- **c. Behavior props.** A prop that chooses how a component responds to input
-  is named `<thing>Behavior` and takes a closed union of behavior names. Its
-  name holds no input word (press, touch, tap, hover, mouse, click) when its
-  values can name the behavior. One behavior is one prop. When the behavior
-  differs by device, the prop offers `'adaptive'` or `'adaptive-<target>'`. A
-  new behavior prop defaults to the shipped behavior. An `is…` or `has…`
-  boolean names only a true on/off
-  ([`architecture:public-component-api`](../architecture/public-component-api.md#boundaries-and-invariants)
-  INV2 and INV3).
-- **d. Public boundary.** No internal or private context in source, tests,
-  fixtures, Changesets, commit messages, branch names, or pull request text
-  ([Public repository boundary](#public-repository-boundary)).
-- **e. New public hook.** Each public hook has a minimal, runnable example: a
-  live template block that names the hook in `exampleFor` or `alsoExampleFor`.
-  A public hook is a hook that a package exports from a published entry point,
-  so a new hook export makes one. Motion and gesture
-  hooks count. A public hook without a conforming example is a docs gap that an
-  issue tracks
-  ([`architecture:knowledge-contracts`](../architecture/knowledge-contracts.md#consumer-docs)
-  INV28 and DEC-16).
-- **f. Comments.** New or changed comments in `packages/*/src/**`, Lab
-  included, explain only a reason, a constraint, an invariant, or a platform
-  quirk. They do not narrate the code, restate names, or cite pull requests,
-  issues, dates, or records. They follow ASD-STE100 Simplified Technical
-  English: at most 20 words in an instruction and 25 in a description, one
-  topic per sentence, and active voice. A file header stays within about 12
-  lines
-  ([`architecture:knowledge-contracts`](../architecture/knowledge-contracts.md#source-comments)
-  INV29).
-- **g. Records.** A change to an owner-gated path waits on `review-required`
-  until a spec owner approves its spec content, with `/approve-spec <sha>` or an
-  approving review. Base merges, rebases, and commits to other paths keep that
-  approval. A later change to the approved spec text resets it
-  ([`architecture:knowledge-contracts`](../architecture/knowledge-contracts.md#dec-14--one-owner-approval-binds-a-pull-requests-spec-content)
-  DEC-14). The description also reports `## Writing rubric results`
-  ([Writing specification records](spec-writing.md)).
-- **h. Size (guideline).** Prefer pull requests under about 2,000 authored
-  lines, without lockfiles, snapshots, or generated files. A reviewer may
-  suggest a split when a smaller change would be easier to review. Size alone
-  is never a blocking finding. Templates under `packages/cli/assets/templates/`
-  may exceed this guideline, because each one is a complete example. For a
-  stacked pull request, pass `--base` the branch below it, so the count covers
-  only its own lines.
-- **i. Shared owners (automatic).** In Core source, an added resize observer,
-  document or window listener, module-level warn-once set, or parent walk
-  across shadow roots is a finding: call `observeResize`,
-  `subscribeInput`, `useDevWarning`, or `parentAcrossShadow`
-  ([`architecture:react-component-runtime`](../architecture/react-component-runtime.md#boundaries-and-invariants)
-  INV16).
-- **j. Effects (automatic).** Interaction logic lives in callbacks, and no
-  Effect reacts to interaction state. These are findings: an added Effect with
-  no comment that names the system it syncs; an Effect that only copies props
-  or state into other state; an Effect that only copies a value into a ref
-  (keep a latest prop or callback with `useCommittedRef` or
-  `useCommittedRefInto` from `packages/core/src/hooks/useCommittedRef.ts`); a
-  read of such a ref's `current` during render or in `useMemo`; a `ref.current`
-  write during render, except lazy initialization such as
-  `if (ref.current == null) ref.current = value`; and a DOM node in React state
-  ([`architecture:react-component-runtime`](../architecture/react-component-runtime.md#boundaries-and-invariants)
-  INV1, INV2, INV3 and INV17).
-  The check reads only the lines a change adds or changes. Two render-time
-  writes are not findings: Markdown's streaming fade-in refs, an exception that
-  `component:Markdown` DEC-7 allows, and `useTableSortable`'s config ref, exempt
-  as INV17's named gap until the owner decides.
-- **k. Release notes and records (automatic).** A package that ships a change
-  with no Changeset, a `[fix]`, `[feat]`, or `[perf]` Changeset for a package
-  where nothing that ships changes, such as a change to tests or tooling only,
-  and a gap row left in a record for a claim this change builds are findings.
-- **l. Mergeable (automatic).** A conflict with the base branch is a finding.
-  For the working tree, the check merges the last commit. It writes nothing to
-  the repository.
+- **a. API 增量。** 当前记录决定拉取请求 API 增量的每一新增或更改行，审查机器人会在其摘要说明的开头发布该增量。该记录在合并基时是当前的，或在同一拉取请求中更改。没有任何记录决定的行交由所有者决定；审查不会要求你移除它
+  （[`architecture:public-component-api`](../architecture/public-component-api.md#boundaries-and-invariants)
+  INV24 和 INV25）。
+  另一个组件可以导入的新内部模块或 hook（包的 `internal/` 导出，或在拥有它的组件之外使用的 hook），且没有任何记录定义它，会得到 REQUEST_CHANGES：
+  它需要所有者的 API 决定，增量的用途、为什么需要它，以及为什么现有模块不够
+  （[`architecture:knowledge-contracts`](../architecture/knowledge-contracts.md#contract-before-escalation)
+  第 5 步和 DEC-22）。
+- **b. 行为。** 已发布包中的每个可观察行为变更，都引用确定它的当前记录和条款。如果没有改变行为，请在描述中写 "No behavior change"。条款仅确定其文本所述的内容。仅命名 prop、key 或 slot 的条款，或仅命名 WCAG 级别之类的一般基线的条款，不确定最终发布的措辞、默认值、回退或结果。Catalog、Changeset、story 和注释不是记录。未确定的行为交由所有者。Lab 不是稳定的公共承诺，因此仅 Lab 的变更跳过此条目
+  （[权威依据](../../AGENTS.md#authority)；
+  [`architecture:knowledge-contracts` 升级前的契约](../architecture/knowledge-contracts.md#contract-before-escalation)）。
+- **c. 行为 prop。** 选择组件如何响应输入的 prop 命名为 `<thing>Behavior`，并采用行为名称的封闭联合类型。当其值可以命名行为时，其名称不包含任何输入词（press、touch、tap、hover、mouse、click）。一个行为对应一个 prop。当行为因设备而异时，该 prop 提供 `'adaptive'` 或 `'adaptive-<target>'`。新的行为 prop 默认采用已发布的行为。`is…` 或 `has…` 布尔值仅命名真/假的开关
+  （[`architecture:public-component-api`](../architecture/public-component-api.md#boundaries-and-invariants)
+  INV2 和 INV3）。
+- **d. 公共边界。** 源代码、测试、夹具、Changeset、提交消息、分支名称或拉取请求文本中不得包含内部或私有上下文
+  （[公共仓库边界](#public-repository-boundary)）。
+- **e. 新的公共 hook。** 每个公共 hook 都有一个最小、可运行的示例：一个在 `exampleFor` 或 `alsoExampleFor` 中命名该 hook 的实时模板块。公共 hook 是指包从已发布入口点导出的 hook，因此新的 hook 导出就会产生一个公共 hook。动效和手势 hook 也计入。没有符合规范的示例的公共 hook 是文档缺口，由 issue 跟踪
+  （[`architecture:knowledge-contracts`](../architecture/knowledge-contracts.md#consumer-docs)
+  INV28 和 DEC-16）。
+- **f. 注释。** `packages/*/src/**`（包括 Lab）中新增或更改的注释只解释原因、约束、不变量或平台怪癖。它们不叙述代码、不重述名称，也不引用拉取请求、issue、日期或记录。它们遵循 ASD-STE100 简化技术英语：指令最多 20 个词，描述最多 25 个词，每句一个主题，使用主动语态。文件头保持在约 12 行以内
+  （[`architecture:knowledge-contracts`](../architecture/knowledge-contracts.md#source-comments)
+  INV29）。
+- **g. 记录。** 对 owner-gated 路径的更改会等待 `review-required`，直到规范所有者通过 `/approve-spec <sha>` 或批准审查来批准其规范内容。基线合并、rebase 以及对其他路径的提交会保留该批准。后续更改已批准的规范文本会重置它
+  （[`architecture:knowledge-contracts`](../architecture/knowledge-contracts.md#dec-14--one-owner-approval-binds-a-pull-requests-spec-content)
+  DEC-14）。描述还会报告 `## Writing rubric results`
+  （[编写规范记录](spec-writing.md)）。
+- **h. 规模（指引）。** 优先使用约 2,000 个编写行以内的拉取请求，不含 lockfile、快照或生成文件。当更小的变更更易于审查时，审查者可以建议拆分。规模本身从不是阻塞性发现。`packages/cli/assets/templates/` 下的模板可以超过此指引，因为每个模板都是完整示例。对于堆叠的拉取请求，将 `--base` 传为其下方的分支，以便计数仅覆盖其自身的行。
+- **i. 共享所有者（自动）。** 在 Core 源代码中，新增的 resize observer、document 或 window 监听器、模块级 warn-once 集合，或跨 shadow root 的父级遍历，都是发现：请调用 `observeResize`、`subscribeInput`、`useDevWarning` 或 `parentAcrossShadow`
+  （[`architecture:react-component-runtime`](../architecture/react-component-runtime.md#boundaries-and-invariants)
+  INV16）。
+- **j. Effect（自动）。** 交互逻辑位于回调中，且没有任何 Effect 响应交互状态。以下情况都是发现：新增的 Effect 没有注释说明它同步的系统；仅将 prop 或 state 复制到其他 state 的 Effect；仅将值复制到 ref 的 Effect（使用 `packages/core/src/hooks/useCommittedRef.ts` 中的 `useCommittedRef` 或 `useCommittedRefInto` 保留最新 prop 或回调）；在渲染期间或 `useMemo` 中读取此类 ref 的 `current`；在渲染期间写入 `ref.current`，但延迟初始化除外，例如 `if (ref.current == null) ref.current = value`；以及将 DOM 节点放入 React state
+  （[`architecture:react-component-runtime`](../architecture/react-component-runtime.md#boundaries-and-invariants)
+  INV1、INV2、INV3 和 INV17）。
+  该检查只读取变更新增或更改的行。以下两处渲染时写入不是发现：Markdown 的流式淡入 ref（`component:Markdown` DEC-7 允许的例外），以及 `useTableSortable` 的 config ref（作为 INV17 的具名缺口豁免，直到所有者决定）。
+- **k. 发布说明和记录（自动）。** 发布变更但没有 Changeset 的包；对没有任何发布内容变化的包（例如仅更改测试或工具）使用 `[fix]`、`[feat]` 或 `[perf]` Changeset；以及在本变更所构建的声明上留下缺口行的记录，都是发现。
+- **l. 可合并（自动）。** 与基线的冲突是发现。对于工作树，检查会合并最后一个提交。它不会向仓库写入任何内容。
 
-### Use a fresh session for an agent's change
+### 为智能体的变更使用全新会话
 
-The author of a change reads intent into it. A reviewer reads only the diff.
-When an agent wrote the change:
+变更的作者会把意图读进去。审查者只阅读 diff。当智能体编写了该变更时：
 
-1. Start a new agent session that has no memory of writing the change. Check
-   out the pull request branch.
-2. Run `pnpm review:pre`.
-3. Read every record and claim that the report lists.
-4. Apply the protocol above and each listed checklist item to the diff.
-5. Fix each finding, or split it out. Run `pnpm review:pre` again.
-6. Request review when no finding is left.
+1. 启动一个对编写该变更没有记忆的新智能体会话。检出该拉取请求分支。
+2. 运行 `pnpm review:pre`。
+3. 阅读报告列出的每条记录和声明。
+4. 将上述协议和每个列出的检查清单条目应用到 diff。
+5. 修复每个发现，或将其拆分出去。再次运行 `pnpm review:pre`。
+6. 当没有剩余发现时，请求审查。
 
-## Public repository boundary
+## 公共仓库边界
 
-Descriptions, screenshots, commits, tests, and specification records are public. Do not include internal links, identifiers, hostnames, tools, or operational context.
+描述、截图、提交、测试和规范记录都是公开的。不要包含内部链接、标识符、主机名、工具或运维上下文。

@@ -26,156 +26,123 @@ system_specs: [spec:AST-082, spec:AST-093, spec:AST-085]
 
 | Area                    | Contract                                                                                                                                                                                                                                                                                                     |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Public contract         | `TextInput(label:value:type:onChange:size:isLabelHidden:description:isOptional:isRequired:onEnter:isDisabled:isReadOnly:disabledMessage:isLoading:placeholder:labelTooltip:status:statusVariant:hasClear:hasAutoFocus:base:)` and `TextInput(_ props: TextInputProps)`, a SwiftUI `View` in module `Astryx`. |
-| Behavior                | An editable field is SwiftUI's `TextField`, or `SecureField` for a password. A read-only or disabled field draws its value, keeps a focus stop without raising a keyboard, and reads to VoiceOver as SwiftUI's text field.                                                                                   |
-| End-user impact         | A person types in the platform's own field; keyboard users still reach a read-only or disabled field and its reason; VoiceOver users hear the name, any error, the description, and the state.                                                                                                               |
-| Builder impact          | An app passes `value` and `onChange` as the contract types them, not a `Binding`.                                                                                                                                                                                                                            |
-| Compatibility/readiness | Breaking for canary callers: a `Binding` gives way to `value` and `onChange`, as the contract types them. Built and tested on macOS and the iOS Simulator.                                                                                                                                                   |
-| Review checks           | Reject a read-only field that raises a keyboard or accepts edits, a disabled field that leaves focus, a read-only password that shows its characters, an error only in the hint, or `.help` for a tip, or a contract that carries a keyboard prop or `type` value the field ignores.                         |
-| Governing rules         | `component:TextInput` FR3–FR10, FR13, FR15, FR16; `family:input-fields` FR4; `spec:AST-085`; `spec:AST-082` FR3, FR7, FR11, DEC-14; `spec:AST-093` FR1–FR5; the Swift component API, tooltip, and accessibility records under `packages/native/specs/swift/library/`.                                        |
+| Public contract         | `TextInput(label:value:type:onChange:size:isLabelHidden:description:isOptional:isRequired:onEnter:isDisabled:isReadOnly:disabledMessage:isLoading:placeholder:labelTooltip:status:statusVariant:hasClear:hasAutoFocus:base:)` 与 `TextInput(_ props: TextInputProps)`，是模块 `Astryx` 中的 SwiftUI `View`。 |
+| Behavior                | 可编辑字段是 SwiftUI 的 `TextField`，密码则是 `SecureField`。只读或禁用字段绘制其值，保留焦点停靠点而不唤起键盘，并且对 VoiceOver 而言读作 SwiftUI 的文本字段。                                                                                                                                              |
+| End-user impact         | 使用者在平台自身的字段中输入；键盘用户仍能到达只读或禁用字段及其原因；VoiceOver 用户听到名称、任何错误、描述和状态。                                                                                                                                                                                         |
+| Builder impact          | 应用按契约声明的方式传入 `value` 和 `onChange`，而不是 `Binding`。                                                                                                                                                                                                                                           |
+| Compatibility/readiness | 对 canary 调用方为破坏性变更：`Binding` 让位于按契约声明方式的 `value` 和 `onChange`。已在 macOS 和 iOS 模拟器上构建并测试。                                                                                                                                                                                 |
+| Review checks           | 拒绝以下情况：只读字段唤起键盘或接受编辑；禁用字段失去焦点；只读密码显示其字符；错误只出现在提示中，或用 `.help` 提供提示；契约携带字段会忽略的键盘 prop 或 `type` 值。                                                                                                                                      |
+| Governing rules         | `component:TextInput` FR3–FR10、FR13、FR15、FR16；`family:input-fields` FR4；`spec:AST-085`；`spec:AST-082` FR3、FR7、FR11、DEC-14；`spec:AST-093` FR1–FR5；以及 `packages/native/specs/swift/library/` 下的 Swift 组件 API、tooltip 与无障碍记录。                                                          |
 
-This table is a review projection; the body below is authoritative.
+本表是审查视角的投影；下文正文才是权威。
 
 ## Intent
 
-TextInput on Apple platforms is core's text field drawn with SwiftUI's own
-field for typing, so input methods, autofill, and the keyboard work the
-platform's way, while its read-only and disabled states keep core's focus and
-reading behavior where SwiftUI's field cannot.
+Apple 平台上的 TextInput 是用 SwiftUI 自身字段绘制的 core 文本字段，用于输入，因此输入法、自动填充和键盘都按平台的方式工作；而其只读和禁用状态则保留 core 的焦点与朗读行为，这是 SwiftUI 字段做不到的。
 
 ## Compatibility and migration
 
-- Released default preserved: `not yet released`
-- Compatibility class: breaking for canary callers (`Binding` → `value` and `onChange`)
-- Controlled/uncontrolled behavior: controlled; `value` and `onChange` only
-- Migration decision: none
+- 保留的发布默认值：`not yet released`
+- 兼容性类别：对 canary 调用方为破坏性变更（`Binding` → `value` 和 `onChange`）
+- 受控/非受控行为：受控；仅 `value` 和 `onChange`
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档和发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**负责**
 
-- Which platform field Swift uses in each state, how a read-only or disabled
-  field keeps focus and reads to VoiceOver, and its status announcements.
+- Swift 在各状态中使用哪个平台字段，只读或禁用字段如何保留焦点并向 VoiceOver 朗读，以及它的状态播报。
 
-**Does not own / non-goals**
+**不负责 / 非目标**
 
-- The meaning of TextInput's props and states — owned by `component:TextInput`
-  and `family:input-fields`.
-- Tooltip behavior — owned by the Swift tooltip record.
+- TextInput 的 prop 与状态的含义——由 `component:TextInput` 和 `family:input-fields` 负责。
+- Tooltip 行为——由 Swift tooltip 记录负责。
 
 ## Public concepts
 
-| Concept      | Closed values or states       | Meaning                                                                  | Availability by variant/orientation/state | Default  | Owner                       | Stability    | Invalid-value behavior |
-| ------------ | ----------------------------- | ------------------------------------------------------------------------ | ----------------------------------------- | -------- | --------------------------- | ------------ | ---------------------- |
-| field        | editable; drawn               | SwiftUI `TextField`/`SecureField`, or the drawn read-only/disabled field | always                                    | editable | `component:swift/TextInput` | experimental | none                   |
-| availability | editable; read-only; disabled | disabled wins over read-only                                             | always                                    | editable | `component:TextInput`       | experimental | none                   |
+| Concept | Closed values or states | Meaning                                                  | Availability by variant/orientation/state | Default | Owner                       | Stability | Invalid-value behavior |
+| ------- | ----------------------- | -------------------------------------------------------- | ----------------------------------------- | ------- | --------------------------- | --------- | ---------------------- |
+| 字段    | 可编辑；绘制            | SwiftUI `TextField`/`SecureField`，或绘制的只读/禁用字段 | 始终                                      | 可编辑  | `component:swift/TextInput` | 实验性    | 无                     |
+| 可用性  | 可编辑；只读；禁用      | 禁用优先于只读                                           | 始终                                      | 可编辑  | `component:TextInput`       | 实验性    | 无                     |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Basis                                                                           |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| FR1 | Both initializers MUST build the same `TextInputProps`. Edits reach `onChange` only while the field is editable; Return runs `onEnter` while editable or read-only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Swift component API A2, A3, A5; `component:TextInput` FR3, FR10                 |
-| FR2 | A read-only or disabled field MUST draw its value (masked for a password, the placeholder when empty), keep its focus stop without raising a keyboard (a field that becomes read-only or disabled while focused keeps focus: the editable and drawn parts stay in one view structure and focus moves between them), accept no edits, and read to VoiceOver as SwiftUI's text field (`accessibilityRepresentation`): dimmed when disabled, a secure field for a password, with "Read only" or the disabled reason in its description.                                                                                                                                                                                              | `component:TextInput` FR6, FR8; `spec:AST-085`; `family:input-fields` FR4; AV1  |
-| FR3 | An error MUST be in the field's VoiceOver label after its name; the description and status message MUST stay readable as text and in the description. A status message, and "Loading", are announced on the field's first appearance and when they change, an error at high priority.                                                                                                                                                                                                                                                                                                                                                                                                                                             | `component:TextInput` FR4, FR9; `component:FieldStatus` AR1                     |
-| FR4 | The label tip, the tooltip-variant status, the clear button, and a disabled reason MUST show through the shared Astryx tooltip; no view uses `.help`. The tooltip-variant status tip is a button, as core's status icon is, named by its status and speaking its message when VoiceOver activates it. Trailing controls each lay out across their own 44-point target.                                                                                                                                                                                                                                                                                                                                                            | `component:TextInput` FR5, FR7, FR15; `spec:AST-082` FR11; Swift tooltip record |
-| FR5 | Base `id` and `isHidden` MUST apply to the field control, TextInput's base target: `id` is its accessibility identifier, and `isHidden` takes the control and its buttons out of layout and focus (autofocus included) while the label, description, and status stay, with the label and its note read by VoiceOver as text.                                                                                                                                                                                                                                                                                                                                                                                                      | `component:TextInput` FR13; `spec:AST-082` FR7                                  |
-| FR6 | The Swift contract MUST carry only the `type` values and keyboard props the Swift field applies. It carries `text`, `password`, and `email`; `email` applies the email keyboard and content type with no autocorrection or capitalization. The `search`, `tel`, and `url` types and core's `enterKeyHint`, `inputMode`, `autoCapitalize`, `hasAutoCorrect`, and `hasSpellCheck` (`component:TextInput` FR16) join it only with the field applying each as its platform keyboard type, return key, capitalization, autocorrection, or spell-checking trait; a contract that carries one the field ignores fails this rule. Implementation gap: the Swift field applies none of them, so a Swift caller cannot choose the keyboard. | `spec:AST-082` FR3, DEC-14; `component:TextInput` FR16; current source          |
+| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Basis                                                                          |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| FR1 | 两个初始化器 MUST 构建相同的 `TextInputProps`。仅当字段可编辑时，编辑才会到达 `onChange`；当字段可编辑或只读时，Return 键运行 `onEnter`。                                                                                                                                                                                                                                                                                                                                                                                             | Swift 组件 API A2、A3、A5；`component:TextInput` FR3、FR10                     |
+| FR2 | 只读或禁用字段 MUST 绘制其值（密码为掩码，空时显示占位符），保留焦点停靠点而不唤起键盘（字段在聚焦时变为只读或禁用仍保留焦点：可编辑部分与绘制部分处于同一视图结构，焦点在两者之间移动），不接受编辑，并且对 VoiceOver 而言读作 SwiftUI 的文本字段（`accessibilityRepresentation`）：禁用时变暗，密码为安全字段，其描述中包含“Read only”或禁用原因。                                                                                                                                                                                  | `component:TextInput` FR6、FR8；`spec:AST-085`；`family:input-fields` FR4；AV1 |
+| FR3 | 错误 MUST 出现在字段 VoiceOver 标签中其名称之后；描述和状态消息 MUST 作为文本可读，并出现在描述中。状态消息以及“Loading”在字段首次出现时及其变化时播报，错误以高优先级播报。                                                                                                                                                                                                                                                                                                                                                          | `component:TextInput` FR4、FR9；`component:FieldStatus` AR1                    |
+| FR4 | 标签提示、tooltip 变体状态、清除按钮和禁用原因 MUST 通过共享的 Astryx tooltip 呈现；任何视图都不使用 `.help`。tooltip 变体状态提示是一个按钮，如 core 的状态图标那样，以其状态命名，并在 VoiceOver 激活时朗读其消息。每个尾部控件各自在独立的 44 点目标范围内布局。                                                                                                                                                                                                                                                                   | `component:TextInput` FR5、FR7、FR15；`spec:AST-082` FR11；Swift tooltip 记录  |
+| FR5 | 基础 `id` 和 `isHidden` MUST 应用于字段控件，即 TextInput 的基础目标：`id` 是其无障碍标识符，`isHidden` 将控件及其按钮移出布局与焦点（包括自动聚焦），而标签、描述和状态保留，标签及其注释由 VoiceOver 作为文本朗读。                                                                                                                                                                                                                                                                                                                 | `component:TextInput` FR13；`spec:AST-082` FR7                                 |
+| FR6 | Swift 契约 MUST 只携带 Swift 字段会应用的 `type` 值和键盘 prop。它携带 `text`、`password` 和 `email`；`email` 应用电子邮件键盘和内容类型，且不自动纠错、不自动大写。`search`、`tel` 和 `url` 类型以及 core 的 `enterKeyHint`、`inputMode`、`autoCapitalize`、`hasAutoCorrect` 和 `hasSpellCheck`（`component:TextInput` FR16）只有在字段将每一项应用为其平台键盘类型、回车键、大小写、自动纠错或拼写检查特性时才加入；携带字段所忽略的某项的契约不符合本规则。实现缺口：Swift 字段不应用其中任何一项，因此 Swift 调用方无法选择键盘。 | `spec:AST-082` FR3、DEC-14；`component:TextInput` FR16；当前源码               |
 
 ### Allowed variation
 
-- **AV1 — The drawn read-only and disabled field.** No platform field fits
-  both states on both platforms, so Swift draws the value and gives VoiceOver
-  SwiftUI's text field in its place. Fields considered:
-  - SwiftUI `TextField` and `SecureField`: no read-only mode, and `.disabled`
-    removes the focus stop core keeps (`spec:AST-085`).
-  - UIKit `UITextField` refusing edits through its delegate: focus raises the
-    keyboard unless its input view is replaced, its text and colors must be
-    bridged from the theme by hand, and SwiftUI's image renderer and previews
-    do not draw it.
-  - AppKit `NSTextField` with editing off and selection on: a true read-only
-    field on macOS, with no iOS counterpart, so the two platforms would differ.
+- **AV1 — 绘制的只读与禁用字段。** 没有平台字段能同时适配两个平台上的这两种状态，因此 Swift 绘制该值，并在其位置向 VoiceOver 提供 SwiftUI 的文本字段。考虑过的字段：
+  - SwiftUI `TextField` 和 `SecureField`：没有只读模式，且 `.disabled` 会移除 core 保留的焦点停靠点（`spec:AST-085`）。
+  - UIKit `UITextField` 通过其委托拒绝编辑：除非替换其输入视图，否则聚焦会唤起键盘，其文本和颜色必须手工从主题桥接，且 SwiftUI 的图像渲染器和预览不会绘制它。
+  - 关闭编辑、开启选择的 AppKit `NSTextField`：在 macOS 上是真正的只读字段，但没有 iOS 对应物，因此两个平台会不一致。
 
 ### Representative states
 
-| State              | Required invariant                                          | Allowed variation |
-| ------------------ | ----------------------------------------------------------- | ----------------- |
-| editable           | the platform field; edits reach `onChange`                  | none              |
-| read-only          | value shown; focus stop; no keyboard; Return runs `onEnter` | none              |
-| read-only password | masked; not selectable                                      | none              |
-| disabled           | dimmed; focus stop; reads as a dimmed text field            | none              |
-| error              | error in the label; message readable                        | none              |
+| State    | Required invariant                                | Allowed variation |
+| -------- | ------------------------------------------------- | ----------------- |
+| 可编辑   | 平台字段；编辑到达 `onChange`                     | 无                |
+| 只读     | 显示值；焦点停靠点；无键盘；Return 运行 `onEnter` | 无                |
+| 只读密码 | 掩码；不可选择                                    | 无                |
+| 禁用     | 变暗；焦点停靠点；读作变暗的文本字段              | 无                |
+| 错误     | 标签中有错误；消息可读                            | 无                |
 
 ### Transformation and precedence order
 
-- **ORD1 — Availability.** Disabled, then read-only, then editable, as in core.
+- **ORD1 — 可用性。** 禁用，然后只读，然后可编辑，与 core 一致。
 
 ### Performance and resources
 
-- **PR1 — No work while idle.** The view holds no timers; announcements fire
-  only on first appearance or a change.
+- **PR1 — 空闲时不做任何工作。** 视图不持有定时器；播报只在首次出现或发生变化时触发。
 
 ## Accessibility contract
 
-- **AR1 — Name, error, description.** The name is the label and its note; an
-  error follows it in the label; the description, other status messages,
-  "Read only", and the disabled reason are the description.
-- **AR2 — Rendered tree not measured.** Tests assert what the view sets; the
-  rendered accessibility tree and keyboard focus are not measured until an
-  app-hosted target exists.
+- **AR1 — 名称、错误、描述。** 名称是标签及其注释；错误在标签中紧随其后；描述、其他状态消息、“Read only”以及禁用原因都属于描述。
+- **AR2 — 未测量渲染树。** 测试断言视图所设置的内容；在存在应用宿主的测试目标之前，不测量渲染出的无障碍树和键盘焦点。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement        | Representation authority   | Hierarchy role | Component contract |
-| ---------------- | ------------------------- | -------------------------- | -------------- | ------------------ |
-| Field            | the platform's text field | prescribed by the platform | primary        | FR1, FR2           |
+| Anatomy or state | Design requirement | Representation authority | Hierarchy role | Component contract |
+| ---------------- | ------------------ | ------------------------ | -------------- | ------------------ |
+| 字段             | 平台的文本字段     | 由平台规定               | 主要           | FR1, FR2           |
 
-The component implements design requirements without copying their rationale.
+组件实现设计要求，但不复制其理由。
 
-Platform control: SwiftUI `TextField` and `SecureField` for editing; the drawn
-field in AV1 for read-only and disabled (`spec:AST-093` FR2). Guideline pages:
-Text fields and Accessibility in the Apple Human Interface Guidelines
-(`spec:AST-093` FR3).
+平台控件：编辑使用 SwiftUI `TextField` 和 `SecureField`；只读和禁用使用 AV1 中的绘制字段（`spec:AST-093` FR2）。指南页面：Apple Human Interface Guidelines 中的 Text fields 与 Accessibility（`spec:AST-093` FR3）。
 
-Theme values read (`spec:AST-093` FR4): `color.textPrimary`,
-`color.textSecondary`, `color.textDisabled`, `color.borderEmphasized`, the
-status roles `architecture:theme-tokens` INV11 assigns (`color.borderError`,
-`color.borderWarning`, `color.borderSuccess` for the border;
-`color.iconError`, `color.iconWarning`, `color.iconSuccess` for the icon;
-`color.errorMuted`, `color.warningMuted`, `color.successMuted` for the
-message ground and `color.onErrorMuted`, `color.onWarningMuted`,
-`color.onSuccessMuted` for its text),
-`size.elementSm`, `size.elementMd`, `size.elementLg`, `size.borderWidth`,
-`radius.element`, `space` steps, `font.body`, `font.label`, `font.supporting`,
-`font.weight.medium`, `font.weight.normal`,
-`font.family.body`, the theme's icons, and the Dynamic Type scale.
+读取的主题值（`spec:AST-093` FR4）：`color.textPrimary`、`color.textSecondary`、`color.textDisabled`、`color.borderEmphasized`，`architecture:theme-tokens` INV11 分配的 status 角色（边框用 `color.borderError`、`color.borderWarning`、`color.borderSuccess`；图标用 `color.iconError`、`color.iconWarning`、`color.iconSuccess`；消息底色用 `color.errorMuted`、`color.warningMuted`、`color.successMuted`，其文本用 `color.onErrorMuted`、`color.onWarningMuted`、`color.onSuccessMuted`），`size.elementSm`、`size.elementMd`、`size.elementLg`、`size.borderWidth`、`radius.element`、`space` 各级、`font.body`、`font.label`、`font.supporting`、`font.weight.medium`、`font.weight.normal`、`font.family.body`、主题的图标，以及 Dynamic Type 缩放。
 
 ## Family and system relationships
 
-- `component:TextInput` and `family:input-fields` own the props and states;
-  this record states only how Swift draws them.
+- `component:TextInput` 和 `family:input-fields` 负责 prop 和状态；本记录只说明 Swift 如何绘制它们。
 
 ## Verification map
 
-| Contract | Verification                                                                                                                                                                                                                                                              | Representative states                                                       | Mutation or failure expectation                                                                                                            | Audit section                  |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
-| FR1      | `TextInputTests.swift` initializer and edit tests                                                                                                                                                                                                                         | both initializers; editable, read-only, disabled                            | differing props, or an edit that reaches `onChange` while not editable, fails                                                              | `audit:swift/TextInput/api`    |
-| FR2      | `TextInputTests.swift` read-only, password, placeholder, and focus-stop tests, and the VoiceOver field each state gives `accessibilityRepresentation` (text or secure, dimmed when disabled, label, value, and description); the rendered tree and focus are not measured | read-only; read-only password; empty; disabled; disabled password; error    | a shown password, a missing placeholder, a secure field read as text, an undimmed disabled field, or a disabled field without a stop fails | `audit:swift/TextInput/states` |
-| FR3      | `TextInputTests.swift` label, description, and announcement tests                                                                                                                                                                                                         | error with and without a message; warning; type change                      | an error missing from the label, or a missed announcement change, fails                                                                    | `audit:swift/TextInput/a11y`   |
-| FR4      | `TooltipPresenterTests.swift` `.help` guard; `TextInputTests.swift` checks the row ends in buttons and that the status tip is a button named by its status with its message; overlap of the 44-point targets is not measured until an app-hosted test can hit-test them   | clear and tooltip status together; tooltip, attached, and detached statuses | `.help` in a view, or a status tip without the button trait, fails                                                                         | `audit:swift/TextInput/tips`   |
-| FR5      | `TextInputTests.swift` base tests: `isHidden` leaves the control out of layout; `id` and the control base target; the identifier on the drawn control is not measured until an app-hosted test exists                                                                     | `id`; `isHidden`                                                            | `isHidden` keeping the control in layout or hiding the label fails                                                                         | `audit:swift/TextInput/base`   |
-| FR6      | The per-platform prop check over every contract (`spec:AST-082` FR1, FR3); `TextInputTests.swift` email initializer tests; the applied keyboard traits are not measured until an app-hosted test exists                                                                   | `email`; each omitted prop and `type` value                                 | A Swift type that accepts a keyboard prop or `type` value the field does not apply fails                                                   | `audit:swift/TextInput/api`    |
+| Contract | Verification                                                                                                                                                                                       | Representative states                                | Mutation or failure expectation                                                          | Audit section                  |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------ |
+| FR1      | `TextInputTests.swift` 初始化器与编辑测试                                                                                                                                                          | 两个初始化器；可编辑、只读、禁用                     | prop 不一致，或在非可编辑状态下编辑到达 `onChange`，即失败                               | `audit:swift/TextInput/api`    |
+| FR2      | `TextInputTests.swift` 的只读、密码、占位符和焦点停靠点测试，以及各状态提供给 `accessibilityRepresentation` 的 VoiceOver 字段（文本或安全、禁用时变暗、标签、值、描述）；未测量渲染树和焦点        | 只读；只读密码；空；禁用；禁用密码；错误             | 显示密码、缺失占位符、安全字段读作文本、未变暗的禁用字段，或没有停靠点的禁用字段，即失败 | `audit:swift/TextInput/states` |
+| FR3      | `TextInputTests.swift` 标签、描述与播报测试                                                                                                                                                        | 有消息和无消息的错误；警告；类型变更                 | 标签中缺失错误，或漏掉播报变化，即失败                                                   | `audit:swift/TextInput/a11y`   |
+| FR4      | `TooltipPresenterTests.swift` 的 `.help` 守卫；`TextInputTests.swift` 检查该行以按钮结尾，且状态提示是一个以其状态命名并带有其消息的按钮；在应用宿主的测试能做命中测试之前，不测量 44 点目标的重叠 | 清除与 tooltip 状态同时出现；tooltip、附着和分离状态 | 视图中出现 `.help`，或状态提示缺少按钮特性，即失败                                       | `audit:swift/TextInput/tips`   |
+| FR5      | `TextInputTests.swift` 基础测试：`isHidden` 使控件脱离布局；`id` 与控件基础目标；在存在应用宿主测试之前，不测量绘制控件上的标识符                                                                  | `id`；`isHidden`                                     | `isHidden` 让控件留在布局中或隐藏标签，即失败                                            | `audit:swift/TextInput/base`   |
+| FR6      | 对每个契约的按平台 prop 检查（`spec:AST-082` FR1、FR3）；`TextInputTests.swift` 电子邮件初始化器测试；在存在应用宿主测试之前，不测量所应用的键盘特性                                               | `email`；每个被省略的 prop 和 `type` 值              | Swift 类型接受字段不应用的键盘 prop 或 `type` 值，即失败                                 | `audit:swift/TextInput/api`    |
 
 ## Decision log
 
-No component-local decision is recorded.
+未记录组件本地决策。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不重复使用方 prop 表/示例、当前审计结果、实现步骤或 family/系统规则。它链接到这些内容的所有者。

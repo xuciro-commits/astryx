@@ -28,142 +28,124 @@ system_specs: [spec:AST-082, spec:AST-093]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                     |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `ListItem(_ label:, description:, align:, href:, isDisabled:, isSelected:, startContent:, endContent:, onClick:)` and `ListItem(_ props: ListItemProps, startContent:, endContent:)`, a generic SwiftUI `View`.              |
-| Behavior                | Draws `component:swift/Item` with the density, marker, dividers, and edge of the `List` around it: a dot, a ring, or its number on the label's first line; square corners between dividers; no inline inset in a flush list. |
-| End-user impact         | A person sees bulleted and numbered lists, settings lists, and divided lists on iPhone laid out as on the web, with each marker beside its row's first line however the row wraps.                                           |
-| Builder impact          | An app puts `ListItem`s in a `List`; the row takes the list's look. Swipe actions, `target`, and `rel` have no Swift form.                                                                                                   |
-| Compatibility/readiness | Additive: a new view and generated `ListItemProps`, and internal list hooks on `Item`. Draft; built and tested on macOS and the iOS Simulator; device captures are attached to the change.                                   |
-| Review checks           | Reject a marker that leaves the label's first line, a row that ignores its list's density, dividers with rounded corners, an inset in a flush list, or list styling that leaks into rows nested in a slot.                   |
-| Governing rules         | `spec:AST-082` FR3, FR4, FR7; `spec:AST-093` FR1–FR5; `component:swift/Item`; the Swift component API, slots, theme environment, and accessibility records under `packages/native/specs/swift/library/`.                     |
+| Area                    | Contract                                                                                                                                                                                                       |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public contract         | `ListItem(_ label:, description:, align:, href:, isDisabled:, isSelected:, startContent:, endContent:, onClick:)` 与 `ListItem(_ props: ListItemProps, startContent:, endContent:)`，一个泛型 SwiftUI `View`。 |
+| Behavior                | 在 `List` 周围以该列表的密度、标记、分隔线与边缘绘制 `component:swift/Item`：标签首行上的圆点、圆环或其编号；分隔线之间为直角；齐边列表中没有内联内缩。                                                        |
+| End-user impact         | 用户在 iPhone 上看到的项目符号列表、编号列表、设置列表与分隔列表，其布局与 Web 上一致，且无论行如何换行，每个标记都位于其行首行旁边。                                                                          |
+| Builder impact          | 应用把 `ListItem` 放入 `List`；行采用列表的外观。滑动操作、`target` 与 `rel` 没有 Swift 形式。                                                                                                                 |
+| Compatibility/readiness | 增量式：一个新视图与生成的 `ListItemProps`，以及 `Item` 上的内部列表钩子。草稿；已在 macOS 与 iOS 模拟器上构建并测试；设备截图附加在变更中。                                                                   |
+| Review checks           | 拒绝以下情况：标记离开标签首行、行忽略其列表的密度、分隔线带圆角、齐边列表中出现内缩，或列表样式泄漏到插槽中嵌套的行。                                                                                         |
+| Governing rules         | `spec:AST-082` FR3、FR4、FR7；`spec:AST-093` FR1–FR5；`component:swift/Item`；`packages/native/specs/swift/library/` 下的 Swift 组件 API、插槽、主题环境与可访问性记录。                                       |
 
-This table is a review projection; the body below is authoritative.
+本表是评审投影；以下正文具有权威性。
 
 ## Intent
 
-ListItem on Apple platforms is a row that belongs to a list: it draws as
-`Item` and takes the list's density, marker, dividers, and edge, so every row
-of a list matches without the app repeating them.
+Apple 平台上的 ListItem 是属于某个列表的行：它绘制为 `Item`，并采用该列表的密度、标记、分隔线与边缘，因此列表的每一行都一致，无需应用重复设置。
 
 ## Compatibility and migration
 
-- Released default preserved: `not yet released`
-- Compatibility class: additive
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 已发布默认值保持不变：`not yet released`
+- 兼容性类别：增量式
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方的迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**负责**
 
-- Reading the list around it and handing `Item` its density, marker, inline
-  inset, and corners.
-- Drawing the marker: a dot, a ring, or the row's number.
+- 读取其周围的列表，并把密度、标记、内联内缩与圆角交给 `Item`。
+- 绘制标记：圆点、圆环或行的编号。
 
-**Does not own / non-goals**
+**不负责 / 非目标**
 
-- The row's layout, words, states, and taps — owned by `component:swift/Item`.
-- Numbering, dividers between rows, and the list's edge — owned by the list
-  that holds the rows.
-- Swipe actions — web-only for now (`component:swift/Item` DEC-1).
+- 行的布局、文字、状态与点击——由 `component:swift/Item` 负责。
+- 编号、行间分隔线与列表边缘——由持有这些行的列表负责。
+- 滑动操作——目前仅限 Web（`component:swift/Item` DEC-1）。
 
 ## Public concepts
 
-| Concept | Closed values or states | Meaning                                                          | Availability by variant/orientation/state | Default | Owner                      | Stability    | Invalid-value behavior |
-| ------- | ----------------------- | ---------------------------------------------------------------- | ----------------------------------------- | ------- | -------------------------- | ------------ | ---------------------- |
-| marker  | none, dot, ring, number | the list's marker for this row, from its list style              | inside a list with a marker style         | none    | `component:ListItem`       | experimental | none                   |
-| list    | inside a list; alone    | inside a list the row takes its look; alone it is a plain `Item` | always                                    | alone   | `component:swift/ListItem` | experimental | none                   |
+| 概念   | 封闭取值或状态          | 含义                                              | 按变体/方向/状态的可用性 | 默认值 | 所有者                     | 稳定性       | 无效值行为 |
+| ------ | ----------------------- | ------------------------------------------------- | ------------------------ | ------ | -------------------------- | ------------ | ---------- |
+| marker | none, dot, ring, number | 该行的列表标记，来自其列表样式                    | 位于带标记样式的列表中   | none   | `component:ListItem`       | experimental | none       |
+| list   | 位于列表中；单独        | 在列表中时行采用列表的外观；单独时它是普通 `Item` | 始终                     | 单独   | `component:swift/ListItem` | experimental | none       |
 
 ## Behavioral and layout contract
 
-| ID  | Candidate invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Basis                                      | Draft review state |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ------------------ |
-| FR1 | The row MUST draw as `component:swift/Item` with its own label, description, alignment, link, tap, and states, and with the density of the list around it; alone it MUST draw exactly as that `Item`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | core `ListItem`                            | verify             |
-| FR2 | In a list with a marker style, the row MUST draw a marker in a column `space.s4` wide, grown with Dynamic Type and the same on every row, before its start content: a 6-point dot filled with `color.textPrimary` for `disc`, a 6-point ring stroked 1 point in `color.textPrimary` for `circle`, or its number and a period in the body type with tabular figures for `decimal`, ending at the column's end so every period in the list lines up, as core's numbered markers do. A number wider than the column reaches into the row's inline inset; a number wider than both widens the column on every row of the list alike, so no number moves its own row's words, overlaps them, or is cut, and every row keeps the list's text edge. The marker's center sits on the center of the label's first line box for every alignment. | core `ListItem` markers                    | verify             |
-| FR3 | In a list with dividers the row MUST draw its background with square corners; in a flush list it MUST have no inline inset, so its content and background reach the list's edges.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | core `ListItem` `withDivider`, `edgeFlush` | verify             |
-| FR4 | The list's treatment, look, and numbering MUST apply to this row only, not to rows nested in its start or end content.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | core `ListContext` scope                   | verify             |
-| FR5 | Both initializers MUST build the same `ListItemProps`. Slots are generic `@ViewBuilder` closures with empty defaults; a single trailing closure is the start content and `onClick` comes last. Base props come through `ListItemProps`. A ListItem node sent by a logic core draws its start and end content nodes in those slots (`spec:AST-082` FR19).                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Swift component API A2–A4, A7; slots S3    | verify             |
+| ID  | Candidate invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Basis                                         | Draft review state |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ------------------ |
+| FR1 | 该行 MUST 绘制为 `component:swift/Item`，带自己的标签、描述、对齐、链接、点击与状态，并采用其周围列表的密度；单独时它 MUST 与那个 `Item` 绘制得完全一致。                                                                                                                                                                                                                                                                                                                                                                                                                           | core `ListItem`                               | verify             |
+| FR2 | 在带标记样式的列表中，该行 MUST 在其起始内容之前、宽度为 `space.s4` 的列中绘制一个标记，该列随 Dynamic Type 增大且在每一行上相同：`disc` 为以 `color.textPrimary` 填充的 6 点圆点，`circle` 为以 `color.textPrimary` 描边 1 点的 6 点圆环，`decimal` 为其编号加一个句点，使用正文字体与等宽数字，并在列末结束，使列表中每个句点对齐，与 core 的编号标记一致。宽于该列的编号会伸入行的内联内缩；宽于两者的编号会同样加宽列表中每一行的该列，因此任何编号都不会移动自己行的文字、与之重叠或被截断，且每一行都保持列表的文本边缘。对于每种对齐方式，标记的中心都位于标签首行盒的中心。 | core `ListItem` markers                       | verify             |
+| FR3 | 在带分隔线的列表中，该行 MUST 以直角绘制其背景；在齐边列表中，它 MUST 没有内联内缩，因此其内容与背景延伸到列表的边缘。                                                                                                                                                                                                                                                                                                                                                                                                                                                              | core `ListItem` 的 `withDivider`、`edgeFlush` | verify             |
+| FR4 | 列表的处理方式、外观与编号 MUST 仅应用于该行，而不应用于其起始或结束内容中嵌套的行。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | core `ListContext` 作用域                     | verify             |
+| FR5 | 两个初始化器 MUST 构建相同的 `ListItemProps`。插槽是带空默认值的泛型 `@ViewBuilder` 闭包；单个尾随闭包是起始内容，`onClick` 最后。基础属性通过 `ListItemProps` 传入。由逻辑核心发送的 ListItem 节点会在这些插槽中绘制其起始与结束内容节点（`spec:AST-082` FR19）。                                                                                                                                                                                                                                                                                                                  | Swift 组件 API A2–A4、A7；插槽 S3             | verify             |
 
 ### Allowed variation
 
-- **AV1 — Marker drawing.** The dot and ring are SwiftUI shapes at core's size,
-  not CSS boxes.
+- **AV1 — 标记绘制。** 圆点与圆环是 core 尺寸的 SwiftUI 形状，而非 CSS 盒子。
 
 ### Representative states
 
-| State                         | Required invariant                            | Allowed variation |
-| ----------------------------- | --------------------------------------------- | ----------------- |
-| alone                         | the same as `Item`                            | none              |
-| in a list: each density       | the list's padding                            | none              |
-| disc, circle, decimal markers | on the label's first line for every alignment | AV1               |
-| dividers; flush               | square corners; no inline inset               | none              |
-| light and dark                | each theme's colors                           | none              |
+| 状态                       | 必需不变式                   | 允许的变化 |
+| -------------------------- | ---------------------------- | ---------- |
+| 单独                       | 与 `Item` 相同               | none       |
+| 在列表中：每种密度         | 列表的内边距                 | none       |
+| disc、circle、decimal 标记 | 在每种对齐方式下位于标签首行 | AV1        |
+| 分隔线；齐边               | 直角；无内联内缩             | none       |
+| 浅色与深色                 | 各主题的颜色                 | none       |
 
 ### Transformation and precedence order
 
-- **ORD1 — Density.** The list's density → `balanced`.
+- **ORD1 — 密度。** 列表的密度 → `balanced`。
 
 ### Performance and resources
 
-- **PR1 — One extra measure.** Inside a list with markers, a centre-aligned row
-  measures its words to place the marker on the first line; other rows measure
-  nothing.
-- **PR2 — Numbering.** Inside a list, the row reports its identity to the list
-  once, and the list numbers its rows in the order they appear. A numbered row
-  also reports its number's width, from which the list sizes one shared column.
+- **PR1 — 一次额外测量。** 在带标记的列表内，居中对齐的行会测量其文字，以便把标记放在首行；其他行不测量任何内容。
+- **PR2 — 编号。** 在列表内，行向列表报告其身份一次，列表按行出现的顺序为其编号。带编号的行还会报告其编号的宽度，列表据此确定一个共享列的尺寸。
 
 ## Accessibility contract
 
-- **AR1 — One row.** The row is the `Item`'s one element; a number marker is
-  read first, as part of the row ("3. Mix the batter"); a dot or ring is hidden
-  (Swift accessibility X5).
-- **AR2 — Rendered tree not measured.** Tests assert what the view sets; the
-  rendered accessibility tree is not measured until an app-hosted target
-  exists.
+- **AR1 — 单行。** 行是 `Item` 的单个元素；编号标记最先被朗读，作为行的一部分（“3. Mix the batter”）；圆点或圆环被隐藏（Swift 可访问性 X5）。
+- **AR2 — 不测量渲染树。** 测试断言视图所设置的内容；在存在应用托管的测试目标之前，不测量渲染后的可访问性树。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                 | Representation authority | Hierarchy role | Component contract |
-| ---------------- | -------------------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Row and marker   | Apple Human Interface Guidelines, Lists and tables | prescribed by core       | supporting     | FR1–FR3            |
+| 解剖结构或状态 | 设计要求                                             | 表示权威     | 层级角色 | 组件契约 |
+| -------------- | ---------------------------------------------------- | ------------ | -------- | -------- |
+| 行与标记       | Apple Human Interface Guidelines 的 Lists and tables | 由 core 规定 | 支持性   | FR1–FR3  |
 
-The component implements design requirements without copying their rationale.
+组件实现设计要求，但不复制其理由。
 
-Platform control: none of its own; the row is `component:swift/Item`, which
-names the SwiftUI controls it uses (`spec:AST-093` FR2). Guideline pages:
-Lists and tables, and Accessibility in the Apple Human Interface Guidelines.
+平台控件：没有自己的控件；该行是 `component:swift/Item`，它指明所使用的 SwiftUI 控件（`spec:AST-093` FR2）。指南页面：Apple Human Interface Guidelines 中的 Lists and tables 与 Accessibility。
 
-Theme values read: `space.s4`, `color.textPrimary`, the body type, and through
-`Item` its tokens.
+读取的主题值：`space.s4`、`color.textPrimary`、正文字体，以及通过 `Item` 读取其令牌。
 
 ## Family and system relationships
 
-- `component:swift/Item` owns the row; this record states only what a list
-  row adds.
-- `component:ListItem` owns the props and markers.
+- `component:swift/Item` 负责该行；本记录只说明列表行额外增加的内容。
+- `component:ListItem` 负责属性与标记。
 
 ## Verification map
 
-| Contract | Verification                                                                                                                                | Representative states                                                                                                                                                                         | Mutation or failure expectation                                                                                                                                                                                     | Audit section                 |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| FR1      | `ListItemTests.swift` alone and density renders                                                                                             | alone; compact and spacious lists                                                                                                                                                             | a row that differs from `Item` alone or ignores density fails                                                                                                                                                       | `audit:swift/ListItem/row`    |
-| FR2, AR1 | `ListItemTests.swift` number, numbering, column, period-alignment, shared-column, first-line, largest-text, two-theme, and read-aloud tests | decimal; numbering from 3; "1." and "10."; a number wider than the column and inset; "9." at the largest text size; disc with each alignment and at the largest text size; neutral and butter | a missing or wrong number, periods that do not line up, a column that widens for a number that fits the inset or does not widen for every row, a marker off the first line, a color of its own, or a read dot fails | `audit:swift/ListItem/marker` |
-| FR3      | `ListItemTests.swift` flush and divider renders                                                                                             | padded and flush; with and without dividers                                                                                                                                                   | an inset in a flush list or a rounded corner between dividers fails                                                                                                                                                 | `audit:swift/ListItem/edge`   |
-| FR4      | `ListItemTests.swift` nested-row test                                                                                                       | a row in a row's end content                                                                                                                                                                  | a nested row with the list's marker or inset fails                                                                                                                                                                  | `audit:swift/ListItem/scope`  |
-| FR5      | `ListItemTests.swift` initializer and wire-slot tests; `contracts.test.ts`                                                                  | both initializers; a wire node with start content                                                                                                                                             | differing props, or a wire node whose slots do not draw, fail                                                                                                                                                       | `audit:swift/ListItem/api`    |
+| 契约     | 验证                                                                                           | 代表性状态                                                                                                                               | 变更或失败预期                                                                                                               | 审计章节                      |
+| -------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| FR1      | `ListItemTests.swift` 的单独与密度渲染                                                         | 单独；紧凑与宽松列表                                                                                                                     | 单独时与 `Item` 不同或忽略密度的行失败                                                                                       | `audit:swift/ListItem/row`    |
+| FR2, AR1 | `ListItemTests.swift` 的编号、编号编排、列、句点对齐、共享列、首行、最大文本、双主题与朗读测试 | decimal；从 3 开始编号；“1.” 与 “10.”；宽于列与内缩的编号；最大文本尺寸下的 “9.”；每种对齐方式及最大文本尺寸下的 disc；neutral 与 butter | 缺少或错误的编号、未对齐的句点、为适合内缩的编号而加宽或未对每一行加宽的列、偏离首行的标记、自有颜色，或可朗读的圆点，均失败 | `audit:swift/ListItem/marker` |
+| FR3      | `ListItemTests.swift` 的齐边与分隔线渲染                                                       | 有内边距与齐边；有分隔线与无分隔线                                                                                                       | 齐边列表中的内缩或分隔线之间的圆角失败                                                                                       | `audit:swift/ListItem/edge`   |
+| FR4      | `ListItemTests.swift` 的嵌套行测试                                                             | 行结束内容中的一行                                                                                                                       | 带列表标记或内缩的嵌套行失败                                                                                                 | `audit:swift/ListItem/scope`  |
+| FR5      | `ListItemTests.swift` 的初始化器与接线插槽测试；`contracts.test.ts`                            | 两个初始化器；带起始内容的接线节点                                                                                                       | 属性不一致，或插槽不绘制的接线节点，失败                                                                                     | `audit:swift/ListItem/api`    |
 
 ## Decision log
 
-No component-local decision is recorded.
+未记录组件本地决策。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不重复使用方属性表/示例、当前审计结果、实现步骤或 family/system 规则。它链接到其所有者。

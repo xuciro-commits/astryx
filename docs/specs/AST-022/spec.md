@@ -25,242 +25,98 @@ affects_consumer_docs: [theme]
 
 ## Intent
 
-Theme authors need to know whether a theme follows another theme or merely uses
-it as a starting point. `defineTheme({extends})` intentionally keeps a source
-dependency on a resolved base theme. That is useful when an author wants fixes,
-new component coverage, and other updates from the base, but it can also change
-the child theme when the dependency is upgraded.
+主题作者需要判断一个主题是跟随另一个主题，还是仅将其用作起点。`defineTheme({extends})` 有意保留对已解析基础主题的源码依赖。当作者希望从基础主题获得修复、新的组件覆盖和其他更新时，这很有用，但当依赖升级时，它也可能改变子主题。
 
-Astryx should therefore support two explicit workflows:
+因此，Astryx 应支持两种显式工作流：
 
-- **Follow:** retain `extends` and continue adopting changes from the base theme.
-- **Own:** resolve the current authoring inputs into reviewable local source that
-  no longer depends on the selected base theme or on mutable generation formulas.
+- **跟随：** 保留 `extends`，继续采用基础主题的变更。
+- **拥有：** 将当前的创作输入解析为可审阅的本地源码，使其不再依赖所选基础主题，也不依赖可变的生成公式。
 
-Materialization is the shared technical operation behind taking a fully owned
-snapshot.
-It resolves inherited and generated theme-authoring values, previews the exact
-change, and writes an equivalent local theme only through a separate explicit write
-invocation, not a prompt or read from stdin.
+物化（materialization）是取得完全拥有快照这一过程背后共享的技术操作。它解析继承而来和生成的主题创作值，预览确切的变更，并且仅通过一次独立的显式写入调用来写入等价本地主题，而不是通过提示或从 stdin 读取。
 
 ## Non-goals
 
-- Change the current meaning or precedence of `defineTheme({extends})`.
-- Remove `extends`, typography, motion, radius, or color configuration in this
-  specification pull request.
-- Define tonal palette generation, accepted palette validation, semantic color
-  recommendations, or contextual contrast analysis.
-- Define how authors create new typography, spacing, motion, or radius values
-  beyond Astryx's built-in scales. Theme-local scale extension is owned by the
-  separate AST-023 proposal.
-- Promise that a snapshot freezes component implementations across Astryx package
-  upgrades. It freezes theme-authoring inputs, not the library code that consumes
-  them.
-- Serialize arbitrary executable React nodes or functions as if they were plain
-  data.
-- Update, overwrite, or detach a theme without an author-visible preview and an
-  explicit write decision.
+- 改变 `defineTheme({extends})` 当前的含义或优先级。
+- 在本次规格 pull request 中移除 `extends`、排版、动效、圆角或颜色配置。
+- 定义色调调色板生成、已接受调色板校验、语义颜色建议或上下文对比度分析。
+- 定义作者如何在 Astryx 内置刻度之外创建新的排版、间距、动效或圆角值。主题本地刻度扩展由单独的 AST-023 提案负责。
+- 承诺快照会在 Astryx 包升级时冻结组件实现。它冻结的是主题创作输入，而不是使用这些输入的库代码。
+- 将任意可执行的 React 节点或函数序列化为普通数据。
+- 在作者看不到预览且没有显式写入决定的情况下更新、覆盖或分离主题。
 
 ## Terms
 
-- **Following theme:** source with an `extends` relationship. Re-resolving it may
-  adopt changes from the selected base theme.
-- **Fully owned snapshot:** local theme source containing every resolved value
-  exposed by the public theme-authoring contract. Reproducing it does not require
-  the selected base theme or mutable scale-generation behavior.
-- **Materialize:** resolve inherited and generated authoring inputs into explicit,
-  reviewable local source.
-- **Detach:** materialize a following theme and remove its `extends` relationship.
-- **Freeze:** materialize selected generated scales while retaining any intended
-  inheritance relationship.
-- **Lineage-bound local token:** a theme-local name whose declaration and use are
-  valid only through the enrolled exact `extends` lineage that owns it.
-- **Unresolved executable value:** an inherited icon, indicator, syntax definition,
-  or other value that tooling cannot safely express as generated source.
+- **跟随主题：** 带有 `extends` 关系的源码。重新解析它可能会采用所选基础主题的变更。
+- **完全拥有快照：** 包含公共主题创作契约所暴露的每一个已解析值的本地主题源码。复现它不需要所选基础主题，也不需要可变的刻度生成行为。
+- **物化（Materialize）：** 将继承而来和生成的创作输入解析为显式、可审阅的本地源码。
+- **分离（Detach）：** 物化一个跟随主题，并移除其 `extends` 关系。
+- **冻结（Freeze）：** 物化选定的生成刻度，同时保留任何有意为之的继承关系。
+- **受谱系约束的本地令牌：** 一种主题本地名称，其声明和使用仅通过拥有它的、已登记的确切 `extends` 谱系才有效。
+- **未解析的可执行值：** 继承而来的图标、指示器、语法定义或其他值，工具无法安全地将其表达为生成源码。
 
 ## Ownership
 
-| Owner                      | Contract                                                                                       |
-| -------------------------- | ---------------------------------------------------------------------------------------------- |
-| AST-022                    | Follow-versus-own choice, materialization behavior, preview, writes, and equivalence evidence. |
-| Theme author               | The selected lifecycle, committed output, retained dependencies, and accepted visual changes.  |
-| `defineTheme` architecture | Current normalization, precedence, inheritance, and supported authoring surfaces.              |
-| CLI authoring surface      | Discovery, preview, source generation, receipts, safe writes, and actionable failures.         |
-| Palette specifications     | Palette generation, accepted palette ownership, and exact palette-reference behavior.          |
+| Owner              | Contract                                                     |
+| ------------------ | ------------------------------------------------------------ |
+| AST-022            | 跟随与拥有的选择、物化行为、预览、写入和等价性证据。         |
+| 主题作者           | 所选生命周期、已提交输出、保留的依赖以及已接受的视觉变更。   |
+| `defineTheme` 架构 | 当前的规范化、优先级、继承和受支持的创作表面。               |
+| CLI 创作面         | 发现、预览、源码生成、回执、安全写入和可操作的失败。         |
+| 调色板规格         | 调色板生成、已接受调色板的拥有权，以及确切的调色板引用行为。 |
 
 ## Choosing a lifecycle
 
-The choice controls who is responsible for future theme changes. Neither option is
-universally better, so authoring tools must explain both before writing.
+这一选择决定了未来主题变更由谁负责。两种选项并非普遍更优，因此创作工具必须在写入之前解释两者的后果。
 
-| Choice                       | Benefits                                                                                                                                             | Tradeoffs                                                                                                                                      | Best fit                                                                                                     |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Follow a base with `extends` | Smaller source; receives reviewed fixes, new theme coverage, and coordinated updates from the base; convenient for related variants.                 | Upgrading the base may change the child theme; reviewers must consider inherited changes; reproducing the source requires the base dependency. | A variant that intentionally stays aligned with another theme, especially when both are maintained together. |
-| Take a fully owned snapshot  | Every public theme value is explicit and locally reviewable; base and Core default changes do not alter saved values; the author can diverge freely. | Larger source; the author maintains copied values; later fixes and new coverage from the former base are not adopted automatically.            | A product or application theme that prioritizes control and visual stability.                                |
-| Detach an existing theme     | Preserves the theme's current resolved values, name, and imports while ending a previously chosen base relationship.                                 | Produces a larger change to review; future base improvements require an explicit comparison and adoption.                                      | A following theme whose author later decides to own its current appearance.                                  |
-| Freeze selected generators   | Makes chosen generated values explicit without requiring a complete detach.                                                                          | Retained base and generator dependencies can still change other values; the result is partial materialization, not full ownership.             | A theme that wants control over one scale while intentionally continuing to follow elsewhere.                |
+| Choice                      | Benefits                                                                                               | Tradeoffs                                                                          | Best fit                                                       |
+| --------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| 使用 `extends` 跟随基础主题 | 源码更小；接收来自基础主题的已审阅修复、新主题覆盖和协同更新；便于相关变体。                           | 升级基础主题可能改变子主题；审阅者必须考虑继承而来的变更；复现源码需要该基础依赖。 | 有意与另一个主题保持一致的变体，尤其当两者一起维护时。         |
+| 取得完全拥有快照            | 每个公共主题值都显式且可在本地审阅；基础主题和 Core 默认值的变更不会改变已保存的值；作者可以自由偏离。 | 源码更大；作者要维护复制的值；来自原基础主题的后续修复和新覆盖不会被自动采用。     | 优先考虑控制力和视觉稳定性的产品或应用主题。                   |
+| 分离现有主题                | 保留主题当前的已解析值、名称和导入，同时结束先前选择的基础关系。                                       | 产生的变更更大，需要审阅；未来的基础改进需要显式比较并采用。                       | 跟随主题的作者后来决定拥有其当前外观。                         |
+| 冻结选定的生成器            | 使选定的生成值显式化，而无需完全分离。                                                                 | 保留的基础和生成器依赖仍可能改变其他值；结果是部分物化，而不是完全拥有。           | 希望对某一个刻度拥有控制权、同时有意继续在其他方面跟随的主题。 |
 
-The CLI MUST describe the selected result in these terms. It MUST NOT use
-“self-contained,” “detached,” or “fully owned” for output that still depends on an
-unreported base or mutable generator.
+CLI 必须用这些术语描述所选结果。对于仍依赖未报告的基础主题或可变生成器的输出，它不得使用“自包含”“已分离”或“完全拥有”。
 
 ## Requirements
 
 ### Explicit lifecycle choice
 
-- **FR1 — Following and owning are different promises.** Tooling that starts a new
-  theme from an existing theme MUST present following the base and taking a fully
-  owned starting point as explicit choices. It MUST explain that following receives
-  later base changes while ownership accepts local maintenance, and MUST require an
-  explicit option selecting one before writing. When the option is absent, the CLI
-  MUST return the available choices without writing or reading stdin. Tooling MAY
-  recommend one choice from the author's stated goal, but MUST NOT silently select
-  it or describe `extends` as a fully independent copy.
-- **FR2 — Following preserves current `extends` semantics.** A following theme
-  retains its base dependency and may adopt the base's resolved token, component,
-  media-surface, icon, indicator, syntax, and local-token changes after an
-  intentional dependency update. The resulting `DefinedTheme` remains flattened
-  for consumption, but flattening at runtime or build time MUST NOT be presented as
-  source independence.
-- **FR3 — An owned start writes local source.** Choosing a base only as a starting
-  point MUST create a fully owned snapshot. Subsequent changes to the selected base
-  or Core theme defaults MUST NOT alter its saved theme values unless the author
-  explicitly runs a migration or comparison workflow.
+- **FR1 — 跟随与拥有是不同的承诺。** 从现有主题启动新主题的工具必须把跟随基础主题和取得完全拥有的起点作为显式选项呈现。它必须说明：跟随会在后续接收基础主题的变更，而拥有则接受本地维护；并且必须在写入之前要求一个显式选项来选择其中之一。当该选项缺失时，CLI 必须返回可用的选项，而不写入、也不读取 stdin。工具可以根据作者陈述的目标推荐某个选项，但不得静默选择它，也不得将 `extends` 描述为完全独立的副本。
+- **FR2 — 跟随保留当前 `extends` 语义。** 跟随主题保留其基础依赖，并可能在意向明确的依赖更新之后采用基础主题已解析的令牌、组件、媒体表面、图标、指示器、语法和本地令牌变更。生成的 `DefinedTheme` 对使用方仍保持扁平化，但运行时或构建时的扁平化不得被描述为源码独立。
+- **FR3 — 拥有的起点写入本地源码。** 仅将基础主题用作起点时，必须创建完全拥有快照。除非作者显式运行迁移或比较工作流，否则对所选基础主题或 Core 主题默认值的后续变更不得改变其保存的主题值。
 
 ### Materialization boundary
 
-- **FR4 — Materialization covers configurable theme surfaces.** The operation MUST
-  account for inherited values and for values generated by current typography,
-  motion, radius, and color configuration. It MUST preserve explicit-token and
-  explicit-component precedence. It MUST also inventory local tokens, `onDark`,
-  `onLight`, syntax, icons, and indicators rather than silently dropping them.
-- **FR4a — Detach cannot copy lineage-bound local tokens unchanged.** Before
-  removing `extends`, tooling MUST inspect inherited local-token declarations,
-  owner metadata, and every reachable reference. An inherited name is valid only
-  through its exact enrolled base lineage; copying that name into the detached
-  theme would make it a foreign declaration and fail the current validator.
-  Detach MUST therefore stop before writing and require an explicit local-token
-  migration that is reviewed under the owning theme specifications. That migration
-  MUST map affected names into the detached theme's namespace, rewrite every
-  reachable declaration and reference, and preserve any compatibility alias
-  required by the released token contract. If the author does not choose such a
-  migration, tooling MUST retain `extends`, report the lineage dependency, and MUST
-  NOT describe the result as detached or fully owned.
-- **FR5 — Materialization produces authoring source, not only compiled output.** A
-  CSS or JavaScript build artifact alone is insufficient because it does not give
-  the author an editable theme definition. Output MUST be suitable for committing,
-  reviewing, and rebuilding with the supported theme toolchain.
-- **FR5a — Full ownership includes all resolved public theme values.** A fully owned
-  snapshot MUST write every value exposed by the public theme-authoring contract,
-  including values currently equal to Core defaults. Output that records only
-  differences remains dependent on future Core defaults and MUST NOT be labeled
-  fully owned.
-- **FR5b — Authoring projection is separate from runtime representation.**
-  Materialization MAY produce a larger, fully explicit source projection so an
-  author can read, edit, review, and rebuild every resolved value. That projection
-  MUST NOT by itself force the shipped theme to carry the same expanded data.
-- **FR5c — Preview shows the size tradeoff.** Before writing, the preview MUST show
-  the source projection and the equivalent compiled/runtime output, including the
-  resulting CSS, JavaScript, and package-size impact compared with the current
-  theme. Inspecting or editing a resolved view MUST NOT be described as free of
-  runtime cost when the selected ownership choice would increase it.
-- **FR5d — Receipts and authoring metadata stay out of runtime artifacts.** Receipts,
-  provenance, comparison evidence, and authoring-only metadata MUST remain in
-  sidecar or development output and MUST NOT be bundled into runtime CSS,
-  JavaScript, or package exports. Equivalent runtime output MUST retain the
-  existing compact representation or use an equivalent deduplicated form. Detach
-  MAY accept a real size increase only as an explicit, previewed ownership tradeoff.
-- **FR6 — Theme ownership has an honest boundary.** Materialization freezes the
-  theme values expressible through the current public authoring contract. It MUST
-  state the Astryx version used and MUST NOT claim to freeze internal component
-  markup, default styles outside the theme contract, browser rendering, or future
-  package behavior.
-- **FR7 — Theme-owned palette references remain owned.** A reference to an exact
-  value in the same theme's committed palette file remains a reference by default;
-  it does not need to be replaced with a copied hex value. When a palette belongs
-  to another package, tooling MUST require an explicit option to retain that visible
-  dependency or copy the current value locally.
+- **FR4 — 物化覆盖可配置的主题表面。** 该操作必须考虑继承而来的值，以及由当前排版、动效、圆角和颜色配置生成的值。它必须保留显式令牌和显式组件的优先级。它还必须清点本地令牌、`onDark`、`onLight`、语法、图标和指示器，而不是静默丢弃它们。
+- **FR4a — 分离不能原样复制受谱系约束的本地令牌。** 在移除 `extends` 之前，工具必须检查继承而来的本地令牌声明、所有者元数据以及每一个可达引用。继承而来的名称仅通过其确切登记的基础谱系才有效；把该名称复制到已分离的主题中会使其成为外来声明，并导致当前校验器失败。因此，分离必须在写入之前停止，并要求一个显式的本地令牌迁移，该迁移要在拥有该主题的规格下审阅。该迁移必须把受影响的名称映射到已分离主题的命名空间，重写每一个可达声明和引用，并保留已发布令牌契约所需的任何兼容别名。如果作者不选择这样的迁移，工具必须保留 `extends`、报告谱系依赖，并且不得将结果描述为已分离或完全拥有。
+- **FR5 — 物化产出创作源码，而不只是编译输出。** 仅有 CSS 或 JavaScript 构建产物是不够的，因为它没有给作者一个可编辑的主题定义。输出必须适合提交、审阅，并能用受支持的主题工具链重新构建。
+- **FR5a — 完全拥有包含所有已解析的公共主题值。** 完全拥有快照必须写入公共主题创作契约所暴露的每一个值，包括当前等于 Core 默认值的值。仅记录差异的输出仍依赖未来的 Core 默认值，不得标记为完全拥有。
+- **FR5b — 创作投影与运行时表示相互独立。** 物化可以产出一个更大、完全显式的源码投影，以便作者读取、编辑、审阅和重新构建每一个已解析值。该投影本身不得强制交付主题携带同样展开的数据。
+- **FR5c — 预览展示体积取舍。** 在写入之前，预览必须显示源码投影和等价的编译/运行时输出，包括与当前主题相比产生的 CSS、JavaScript 和包体积影响。当所选的拥有选项会增加运行时成本时，不得将检查或编辑已解析视图描述为没有运行时成本。
+- **FR5d — 回执和创作元数据不进入运行时产物。** 回执、来源、比较证据和仅用于创作的元数据必须保留在附属文件或开发输出中，不得打包进运行时 CSS、JavaScript 或包导出。等价的运行时输出必须保留现有的紧凑表示，或使用等价的去重形式。分离只有在作为显式且已预览的拥有取舍时，才可以接受真实的体积增加。
+- **FR6 — 主题拥有有诚实的边界。** 物化冻结可通过当前公共创作契约表达的主题值。它必须说明所用的 Astryx 版本，并且不得声称冻结了内部组件标记、主题契约之外的默认样式、浏览器渲染或未来的包行为。
+- **FR7 — 主题自有的调色板引用保持自有。** 对同一主题已提交调色板文件中确切值的引用，默认仍然是引用；它不需要被替换为复制的十六进制值。当调色板属于另一个包时，工具必须要求一个显式选项，以保留该可见依赖或在本地复制当前值。
 
 ### Executable values and failure behavior
 
-- **FR8 — Executable values require source-preserving handling.** Generated source
-  MAY preserve an icon, indicator, syntax definition, or other executable value
-  through an explicit import only when the author intentionally retains and reports
-  that dependency. A fully owned snapshot MUST replace a value inherited from the
-  selected base with equivalent owned local source or an author-supplied local
-  reference that does not import the former base. When tooling cannot safely
-  construct or validate that source, the operation MUST report the exact field and
-  stop before writing. If the author instead retains the base import, the preview
-  and receipt MUST report it and the result MUST NOT be labeled fully owned or
-  source-independent. Tooling MUST NOT stringify, omit, or replace executable
-  values with placeholders.
-- **FR9 — Writes are atomic and opt-in.** Preview is the default. Writing requires
-  an explicit author action, uses a temporary destination, validates the complete
-  result, and replaces target files only after success. Existing modified output
-  MUST NOT be overwritten without a separate explicit overwrite option. Detach
-  updates the selected existing theme by adding its resolved values and removing
-  `extends`; it does not create a second theme or require callers to change imports.
-- **FR10 — Partial materialization is explicit.** An author MAY choose to freeze only
-  selected generated scales while continuing to follow a base. The preview and
-  receipt MUST identify every retained dependency. A partial operation MUST NOT be
-  labeled detached or owned.
+- **FR8 — 可执行值需要保留源码的处理。** 只有在作者有意保留并报告该依赖时，生成的源码才可以通过显式导入保留图标、指示器、语法定义或其他可执行值。完全拥有快照必须用等价的拥有本地源码，或作者提供的、不导入原基础主题的本地引用，替换从所选基础主题继承的值。当工具无法安全地构造或校验该源码时，操作必须报告确切的字段并在写入之前停止。如果作者改为保留基础导入，预览和回执必须报告它，且结果不得标记为完全拥有或源码独立。工具不得把可执行值字符串化、省略，或用占位符替换。
+- **FR9 — 写入是原子且需显式选择的。** 预览是默认行为。写入需要作者显式操作，使用临时目标，校验完整结果，并且仅在成功后才替换目标文件。已修改的现有输出不得在没有单独显式覆盖选项的情况下被覆盖。分离通过添加其已解析值并移除 `extends` 来更新所选现有主题；它不会创建第二个主题，也不要求调用方更改导入。
+- **FR10 — 部分物化是显式的。** 作者可以选择仅冻结选定的生成刻度，同时继续跟随某个基础主题。预览和回执必须标明每一个保留的依赖。部分操作不得标记为已分离或已拥有。
 
 ### Equivalence and review
 
-- **FR11 — Before and after resolve equivalently.** A successful full
-  materialization MUST compare the original and proposed themes under the same
-  Astryx version. Tokens, component overrides, media-surface overrides, local-token
-  declarations, local-token owner and lineage metadata, and registry selections
-  MUST match. A difference blocks the write unless the author explicitly chooses a
-  separate migration that records the intended change. For a local-token migration,
-  equivalence evidence MUST additionally show the old-to-new name mapping, every
-  rewritten reference, equivalent resolved behavior after applying that mapping,
-  and any required compatibility alias. Compiled differences MUST be limited to the
-  recorded renames and aliases and included in the preview and size comparison; an
-  unaccounted foreign or undeclared name blocks the write.
-- **FR12 — The preview explains consequences.** Before writing, tooling MUST show
-  the removed base or generator dependencies, files to be created or changed,
-  unresolved executable values, retained dependencies, and an exact semantic
-  summary. Visual comparison MAY supplement this evidence but MUST NOT replace the
-  structural comparison.
-- **FR13 — Every write has a receipt.** The receipt MUST include the tool and
-  Astryx versions, source theme identity, original base identity and version when
-  applicable, selected operation and surfaces, input and output digests, retained
-  dependencies, generated file paths, and verification result. It MUST NOT be
-  required at runtime.
-- **FR14 — Repeated output is stable.** With the same source, versions, options,
-  and environment-independent inputs, materialization MUST produce byte-identical
-  generated files and receipts except for an explicitly excluded invocation time.
-- **FR14a — Future comparison is read-only.** A fully owned snapshot MAY later compare
-  itself with a newer release of its former base using receipt metadata. The
-  comparison MUST be explicitly requested, MUST show the proposed structural and
-  visual differences, and MUST NOT update the owned source or recreate inheritance
-  automatically.
+- **FR11 — 变更前后解析等价。** 成功的完全物化必须在同一个 Astryx 版本下比较原始主题和提议主题。令牌、组件覆盖、媒体表面覆盖、本地令牌声明、本地令牌所有者与谱系元数据以及注册表选择都必须匹配。除非作者显式选择一个记录预期变更的独立迁移，否则任何差异都会阻止写入。对于本地令牌迁移，等价证据还必须显示旧名称到新名称的映射、每一个被重写的引用、应用该映射后等价的已解析行为，以及任何所需的兼容别名。编译差异必须限于记录的改名和别名，并纳入预览和体积比较；任何未计入的外来名称或未声明名称都会阻止写入。
+- **FR12 — 预览解释后果。** 在写入之前，工具必须显示被移除的基础主题或生成器依赖、将要创建或更改的文件、未解析的可执行值、保留的依赖，以及确切的语义摘要。视觉比较可以补充这些证据，但不得取代结构比较。
+- **FR13 — 每次写入都有回执。** 回执必须包含工具和 Astryx 版本、源主题身份、原始基础主题身份和版本（如适用）、所选操作与表面、输入和输出摘要、保留的依赖、生成的文件路径以及校验结果。它不得在运行时被要求。
+- **FR14 — 重复输出稳定。** 在相同的源码、版本、选项和环境无关输入下，物化必须生成逐字节相同的生成文件和回执，除非明确排除调用时间。
+- **FR14a — 未来的比较是只读的。** 完全拥有快照之后可以使用回执元数据，将自身与其原基础主题的较新版本进行比较。该比较必须显式请求，必须显示提议的结构差异和视觉差异，并且不得自动更新已拥有的源码或重建继承关系。
 
 ### Compatibility and migration
 
-- **FR15 — Existing convenience APIs remain stable until migration exists.** The
-  implementation behind an existing `defineTheme` typography, motion, radius, or
-  color configuration MUST NOT silently adopt incompatible generation behavior.
-  Versioning, deprecation, or replacement requires a supported comparison and
-  materialization path first. `defineTheme({color})` MUST NOT be marked deprecated
-  until the supported palette generator, explicit mapping workflow, visual
-  comparison, migration command, documentation, and compatibility fixtures are
-  available. Removal requires a later breaking release.
-- **FR16 — Legacy color migration is explicit.** Migrating
-  `defineTheme({color})` to an author-owned tonal palette MUST use the current
-  supported palette generator, produce a reviewable palette and token mapping, and
-  present the resulting visual and structural delta. It MUST NOT swap the legacy
-  HCT implementation for a new recipe underneath unchanged source.
-- **FR17 — Lifecycle commands use plain language.** The CLI MAY expose distinct
-  `detach` and `freeze` commands or another reviewed vocabulary. Help and output
-  MUST explain the outcome in terms of following updates versus owning a snapshot.
-  Commands MUST remain non-interactive: choices and write approval use explicit
-  options or separate preview and write invocations, never prompts or stdin. The
-  internal term `materialize` alone is insufficient user guidance.
-- **FR18 — No current palette work is blocked.** AST-022 governs later lifecycle
-  tooling. It MUST NOT delay accepted-palette, palette-generation, validation, or
-  theme-adoption work that preserves the current `defineTheme` boundary.
+- **FR15 — 在迁移存在之前，现有便捷 API 保持稳定。** 现有 `defineTheme` 排版、动效、圆角或颜色配置背后的实现，不得静默采用不兼容的生成行为。版本化、弃用或替换需要先有受支持的比较与物化路径。在受支持的调色板生成器、显式映射工作流、视觉比较、迁移命令、文档和兼容性测试夹具可用之前，`defineTheme({color})` 不得标记为已弃用。移除需要后续的破坏性发布。
+- **FR16 — 旧版颜色迁移是显式的。** 将 `defineTheme({color})` 迁移到作者拥有的色调调色板，必须使用当前受支持的调色板生成器，产出一个可审阅的调色板和令牌映射，并呈现由此产生的视觉和结构变化量。它不得在源码不变的情况下，用新配方替换旧的 HCT 实现。
+- **FR17 — 生命周期命令使用平实语言。** CLI 可以暴露独立的 `detach` 和 `freeze` 命令，或其他经审阅的词汇。帮助和输出必须以“跟随更新”与“拥有快照”的对比来解释结果。命令必须保持非交互：选择与写入批准使用显式选项，或分开的预览与写入调用，绝不使用提示或 stdin。仅内部术语 `materialize` 不足以指导用户。
+- **FR18 — 当前调色板工作不得被阻塞。** AST-022 管辖后续的生命周期工具。它不得延迟那些保留当前 `defineTheme` 边界的已接受调色板、调色板生成、校验或主题采用工作。
 
 ## Proposed author flow
 
@@ -292,166 +148,120 @@ Inspect dependencies
 Preview -> verify equivalence -> explicit write invocation -> atomic write -> receipt
 ```
 
-The exact command names remain an implementation decision. A possible split is
-`astryx theme detach` for inheritance and `astryx theme freeze` for generated
-scales, both backed by the same materialization engine.
+确切的命令名称仍由实现决定。一种可能的分法是：`astryx theme detach` 用于继承，`astryx theme freeze` 用于生成刻度，两者都由同一个物化引擎支撑。
 
 ## Current-state impact
 
-Today, `defineTheme({extends})` correctly flattens a base into the resolved
-`DefinedTheme`, which lets runtime and static builds consume one self-contained
-result. Source authors nevertheless retain a dependency on the imported base.
-Updating that package and rebuilding may therefore change inherited theme values.
+如今，`defineTheme({extends})` 会把基础主题正确扁平化为已解析的 `DefinedTheme`，使运行时和静态构建能够使用一个自包含的结果。然而，源码作者仍然保留对导入的基础主题的依赖。因此，更新该包并重新构建可能改变继承而来的主题值。
 
-Typography, motion, radius, and legacy color helpers also generate values during
-normalization. Their concise intent is useful and remains supported, but changing a
-formula under unchanged source can change output. This spec introduces no such
-change. It defines the future escape hatch that lets an author keep the concise
-configuration or freeze its current result deliberately.
+排版、动效、圆角和旧版颜色辅助函数也会在规范化期间生成值。它们简洁的意图很有用，并将继续得到支持，但在源码不变的情况下更改公式可能改变输出。本规格不引入这类变更。它定义了未来的应急出口，使作者可以保留简洁配置，或有意冻结其当前结果。
 
-The CLI has theme templates and build output, but it does not currently provide a
-general operation that removes `extends`, expands every supported generated scale,
-preserves source-level registry references, and verifies equivalent authoring
-source. That implementation follows this proposed contract. Creating new values
-beyond built-in scales is related authoring work but is specified independently by
-AST-023.
+CLI 已有主题模板和构建输出，但当前没有提供这样一项通用操作：移除 `extends`、展开每一个受支持的生成刻度、保留源码级的注册表引用，并校验等价的创作源码。该实现遵循本提议契约。创建超出内置刻度的新值属于相关的创作工作，但由 AST-023 独立规定。
 
 ## Verification
 
-| Contract  | Verification                                                                                                                   | Representative failure                                                                                                                                   |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1–FR3   | CLI option and source-output fixtures for follow and owned-start choices                                                       | A missing choice prompts or writes, a copied theme still imports its selected base, or a following theme is described as independent.                    |
-| FR4–FR7   | Full-surface fixtures covering generators, inheritance, local tokens, media surfaces, and palette references                   | A supported surface disappears, precedence changes, or a theme-owned palette reference is needlessly severed.                                            |
-| FR4a      | Neutral-derived detach fixtures with inherited declarations and references, with and without an explicit local-token migration | `extends` is removed while Neutral-owned names remain foreign, or the operation claims ownership while retaining an unreported lineage dependency.       |
-| FR5b–FR5d | Source/runtime projection fixtures, compiled-size comparisons, and artifact-boundary checks                                    | Reviewing a resolved theme inflates runtime output, or receipts and authoring metadata ship to consumers.                                                |
-| FR8–FR10  | Executable-registry ownership and base-upgrade fixtures, overwrite, partial-freeze, and injected-failure tests                 | An owned icon changes after the former base upgrades, an import dependency is hidden, a target is partly overwritten, or retained inheritance is hidden. |
-| FR11–FR14 | Normalized-theme equivalence, deterministic snapshots, receipt schema, and preview tests                                       | Before and after differ silently, output changes across identical runs, or a receipt omits a dependency.                                                 |
-| FR15–FR18 | Compatibility fixtures and legacy-color migration comparison                                                                   | An unchanged convenience config renders differently, migration hides a color delta, or lifecycle work blocks palette foundations.                        |
+| Contract  | Verification                                                                | Representative failure                                                                         |
+| --------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| FR1–FR3   | 针对跟随和拥有起点选择的 CLI 选项与源码输出测试夹具                         | 缺失选择时出现提示或发生写入、复制的主题仍然导入其选中的基础主题，或跟随主题被描述为独立。     |
+| FR4–FR7   | 覆盖生成器、继承、本地令牌、媒体表面和调色板引用的全表面测试夹具            | 某个受支持的表面消失、优先级发生变化，或主题自有的调色板引用被无谓地切断。                     |
+| FR4a      | 带有继承声明和引用、分别有和没有显式本地令牌迁移的 Neutral 派生分离测试夹具 | `extends` 被移除而 Neutral 自有的名称仍属外来，或操作在保留未报告谱系依赖的同时声称拥有。      |
+| FR5b–FR5d | 源码/运行时投影测试夹具、编译体积比较和产物边界检查                         | 审阅已解析主题导致运行时输出膨胀，或回执与创作元数据被发布给使用方。                           |
+| FR8–FR10  | 可执行注册表拥有权与基础主题升级测试夹具、覆盖、部分冻结和注入失败测试      | 拥有的图标在原基础主题升级后发生变化、导入依赖被隐藏、目标被部分覆盖，或保留的继承关系被隐藏。 |
+| FR11–FR14 | 规范化主题等价性、确定性快照、回执模式和预览测试                            | 变更前后静默不同、输出在完全相同的运行之间发生变化，或回执遗漏某个依赖。                       |
+| FR15–FR18 | 兼容性测试夹具和旧版颜色迁移比较                                            | 未更改的便捷配置渲染结果不同、迁移隐藏颜色差异，或生命周期工作阻塞调色板基础。                 |
 
 ### Completion criteria
 
-This spec moves from `proposed` to `shipped` only when:
+本规格只有在以下条件全部满足时，才会从 `proposed` 变为 `shipped`：
 
-- theme creation offers an explicit follow-versus-owned-start choice;
-- the supported detach/freeze surface is documented with non-destructive defaults;
-- full and partial materialization account for every current `DefineThemeInput`
-  surface;
-- detach fixtures prove that lineage-bound local tokens either receive an explicit,
-  validated migration or block removal of `extends` before any write;
-- authoring projections are separate from compact runtime artifacts, and previews
-  show the source and compiled/package-size consequences;
-- unrepresentable executable values fail before writes with actionable guidance;
-- fully owned executable-registry fixtures remain unchanged when the former base is
-  upgraded, while intentionally retained imports are reported as dependencies and
-  prevent a fully owned claim;
-- before/after structural equivalence is tested under one pinned Astryx version;
-- generated source and receipts are deterministic;
-- legacy color migration uses the supported palette generator without silently
-  changing existing `defineTheme({color})` behavior; and
-- consumer guidance clearly distinguishes theme-source ownership from freezing the
-  Astryx component library itself.
+- 主题创建提供显式的“跟随还是拥有起点”选择；
+- 受支持的分离/冻结表面有文档记载，并配有非破坏性默认值；
+- 完全物化和部分物化覆盖当前每一个 `DefineThemeInput` 表面；
+- 分离测试夹具证明：受谱系约束的本地令牌要么获得显式且经过校验的迁移，要么在任何写入之前阻止移除 `extends`；
+- 创作投影与紧凑的运行时产物相互分离，且预览展示源码以及编译/包体积方面的后果；
+- 无法表示的可执行值在写入之前失败，并给出可操作的指引；
+- 当前基础主题升级时，完全拥有的可执行注册表测试夹具保持不变，而有意保留的导入会作为依赖被报告，并阻止“完全拥有”的声明；
+- 变更前后的结构等价性在同一个固定的 Astryx 版本下测试；
+- 生成的源码和回执具有确定性；
+- 旧版颜色迁移使用受支持的调色板生成器，且不会静默改变现有 `defineTheme({color})` 行为；以及
+- 使用方指引清楚区分主题源码的拥有与冻结 Astryx 组件库本身。
 
 ## Open questions
 
-- **Should the CLI expose `detach`, `freeze`, or both?** Detach removes a base-theme
-  relationship; freeze converts selected generated scales into explicit values.
-  They use the same materialization engine but communicate different outcomes. Is
-  one guided command clearer, or do separate verbs make the consequences safer?
-- **How should large component maps be represented?** One generated theme file is
-  easy to import but difficult to review. Splitting tokens, component overrides,
-  media surfaces, and registries into deterministic modules is clearer but creates
-  more files. Which source shape best balances reviewability and faithful rebuilds?
-- **What counts as equivalent?** A palette reference and its current hex value may
-  render identically today while having different future behavior. The same is true
-  of a `calc()` expression and its current computed result. Should equivalence
-  require identical authoring intent, identical normalized theme data, identical
-  compiled output, or a documented combination?
+- **CLI 应该暴露 `detach`、`freeze`，还是两者都暴露？** 分离移除基础主题关系；冻结把选定的生成刻度转换为显式值。它们使用同一个物化引擎，但传达不同的结果。一个引导式命令更清晰，还是分开的动词能让后果更安全？
+- **大型组件映射应如何表示？** 一个生成的主题文件易于导入，但难以审阅。把令牌、组件覆盖、媒体表面和注册表拆分到确定性模块中更清晰，但会产生更多文件。哪种源码形态最能平衡可审阅性与忠实的重新构建？
+- **什么算作等价？** 调色板引用及其当前十六进制值今天可能渲染一致，但未来的行为不同。`calc()` 表达式及其当前计算结果也是如此。等价性应要求相同的创作意图、相同的规范化主题数据、相同的编译输出，还是它们的某种有文档记载的组合？
 
 ## Decision log
 
 ### DEC-1 — Let authors explicitly choose whether to follow or own
 
-**Reference:** `spec:AST-022/DEC-1`
-**Decider:** `rubyycheung`, `2026-09-04`
+**参考：** `spec:AST-022/DEC-1`
 
-The palette remains owned by its theme regardless of the theme's inheritance
-choice. A theme author may reasonably prefer independent source or continuing base
-updates, so tooling explains both consequences and requires a selection. It may
-recommend a choice based on the stated goal, but does not choose silently.
+**决策者：** `rubyycheung`，`2026-09-04`
+
+无论主题的继承选择如何，调色板仍归其主题所有。主题作者可能合理地偏好独立源码，或偏好继续接收基础主题更新，因此工具会解释这两种后果并要求做出选择。它可以根据所述目标推荐某个选项，但不会静默选择。
 
 ### DEC-2 — Use one materialization engine for inheritance and generated scales
 
-**Reference:** `spec:AST-022/DEC-2`
-**Decider:** pending
+**参考：** `spec:AST-022/DEC-2`
 
-Base-theme detachment and scale freezing both convert resolved authoring behavior
-into explicit source. One engine provides consistent preview, equivalence, write,
-and receipt guarantees even if the CLI uses different user-facing verbs.
+**决策者：** 待定
+
+基础主题分离和刻度冻结都把已解析的创作行为转换为显式源码。一个引擎提供一致的预览、等价性、写入和回执保证，即使 CLI 使用不同的面向用户动词。
 
 ### DEC-3 — Preserve existing generator behavior until migration is reviewable
 
-**Reference:** `spec:AST-022/DEC-3`
-**Decider:** `rubyycheung`, `2026-09-04`
+**参考：** `spec:AST-022/DEC-3`
 
-Replacing a formula behind unchanged theme source is a visual compatibility break.
-Existing helpers remain stable until authors can compare, materialize, and accept a
-replacement explicitly.
+**决策者：** `rubyycheung`，`2026-09-04`
+
+在主题源码不变的情况下替换公式属于视觉兼容性破坏。现有辅助函数保持稳定，直到作者能够比较、物化并显式接受替代方案。
 
 ### DEC-4 — Own inherited executable values or report retained dependencies
 
-**Reference:** `spec:AST-022/DEC-4`
-**Decider:** `rubyycheung`, `2026-09-04`
+**参考：** `spec:AST-022/DEC-4`
 
-Stable icon, indicator, and syntax imports remain explicit only for dependencies the
-author intentionally retains. A fully owned snapshot cannot import an executable
-value from its former base because a later base upgrade could change that value.
-Tooling instead writes equivalent owned local source or requires the author to
-supply a local reference on a later invocation. Retaining the base import is a
-reported dependency and prevents the result from being described as fully owned.
+**决策者：** `rubyycheung`，`2026-09-04`
+
+稳定的图标、指示器和语法导入，仅在作者有意保留的依赖上保持显式。完全拥有快照不能从其原基础主题导入可执行值，因为后续的基础主题升级可能改变该值。工具改为写入等价的拥有本地源码，或要求作者在后续调用中提供本地引用。保留基础导入属于已报告的依赖，并阻止结果被描述为完全拥有。
 
 ### DEC-5 — Preserve locally owned palette references
 
-**Reference:** `spec:AST-022/DEC-5`
-**Decider:** `rubyycheung`, `2026-09-04`
+**参考：** `spec:AST-022/DEC-5`
 
-A reference to the same theme's committed palette maintains one owned source of
-truth and remains a reference by default. External palette dependencies require an
-explicit keep-or-copy choice.
+**决策者：** `rubyycheung`，`2026-09-04`
+
+对同一主题已提交调色板的引用维护单一的自有事实来源，并且默认保持为引用。外部调色板依赖需要显式的“保留或复制”选择。
 
 ### DEC-6 — Compare future bases only on request
 
-**Reference:** `spec:AST-022/DEC-6`
-**Decider:** `rubyycheung`, `2026-09-04`
+**参考：** `spec:AST-022/DEC-6`
 
-Receipts retain the former base identity and version so an author may request a
-future comparison. Comparison does not update the theme or recreate inheritance.
+**决策者：** `rubyycheung`，`2026-09-04`
+
+回执保留原基础主题的身份和版本，以便作者可以请求未来的比较。比较不会更新主题或重建继承关系。
 
 ### DEC-7 — Detach updates the existing theme
 
-**Reference:** `spec:AST-022/DEC-7`
-**Decider:** `rubyycheung`, `2026-09-04`
+**参考：** `spec:AST-022/DEC-7`
 
-Detach exists only as an exit from a previously chosen `extends` relationship. It
-adds the resolved values to the selected theme and removes `extends`, preserving the
-theme name and caller imports. Version control and the required preview provide the
-before/after comparison; the operation does not create a second theme.
+**决策者：** `rubyycheung`，`2026-09-04`
+
+分离仅作为退出先前所选 `extends` 关系的方式存在。它把已解析值添加到所选主题并移除 `extends`，保留主题名称和调用方导入。版本控制和必需的预览提供变更前后的比较；该操作不会创建第二个主题。
 
 ### DEC-8 — Full ownership includes every public theme value
 
-**Reference:** `spec:AST-022/DEC-8`
-**Decider:** `rubyycheung`, `2026-09-04`
+**参考：** `spec:AST-022/DEC-8`
 
-A differences-only file still inherits unspecified Core defaults and therefore is
-not fully owned. A fully owned snapshot includes every resolved value available
-through the public theme-authoring contract, even when that output is larger.
+**决策者：** `rubyycheung`，`2026-09-04`
+
+仅含差异的文件仍然继承未指定的 Core 默认值，因此不是完全拥有。完全拥有快照包含可通过公共主题创作契约获得的每一个已解析值，即使该输出更大。
 
 ### DEC-9 — Detach requires an explicit migration for inherited local tokens
 
-**Reference:** `spec:AST-022/DEC-9`
-**Decider:** `rubyycheung`, `2026-09-05`
+**参考：** `spec:AST-022/DEC-9`
 
-Materialization cannot make a lineage-bound local token portable by copying its
-name. Removing the exact base lineage would make that declaration foreign under the
-current validator. Detach therefore stops for a reviewed local-token migration; if
-the author retains the lineage instead, the result continues to follow that base
-and is not fully owned.
+**决策者：** `rubyycheung`，`2026-09-05`
+
+物化无法通过复制名称使受谱系约束的本地令牌可移植。移除确切的基础谱系会使得该声明在当前校验器下成为外来声明。因此，分离会为经审阅的本地令牌迁移而停止；如果作者改为保留谱系，结果会继续跟随该基础主题，并且不是完全拥有。

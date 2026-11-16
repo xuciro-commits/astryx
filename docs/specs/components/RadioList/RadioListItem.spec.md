@@ -50,180 +50,154 @@ system_specs: [spec:AST-085]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                                                                 |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Public contract         | None changes. RadioListItem takes `label`, `aria-label`, `value`, `description`, `isDisabled`, `startContent`, `endContent`, `align`, and base props, and must sit inside a RadioList.                                                                                   |
-| Behavior                | One option row: a visually hidden native radio drawn by the radio indicator, named by the visible label, with the whole row as its click target and the radio as its only tab stop.                                                                                      |
-| End-user impact         | People can click anywhere on an option to choose it, and keyboard users reach one control per option. An item-disabled option, or one in a group disabled without a reason, leaves the tab order; a focused disabled option shows the row outline but no indicator ring. |
-| Builder impact          | None.                                                                                                                                                                                                                                                                    |
-| Compatibility/readiness | Records shipped behavior; no API, default, or DOM change. Native `disabled`, two focus indicators, the missing indicator ring on a disabled option, and the `startContent` docs are listed under Current-state impact.                                                   |
-| Review checks           | Reject a second tab stop on the row, a link in the label that selects the option, a description that is not linked, a theme target off the painted row, or a selection while disabled.                                                                                   |
-| Governing rules         | `component:RadioList`; `spec:AST-085` FR1–FR3, FR6; `design:user-states` DR1, DR2 (pressed overlay); `architecture:interaction-modality` INV1–INV3.                                                                                                                      |
+| 领域            | 契约                                                                                                                                                                                      |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共契约        | 无变更。RadioListItem 接收 `label`、`aria-label`、`value`、`description`、`isDisabled`、`startContent`、`endContent`、`align` 以及基础 props，并且必须位于 RadioList 内部。               |
+| 行为            | 一个选项行：一个视觉上隐藏的原生 radio，由 radio 指示器绘制，由可见标签命名，整行作为其点击目标，radio 是它唯一的 Tab 停靠点。                                                            |
+| 最终用户影响    | 人们可以点击选项上的任意位置来选择它，键盘用户每个选项只需到达一个控件。项目禁用的选项，或处于无原因禁用的组中的选项，会离开 Tab 顺序；获得焦点的禁用选项会显示行轮廓，但没有指示器圆环。 |
+| 构建者影响      | 无。                                                                                                                                                                                      |
+| 兼容性/就绪状态 | 记录已发布的行为；无 API、默认值或 DOM 变更。原生 `disabled`、两个焦点指示器、禁用选项上缺失的指示器圆环，以及 `startContent` 文档，都列在“当前状态影响”下。                              |
+| 审查检查        | 否决行上出现第二个 Tab 停靠点、标签中会选中该选项的链接、未被关联的描述、偏离已绘制行的主题目标，或禁用状态下的选中。                                                                     |
+| 管辖规则        | `component:RadioList`；`spec:AST-085` FR1–FR3、FR6；`design:user-states` DR1、DR2（按下叠加层）；`architecture:interaction-modality` INV1–INV3。                                          |
 
-This table is a review projection; the body below is authoritative.
+此表是审查投影；下文的正文具有权威性。
 
 ## Intent
 
-RadioListItem is one option in a RadioList. It owns the option's native radio,
-naming and description, row-surface click delegation, item disabled state,
-pressed and hover feedback on the radio, and the `radio-list-item` target.
-Consumer usage lives in `RadioListItem.doc.mjs`.
+RadioListItem 是 RadioList 中的一个选项。它拥有该选项的原生 radio、命名与描述、行表面点击委托、项目禁用状态、radio 上的按下与悬停反馈，以及 `radio-list-item` 目标。使用方用法位于 `RadioListItem.doc.mjs` 中。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public prop, default,
-  export, or DOM change
-- Controlled/uncontrolled behavior: controlled by the parent RadioList's
-  `value`
-- Migration decision: none
+- 保留的已发布默认值：`yes`
+- 兼容性类别：记录已发布的行为；无公共 prop、默认值、导出或 DOM 变更
+- 受控/非受控行为：由父级 RadioList 的 `value` 控制
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The option's native radio, its name, description link, and form value.
-- Row-surface click delegation to the radio and `onClick` routing.
-- Item disabled state and the disabled, selected, and size reflection on
-  `radio-list-item`.
-- The radio indicator's hover tint and pressed overlay, and its focus ring (FR7,
-  OQ1).
-- The bare default row appearance.
+- 该选项的原生 radio、其名称、描述链接以及表单值。
+- 行表面到 radio 的点击委托以及 `onClick` 路由。
+- 项目禁用状态，以及 `radio-list-item` 上对禁用、选中和尺寸的反映。
+- radio 指示器的悬停色调与按下叠加层，以及其焦点圆环（FR7、OQ1）。
+- 裸默认行外观。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- The group, its value, name, size, disabled reason, and required and status
-  semantics — owned by `component:RadioList`.
-- Row layout of label, description, start and end content — owned by Item.
-- The radio indicator's paint — owned by the Indicator registry's radio
-  indicator.
-- Use outside RadioList — not supported; it throws.
+- 组、其值、名称、尺寸、禁用原因，以及必填与状态语义——由 `component:RadioList` 拥有。
+- 标签、描述、起始与结束内容的行布局——由 Item 拥有。
+- radio 指示器的绘制——由 Indicator 注册表中的 radio 指示器拥有。
+- 在 RadioList 之外使用——不受支持；它会抛出错误。
 
 ## Public concepts
 
-| Concept  | Closed values or states                     | Meaning                                                        | Availability by variant/orientation/state | Default        | Owner                     | Stability | Invalid-value behavior                           |
-| -------- | ------------------------------------------- | -------------------------------------------------------------- | ----------------------------------------- | -------------- | ------------------------- | --------- | ------------------------------------------------ |
-| Naming   | `label` node or text; `aria-label`          | Names the radio; `aria-label` replaces the visible-label name. | Always.                                   | label required | `component:RadioListItem` | Stable    | TypeScript rejects a missing label.              |
-| Value    | string                                      | The value the group selects and submits.                       | Always.                                   | required       | `component:RadioListItem` | Stable    | TypeScript rejects a missing value.              |
-| Disabled | off, item, group, group with reason         | Blocks selection.                                              | Always.                                   | off            | `component:RadioListItem` | Stable    | Not applicable.                                  |
-| Content  | `description`, `startContent`, `endContent` | Supporting text and caller content around the label.           | Always.                                   | none           | caller                    | Stable    | A description that renders nothing adds no link. |
+| 概念 | 封闭取值或状态                              | 含义                                             | 按变体/方向/状态划分的可用性 | 默认值       | 所有者                    | 稳定性 | 无效值行为                         |
+| ---- | ------------------------------------------- | ------------------------------------------------ | ---------------------------- | ------------ | ------------------------- | ------ | ---------------------------------- |
+| 命名 | `label` 节点或文本；`aria-label`            | 为 radio 命名；`aria-label` 替换可见标签的名称。 | 始终。                       | label 为必填 | `component:RadioListItem` | 稳定   | TypeScript 拒绝缺失的 label。      |
+| 值   | string                                      | 组选中并提交的值。                               | 始终。                       | 必填         | `component:RadioListItem` | 稳定   | TypeScript 拒绝缺失的 value。      |
+| 禁用 | off、项目、组、带原因的组                   | 阻止选中。                                       | 始终。                       | off          | `component:RadioListItem` | 稳定   | 不适用。                           |
+| 内容 | `description`、`startContent`、`endContent` | 标签周围的辅助文本与调用方内容。                 | 始终。                       | 无           | 调用方                    | 稳定   | 不渲染任何内容的描述不会添加链接。 |
 
 ## Behavioral and layout contract
 
-| ID   | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Basis                                                                             |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| FR1  | RadioListItem throws when rendered outside a RadioList.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Current source                                                                    |
-| FR2  | The option renders an Item row whose start content is a visually hidden native `<input type="radio">` (the group's `name`, this `value`, checked when the group value matches) layered over the radio indicator, followed by any `startContent`.                                                                                                                                                                                                                                                                                                                                                        | Current source and tests                                                          |
-| FR3  | The radio is named by the visible label element through `aria-labelledby`, for text and node labels alike; `aria-label` replaces that name and never reaches the row. A renderable `description` is linked through `aria-describedby`; one that renders nothing adds no link.                                                                                                                                                                                                                                                                                                                           | Current tests                                                                     |
-| FR4  | The radio is the option's only tab stop. Clicks on the row surface (label, description, empty area) are delegated to the radio; links and buttons inside the label, description, or end content keep their own behavior. A caller `onClick`, typed for the row, runs on the radio for direct and delegated clicks; that routing is shipped behavior, not a requirement until OQ2 is ruled.                                                                                                                                                                                                              | WCAG 4.1.2; current tests                                                         |
-| FR5  | Selecting the radio calls the group's `onChange(value)` unless the option is disabled.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Current tests                                                                     |
-| FR6  | Disabled when the item or the group is disabled. A disabled radio MUST stay focusable with `aria-disabled="true"`, be detached from the form, and refuse selection (`spec:AST-085` FR1–FR3); disabled options show no hover tint or pressed overlay. Implementation gap: only a group-disabled radio with a group reason renders that shape; an item-disabled radio, and a group-disabled radio without a reason, get native `disabled`, which removes them from the tab order. A focusable disabled radio also still runs a caller `onClick`, on a click or an arrow key onto it (`spec:AST-085` FR2). | `spec:AST-085`; current source and tests                                          |
-| FR7  | Keyboard focus on the radio paints the shared focus ring on the radio indicator, and Item's row focus-within outline on the row. One focus move MUST have one owning indicator (`architecture:interaction-modality` INV3); which element owns it is OQ1. Implementation gap: both paint. On a focused disabled option the indicator ring is skipped, against `spec:AST-085` FR6; only the row outline shows, and whether it is enough follows OQ1.                                                                                                                                                      | `architecture:interaction-modality` INV1–INV3; `spec:AST-085` FR6; current source |
-| FR8  | Hovering the enabled row tints the radio indicator. RadioListItem applies `design:user-states` DR1 and DR2 for the pressed overlay, painting it on the indicator while the enabled row is pressed. The row itself paints no padding, radius, hover, or press background by default.                                                                                                                                                                                                                                                                                                                     | `design:user-states`; current tests                                               |
-| FR9  | The radio's hit area is at least 24 by 24 CSS pixels on coarse pointers, and its position follows the inline direction.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | WCAG 2.5.8; current tests                                                         |
-| FR10 | Under forced colors, the selected dot stays visible.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | WCAG 1.4.11; current tests                                                        |
-| FR11 | The painted row element carries `astryx-radio-list-item` (alongside Item's own target) and reflects `data-size`, `data-selected` when checked, and `data-disabled` when disabled. A theme's `radio-list-item` styles override the bare default row.                                                                                                                                                                                                                                                                                                                                                     | `architecture:component-theming-surface` INV6; current tests                      |
-| FR12 | `ref`, `className`, `style`, `xstyle`, `align`, `data-*`, `id`, and ARIA other than `aria-label` reach the row.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Current tests                                                                     |
-| FR13 | Under a coarse pointer, the touch target grows toward 44 × 44 px, up to halfway to a neighboring target, and is never smaller than the control's own box (owner decision, 2026-11-04; `spec:AST-094` FR42). It grows through an invisible band on an enabled option's row, and the row keeps its size.                                                                                                                                                                                                                                                                                                  | `spec:AST-094` FR42; current source and tests                                     |
+| ID   | 不变式                                                                                                                                                                                                                                                                                                                                                                                                                       | 依据                                                                        |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| FR1  | 当 RadioListItem 在 RadioList 之外渲染时会抛出错误。                                                                                                                                                                                                                                                                                                                                                                         | 当前源码                                                                    |
+| FR2  | 该选项渲染一个 Item 行，其起始内容是一个视觉上隐藏的原生 `<input type="radio">`（组的 `name`、此 `value`，当组值匹配时处于选中状态），叠加在 radio 指示器之上，随后是任何 `startContent`。                                                                                                                                                                                                                                   | 当前源码与测试                                                              |
+| FR3  | radio 通过 `aria-labelledby` 由可见标签元素命名，文本标签与节点标签皆如此；`aria-label` 替换该名称，且绝不会传到行上。可渲染的 `description` 通过 `aria-describedby` 关联；不渲染任何内容的描述不会添加链接。                                                                                                                                                                                                                | 当前测试                                                                    |
+| FR4  | radio 是该选项唯一的 Tab 停靠点。行表面（标签、描述、空白区域）上的点击被委托给 radio；标签、描述或结束内容中的链接和按钮保留其自身行为。为行类型化的调用方 `onClick`，在直接点击与委托点击时都在 radio 上运行；该路由是已发布的行为，在 OQ2 裁定之前不构成要求。                                                                                                                                                            | WCAG 4.1.2；当前测试                                                        |
+| FR5  | 选中 radio 会调用组的 `onChange(value)`，除非该选项已禁用。                                                                                                                                                                                                                                                                                                                                                                  | 当前测试                                                                    |
+| FR6  | 当项目或组禁用时即禁用。禁用的 radio 必须保持可聚焦并带有 `aria-disabled="true"`、与表单分离，并拒绝选中（`spec:AST-085` FR1–FR3）；禁用的选项不显示悬停色调或按下叠加层。实现缺口：只有带组原因的组禁用 radio 才渲染该形态；项目禁用的 radio，以及无原因的组禁用 radio，会得到原生 `disabled`，从而将它们从 Tab 顺序中移除。可聚焦的禁用 radio 在点击或方向键移到其上时，仍会运行调用方的 `onClick`（`spec:AST-085` FR2）。 | `spec:AST-085`；当前源码与测试                                              |
+| FR7  | radio 上的键盘焦点会在 radio 指示器上绘制共享焦点圆环，并在行上绘制 Item 的行 focus-within 轮廓。一次焦点移动必须只有一个元素拥有该指示器（`architecture:interaction-modality` INV3）；由哪个元素拥有它是 OQ1。实现缺口：两者都会绘制。在获得焦点的禁用选项上，指示器圆环被跳过，这违背 `spec:AST-085` FR6；只有行轮廓显示，是否足够取决于 OQ1。                                                                             | `architecture:interaction-modality` INV1–INV3；`spec:AST-085` FR6；当前源码 |
+| FR8  | 悬停已启用的行会给 radio 指示器着色。RadioListItem 应用 `design:user-states` DR1 和 DR2 作为按下叠加层，在已启用行被按下时将其绘制在指示器上。行本身默认不绘制内边距、圆角、悬停或按下背景。                                                                                                                                                                                                                                 | `design:user-states`；当前测试                                              |
+| FR9  | 在粗指针上，radio 的命中区域至少为 24 × 24 CSS 像素，其位置遵循行内方向。                                                                                                                                                                                                                                                                                                                                                    | WCAG 2.5.8；当前测试                                                        |
+| FR10 | 在强制颜色下，选中的圆点保持可见。                                                                                                                                                                                                                                                                                                                                                                                           | WCAG 1.4.11；当前测试                                                       |
+| FR11 | 已绘制的行元素带有 `astryx-radio-list-item`（与 Item 自身的目标并存），并反映 `data-size`、选中时的 `data-selected`，以及禁用时的 `data-disabled`。主题的 `radio-list-item` 样式会覆盖裸默认行。                                                                                                                                                                                                                             | `architecture:component-theming-surface` INV6；当前测试                     |
+| FR12 | `ref`、`className`、`style`、`xstyle`、`align`、`data-*`、`id`，以及除 `aria-label` 之外的 ARIA 都会传到行上。                                                                                                                                                                                                                                                                                                               | 当前测试                                                                    |
+| FR13 | 在粗指针下，触摸目标向 44 × 44 px 增长，最多延伸到相邻目标的一半处，且绝不小于控件自身的盒子（所有者决策，2026-11-04；`spec:AST-094` FR42）。它通过已启用选项行上的不可见条带增长，而行保持其尺寸。                                                                                                                                                                                                                          | `spec:AST-094` FR42；当前源码与测试                                         |
 
 ### Allowed variation
 
-- **AV1 — Content.** Label, description, start and end content vary within
-  their types.
-- **AV2 — Theme paint.** Themes may restore row padding, radius, hover, and
-  selected paint through `radio-list-item`.
+- **AV1 — 内容。** 标签、描述、起始与结束内容在其类型范围内变化。
+- **AV2 — 主题绘制。** 主题可以通过 `radio-list-item` 恢复行内边距、圆角、悬停以及选中绘制。
 
 ### Representative states
 
-| State         | Required invariant                                                                                                                                                                               | Allowed variation |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- |
-| Unselected    | Radio named by label; row click selects.                                                                                                                                                         | Content.          |
-| Selected      | Radio checked; `data-selected`; dot visible under forced colors.                                                                                                                                 | Theme paint.      |
-| Rich label    | Name from the label text; a link inside it does not select.                                                                                                                                      | —                 |
-| Item disabled | Focusable with `aria-disabled`; no hover or press feedback; the focus indicator shows under keyboard focus. Implementation gap: native `disabled`, and the indicator ring is skipped (FR6, FR7). | —                 |
+| 状态     | 必需的不变式                                                                                                                         | 允许的变体 |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
+| 未选中   | radio 由标签命名；点击行即选中。                                                                                                     | 内容。     |
+| 已选中   | radio 处于选中状态；`data-selected`；圆点在强制颜色下可见。                                                                          | 主题绘制。 |
+| 富标签   | 名称来自标签文本；其中的链接不会触发选中。                                                                                           | —          |
+| 项目禁用 | 可用 `aria-disabled` 聚焦；无悬停或按下反馈；焦点指示器在键盘焦点下显示。实现缺口：原生 `disabled`，且指示器圆环被跳过（FR6、FR7）。 | —          |
 
 ### Transformation and precedence order
 
-- **ORD1 — Name.** `aria-label`, else the visible label element.
-- **ORD2 — Availability.** Group disabled or item disabled; only the group
-  reason keeps the radio focusable.
+- **ORD1 — 名称。** `aria-label`，否则为可见标签元素。
+- **ORD2 — 可用性。** 组禁用或项目禁用；只有组原因能让 radio 保持可聚焦。
 
 ### Performance and resources
 
-- **PR1 — Bounded resources.** The item owns no observer or global listener; its
-  press feedback uses the shared press controller.
+- **PR1 — 有界资源。** 该项目不拥有任何观察器或全局监听器；其按下反馈使用共享的按下控制器。
 
 ## Accessibility contract
 
-- **AR1 — Radio semantics.** Each option is a native radio with a name,
-  optional description, and checked state.
-- **AR2 — One tab stop.** FR4.
-- **AR3 — Target size.** FR9.
-- **AR4 — Non-color state.** FR10.
+- **AR1 — Radio 语义。** 每个选项都是一个原生 radio，带有名称、可选描述和选中状态。
+- **AR2 — 单一 Tab 停靠点。** FR4。
+- **AR3 — 目标尺寸。** FR9。
+- **AR4 — 非颜色状态。** FR10。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                      | Representation authority                                                                                | Hierarchy role | Component contract |
-| ---------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | -------------- | ------------------ |
-| Radio            | Indicator with hover tint, pressed overlay, focus ring. | `design:user-states` for the pressed overlay; current source for the hover tint; FR7 for the focus ring | Prominent      | FR2, FR7, FR8      |
-| Label            | Names the option.                                       | Item                                                                                                    | Prominent      | FR3                |
-| Description      | Supporting text linked to the radio.                    | Item                                                                                                    | Supporting     | FR3                |
-| Row              | Bare, full-width click target.                          | Current source and tests                                                                                | Supporting     | FR4, FR8, FR11     |
+| 解剖结构或状态 | 设计要求                                   | 表示权威                                                              | 层级角色 | 组件契约       |
+| -------------- | ------------------------------------------ | --------------------------------------------------------------------- | -------- | -------------- |
+| 单选按钮       | 带悬停色调、按下叠加层、焦点圆环的指示器。 | 按下叠加层为 `design:user-states`；悬停色调为当前源码；焦点圆环为 FR7 | 显著     | FR2, FR7, FR8  |
+| 标签           | 为选项命名。                               | Item                                                                  | 显著     | FR3            |
+| 描述           | 与 radio 关联的辅助文本。                  | Item                                                                  | 辅助     | FR3            |
+| 行             | 裸的、全宽的点击目标。                     | 当前源码与测试                                                        | 辅助     | FR4, FR8, FR11 |
 
-No design record beyond `design:user-states` governs RadioListItem.
+除 `design:user-states` 之外，没有其他设计记录管辖 RadioListItem。
 
 ## Family and system relationships
 
-- `component:RadioList` supplies the name, value, size, and group availability.
-- `design:user-states` owns the pressed treatment the radio indicator paints.
-- `spec:AST-085` owns disabled focusability; FR6 and FR7 record the gaps.
+- `component:RadioList` 提供名称、值、尺寸和组可用性。
+- `design:user-states` 拥有 radio 指示器所绘制的按下处理。
+- `spec:AST-085` 拥有禁用可聚焦性；FR6 和 FR7 记录这些缺口。
 
 ## Verification map
 
-| Contract                | Verification                                                                                                                                                                                                                                | Representative states                                          | Mutation or failure expectation                                                                                                                                                                                                                                                                                                                                                                                 | Audit section                       |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| FR1                     | Evidence gap: no test renders RadioListItem outside a RadioList                                                                                                                                                                             | —                                                              | —                                                                                                                                                                                                                                                                                                                                                                                                               | `audit:RadioListItem/behavior`      |
-| FR2–FR5, ORD1, AR1, AR2 | `RadioList.test.tsx` selection, rich-content, and rest-forwarding cases; `RadioGroup.a11y.test.tsx` and `RadioGroup.a11y.chromium.spec.ts`                                                                                                  | Text and node labels; `aria-label`; description; link in label | A wrong name, dangling description, or link that selects fails. Evidence gap: no test asserts a caller `onClick` on the radio for direct and delegated clicks.                                                                                                                                                                                                                                                  | `audit:RadioListItem/accessibility` |
-| FR6, ORD2               | `RadioList.test.tsx` item-disabled and form cases; `RadioGroup.a11y.test.tsx` and `RadioGroup.a11y.chromium.spec.ts` `radio-list-option-disabled`, `radio-list-option-group-disabled`, and `radio-list-option-disabled-with-message` states | Item and group disabled; group reason                          | A disabled option that selects, or a submitted value from a group disabled with a reason, fails; the binding expects `tabReachable: false` for `radio-list-option-group-disabled`, which fails when that gap closes. Evidence gap: no state guards item-disabled focusability, since `radio-list-option-disabled` binds a radio that is not the group's Tab stop. No form case submits an item-disabled option. | `audit:RadioListItem/accessibility` |
-| FR7                     | Evidence gap: no test of focus-ring placement on the indicator, the disabled ring, or the indicator count                                                                                                                                   | —                                                              | —                                                                                                                                                                                                                                                                                                                                                                                                               | `audit:RadioListItem/accessibility` |
-| FR8                     | `RadioList.test.tsx` pressed-state and bare-row cases; `RadioListItem.press.source-build.test.mjs`                                                                                                                                          | Enabled, disabled, touch                                       | Press paint on a disabled option, or a default row background, fails. Evidence gap: no test asserts the hover tint.                                                                                                                                                                                                                                                                                             | `audit:RadioListItem/visual`        |
-| FR9, FR10, AR3, AR4     | `RadioList.test.tsx` coarse-pointer, RTL, and forced-colors cases                                                                                                                                                                           | Coarse pointer; RTL; forced colors                             | Evidence gap: the forced-colors case passes on any matching rule (the checkbox mark supplies one), so it does not prove the dot; the coarse-pointer and RTL cases check only the direction-symmetric centering class, not the 24 by 24 minimum or RTL placement.                                                                                                                                                | `audit:RadioListItem/accessibility` |
-| FR11, FR12              | `RadioList.test.tsx` theme-target and rest-forwarding cases                                                                                                                                                                                 | Sizes; selected; disabled                                      | A target off the painted row, or a missing state, fails. Evidence gap: no test asserts `ref`, `className`, `style`, or `xstyle` on the row.                                                                                                                                                                                                                                                                     | `audit:RadioListItem/theming`       |
-| FR13                    | `touchTarget.test.tsx` hit-band and minimum cases; `TouchTargets.interaction.browser.spec.ts` RadioList and mouse cases                                                                                                                     | Enabled and disabled; both orientations; 24 and 60 px; a mouse | A band on a disabled option, a band under a mouse, a row or gap that changes size, a band past half the gap, a 24 px row short of 44 px, or a 60 px row with a band fails.                                                                                                                                                                                                                                      | `audit:RadioListItem/behavior`      |
-| PR1                     | Evidence gap: no test asserts the absence of observers or global listeners                                                                                                                                                                  | —                                                              | —                                                                                                                                                                                                                                                                                                                                                                                                               | `audit:RadioListItem/behavior`      |
-| RTL relation            | RTL audit curated D2 target (`apps/storybook/rtl-audit/targets.json`) on `RadioList / Default`                                                                                                                                              | Indicator and label; LTR and RTL                               | An indicator that is not at the inline start of its label fails D2.                                                                                                                                                                                                                                                                                                                                             | `audit:RadioListItem/i18n-rtl`      |
+| 契约                    | 验证                                                                                                                                                                                                                              | 代表状态                                         | 变异或失败预期                                                                                                                                                                                                                                                                                         | 审计章节                            |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
+| FR1                     | 证据缺口：没有测试在 RadioList 之外渲染 RadioListItem                                                                                                                                                                             | —                                                | —                                                                                                                                                                                                                                                                                                      | `audit:RadioListItem/behavior`      |
+| FR2–FR5, ORD1, AR1, AR2 | `RadioList.test.tsx` 的选中、富内容以及剩余属性转发用例；`RadioGroup.a11y.test.tsx` 和 `RadioGroup.a11y.chromium.spec.ts`                                                                                                         | 文本与节点标签；`aria-label`；描述；标签中的链接 | 错误的名称、悬空的描述，或会触发选中的链接，即失败。证据缺口：没有测试断言 radio 上直接点击与委托点击时的调用方 `onClick`。                                                                                                                                                                            | `audit:RadioListItem/accessibility` |
+| FR6, ORD2               | `RadioList.test.tsx` 的项目禁用与表单用例；`RadioGroup.a11y.test.tsx` 和 `RadioGroup.a11y.chromium.spec.ts` 的 `radio-list-option-disabled`、`radio-list-option-group-disabled` 与 `radio-list-option-disabled-with-message` 状态 | 项目与组禁用；组原因                             | 会选中的禁用选项，或来自带原因禁用组所提交的值，即失败；该绑定对 `radio-list-option-group-disabled` 期望 `tabReachable: false`，当该缺口闭合时这会失败。证据缺口：没有状态守护项目禁用的可聚焦性，因为 `radio-list-option-disabled` 绑定的 radio 并非组的 Tab 停靠点。没有表单用例提交项目禁用的选项。 | `audit:RadioListItem/accessibility` |
+| FR7                     | 证据缺口：没有测试覆盖指示器上的焦点圆环放置、禁用圆环，或指示器数量                                                                                                                                                              | —                                                | —                                                                                                                                                                                                                                                                                                      | `audit:RadioListItem/accessibility` |
+| FR8                     | `RadioList.test.tsx` 的按下状态与裸行用例；`RadioListItem.press.source-build.test.mjs`                                                                                                                                            | 已启用、已禁用、触摸                             | 禁用选项上出现按下绘制，或出现默认行背景，即失败。证据缺口：没有测试断言悬停色调。                                                                                                                                                                                                                     | `audit:RadioListItem/visual`        |
+| FR9, FR10, AR3, AR4     | `RadioList.test.tsx` 的粗指针、RTL 与强制颜色用例                                                                                                                                                                                 | 粗指针；RTL；强制颜色                            | 证据缺口：强制颜色用例只要匹配任一规则即通过（checkbox 标记就提供了一条），因此它不能证明圆点；粗指针与 RTL 用例只检查方向对称的居中 class，而不检查 24 × 24 的最小值或 RTL 位置。                                                                                                                     | `audit:RadioListItem/accessibility` |
+| FR11, FR12              | `RadioList.test.tsx` 的主题目标与剩余属性转发用例                                                                                                                                                                                 | 尺寸；选中；禁用                                 | 目标偏离已绘制行，或缺失状态，即失败。证据缺口：没有测试断言行上的 `ref`、`className`、`style` 或 `xstyle`。                                                                                                                                                                                           | `audit:RadioListItem/theming`       |
+| FR13                    | `touchTarget.test.tsx` 的命中条带与最小值用例；`TouchTargets.interaction.browser.spec.ts` 的 RadioList 与鼠标用例                                                                                                                 | 已启用与禁用；两个方向；24 与 60 px；鼠标        | 禁用选项上出现条带、鼠标下出现条带、行或间隙改变尺寸、条带越过间隙的一半、24 px 的行不足 44 px，或 60 px 的行仍带条带，即失败。                                                                                                                                                                        | `audit:RadioListItem/behavior`      |
+| PR1                     | 证据缺口：没有测试断言不存在观察器或全局监听器                                                                                                                                                                                    | —                                                | —                                                                                                                                                                                                                                                                                                      | `audit:RadioListItem/behavior`      |
+| RTL 关系                | RTL 审计精选的 D2 目标（`apps/storybook/rtl-audit/targets.json`），位于 `RadioList / Default`                                                                                                                                     | 指示器与标签；LTR 与 RTL                         | 未位于其标签行内起点的指示器会使 D2 失败。                                                                                                                                                                                                                                                             | `audit:RadioListItem/i18n-rtl`      |
 
 ## Current-state impact
 
-- **Two focus indicators (FR7).** Keyboard focus paints both Item's row outline
-  and the radio indicator ring, against `architecture:interaction-modality`
-  INV3.
-- **Caller onClick while disabled (FR6).** A focusable disabled radio still
-  runs a caller's `onClick`, against `spec:AST-085` FR2.
-- **Disabled focusability (FR6).** Item-disabled radios, and group-disabled
-  radios without a reason, use native `disabled`, against `spec:AST-085` FR1.
-- **Disabled focus ring (FR7).** The indicator ring is skipped on a focused
-  disabled option, against `spec:AST-085` FR6; only the row outline shows.
-- **Consumer docs (FR2).** `RadioListItem.doc.mjs` and the `startContent` prop
-  JSDoc in `RadioListItem.tsx` say `startContent` renders before the radio
-  circle; it renders after it.
+- **两个焦点指示器（FR7）。** 键盘焦点同时绘制 Item 的行轮廓与 radio 指示器圆环，这违背 `architecture:interaction-modality` INV3。
+- **禁用期间调用方的 onClick（FR6）。** 可聚焦的禁用 radio 仍会运行调用方的 `onClick`，这违背 `spec:AST-085` FR2。
+- **禁用可聚焦性（FR6）。** 项目禁用的 radio，以及无原因的组禁用 radio，使用原生 `disabled`，这违背 `spec:AST-085` FR1。
+- **禁用焦点圆环（FR7）。** 在获得焦点的禁用选项上，指示器圆环被跳过，这违背 `spec:AST-085` FR6；只有行轮廓显示。
+- **使用方文档（FR2）。** `RadioListItem.doc.mjs` 与 `RadioListItem.tsx` 中 `startContent` prop 的 JSDoc 说 `startContent` 渲染在 radio 圆圈之前；实际上它渲染在其之后。
 
 ## Decision log
 
-No component-local decision.
+无组件本地决策。
 
 ## Open questions
 
-- **OQ1 — Which element paints the option's focus ring, the row or the radio
-  indicator?** (`human-design`) `architecture:interaction-modality` INV3
-  requires one indicator; CheckboxListItem composes the same two painters.
-- **OQ2 — Which element owns a caller `onClick`?** (`human-api`) It is typed
-  for the row but runs on the radio, as CheckboxListItem's matching open
-  question records.
+- **OQ1 — 哪个元素绘制该选项的焦点圆环，是行还是 radio 指示器？**（`human-design`）`architecture:interaction-modality` INV3 要求只有一个指示器；CheckboxListItem 组合了同样的两个绘制者。
+- **OQ2 — 哪个元素拥有调用方的 `onClick`？**（`human-api`）它按行类型化，却在 radio 上运行，正如 CheckboxListItem 对应的未决问题所记录的那样。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不重复使用方 prop 表/示例、当前审计结果、实现步骤或家族/系统规则。它链接到它们的所有者。

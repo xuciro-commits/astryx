@@ -46,217 +46,196 @@ references:
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                               |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `useTableRowsVirtualization({rowHeight, initialViewportHeight})` returns an opaque `TableVirtualizationCapability` for `Table.virtualization`; Table retains data, columns, explicit stable identity and plugins.                      |
-| Behavior                | Fixed-height flat-row windowing with four internal overscan rows per side, at most one retained focused row, native table semantics and parent-owned pre-cell planning.                                                                |
-| End-user impact         | Mounted rows preserve selection, controls, focus and truthful full-table positions; unmounted rows are not promised virtual-cursor discovery.                                                                                          |
-| Builder impact          | Callers declare the row pitch, which is also each row's minimum height, in CSS pixels, give the Table's parent a height, and accept constrained single-line content; unsupported content falls back to full rendering.                 |
-| Compatibility/readiness | Additive, unreleased capability; legacy output remains unchanged without opt-in. Module and parent contract decisions are complete; implementation and numerical verification remain separate release requirements.                    |
-| Review checks           | Reject render-then-hide, independent keys or scroll owners, invalid native structure, silent clipping/drift, lost focus, unbounded retention, window-relative metadata and unmeasured budget claims.                                   |
-| Governing rules         | `component:Table` owns identity, context, admission, render planning, viewport and logical appearance. `spec:AST-025` FR18/FR19 constrain scrolling; `spec:AST-002` and runtime/accessibility architecture constrain API and evidence. |
+| 领域          | 契约                                                                                                                                                                                  |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共契约      | `useTableRowsVirtualization({rowHeight, initialViewportHeight})` 为 `Table.virtualization` 返回一个不透明的 `TableVirtualizationCapability`；Table 保留数据、列、显式稳定标识与插件。 |
+| 行为          | 固定高度的平铺行窗口化，每侧四行内部过扫描，最多保留一个获得焦点的行，原生表格语义与父级拥有的单元格前规划。                                                                          |
+| 最终用户影响  | 挂载的行保留选择、控件、焦点与真实的整表位置；不承诺未挂载的行可通过虚拟光标发现。                                                                                                    |
+| 构建者影响    | 调用方以 CSS 像素声明行节距（同时也是每行的最小高度），为 Table 的父级设置高度，并接受受约束的单行内容；不支持的内容回退到全量渲染。                                                  |
+| 兼容性/就绪度 | 增量式、未发布的能力；未选择启用时既有输出保持不变。模块与父级契约决策已完成；实现与数值验证仍是独立的发布要求。                                                                      |
+| 审查检查      | 拒绝先渲染后隐藏、独立的键或滚动所有者、无效的原生结构、静默裁剪/漂移、焦点丢失、无界保留、相对于窗口的元数据，以及未经测量的预算主张。                                               |
+| 约束规则      | `component:Table` 拥有标识、上下文、准入、渲染规划、视口与逻辑外观。`spec:AST-025` FR18/FR19 约束滚动；`spec:AST-002` 以及运行时/无障碍架构约束 API 与证据。                          |
 
-This table is a review projection; the body below is authoritative.
+本表是审查用投影；下方正文具有权威性。
 
 ## Intent
 
-`useTableRowsVirtualization` bounds mounted body rows for caller-owned flat Table data.
-Its capability describes fixed geometry; Table owns the semantic rendering pipeline.
-Virtualization limits DOM, not product data, fetching, pagination or cache lifetime.
+`useTableRowsVirtualization` 为调用方拥有的平铺 Table 数据限定挂载的正文行数量。其能力描述固定的几何结构；Table 拥有语义渲染管线。虚拟化限制的是 DOM，而不是产品数据、抓取、分页或缓存生命周期。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`; absent `Table.virtualization`, rendering, identity and nonvirtualized paginated `rowIndexStart`/`rowCount` output remain unchanged.
-- Compatibility class: additive hook, opaque capability and parent opt-in. Virtualized data mode requires valid explicit identity and constrained content; conflicting legacy offset/count inputs use full-render fallback.
-- Migration decision: `module:Table/useTableRowsVirtualization/DEC-1` and `component:Table/DEC-4`/`DEC-5`. The normative module and parent contracts are complete; implementation and release verification remain separate.
+- 保留已发布默认行为：`yes`；缺少 `Table.virtualization` 时，渲染、标识以及非虚拟化分页的 `rowIndexStart`/`rowCount` 输出保持不变。
+- 兼容类别：增量式 hook、不透明能力与父级选择启用。虚拟化数据模式要求有效的显式标识与受约束内容；冲突的遗留 offset/count 输入使用全量渲染回退。
+- 迁移决策：`module:Table/useTableRowsVirtualization/DEC-1` 与 `component:Table/DEC-4`/`DEC-5`。规范性的模块与父级契约已完成；实现与发布验证仍是独立的。
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**负责**
 
-- Fixed-height capability and Table's admission into the shared list window.
-- Table's retained-focus participation and virtualized accessibility outcomes.
-- Supported flat-row composition, fixed-height admission and performance targets.
+- 固定高度能力，以及 Table 进入共享列表窗口的准入。
+- Table 的焦点保留参与，以及虚拟化下的无障碍结果。
+- 受支持的平铺行组合、固定高度准入与性能目标。
 
-**Does not own / non-goals**
+**不负责 / 非目标**
 
-- Data, columns, canonical identity, rendering mode, row kind, whole-row ownership, pre-cell render plan, viewport and logical appearance metadata: `component:Table`.
-- The visible range, internal overscan, gap geometry, the first-visible-key anchor math, the focus-island retention and the offset and measurement helpers: the shared windowing module, `architecture:list-windowing`. This module supplies Table's pitch and admission to it.
-- Fetching, loading presentation, selection, activation, sort/filter state, navigation, route restoration or arbitrary imperative row navigation: their module or product owners.
-- Tree/grouped/detail rows, expanded panels, custom row anatomy, paginated global-offset data, variable-height or column virtualization in v1.
-- A new theme target, public ScrollableArea wrapper, external-root mode, overscan setting or `scrollToRow` API.
+- 数据、列、规范标识、渲染模式、行类型、整行所有权、单元格前渲染规划、视口与逻辑外观元数据：`component:Table`。
+- 可见范围、内部过扫描、间隙几何、首个可见键的锚点计算、焦点岛保留，以及偏移与测量辅助函数：共享窗口化模块 `architecture:list-windowing`。本模块向其提供 Table 的节距与准入。
+- 抓取、加载呈现、选择、激活、排序/筛选状态、导航、路由恢复或任意命令式行导航：其所属模块或产品所有者。
+- v1 中的树形/分组/明细行、展开面板、自定义行结构、分页全局偏移数据、可变高度或列虚拟化。
+- 新的主题目标、公开的 ScrollableArea 包装器、外部根模式、过扫描设置或 `scrollToRow` API。
 
 ## Public API and concepts
 
-The hook returns an opaque `TableVirtualizationCapability` from `rowHeight` and
-`initialViewportHeight`, never data or identity. The initial height only
-seeds the first window; it sizes no element. The Table's scroll area takes its
-height from its parent, and after mount the measured viewport sets the window. The hook reads the measured height of the Table's scroll area and never defines it. Table consumes it with its existing
-`data`, `columns`, `idKey` and `plugins` and owns types/runtime admission.
+该 hook 依据 `rowHeight` 与 `initialViewportHeight` 返回不透明的 `TableVirtualizationCapability`，绝不返回数据或标识。初始高度只用于为第一个窗口播种；它不为任何元素设定尺寸。Table 的滚动区域从父级获取高度，挂载后由测量到的视口设定窗口。该 hook 读取 Table 滚动区域的实测高度，但从不定义它。Table 以其既有的 `data`、`columns`、`idKey` 与 `plugins` 使用它，并负责类型/运行时准入。
 
-| Concept       | Values or states                                                  | Meaning                                                              | Default               | Owner                                               | Stability          |
-| ------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------- | --------------------------------------------------- | ------------------ |
-| Geometry      | Positive finite CSS-pixel `rowHeight` and `initialViewportHeight` | Declared row pitch and minimum; the initial window's viewport height | Both required         | This module                                         | Stable; unreleased |
-| Capability    | Opaque Table-compatible value                                     | Carries geometry intent, not sliced props or an engine handle        | Absent without opt-in | This module; parent consumption                     | Stable; unreleased |
-| Identity/data | Ordered mutable-compatible `T[]`; valid explicit `idKey`          | One complete logical dataset and parent-resolved key source          | Required for opt-in   | `component:Table`                                   | Parent dependency  |
-| Range         | Half-open contiguous logical interval                             | Viewport-intersecting rows before overscan                           | Derived               | `architecture:list-windowing`                       | Stable; unreleased |
-| Focus island  | Absent or one retained product-row subtree                        | Preserves the focused row outside the ordinary window                | Absent                | `architecture:list-windowing`; existing focus owner | Stable; unreleased |
-| Metadata      | Logical index/count, header count, parity and final-row state     | One source for distinct ARIA and visible numbering                   | Derived               | `component:Table`                                   | Parent dependency  |
+| 概念      | 取值或状态                                               | 含义                                        | 默认值             | 所有者                                        | 稳定性       |
+| --------- | -------------------------------------------------------- | ------------------------------------------- | ------------------ | --------------------------------------------- | ------------ |
+| 几何      | 正的有限 CSS 像素 `rowHeight` 与 `initialViewportHeight` | 声明的行节距与最小值；初始窗口的视口高度    | 两者均为必填       | 本模块                                        | 稳定；未发布 |
+| 能力      | 与 Table 兼容的不透明值                                  | 携带几何意图，而不是切分的 props 或引擎句柄 | 未选择启用时不存在 | 本模块；父级消费                              | 稳定；未发布 |
+| 标识/数据 | 有序且兼容可变操作的 `T[]`；有效的显式 `idKey`           | 一份完整的逻辑数据集与父级解析的键来源      | 选择启用时必填     | `component:Table`                             | 父级依赖     |
+| 范围      | 半开连续逻辑区间                                         | 过扫描之前与视口相交的行                    | 派生               | `architecture:list-windowing`                 | 稳定；未发布 |
+| 焦点岛    | 不存在，或一个保留的产品行子树                           | 在常规窗口之外保留获得焦点的行              | 不存在             | `architecture:list-windowing`；既有焦点所有者 | 稳定；未发布 |
+| 元数据    | 逻辑索引/数量、表头数量、奇偶性与末行状态                | ARIA 与可见编号这两个不同用途共用的唯一来源 | 派生               | `component:Table`                             | 父级依赖     |
 
 ## Behavioral contract
 
-These requirements define the complete normative contract. Implementation,
-browser, accessibility and performance verification remain release requirements.
+这些要求定义完整的规范性契约。实现、浏览器、无障碍与性能验证仍是发布要求。
 
-| ID   | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Basis                                 | Verification state   |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- | -------------------- |
-| FR1  | Unchanged geometry preserves capability identity. Unchanged logical data, keys, columns, plugins and effective mounted set preserve output identities and do not invoke product renderers again.                                                                                                                                                                                                                                                                                                                                                 | Parent memoization; runtime identity  | Required for release |
-| FR2  | Mounted data is one contiguous visible window with four overscan rows per side plus at most one discontiguous focused product row. The island is never duplicated inside the window. Empty data mounts no data, spacer or island row.                                                                                                                                                                                                                                                                                                            | DEC-4; bounded DOM                    | Required for release |
-| FR3  | Mounted row pitch plus at most three nonzero gap segments equals `logicalDataRowCount` times the effective pitch (FR17). Gaps use omitted-row count, not DOM-relative indices. Invalid arithmetic or an unrepresentable browser extent disables virtualization rather than compressing geometry.                                                                                                                                                                                                                                                 | Fixed geometry; native scrolling      | Required for release |
-| FR4  | Table retains native table/section/row/cell elements. Each gap is an inaccessible native spacer row/cell with final-column span and no content, padding, border, theme target, state, focus stop or product transform. Structural elements are neither block-rewritten nor absolutely positioned.                                                                                                                                                                                                                                                | Native HTML; DEC-2                    | Required for release |
-| FR5  | For nonempty flat data, headers have indices `1..H`, data row `i` has `aria-rowindex=H+i+1`, and Table exposes the parent's FR20 row total: `-1` while admitted incremental loading reports more data, otherwise H+N. Spacers count as neither. Visible row numbering derives `i+1` from the same parent logical source. Empty data preserves the parent empty-state branch without virtual metadata.                                                                                                                                            | Parent FR20; full-table semantics     | Required for release |
-| FR6  | Table validates explicit identity across the complete logical dataset and supplies its canonical key and validity to virtualization and row transforms. Function keys preserve string/finite-number type; valid property keys use the parent's string projection. Internal React keys distinguish canonical numeric and string keys. Invalid/duplicate/missing identity disables virtualization in all builds.                                                                                                                                   | Parent FR16; DEC-3                    | Required for release |
-| FR7  | A focused row leaving the window remains in the same keyed body-child sequence with its original subtree. Real focus departure, removal or return releases the island; focus transfer replaces it without retaining a second row. Scrolling alone never moves focus or reveals the island.                                                                                                                                                                                                                                                       | Existing focus owner; DEC-4           | Required for release |
-| FR8  | Order/data/height changes preserve the first-visible canonical key and fractional row offset, not the active or focused key. A removed anchor resolves to the first surviving successor in old order, then predecessor, then start; the result clamps to the new extent. Appending does not follow the tail.                                                                                                                                                                                                                                     | Controlled data; DEC-4                | Required for release |
-| FR9  | Flat selection, sort/filter controls, sticky columns, context menus and row indexing preserve their existing owners. Activation and infinite loading compose only with joint parent/module admission and verification; active state does not retain rows, and loading uses an after-table sentinel beyond the full loaded extent.                                                                                                                                                                                                                | Parent FR17/FR18; independent modules | Required for release |
-| FR10 | Server and first client use the same seed `[0, min(N, ceil(initialViewportHeight/rowHeight)+4))` and gaps from the same validated inputs. There is no initial-count API, full-render-then-collapse or empty-then-repair. Unmeasurable client geometry retains the seed or last valid range.                                                                                                                                                                                                                                                      | SSR; runtime architecture             | Required for release |
-| FR11 | Viewport and content invalidation use the parent's both-axis geometry/pooled resize path with inline `contain`, block `allow`, one viewport scroll subscription and at most one pending range frame. Stable no-op renders do not reconnect resources or reset scroll; replaced nodes and stale work cannot publish geometry.                                                                                                                                                                                                                     | Parent FR19; runtime lifetime         | Required for release |
-| FR12 | V1 has no public imperative scrolling API. Internal anchor or focus coordination remains distinct from activation, navigation and fetching; native viewport scrolling remains available.                                                                                                                                                                                                                                                                                                                                                         | Public responsibility; DEC-1          | Required for release |
-| FR13 | Bounded renderer/DOM counts and the PR targets gate completion. Offscreen content is not constructed and then hidden, discarded or sliced; identity validation is not counted as offscreen cell rendering.                                                                                                                                                                                                                                                                                                                                       | Parent FR18; performance              | Required for release |
-| FR14 | Accepted fixed mode defaults unspecified `textOverflow` to single-line truncation; explicit `wrap` disables virtualization. Default cells and recognized height-safe plugin cells preserve font size, control targets, density/theme padding and collapsed-border contribution within the pitch. Arbitrary custom renderers, wrapping, media/editor/detail content or custom spans fall back. Overflow, or a pitch violation FR17 does not adopt, removes fixed-height constraints and renders fully; a native row height alone is insufficient. | Fixed-height enforceability; DEC-2    | Required for release |
-| FR15 | Striping and all `rows`, `columns`, `grid`, `none` divider modes derive parity/final-row paint from parent metadata in virtual mode only. Ordinary CSS remains unchanged. Selection/hover and pinned-cell overlay projection retain their canonical precedence; disappearing final-row paint does not change pitch.                                                                                                                                                                                                                              | Parent FR20/FR21; logical appearance  | Required for release |
-| FR16 | Accessibility claims cover truthful positions of mounted rows, not virtual-cursor discovery of unmounted rows. Scrolling does not add live-region announcements or an ARIA-grid/roving-row contract.                                                                                                                                                                                                                                                                                                                                             | Accessibility evidence boundary       | Required for release |
-| FR17 | When every mounted product row measures one height, within 0.75 px, that differs from `rowHeight`, with no overflowing cell or clipped row number, as after a text-size, zoom or theme change, that height becomes the effective pitch: range, gaps, extent and FR8's anchor use it and windowing continues. `rowHeight` stays each row's minimum and the FR10 seed's pitch. Unequal row heights fall back under FR14. In development, adopting a pitch other than `rowHeight` warns once per pitch.                                             | DEC-2; AR5; text scaling              | Required for release |
+| ID   | 不变式                                                                                                                                                                                                                                                                                                                                                                    | 依据                      | 验证状态 |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | -------- |
+| FR1  | 不变的几何保持能力标识。不变的逻辑数据、键、列、插件与有效挂载集合保持输出标识，且不再调用产品渲染器。                                                                                                                                                                                                                                                                    | 父级记忆化；运行时标识    | 发布必需 |
+| FR2  | 挂载的数据是一个连续的可见窗口，每侧四行过扫描，另加至多一个不连续的焦点产品行。焦点岛绝不在窗口内重复。空数据不挂载任何数据、占位行或焦点岛行。                                                                                                                                                                                                                          | DEC-4；有界 DOM           | 发布必需 |
+| FR3  | 挂载的行节距加上至多三个非零间隙段，等于 `logicalDataRowCount` 乘以有效节距（FR17）。间隙使用被省略的行数，而不是相对于 DOM 的索引。算术无效或浏览器范围无法表示时，禁用虚拟化，而不是压缩几何。                                                                                                                                                                          | 固定几何；原生滚动        | 发布必需 |
+| FR4  | Table 保留原生的 table/section/row/cell 元素。每个间隙是一个不可访问的原生占位行/单元格，跨越末列，且无内容、内边距、边框、主题目标、状态、焦点停靠点或产品变换。结构元素既不被重写为块级，也不被绝对定位。                                                                                                                                                               | 原生 HTML；DEC-2          | 发布必需 |
+| FR5  | 对于非空的平铺数据，表头的索引为 `1..H`，数据行 `i` 具有 `aria-rowindex=H+i+1`，并且 Table 暴露父级的 FR20 行总数：当已准入的增量加载报告还有更多数据时为 `-1`，否则为 H+N。占位行两者都不计入。可见行编号从同一父级逻辑来源派生 `i+1`。空数据保留父级的空状态分支，不带虚拟元数据。                                                                                      | 父级 FR20；整表语义       | 发布必需 |
+| FR6  | Table 在完整逻辑数据集上校验显式标识，并将其规范键与有效性提供给虚拟化与行变换。函数键保留字符串/有限数值类型；有效的属性键使用父级的字符串投影。内部 React 键区分规范数值键与字符串键。无效/重复/缺失的标识在所有构建中禁用虚拟化。                                                                                                                                      | 父级 FR16；DEC-3          | 发布必需 |
+| FR7  | 离开窗口的焦点行仍留在同一个带键的正文子节点序列中，并保留其原始子树。真正的焦点离开、移除或返回会释放焦点岛；焦点转移会替换它，而不保留第二行。仅滚动绝不移交焦点，也不显示焦点岛。                                                                                                                                                                                      | 既有焦点所有者；DEC-4     | 发布必需 |
+| FR8  | 顺序/数据/高度变化保留首个可见的规范键与小数行偏移，而不是活动键或焦点键。被移除的锚点先解析为旧顺序中的第一个存活后继，再解析为前驱，最后解析为起始位置；结果钳制到新的范围。追加不会跟随尾部。                                                                                                                                                                          | 受控数据；DEC-4           | 发布必需 |
+| FR9  | 平铺选择、排序/筛选控件、粘性列、上下文菜单与行索引保留其既有所有者。激活与无限加载只有经父级/模块联合准入并验证后才可组合；活动状态不保留行，加载在完整已加载范围之外使用表格之后的哨兵。                                                                                                                                                                                | 父级 FR17/FR18；独立模块  | 发布必需 |
+| FR10 | 服务器与首个客户端使用相同的种子 `[0, min(N, ceil(initialViewportHeight/rowHeight)+4))`，并根据相同的已验证输入产生间隙。不存在初始数量 API、先全量渲染再折叠或先空再修复。无法测量的客户端几何保留种子或最后有效范围。                                                                                                                                                   | SSR；运行时架构           | 发布必需 |
+| FR11 | 视口与内容失效使用父级的双轴几何/池化 resize 路径，采用行内 `contain`、块级 `allow`、一个视口滚动订阅以及至多一个待处理的范围帧。稳定的空操作渲染不会重新连接资源或重置滚动；被替换的节点与过期工作不能发布几何。                                                                                                                                                         | 父级 FR19；运行时生命周期 | 发布必需 |
+| FR12 | V1 没有公开的命令式滚动 API。内部锚点或焦点协调与激活、导航和抓取保持区别；原生视口滚动仍然可用。                                                                                                                                                                                                                                                                         | 公共责任；DEC-1           | 发布必需 |
+| FR13 | 有界的渲染器/DOM 计数与 PR 目标作为完成门槛。屏幕外内容不会被先构建再隐藏、丢弃或切分；标识校验不计为屏幕外单元格渲染。                                                                                                                                                                                                                                                   | 父级 FR18；性能           | 发布必需 |
+| FR14 | 已接受的固定模式将未指定的 `textOverflow` 默认为单行截断；显式 `wrap` 会禁用虚拟化。默认单元格与已识别的高度安全插件单元格在节距内保留字号、控件目标、密度/主题内边距与折叠边框贡献。任意自定义渲染器、换行、媒体/编辑器/明细内容或自定义跨度回退。溢出，或 FR17 不予采纳的节距违规，会移除固定高度约束并全量渲染；仅靠原生行高不足。                                     | 固定高度可执行性；DEC-2   | 发布必需 |
+| FR15 | 斑马纹与所有 `rows`、`columns`、`grid`、`none` 分隔线模式仅在虚拟模式下从父级元数据派生奇偶性/末行绘制。普通 CSS 保持不变。选择/悬停与固定单元格叠加投影保留其规范优先级；末行绘制的消失不改变节距。                                                                                                                                                                      | 父级 FR20/FR21；逻辑外观  | 发布必需 |
+| FR16 | 无障碍主张覆盖挂载行的真实位置，而不覆盖未挂载行的虚拟光标发现。滚动不会添加实时区域播报，也不会添加 ARIA-grid/roving-row 契约。                                                                                                                                                                                                                                          | 无障碍证据边界            | 发布必需 |
+| FR17 | 当每个挂载的产品行测得同一高度（在 0.75 px 以内），且该高度不同于 `rowHeight`，且没有溢出的单元格或被裁剪的行号，例如在文字大小、缩放或主题变更之后，该高度就成为有效节距：范围、间隙、范围和 FR8 的锚点都使用它，窗口化继续进行。`rowHeight` 保持为每行的最小值以及 FR10 种子的节距。不等行高按 FR14 回退。在开发中，采用不同于 `rowHeight` 的节距时，每个节距警告一次。 | DEC-2；AR5；文字缩放      | 发布必需 |
 
 ### Transformation and precedence order
 
-- **ORD1 — Logical inputs.** Caller sort/filter owners establish Table data; parent identity, rendering mode, row kind and ownership resolve before windowing.
-- **ORD2 — Admission.** Parent validates capability geometry, identity, flat compatibility and fixed content before invoking product cell renderers. Children mode remains an unchanged no-op.
-- **ORD3 — Range.** Body-relative scroll geometry accounts for headers/chrome and sticky occlusion once; range intersection is clamped, expanded by four rows per side and combined with one focus island. The shared windowing module (`architecture:list-windowing`) computes the range, the island and the anchor from that geometry.
-- **ORD4 — Rendering.** Parent BaseTable performs the pre-cell plan, renders gaps and keyed product rows in logical order, and runs existing sequential element transforms only on mounted product rows.
-- **ORD5 — Metadata/paint.** Parent logical indices/counts drive ARIA, row numbering, parity and final-row appearance before paint; selection and activation retain their respective state owners.
-- **ORD6 — Change/fallback.** Anchor reconciliation and range publication use the same current inputs; disabled virtualization releases resources/gaps/constraints, preserves unrelated plugins and fully renders compatible content with one deduplicated development diagnostic per condition. Recovery requires a changed valid admission input, not repeated retry of a violating configuration.
+- **ORD1 — 逻辑输入。** 调用方的排序/筛选所有者建立 Table 数据；父级标识、渲染模式、行类型与所有权在窗口化之前解析。
+- **ORD2 — 准入。** 父级在调用产品单元格渲染器之前，校验能力几何、标识、平铺兼容性与固定内容。children 模式仍是不变的空操作。
+- **ORD3 — 范围。** 相对于正文的滚动几何只计算一次表头/界面框架与粘性遮挡；范围相交被钳制，每侧扩展四行，并与一个焦点岛合并。共享窗口化模块（`architecture:list-windowing`）从该几何计算范围、焦点岛与锚点。
+- **ORD4 — 渲染。** 父级 BaseTable 执行单元格前规划，按逻辑顺序渲染间隙与带键的产品行，并且仅对挂载的产品行运行既有的顺序元素变换。
+- **ORD5 — 元数据/绘制。** 父级逻辑索引/数量在绘制之前驱动 ARIA、行编号、奇偶性与末行外观；选择与激活保留各自的状态所有者。
+- **ORD6 — 变更/回退。** 锚点协调与范围发布使用相同的当前输入；禁用虚拟化会释放资源/间隙/约束，保留无关插件，并以每个条件一条去重的开发诊断全量渲染兼容内容。恢复需要变更后的有效准入输入，而不是反复重试违规配置。
 
 ### Performance and resources
 
-- **PR1 — Structural bound.** With unobscured body viewport `V`, mounted product rows are at most `ceil(V/pitch)+1+8+1`, where `pitch` is FR17's effective pitch; the final one is the optional island. SSR rows are bounded by FR10's seed. There are at most three nonzero gaps; cells and element work scale with mounted rows/columns, never total data length.
-- **PR2 — Geometry.** Range arithmetic uses one pitch for every row, `rowHeight` or FR17's measured effective pitch, not a variable-size cache or offscreen measurement. Bounded mounted-content diagnostics verify pitch/overflow after mount and font/theme/zoom/geometry invalidation through shared observation; they create no per-row observer fan-out.
-- **PR3 — Stable work.** A no-op/current-window scroll invokes zero product renderers. A changed mounted item updates one row. Parent identity/order-map validation may be O(N) on changed data or identity but never per scroll; caller sort/filter cost is recorded separately.
-- **PR4 — Shared lifetime.** Parent shared viewport/content observation also serves sticky state; no independent virtualizer detector or second viewport is installed. Unmount, disablement and node replacement release owned subscriptions, queued frames, island elements and obsolete snapshots without silencing shared subscribers.
-- **PR5 — Timing targets.** The p95 range-plus-commit target is 4 ms; p95 no-op is 2 ms. At 60 Hz, p95 whole-frame work is at most 16.7 ms with at most 1% missed frames and no persistent blank windows. Core cold render at 100k rows, including key validation, is at most 250 ms. Supported-plugin incremental p95 scroll overhead is at most 2 ms.
-- **PR6 — Memory targets.** Additional identity bookkeeping is at most 32 MiB at 100k rows, excluding caller data. Fixed-viewport mounted heap at 100k is at most the 1k case plus 8 MiB. After 20 mount/unmount and viewport-replacement cycles, controlled-GC retained growth plateaus within 1 MiB and no instance node, listener or frame survives.
-- **PR7 — Evidence.** Targets are release requirements, not measured results. Timing targets gate on the release check's 4-core-ubuntu runner, where the timing proof runs alone in its contract leg on one worker; release checks on ubuntu-latest, including the scheduled monitoring runs, report timing without gating. Count, work and memory targets gate on every runner. The gating timing values are the PR5 targets; isolated runs on that runner stay at least 25% inside every one of them, and a single-machine measurement is a non-gating reference. Verification records environment/build/browser versions, corpus, viewport/pitch/column count, p50/p95/max and operation counts at 1k/10k/100k, core and supported combinations; per-release timing and memory results remain outside this record.
+- **PR1 — 结构上限。** 在未遮挡的正文视口 `V` 下，挂载的产品行至多为 `ceil(V/pitch)+1+8+1`，其中 `pitch` 是 FR17 的有效节距；最后一行是可选的焦点岛。SSR 行受 FR10 的种子限制。非零间隙至多三个；单元格与元素工作随挂载的行/列数量扩展，绝不随数据总长度扩展。
+- **PR2 — 几何。** 范围算术对每一行使用同一个节距，即 `rowHeight` 或 FR17 实测的有效节距，而不是可变尺寸缓存或屏幕外测量。有界的挂载内容诊断在挂载后验证节距/溢出，并通过共享观察验证字体/主题/缩放/几何失效；它们不产生逐行观察器扇出。
+- **PR3 — 稳定工作。** 空操作/当前窗口内的滚动不调用任何产品渲染器。挂载项发生变化时只更新一行。父级的标识/顺序映射校验在数据或标识变化时可以为 O(N)，但绝不逐次滚动进行；调用方排序/筛选成本单独记录。
+- **PR4 — 共享生命周期。** 父级共享的视口/内容观察也服务于粘性状态；不安装独立的虚拟化检测器或第二个视口。卸载、禁用与节点替换会释放自有的订阅、排队的帧、焦点岛元素与过期快照，同时不使共享订阅者静默。
+- **PR5 — 时间目标。** 范围加提交的 p95 目标为 4 ms；空操作的 p95 为 2 ms。在 60 Hz 下，整帧工作的 p95 至多为 16.7 ms，丢帧率至多 1%，且没有持续的空白窗口。10 万行的核心冷渲染（含键校验）至多为 250 ms。受支持插件的增量 p95 滚动开销至多为 2 ms。
+- **PR6 — 内存目标。** 在 10 万行时，额外的标识记录至多为 32 MiB（不含调用方数据）。10 万行时固定视口的挂载堆至多为 1 千行情形加 8 MiB。经过 20 次挂载/卸载与视口替换循环后，受控 GC 的保留增长在 1 MiB 内趋于平稳，且没有任何实例节点、监听器或帧存活。
+- **PR7 — 证据。** 目标是发布要求，而不是实测结果。时间目标在发布检查的 4-core-ubuntu 运行器上把关，时间证明在该运行器的契约分支中以单 worker 单独运行；ubuntu-latest 上的发布检查（包括定时监控运行）只报告时间而不用作门槛。计数、工作与内存目标在每个运行器上都作为门槛。作为门槛的时间值即 PR5 目标；该运行器上的隔离运行在每一项上都至少比它优 25%，单机测量是不作门槛的参考。验证记录环境/构建/浏览器版本、语料、视口/节距/列数、1k/10k/100k 下的 p50/p95/max 与操作次数，核心与受支持组合；每次发布的时间与内存结果保留在本记录之外。
 
 ## Accessibility contract
 
-- **AR1 — Native semantics.** Header/cell associations and full-table row metadata follow FR4/FR5; gaps have no accessible names, roles as data, controls or state.
-- **AR2 — Keyboard access.** The parent's named effective viewport preserves native Arrow/Page scrolling and Tab/Shift+Tab through mounted controls. Tab does not claim traversal of unmounted rows or transfer navigation-key ownership from nested controls.
-- **AR3 — Focus retention.** One keyed row persists while it or its recognized owned menu subtree holds focus. Existing menu/layer owners preserve dismissal and focus return, including portalled controls through parent ownership coordination; DOM containment alone does not establish portal ownership.
-- **AR4 — Removal.** If row removal otherwise detaches current focus, focus returns to the parent's named viewport with `preventScroll` through shared modality-aware focus. FR22 supplies temporary programmatic-only focusability when fitting content has no sequential viewport stop, preserving explicit caller attributes and restoring the temporary attribute on departure. A caller-selected surviving successor is not stolen. Returning focus to a retained row uses the existing focus owner, not an independent overlay/focus manager.
-- **AR5 — Content admission.** Zoom, text reflow and theme/density changes preserve required content and interactive target sizes. A change every mounted row shares keeps windowing at the measured pitch (FR17); any other change triggers full-render fallback, never silent clipping. Default single-line truncation preserves the existing text semantics and overflow affordance.
-- **AR6 — Evidence limits.** DOM/accessibility-tree and real-browser keyboard evidence prove structure, indices, control operation and focus. Real AT is required only for an admitted AT-dependent outcome or recorded divergence under `spec:AST-009`; infinite-loading announcement evidence remains with that module.
+- **AR1 — 原生语义。** 表头/单元格关联与整表行元数据遵循 FR4/FR5；间隙没有可访问名称，也不承担数据、控件或状态的角色。
+- **AR2 — 键盘访问。** 父级具名的有效视口保留原生 Arrow/Page 滚动，以及经由挂载控件的 Tab/Shift+Tab。Tab 不主张遍历未挂载行，也不从嵌套控件转移导航键所有权。
+- **AR3 — 焦点保留。** 当某行或其已识别的自有菜单子树持有焦点时，该带键行会保留。既有菜单/层所有者保留关闭与焦点返回，包括通过父级所有权协调的 portal 控件；仅凭 DOM 包含关系不能确立 portal 所有权。
+- **AR4 — 移除。** 如果行移除否则会使当前焦点脱离，焦点会通过共享的模态感知焦点返回到父级具名视口，并使用 `preventScroll`。当适配内容没有顺序视口停靠点时，FR22 提供临时的仅程序化可聚焦性，同时保留调用方的显式属性，并在离开时恢复该临时属性。调用方选定的存活后继不会被抢占。将焦点返回到保留行使用既有焦点所有者，而不是独立的覆盖层/焦点管理器。
+- **AR5 — 内容准入。** 缩放、文字重排与主题/密度变化保留必需内容与交互目标尺寸。每个挂载行都共享的变化使窗口化保持在实测节距（FR17）；任何其他变化触发全量渲染回退，绝不静默裁剪。默认单行截断保留既有的文本语义与溢出提示。
+- **AR6 — 证据限制。** DOM/无障碍树与真实浏览器键盘证据证明结构、索引、控件操作与焦点。只有当已准入的结果依赖 AT，或已记录的差异属于 `spec:AST-009` 时，才需要真实 AT；无限加载播报证据仍属于该模块。
 
 ## Design relationships
 
-| Anatomy/state       | Design requirement                                   | Representation authority                    | Module contract |
-| ------------------- | ---------------------------------------------------- | ------------------------------------------- | --------------- |
-| Product row/cell    | Equivalent logical-row appearance and controls       | Existing Table targets and state owners     | FR14/FR15       |
-| Gap segments        | Geometry only; inaccessible and unpainted            | This module; no theme target                | FR3/FR4         |
-| Viewport            | One coordinated Table-owned scroll region            | Parent FR19/DEC-5; `spec:AST-025` FR18/FR19 | FR11; PR4       |
-| Focus island        | Same keyed row, not another visual component         | Existing row and focus/menu owners          | FR7; AR3/AR4    |
-| Overflowing content | Full-render fallback; no reduced font or target size | Parent fixed-content admission              | FR14; AR5       |
+| 结构/状态     | 设计要求                           | 表示权威                                  | 模块契约     |
+| ------------- | ---------------------------------- | ----------------------------------------- | ------------ |
+| 产品行/单元格 | 等效的逻辑行外观与控件             | 既有 Table 目标与状态所有者               | FR14/FR15    |
+| 间隙段        | 仅几何；不可访问且不绘制           | 本模块；无主题目标                        | FR3/FR4      |
+| 视口          | 一个协调的、Table 拥有的滚动区域   | 父级 FR19/DEC-5；`spec:AST-025` FR18/FR19 | FR11；PR4    |
+| 焦点岛        | 同一个带键行，而不是另一个视觉组件 | 既有行与焦点/菜单所有者                   | FR7；AR3/AR4 |
+| 溢出的内容    | 全量渲染回退；不缩小字号或目标尺寸 | 父级固定内容准入                          | FR14；AR5    |
 
-The module adds no theme target. Spacer sizing is internal geometry; logical-row
-paint and pinned overlay coordination remain parent-owned.
+本模块不添加主题目标。占位行尺寸属于内部几何；逻辑行绘制与固定叠加层协调仍由父级拥有。
 
 ## Parent and system relationships
 
-- `component:Table` FR16 owns canonical identity; FR17 owns optional row-transform and wrapper context, rendering mode, row kind and whole-row ownership. The parent owns optional `rowModel: 'flat' | 'tree' | 'grouped' | 'detail' | 'custom'` and `wholeRowOwner: 'activation' | 'expansion' | 'navigation'` declarations and compatibility, not this module.
-- Parent FR18 owns pre-cell planning and flat admission. Missing compatibility for an unknown custom body modifier disables virtual opt-in; it does not invalidate ordinary legacy usage. Tree/grouped/detail/custom-row combinations fall back without name/order or private-marker inference.
-- Parent FR19/DEC-5 owns the existing both-axis viewport, inline containment/block chaining, shared geometry and pooled resize. `spec:AST-025` FR18/FR19 prohibit incidental same-axis nesting and uncoordinated external owners.
-- Parent FR20 owns logical metadata and the virtualized-only ARIA path; FR21 owns one coordinated row/pinned paint outcome. DEC-4 owns identity/interaction ownership and DEC-5 owns render-plan/viewport integration.
-- `architecture:react-component-runtime` owns current geometry, rendered-state/resource separation, node replacement, StrictMode replay and cleanup. `architecture:public-component-api` and `spec:AST-002` own capability reachability and caller burden.
-- Activation, infinite loading and virtualization require joint current parent/module admission before supported composition is released. The loading sentinel follows the full loaded extent outside semantic table data; the parent FR20 owns row totals, including `-1` while admitted loading reports more data. Loading owns availability, announcements and reset semantics, not a second row-count writer. Activation neither supplies identity nor makes active state a focus/scroll owner.
+- `component:Table` FR16 拥有规范标识；FR17 拥有可选的行变换与包装器上下文、渲染模式、行类型与整行所有权。父级拥有可选的 `rowModel: 'flat' | 'tree' | 'grouped' | 'detail' | 'custom'` 与 `wholeRowOwner: 'activation' | 'expansion' | 'navigation'` 声明与兼容性，而不是本模块。
+- 父级 FR18 拥有单元格前规划与平铺准入。对未知自定义正文修饰符缺少兼容性会禁用虚拟化选择启用；它不会使普通遗留用法失效。树形/分组/明细/自定义行组合会回退，而不进行名称/顺序或私有标记推断。
+- 父级 FR19/DEC-5 拥有既有的双轴视口、行内包含/块级链接、共享几何与池化 resize。`spec:AST-025` FR18/FR19 禁止附带的同轴嵌套与未协调的外部所有者。
+- 父级 FR20 拥有逻辑元数据与仅用于虚拟化的 ARIA 路径；FR21 拥有一个协调的行/固定绘制结果。DEC-4 拥有标识/交互所有权，DEC-5 拥有渲染规划/视口集成。
+- `architecture:react-component-runtime` 拥有当前几何、渲染状态与资源的分离、节点替换、StrictMode 重放与清理。`architecture:public-component-api` 与 `spec:AST-002` 拥有能力可达性与调用方负担。
+- 激活、无限加载与虚拟化在受支持的组合发布之前，需要当前父级/模块的联合准入。加载哨兵位于语义表格数据之外的完整已加载范围之后；父级 FR20 拥有行总数，包括已准入加载报告更多数据时的 `-1`。加载拥有可用性、播报与重置语义，而不是第二个行数写入者。激活既不提供标识，也不使活动状态成为焦点/滚动所有者。
 
 ## Verification map
 
-Implementation verification is a separate release requirement; structural checks
-alone are not runtime evidence.
+实现验证是独立的发布要求；仅结构检查不是运行时证据。
 
-| Contract          | Verification                                                             | Representative states                                                                                                          | Mutation/failure expectation                                                                                    |
-| ----------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| FR1-FR6; PR1-PR3  | Actual Table renderer-count, native DOM, geometry/identity tests         | Empty/short/first/middle/end, fractional pitch, 0/'0', duplicates, invalid keys, one island/three gaps                         | Removing pre-cell slice, typed keys, validation or correct gaps fails bounded-work/geometry assertions.         |
-| FR7/FR8; AR2-AR4  | Real-browser focus and anchor integration                                | Scroll focused row/menu out/in, portal focus, transfer/removal, caller successor, sort/filter/insert/delete/replace/append     | Remount, second island, lost focus, stolen successor, stale anchor or tail-follow fails.                        |
-| FR9/FR14/FR15     | Plugin and canonical visual regression matrix                            | Selection/sort/filter/sticky/context-menu/index; joint activation/loading; striping/all dividers, density/theme/direction/zoom | Unsupported combinations appear valid, pitch drifts, controls clip, or middle-window/pinned paint differs.      |
-| FR17; AR5         | Real-browser text-size and zoom fixture                                  | Default and 200% text, enlarge and restore while scrolled, equal and unequal row heights                                       | Fallback at an equal larger height, overlap, gaps, wrong positions or adopting unequal heights fails            |
-| FR10              | SSR/first-client/hydration fixtures                                      | Derived seed, smaller/larger viewport, hidden/reveal, empty state, unchanged legacy pages                                      | Full-render intermediate output, mismatch, empty repair or legacy metadata change fails.                        |
-| FR11; PR4         | Shared-observation StrictMode/replacement lifecycle tests                | No-op, rapid scroll, resize/font/content, fitting/overflowing, same/orthogonal axes, disable/unmount                           | Duplicate listener, stale commit, ref churn, leaked resource, shared-subscriber loss or chaining failure fails. |
-| FR13; PR1-PR7     | Table performance suite and browser frame/heap traces                    | 1k/10k/100k, cold/no-op/update/scroll, 20 lifetime cycles, supported combinations                                              | Counts scale with N per scroll, persistent gaps, frame/heap targets fail or evidence is missing.                |
-| FR16; AR1-AR6     | DOM/accessibility-tree, axe and real-browser keyboard; AT where required | Full header/data positions, hidden spacers, mounted controls, focus, zoom; loading announcement separately                     | Wrong totals/indices, grid-role rewrite, announcement noise or unmounted-discovery claim fails.                 |
-| API/compatibility | Public-subpath compile, consumer docs/inventory and knowledge checks     | Opaque capability, data-mode valid-key opt-in, unsupported content/mode fallback, legacy fixtures                              | Capability leaks data/engine knobs, permits contradictory opt-in, or structural ownership is missing.           |
+| 契约             | 验证                                             | 代表性状态                                                                                 | 变更/失败预期                                                                  |
+| ---------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| FR1-FR6；PR1-PR3 | 实际的 Table 渲染器计数、原生 DOM、几何/标识测试 | 空/短/首/中/尾、小数节距、0/'0'、重复、无效键、一个焦点岛/三个间隙                         | 移除单元格前切片、类型化键、校验或正确间隙会使有界工作/几何断言失败。          |
+| FR7/FR8；AR2-AR4 | 真实浏览器焦点与锚点集成                         | 将焦点行/菜单滚出/滚入、portal 焦点、转移/移除、调用方后继、排序/筛选/插入/删除/替换/追加  | 重新挂载、第二个焦点岛、焦点丢失、后继被抢占、锚点过期或跟随尾部会使断言失败。 |
+| FR9/FR14/FR15    | 插件与规范视觉回归矩阵                           | 选择/排序/筛选/粘性/上下文菜单/索引；联合激活/加载；斑马纹/所有分隔线、密度/主题/方向/缩放 | 不支持的组合显得有效、节距漂移、控件裁剪，或中间窗口/固定绘制不同。            |
+| FR17；AR5        | 真实浏览器文字大小与缩放测试夹具                 | 默认与 200% 文字、在滚动中放大与恢复、相等与不等的行高                                     | 在相等的更大高度处回退、重叠、间隙、错误位置或采纳不等行高会失败               |
+| FR10             | SSR/首个客户端/水合测试夹具                      | 派生种子、更小/更大视口、隐藏/显示、空状态、未变更的遗留页面                               | 全量渲染的中间输出、不匹配、空修复或遗留元数据变更会失败。                     |
+| FR11；PR4        | 共享观察的 StrictMode/替换生命周期测试           | 空操作、快速滚动、resize/字体/内容、适配/溢出、同轴/正交轴、禁用/卸载                      | 重复监听器、过期提交、ref 搅动、资源泄漏、共享订阅者丢失或链接失败会失败。     |
+| FR13；PR1-PR7    | Table 性能套件与浏览器帧/堆轨迹                  | 1k/10k/100k、冷/空操作/更新/滚动、20 个生命周期循环、受支持组合                            | 计数随 N 逐次滚动扩展、持续间隙、帧/堆目标失败或证据缺失。                     |
+| FR16；AR1-AR6    | DOM/无障碍树、axe 与真实浏览器键盘；按需使用 AT  | 完整表头/数据位置、隐藏占位行、挂载控件、焦点、缩放；加载播报单独处理                      | 错误的总数/索引、grid 角色重写、播报噪音或未挂载发现主张会失败。               |
+| API/兼容性       | 公共子路径编译、使用方文档/清单与知识检查        | 不透明能力、数据模式有效键选择启用、不支持内容/模式回退、遗留测试夹具                      | 能力泄漏数据/引擎旋钮、允许自相矛盾的选择启用，或缺少结构所有权。              |
 
 ## Decision log
 
 ### DEC-1 — Capability configures parent-owned rendering
 
 **Reference:** `module:Table/useTableRowsVirtualization/DEC-1`
+
 **Decider:** `humbertovirtudes`, `2026-11-03`
 
-The geometry-only opaque capability leaves data/rendering with Table. Its SSR seed
-derives from declared sizes; four-row overscan and row-scroll coordination are internal.
-Rejected: sliced-props bundles, duplicate Table renderers and public engine/overscan/scroll handles.
+仅包含几何的不透明能力把数据/渲染留给 Table。其 SSR 种子从声明尺寸派生；四行过扫描与行滚动协调均为内部实现。已否决：切分 props 的包、重复的 Table 渲染器，以及公开的引擎/过扫描/滚动句柄。
 
 ### DEC-2 — Flat fixed-content mode has a full-render fail-safe
 
 **Reference:** `module:Table/useTableRowsVirtualization/DEC-2`
+
 **Decider:** `humbertovirtudes`, `2026-11-10`
 
-Fixed single-line content preserves pitch, fonts and controls. Invalid geometry,
-identity, content or extent disables virtualization in all builds. A text-size,
-zoom or theme change that every mounted row shares is not invalid: Table windows
-at the height the rows measure, so people who enlarge text keep a bounded Table.
-Native gaps preserve structure; variable-height/tree/grouped/detail/custom rows
-remain outside v1.
-Rejected: numeric row minimums as enforcement, averaging unequal row heights, silent clipping and hidden full DOM.
+固定的单行内容保留节距、字体与控件。无效的几何、标识、内容或范围在所有构建中禁用虚拟化。每个挂载行都共享的文字大小、缩放或主题变化不算无效：Table 按行实测的高度进行窗口化，因此放大文字的人仍得到一个有界的 Table。原生间隙保留结构；可变高度/树形/分组/明细/自定义行仍在 v1 之外。已否决：以数值行最小高作为强制手段、对不等行高取平均、静默裁剪与隐藏完整 DOM。
 
 ### DEC-3 — Identity and metadata stay canonical
 
 **Reference:** `module:Table/useTableRowsVirtualization/DEC-3`
+
 **Decider:** `humbertovirtudes`, `2026-11-03`
 
-Parent keys prevent cross-row recycling and distinguish numeric/string identity.
-Parent positions count headers for ARIA, not visible numbering; virtual paint uses
-logical positions without changing legacy output.
-Rejected: secondary extractors, window-local identity and global legacy ARIA correction by this module.
+父级键防止跨行复用，并区分数值/字符串标识。父级位置为 ARIA 计入表头，而不是可见编号；虚拟绘制使用逻辑位置，且不改变遗留输出。已否决：次级提取器、窗口局部标识，以及由本模块进行全局遗留 ARIA 修正。
 
 ### DEC-4 — One focus island and a first-visible-key anchor
 
 **Reference:** `module:Table/useTableRowsVirtualization/DEC-4`
+
 **Decider:** `humbertovirtudes`, `2026-11-03`
 
-One keyed island retains focus; first-visible key/fractional offset anchors scroll
-with successor/predecessor/start fallback. Table remount, not activation/append, resets it.
-Rejected: stretching a contiguous window to remote focus or using active state as scroll ownership.
+一个带键焦点岛保留焦点；首个可见键/小数偏移在滚动时作为锚点，并带后继/前驱/起始回退。重置它的是 Table 重新挂载，而不是激活/追加。已否决：将连续窗口拉伸到远端焦点，或以活动状态作为滚动所有权。
 
 ### DEC-5 — Shared viewport and objective budgets gate completion
 
 **Reference:** `module:Table/useTableRowsVirtualization/DEC-5`
+
 **Decider:** `humbertovirtudes`, `2026-11-03`
 
-Table/shared scrolling owns both axes, per-axis chaining and pooled geometry.
-Structural bounds and PR5/PR6 targets gate completion; targets are not results.
-Rejected: a parallel public scroll wrapper/detector or a subjective smoothness verdict.
+Table/共享滚动拥有双轴、逐轴链接与池化几何。结构上限与 PR5/PR6 目标作为完成门槛；目标不是结果。已否决：并行的公开滚动包装器/检测器，或主观的流畅度判定。
 
 ## Open questions
 
-The normative contract is complete. Implementation and release verification
-remain separate from contract approval. One open item:
+规范性契约已完成。实现与发布验证仍与契约批准分开。一个待决事项：
 
-- **OQ1 — Tighter timing gates.** Gating timing values move toward the worst isolated run plus 25% once isolated samples span both 4-core-ubuntu host types (AMD EPYC 9V74 and 7763); the missed-frame target stays 1% while the measured worst is zero.
+- **OQ1 — 更紧的时间门槛。** 一旦隔离样本覆盖两种 4-core-ubuntu 主机类型（AMD EPYC 9V74 与 7763），作为门槛的时间值会向最差隔离运行值加 25% 靠拢；丢帧目标保持 1%，而实测最差为零。
 
 ## Content boundary
 
-This record does not duplicate consumer signatures/examples, parent protocol,
-research, measured results, implementation steps or general virtualizer algorithms.
+本记录不重复使用方签名/示例、父级协议、研究、实测结果、实现步骤或通用虚拟化算法。

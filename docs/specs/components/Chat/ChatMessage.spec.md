@@ -38,227 +38,173 @@ system_specs: [spec:AST-020, spec:AST-029]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                        |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `sender`, `children`, `avatar`, `name`, `metadata`, `density`, plus `BaseProps<HTMLElement>` and `ref` on the message article.                                                  |
-| Behavior                | Sender controls logical alignment and system-message suppression; density resolves explicit prop → message-list context → `balanced`; descendants receive the resolved context. |
-| End-user impact         | People reading a conversation can distinguish user, assistant, and system messages while names and translated fallback labels preserve each article's sender identity.          |
-| Builder impact          | None.                                                                                                                                                                           |
-| Compatibility/readiness | Records shipped behavior; no public change. No implementation gap; one owner question stays open.                                                                               |
-| Review checks           | Reject a change that alters sender or density meaning, treats caller content as component-owned, or turns the unresolved theming question into new API.                         |
-| Governing rules         | `architecture:public-component-api/INV1, INV3, INV5–INV6, INV8–INV9`; `architecture:component-theming-surface/INV3–INV6`; `spec:AST-029/FR3–FR6`.                               |
+| 方面          | 契约                                                                                                                                               |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公开契约      | 消息 article 上的 `sender`、`children`、`avatar`、`name`、`metadata`、`density`，外加 `BaseProps<HTMLElement>` 与 `ref`。                          |
+| 行为          | 发送方控制逻辑对齐与系统消息抑制；密度按显式 prop → 消息列表上下文 → `balanced` 的顺序解析；后代接收解析后的上下文。                               |
+| 最终用户影响  | 阅读对话的人可以区分用户、助手与系统消息，同时名称与已翻译的回退标签保留每个 article 的发送方身份。                                                |
+| 构建者影响    | 无。                                                                                                                                               |
+| 兼容性/就绪度 | 记录已发布行为；无公开变更。无实现缺口；一个所有者问题仍未决。                                                                                     |
+| 审查检查      | 拒绝这样的改动：改变 sender 或 density 的含义、把调用方内容当作组件所有，或把未决的主题化问题变成新 API。                                          |
+| 约束规则      | `architecture:public-component-api/INV1, INV3, INV5–INV6, INV8–INV9`；`architecture:component-theming-surface/INV3–INV6`；`spec:AST-029/FR3–FR6`。 |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；下方正文具有权威性。
 
 ## Intent
 
-ChatMessage is the sender-aware article wrapper for one message in a
-conversation. It owns logical alignment, optional sender identity slots, the
-resolved density context supplied to message descendants, and the article's
-accessible name. Message content and its own interactions remain caller-owned.
+ChatMessage 是对话中单条消息的、感知发送方的 article 包装层。它拥有逻辑对齐、可选的发送方身份槽位、提供给消息后代的解析后密度上下文，以及该 article 的无障碍名称。消息内容与其自身的交互仍归调用方所有。
 
-Consumer syntax and examples belong in `ChatMessage.doc.mjs` and the Chat family
-document.
+使用方语法与示例属于 `ChatMessage.doc.mjs` 和 Chat 家族文档。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public change
-- Controlled/uncontrolled behavior: not applicable; the component owns no
-  controllable value.
-- Migration decision: none.
+- 保留已发布的默认值：`yes`
+- 兼容性类别：记录已发布行为；无公开变更
+- 受控/非受控行为：不适用；组件不拥有任何可控值。
+- 迁移决策：无。
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- One semantic `<article>` root and its public ref, DOM, data, ARIA, class, and
-  style passthrough.
-- Logical start, end, or centered alignment selected by `sender`.
-- Optional avatar, name, and metadata placement for non-system messages,
-  including collapsing a slot whose content renders nothing (DEC-1).
-- Density resolution and the `ChatMessageContext` value supplied to descendants.
-- The `chat-message` target with its `sender` and resolved `density` axes.
-- The article's visible-name or translated fallback accessible label.
+- 一个语义化 `<article>` 根元素及其公开 ref、DOM、data、ARIA、class 与 style 透传。
+- 由 `sender` 选择的逻辑起点、终点或居中对齐。
+- 非系统消息的可选头像、名称与元数据放置，包括折叠内容不渲染任何东西的槽位（DEC-1）。
+- 密度解析，以及提供给后代的 `ChatMessageContext` 值。
+- `chat-message` 目标及其 `sender` 与解析后的 `density` 轴。
+- 该 article 的可见名称或已翻译回退的无障碍标签。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Bubble presentation, grouping, width, name, or metadata — owned by
-  `component:ChatMessageBubble` when a bubble supplies them.
-- Avatar appearance — owned by the caller's supplied node, commonly
-  `component:Avatar`.
-- Metadata content, timestamp formatting, status, or footer actions — owned by
-  the supplied node and its components.
-- Message-list ordering, spacing between messages, streaming announcements, or
-  scroll behavior — owned by `component:ChatMessageList` and
-  `component:ChatLayout`.
-- Interactions inside `children`; descendants retain their own semantic and
-  accessibility contracts.
+- 气泡的呈现、分组、宽度、名称或元数据——当气泡提供它们时归 `component:ChatMessageBubble` 所有。
+- 头像外观——归调用方提供的节点所有，通常是 `component:Avatar`。
+- 元数据内容、时间戳格式化、状态或页脚操作——归所提供的节点及其组件所有。
+- 消息列表顺序、消息间距、流式播报或滚动行为——归 `component:ChatMessageList` 与 `component:ChatLayout` 所有。
+- `children` 内部的交互；后代保留各自的语义与无障碍契约。
 
 ## Public concepts
 
-| Concept      | Closed values or states                                   | Meaning                                                                                 | Availability by variant/orientation/state | Default   | Owner                  | Stability | Invalid-value behavior          |
-| ------------ | --------------------------------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------- | --------- | ---------------------- | --------- | ------------------------------- |
-| `sender`     | `assistant`; `user`; `system`                             | Selects logical alignment, article identity, and whether auxiliary identity slots show. | required in every message                 | required  | component              | stable    | closed union; rejected by types |
-| `children`   | any `ReactNode`                                           | Message body passed through inside the aligned content column.                          | every sender                              | required  | caller                 | stable    | n/a — required                  |
-| `avatar`     | renders content; renders nothing; skipped scalar; omitted | Optional identity node beside a non-system message.                                     | assistant and user; suppressed for system | omitted   | caller                 | stable    | renders nothing: slot collapses |
-| `name`       | renders text; renders nothing; skipped scalar; omitted    | Optional visible sender name and article label source.                                  | assistant and user; suppressed for system | omitted   | caller/component       | stable    | renders no text: fallback label |
-| `metadata`   | renders content; renders nothing; skipped scalar; omitted | Optional content below the message body.                                                | assistant and user; suppressed for system | omitted   | caller                 | stable    | renders nothing: slot collapses |
-| `density`    | `compact`; `balanced`; `spacious`; omitted                | Selects gaps and becomes descendant message context.                                    | every sender                              | inherited | component/list context | stable    | closed union; rejected by types |
-| root surface | `ref`; DOM/data/ARIA props; `className`/`style`/`xstyle`  | Extends the message article.                                                            | every sender                              | omitted   | public component API   | stable    | n/a                             |
+| 概念       | 封闭值或状态                                             | 含义                                                   | 按变体/方向/状态的可用性     | 默认值 | 所有者          | 稳定性 | 无效值行为                   |
+| ---------- | -------------------------------------------------------- | ------------------------------------------------------ | ---------------------------- | ------ | --------------- | ------ | ---------------------------- |
+| `sender`   | `assistant`; `user`; `system`                            | 选择逻辑对齐、article 身份，以及是否显示辅助身份槽位。 | 每条消息必填                 | 必填   | 组件            | 稳定   | 封闭联合类型；由类型系统拒绝 |
+| `children` | 任意 `ReactNode`                                         | 在对齐后的内容列内部透传的消息正文。                   | 所有发送方                   | 必填   | 调用方          | 稳定   | 不适用——必填                 |
+| `avatar`   | 渲染内容；不渲染任何内容；被跳过的标量；省略             | 非系统消息旁的可选身份节点。                           | 助手与用户；系统消息中被抑制 | 省略   | 调用方          | 稳定   | 不渲染任何内容：槽位折叠     |
+| `name`     | 渲染文本；不渲染任何内容；被跳过的标量；省略             | 可选的可见发送方名称，以及 article 标签来源。          | 助手与用户；系统消息中被抑制 | 省略   | 调用方/组件     | 稳定   | 不渲染文本：回退标签         |
+| `metadata` | 渲染内容；不渲染任何内容；被跳过的标量；省略             | 消息正文下方的可选内容。                               | 助手与用户；系统消息中被抑制 | 省略   | 调用方          | 稳定   | 不渲染任何内容：槽位折叠     |
+| `density`  | `compact`; `balanced`; `spacious`; 省略                  | 选择间距，并成为后代消息的上下文。                     | 所有发送方                   | 继承   | 组件/列表上下文 | 稳定   | 封闭联合类型；由类型系统拒绝 |
+| 根表面     | `ref`; DOM/data/ARIA props; `className`/`style`/`xstyle` | 扩展消息 article。                                     | 所有发送方                   | 省略   | 公开组件 API    | 稳定   | 不适用                       |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                   | Basis                                                                  |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| FR1 | `assistant` MUST align to inline start, `user` to inline end, and `system` to the centre; the root MUST reflect the sender on the `chat-message` target.                                                                                                                                                    | shipped implementation; consumer docs; focused tests                   |
-| FR2 | `system` MUST suppress the supplied avatar, name, and metadata while continuing to render `children`.                                                                                                                                                                                                       | shipped implementation; Chat family anatomy; focused tests             |
-| FR3 | A non-system message MUST render supplied avatar, name, children, and metadata in that visual order. `null`, boolean, and empty-string auxiliary values MUST NOT create wrappers; a wrapper whose content renders nothing MUST collapse (DEC-1).                                                            | owner direction; focused tests                                         |
-| FR4 | Density MUST resolve explicit `density` → nearest `ChatMessageList` density → `balanced`, and the resolved value MUST reflect on the root target.                                                                                                                                                           | shipped implementation; consumer docs; focused tests; theming metadata |
-| FR5 | Descendants MUST receive the resolved `{sender, density}` value through `ChatMessageContext`.                                                                                                                                                                                                               | shipped implementation; descendant composition                         |
-| FR6 | The article MUST carry the translated sender fallback as `aria-label`, and a non-system `name` that is not a skipped scalar MUST also label it through `aria-labelledby`. A name that renders text names the article; one that renders none leaves the fallback (accessible name computation 1.2, step 2B). | owner direction; accessible name computation 1.2; focused tests        |
-| FR7 | Accepted `ref`, DOM/data/ARIA props, `className`, `style`, and `xstyle` MUST reach and compose on the same article that carries the `chat-message` target, except `aria-label` and `aria-labelledby`, which the component owns for naming (FR6, AR1).                                                       | `architecture:public-component-api/INV5–INV6, INV8`; focused tests     |
+| ID  | 不变式                                                                                                                                                                                                                                         | 依据                                                          |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| FR1 | `assistant` 必须对齐到行内起点，`user` 对齐到行内终点，`system` 居中；根元素必须在 `chat-message` 目标上反映发送方。                                                                                                                           | 已发布实现；使用方文档；聚焦测试                              |
+| FR2 | `system` 必须抑制所提供的头像、名称与元数据，同时继续渲染 `children`。                                                                                                                                                                         | 已发布实现；Chat 家族剖析；聚焦测试                           |
+| FR3 | 非系统消息必须按上述视觉顺序渲染所提供的头像、名称、children 与元数据。`null`、布尔值与空字符串辅助值不得创建包装元素；内容不渲染任何东西的包装元素必须折叠（DEC-1）。                                                                         | 所有者方向；聚焦测试                                          |
+| FR4 | 密度必须按显式 `density` → 最近的 `ChatMessageList` 密度 → `balanced` 解析，且解析后的值必须反映在根目标上。                                                                                                                                   | 已发布实现；使用方文档；聚焦测试；主题化元数据                |
+| FR5 | 后代必须通过 `ChatMessageContext` 接收解析后的 `{sender, density}` 值。                                                                                                                                                                        | 已发布实现；后代组合                                          |
+| FR6 | article 必须把已翻译的发送方回退作为 `aria-label` 承载，非系统消息的 `name` 若未被跳过为标量，还必须通过 `aria-labelledby` 标注它。渲染文本的名称命名该 article；不渲染任何文本的名称则保留回退（accessible name computation 1.2，第 2B 步）。 | 所有者方向；accessible name computation 1.2；聚焦测试         |
+| FR7 | 被接受的 `ref`、DOM/data/ARIA props、`className`、`style` 与 `xstyle` 必须到达并组合在承载 `chat-message` 目标的同一个 article 上，但 `aria-label` 与 `aria-labelledby` 除外，它们由组件为命名而拥有（FR6、AR1）。                             | `architecture:public-component-api/INV5–INV6, INV8`；聚焦测试 |
 
 ### Allowed variation
 
-- **AV1 — Message content.** `children` may be bubbles, rich content, tool output,
-  media, or any other caller-owned React node.
-- **AV2 — Identity content.** Avatar, name, and metadata are caller-owned nodes
-  passed to React unchanged; the wrapper controls placement, system suppression,
-  and collapse of a slot whose content renders nothing.
-- **AV3 — Density geometry.** Resolved gaps follow the active theme's spacing
-  scale; the compact → balanced → spacious ordering is fixed.
+- **AV1 — 消息内容。** `children` 可以是气泡、富内容、工具输出、媒体或任何其他调用方拥有的 React 节点。
+- **AV2 — 身份内容。** 头像、名称与元数据是原样传给 React 的调用方节点；包装层控制放置、系统抑制，以及内容不渲染任何东西的槽位的折叠。
+- **AV3 — 密度几何。** 解析后的间距遵循当前主题的间距刻度；compact → balanced → spacious 的顺序固定不变。
 
 ### Representative states
 
-| State                                       | Required invariant                                                | Allowed variation                                   |
-| ------------------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------- |
-| Assistant with avatar, name, and metadata   | Inline-start layout; visible name labels the article              | Any caller-owned node may fill the slots            |
-| Skipped scalar auxiliary values             | No slot or naming reference is created                            | `null`, booleans, empty strings                     |
-| Auxiliary content that renders nothing      | The slot collapses; a name of this kind leaves the fallback label | Empty array or Fragment, component returning `null` |
-| Numeric auxiliary values                    | `0` remains visible and a numeric name labels the article         | Any non-system sender                               |
-| User without a name                         | Inline-end layout; translated sender fallback labels the article  | Avatar and metadata may be present or omitted       |
-| System with auxiliary props supplied        | Centre layout; avatar, name, and metadata remain suppressed       | Any children continue to render                     |
-| Standalone message                          | Resolved density is `balanced`                                    | Any sender and content                              |
-| Message inside a density-providing list     | Inherits the list density                                         | Any sender and content                              |
-| Message with explicit density inside a list | Explicit density wins                                             | Any supported density                               |
-| Narrow container with long content          | Root stays within the container and content remains available     | Descendant content chooses its own wrap policy      |
-| RTL container                               | Logical user/assistant alignment mirrors with document direction  | System remains centred                              |
+| 状态                           | 必需的不变式                                   | 允许的变体                             |
+| ------------------------------ | ---------------------------------------------- | -------------------------------------- |
+| 带头像、名称与元数据的助手消息 | 行内起点布局；可见名称标注该 article           | 任何调用方拥有的节点都可以填充这些槽位 |
+| 被跳过的标量辅助值             | 不创建槽位或命名引用                           | `null`、布尔值、空字符串               |
+| 不渲染任何东西的辅助内容       | 槽位折叠；此类名称保留回退标签                 | 空数组或 Fragment、返回 `null` 的组件  |
+| 数值型辅助值                   | `0` 仍然可见，数值型名称标注该 article         | 任何非系统发送方                       |
+| 没有名称的用户消息             | 行内终点布局；已翻译的发送方回退标注该 article | 头像与元数据可以存在或省略             |
+| 提供了辅助 props 的系统消息    | 居中布局；头像、名称与元数据保持抑制           | 任何 children 都继续渲染               |
+| 独立消息                       | 解析后的密度为 `balanced`                      | 任何发送方与内容                       |
+| 位于提供密度的列表中的消息     | 继承列表密度                                   | 任何发送方与内容                       |
+| 列表中带显式密度的消息         | 显式密度优先                                   | 任何受支持的密度                       |
+| 长内容位于窄容器中             | 根元素保持在容器内，内容仍然可用               | 后代内容自行选择换行策略               |
+| RTL 容器                       | 用户/助手的逻辑对齐随文档方向镜像              | 系统消息仍然居中                       |
 
 ### Transformation and precedence order
 
-- **ORD1 — Density.** Resolve the explicit message prop first, then the nearest
-  message-list context, then `balanced`; use that single result for layout,
-  target reflection, and descendant context.
-- **ORD2 — Accessible name.** A system `name` or a skipped scalar creates no
-  name wrapper. Otherwise the article references the name wrapper's generated
-  id; the rendered text there names the article, and empty text yields to the
-  translated fallback carried as `aria-label`. A caller `aria-label` or
-  `aria-labelledby` does not override this naming.
+- **ORD1 — 密度。** 先解析消息的显式 prop，然后是最接近的消息列表上下文，最后是 `balanced`；用这一个结果处理布局、目标反映与后代上下文。
+- **ORD2 — 无障碍名称。** 系统消息的 `name` 或被跳过的标量不会创建名称包装元素。否则 article 引用名称包装元素生成的 id；其中渲染的文本命名该 article，而空文本让位于作为 `aria-label` 承载的已翻译回退。调用方的 `aria-label` 或 `aria-labelledby` 不会覆盖这一命名。
 
 ### Performance and resources
 
-- **PR1 — No external resources.** ChatMessage installs no listener, timer,
-  observer, request, or Effect.
-- **PR2 — Stable broadcast.** The descendant context value changes only when the
-  resolved sender or density changes.
+- **PR1 — 无外部资源。** ChatMessage 不安装任何监听器、定时器、观察器、请求或 Effect。
+- **PR2 — 稳定广播。** 后代上下文值仅在解析后的发送方或密度变化时改变。
 
 ## Accessibility contract
 
-- **AR1 — Article naming mechanism.** Every article carries the translated
-  sender fallback as `aria-label`. A name wrapper, when present, is referenced
-  through `aria-labelledby`; its rendered text names the article, and when it
-  renders no text the accessible name falls back to `aria-label`.
-- **AR2 — No inspection.** Slot content is never inspected, cloned, or
-  executed to decide whether it renders; collapse and the naming fallback follow
-  the rendered DOM.
-- **AR3 — Descendant ownership.** ChatMessage is non-interactive and introduces no
-  keyboard model. Interactive descendants remain responsible for their own roles,
-  names, states, focus, and activation.
+- **AR1 — Article 命名机制。** 每个 article 都以已翻译的发送方回退作为 `aria-label`。名称包装元素存在时通过 `aria-labelledby` 引用；其渲染的文本命名该 article，当它不渲染文本时，无障碍名称回退到 `aria-label`。
+- **AR2 — 不检查。** 绝不为了判断槽位内容是否渲染而检查、克隆或执行它；折叠与命名回退都遵循渲染后的 DOM。
+- **AR3 — 后代所有权。** ChatMessage 是非交互的，不引入键盘模型。交互式后代仍负责自己的角色、名称、状态、焦点与激活。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                                                                                               | Representation authority | Hierarchy role | Component contract |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Assistant        | Align the message column to logical start                                                                                        | Current source           | content        | FR1                |
-| User             | Align the message column to logical end                                                                                          | Current source           | content        | FR1                |
-| System           | Centre the content column and suppress identity slots                                                                            | Current source           | supporting     | FR1–FR2            |
-| Name             | `none` — unsettled: the built-in name paints explicit supporting type and secondary colour on an untargeted descendant; see OQ1. | Current source           | supporting     | FR3                |
-| Density          | Increase root and child gaps across the three-step axis                                                                          | Current source           | structure      | FR4                |
+| 剖析或状态 | 设计要求                                                                       | 表示权威 | 层级角色 | 组件契约 |
+| ---------- | ------------------------------------------------------------------------------ | -------- | -------- | -------- |
+| 助手       | 将消息列对齐到逻辑起点                                                         | 当前源码 | 内容     | FR1      |
+| 用户       | 将消息列对齐到逻辑终点                                                         | 当前源码 | 内容     | FR1      |
+| 系统       | 内容列居中并抑制身份槽位                                                       | 当前源码 | 辅助     | FR1–FR2  |
+| 名称       | `none`——未决：内置名称在未被目标化的后代上绘制显式辅助字号与次要颜色；见 OQ1。 | 当前源码 | 辅助     | FR3      |
+| 密度       | 沿三段轴增大根与子级间距                                                       | 当前源码 | 结构     | FR4      |
 
-No component-local design decision is recorded.
+未记录任何组件本地的设计决策。
 
 ### Theming reachability
 
-| Anatomy part | Disposition                                                                                                                                                 |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Message root | `target` — the `chat-message` target sits on the article and reflects `sender` and resolved `density`; the Chat family document owns its consumer metadata. |
-| Avatar       | `delegatesTo` the supplied node, commonly the `avatar` target owned by `component:Avatar`.                                                                  |
-| Name         | `none` — reachability-gap: the built-in name paints explicit supporting type and secondary colour on an untargeted descendant; see OQ1.                     |
-| Content      | `delegatesTo` caller-owned children and their targets; custom content has no component-owned target.                                                        |
-| Metadata     | `none` — intentional current boundary: the caller supplies the complete rendered node, while the wrapper contributes placement only.                        |
+| 剖析部件 | 处置                                                                                                                  |
+| -------- | --------------------------------------------------------------------------------------------------------------------- |
+| 消息根   | `target`——`chat-message` 目标位于 article 上，并反映 `sender` 与解析后的 `density`；Chat 家族文档拥有其使用方元数据。 |
+| 头像     | `delegatesTo` 所提供的节点，通常是 `component:Avatar` 拥有的 `avatar` 目标。                                          |
+| 名称     | `none`——可达性缺口：内置名称在未被目标化的后代上绘制显式辅助字号与次要颜色；见 OQ1。                                  |
+| 内容     | `delegatesTo` 调用方拥有的 children 及其目标；自定义内容没有组件拥有的目标。                                          |
+| 元数据   | `none`——有意的当前边界：调用方提供完整渲染的节点，而包装层只贡献放置。                                                |
 
 ## Family and system relationships
 
-- There is no current `family:chat` record. `Chat.doc.mjs` is the consumer-facing
-  family document and owns the shared target inventory; it is not product authority.
-- `component:ChatMessageList` supplies optional density context and owns list
-  spacing, log semantics, streaming state, and message ordering.
-- `component:ChatMessageBubble` consumes sender and density context when present
-  and owns bubble presentation.
-- There is no current direct owner for ChatMessage's
-  `compact | balanced | spacious` density vocabulary or ordering. FR4–FR5 record
-  the shipped axis and precedence; routed global layout claims do not settle
-  that component-specific vocabulary.
-- `spec:AST-029` owns the audit evidence inventory this record's verification
-  map follows.
+- 当前没有 `family:chat` 记录。`Chat.doc.mjs` 是面向使用方的家族文档，拥有共享目标清单；它不是产品权威。
+- `component:ChatMessageList` 提供可选的密度上下文，并拥有列表间距、日志语义、流式状态与消息顺序。
+- `component:ChatMessageBubble` 在存在时消费发送方与密度上下文，并拥有气泡呈现。
+- ChatMessage 的 `compact | balanced | spacious` 密度词汇或顺序目前没有直接所有者。FR4–FR5 记录已发布的轴与优先级；路由到的全局布局声明不能裁定该组件专属词汇。
+- `spec:AST-029` 拥有本记录验证图所遵循的审计证据清单。
 
 ## Verification map
 
-| Contract     | Verification                                                                   | Representative states                                                                      | Mutation or failure expectation                                                    | Audit section          |
-| ------------ | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- | ---------------------- |
-| FR1–FR3      | `ChatMessage.test.tsx`; `ChatMessage.stories.tsx`                              | all senders; skipped scalar, renders-nothing, numeric, content, and suppressed slot states | Removing the scalar skip or the CSS collapse leaves an empty slot or a gap         | `audit:ChatMessage/§4` |
-| FR4–FR5      | `ChatMessage.test.tsx`; `ChatMessageBubble.test.tsx`; `themingTargets.test.ts` | standalone; inherited density; explicit override                                           | Changing precedence or reflection gives descendants and themes a different density | `audit:ChatMessage/§2` |
-| FR6, AR1–AR2 | `ChatMessage.test.tsx`                                                         | visible, omitted, skipped-scalar, renders-nothing, and system names                        | Dropping the fallback `aria-label` or the name reference leaves an article unnamed | `audit:ChatMessage/§1` |
-| FR7          | `ChatMessage.test.tsx`; public export and theming-target checks                | ref; data prop; class; style                                                               | Moving passthrough or ref off the target article breaks the public root contract   | `audit:ChatMessage/§3` |
-| RTL          | `ChatMessage.stories.tsx`                                                      | all senders; narrow long content                                                           | Physical direction keeps user or assistant on the same side in both directions     | `audit:ChatMessage/§9` |
+| 契约         | 验证                                                                           | 代表状态                                                                 | 变更或失败预期                                          | 审计小节               |
+| ------------ | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------- | ---------------------- |
+| FR1–FR3      | `ChatMessage.test.tsx`; `ChatMessage.stories.tsx`                              | 所有发送方；被跳过的标量、不渲染任何内容、数值、内容以及被抑制的槽位状态 | 移除标量跳过或 CSS 折叠会留下空槽位或间隙               | `audit:ChatMessage/§4` |
+| FR4–FR5      | `ChatMessage.test.tsx`; `ChatMessageBubble.test.tsx`; `themingTargets.test.ts` | 独立；继承的密度；显式覆盖                                               | 改变优先级或反映会让后代与主题得到不同的密度            | `audit:ChatMessage/§2` |
+| FR6, AR1–AR2 | `ChatMessage.test.tsx`                                                         | 可见、省略、被跳过的标量、不渲染任何内容以及系统消息的名称               | 丢弃回退的 `aria-label` 或名称引用会让 article 没有名称 | `audit:ChatMessage/§1` |
+| FR7          | `ChatMessage.test.tsx`; 公开导出与主题化目标检查                               | ref；data prop；class；style                                             | 把透传或 ref 移出目标 article 会破坏公开根契约          | `audit:ChatMessage/§3` |
+| RTL          | `ChatMessage.stories.tsx`                                                      | 所有发送方；窄容器长内容                                                 | 物理方向会让用户或助手在两个方向上都停留在同一侧        | `audit:ChatMessage/§9` |
 
-Read from source, with no focused test yet:
+从源码读取，尚无聚焦测试：
 
-- FR1: start, end, and centre alignment by sender.
-- FR2: a system message still rendering its children.
-- FR3: the visual slot order.
-- FR7: a caller `aria-label` or `aria-labelledby` not overriding the naming,
-  and `xstyle` composing on the article.
-- ORD1: root and children gaps following the resolved density.
-- FR6: a name that renders no text leaving the fallback name.
-- PR1–PR2: no listener or Effect, and a context value that changes only with
-  sender or density.
-- AR3: no keyboard model of the component's own.
+- FR1：按发送方的起点、终点与居中对齐。
+- FR2：系统消息仍然渲染其 children。
+- FR3：视觉槽位顺序。
+- FR7：调用方的 `aria-label` 或 `aria-labelledby` 不覆盖命名，以及 `xstyle` 在 article 上组合。
+- ORD1：根与 children 的间距遵循解析后的密度。
+- FR6：不渲染文本的名称保留回退名称。
+- PR1–PR2：无监听器或 Effect，且上下文值仅随发送方或密度变化。
+- AR3：组件自身没有键盘模型。
 
 ## Decision log
 
-- **DEC-1 — Slot emptiness follows the rendered DOM.** (`cixzhang`,
-  2026-10-31) ChatMessage skips only `null`, boolean, and empty-string
-  slot values. Any other content is passed to React unchanged; its wrapper
-  collapses with `:empty` when it renders nothing, and the article's naming
-  falls back to `aria-label` when the referenced name renders no text.
-  Rejected: inspecting arrays, Fragments, or iterables, which cannot see
-  component output and consumes one-shot iterators.
+- **DEC-1 — 槽位空态遵循渲染后的 DOM。** （`cixzhang`，2026-10-31）ChatMessage 只跳过 `null`、布尔值与空字符串槽值。任何其他内容都原样传给 React；其包装元素在不渲染任何东西时以 `:empty` 折叠，而当被引用的名称不渲染文本时，article 的命名回退到 `aria-label`。已否决：检查数组、Fragment 或可迭代对象，因为它们看不到组件输出，并会消耗一次性迭代器。
 
 ## Open questions
 
-- **OQ1 — Should the built-in name become a separately themeable anatomy part?**
-  (`human-api`) The released family inventory exposes only the aggregate
-  `chat-message` target, while the name's explicit type and colour prevent a root
-  override from reaching it by inheritance. Adding or splitting a target changes
-  public theming API, so this record states the reachability gap without choosing
-  a remedy.
+- **OQ1 — 内置名称是否应成为可单独主题化的剖析部件？** （`human-api`）已发布的家族清单只暴露聚合的 `chat-message` 目标，而名称的显式字号与颜色使根覆盖无法通过继承到达它。添加或拆分目标会改变公开主题化 API，因此本记录只陈述可达性缺口，不选择补救方案。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables or examples, current audit
-scores, screenshot matrices, or shared-system rules. The audit PR owns the closed
-run evidence required by `spec:AST-029/FR5`.
+本文件不重复使用方 prop 表或示例、当前审计分数、截图矩阵或共享系统规则。审计 PR 拥有 `spec:AST-029/FR5` 所要求的已完成的运行证据。

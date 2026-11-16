@@ -52,1365 +52,453 @@ affects_consumer_docs: []
 
 ## Intent
 
-Route pull-request checks from the repository surfaces a change can affect rather
-than from an expanding list of work the change appears not to affect. Contributors
-should get the checks that can observe their change, while a narrow operational
-Node-tooling change should not wait for unrelated component, browser, Storybook,
-or application builds.
+从变更可能影响的仓库覆盖面来路由拉取请求检查，而不是依据一份不断扩张的、变更看起来不影响的清单。贡献者应当拿到能够观察到其变更的检查，而一项范围狭窄的运维性 Node 工具变更不应等待无关的组件、浏览器、Storybook 或应用构建。
 
-The classifier produces a set of touched surfaces. A lane may skip work only when
-every changed path is classified from trusted base-branch policy and the selected
-checks cover every surface in that set. Mixed, incomplete, or unknown scope uses
-the broad lane.
+分类器产出一组触及的覆盖面。仅当每条变更路径都依据可信的基分支策略完成分类，并且所选检查覆盖该集合中的每一个覆盖面时，通道才可以跳过工作。混合、不完整或未知的范围使用宽通道。
 
-A **lane** is one independently routed logical test or build owner for one
-surface. A lane may dispatch multiple workflow jobs or steps and may feed a
-historical required-check join. Jobs, workflows, required contexts, and projected
-statuses are execution or reporting mechanisms—not additional lanes merely because
-they are separately named.
+一个**通道**（lane）是某一个覆盖面的一个独立路由的逻辑测试或构建所有者。一个通道可以派发多个工作流作业或步骤，并可以接入一个历史必需检查汇合。作业、工作流、必需上下文和投影状态都是执行或报告机制——不能仅仅因为它们分别命名就成为额外的通道。
 
 ## Non-goals
 
-- Rewrite every CI job or specialize every package lane in one change.
-- Add a test-specific or build-specific lane for work already owned by an
-  existing surface.
-- Apply changed-surface routing to post-merge `main` CI.
-- Define compatibility semantics or release-pair delta classes. Those belong to
-  [`spec:AST-017`](../AST-017/spec.md); this record routes their checks and owns the
-  exact-main release-check execution boundary.
-- Remove required check names (other than dropping
-  `spec-owner-approval` from them, FR15), branch protection, merge-queue coverage, or owner approval of
-  spec content.
-- Infer safety from file extensions, directory names, or the absence of a known
-  risky path.
-- Treat tests, specifications, generated files, or changesets as proof that the
-  public or operational surface beside them is untouched.
+- 在一次变更中重写每个 CI 作业，或为每个包建立专用通道。
+- 为已由现有覆盖面拥有的工作新增测试专用或构建专用通道。
+- 把变更覆盖面路由应用于合并后的 `main` CI。
+- 定义兼容性语义或发布配对增量类别。这些属于 [`spec:AST-017`](../AST-017/spec.md)；本记录路由它们的检查，并拥有 exact-main 发布检查的执行边界。
+- 移除必需检查名称（除了从其中去掉 `spec-owner-approval`，FR15）、分支保护、合并队列覆盖，或所有者对规格内容的批准。
+- 从文件扩展名、目录名或已知风险路径的缺失推断安全性。
+- 把测试、规格、生成文件或 changeset 当作证据，证明其旁边的公开或运维覆盖面未被改动。
 
 ## Requirements
 
-- **FR1 — Classification is positive and set-based.** Every changed path MUST map
-  to one or more named surfaces. Lane selection MUST use the union of those
-  surfaces, not exclusion predicates over unrelated paths. A path with no exact
-  rule MUST add `shared-or-unknown`.
-- **FR2 — The taxonomy follows check ownership.** The classifier MAY name only a
-  surface with a concrete check owner and dependency boundary. The initial
-  taxonomy and current owners are:
+- **FR1 — 分类是正向的、基于集合的。** 每条变更路径 MUST 映射到一个或多个具名覆盖面。通道选择 MUST 使用这些覆盖面的并集，而不是对无关路径使用排除谓词。没有精确规则的路径 MUST 加入 `shared-or-unknown`。
+- **FR2 — 分类法跟随检查所有权。** 分类器 MAY 只命名具有具体检查所有者与依赖边界的覆盖面。初始分类法及当前所有者如下：
 
-  | Surface             | Positive path ownership                                                                                                            | Current check owners                                                                                                                                             |
-  | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `knowledge`         | canonical system, family, design, theme, component, and module records                                                             | knowledge validation, spec-owner approval of the current spec content, and the Vitest tests that read a changed record, directly or through a module they import |
-  | `docsite`           | the docsite application                                                                                                            | docsite generation and tests                                                                                                                                     |
-  | `node-tooling`      | admitted operational Node tooling whose consumers are covered by Node contract tests                                               | Node Vitest, repository guardrails, and ESLint                                                                                                                   |
-  | `runtime:<package>` | public source and package contract for Core, Lab, Charts, Rich Text, Vega, CLI, and Build                                          | the package's unit/type checks plus current broad build and downstream consumer checks; Build's owner includes production CSS-layer browser behavior             |
-  | `theme-build`       | shipped theme packages and theme compilation outputs                                                                               | theme tests, theme package builds, theme-family browser behavior, and stable visual evidence where applicable                                                    |
-  | `storybook-visual`  | Storybook stories/configuration and visual, accessibility, or RTL audit infrastructure                                             | Storybook build, preview/visual-report publication, and the applicable browser, visual, accessibility, and RTL checks                                            |
-  | `shared-or-unknown` | shared configuration, dependency graphs, workflows, classifiers, generated ownership, ambiguous paths, and every unclassified path | all applicable pull-request CI checks                                                                                                                            |
+  | 覆盖面              | 正向路径所有权                                                               | 当前检查所有者                                                                                           |
+  | ------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+  | `knowledge`         | 系统、family、设计、主题、组件与模块的规范记录                               | 知识校验、当前规格内容的规格所有者批准，以及直接读取变更记录或通过其导入的模块读取变更记录的 Vitest 测试 |
+  | `docsite`           | docsite 应用                                                                 | docsite 生成与测试                                                                                       |
+  | `node-tooling`      | 已准入的运维性 Node 工具，其使用方由 Node 契约测试覆盖                       | Node Vitest、仓库护栏与 ESLint                                                                           |
+  | `runtime:<package>` | Core、Lab、Charts、Rich Text、Vega、CLI 与 Build 的公开源码与包契约          | 该包的单测/类型检查，加上当前全量构建与下游使用方检查；Build 的所有者包含生产环境 CSS 层的浏览器行为     |
+  | `theme-build`       | 已发布的主题包与主题编译产物                                                 | 主题测试、主题包构建、theme family 浏览器行为，以及适用处的稳定视觉证据                                  |
+  | `storybook-visual`  | Storybook stories/配置，以及视觉、无障碍或 RTL 审计基础设施                  | Storybook 构建、预览/视觉报告发布，以及适用的浏览器、视觉、无障碍与 RTL 检查                             |
+  | `shared-or-unknown` | 共享配置、依赖图、工作流、分类器、生成式所有权、歧义路径，以及所有未分类路径 | 所有适用的拉取请求 CI 检查                                                                               |
 
-  A category does not earn a specialized lane merely by existing in this table.
-  Until every selected surface has an admitted, complete specialized owner route,
-  that surface set uses the broad check set. `shared-or-unknown` always uses the
-  broad check set, except a Changeset or a carried Lab component's entry file
-  beside a Lab-only change, which keeps the Lab-only route (FR26).
+  一个类别不会仅仅因为出现在本表中就获得专用通道。在每个选中的覆盖面都拥有已准入且完整的专用所有者路由之前，该覆盖面集合使用全量检查集。`shared-or-unknown` 始终使用全量检查集，例外是与仅 Lab 变更相邻的 Changeset 或被携带 Lab 组件的入口文件，它们保持仅 Lab 路由（FR26）。
 
-- **FR3 — Classification uses trusted base policy.** Pull-request code MUST NOT
-  choose its own lane. The workflow MUST load the classifier and every classifier
-  dependency from the trusted base ref, then apply that policy to the merge-base
-  three-dot path set. For a Lab component's entry files (FR26), the trusted
-  classifier also reads GitHub's patch text for those three files. It reads
-  the text as data, matches each line against fixed patterns and never runs
-  it, so a pull request supplies only data that the base policy judges, never
-  the policy. Workflow changes use the broad lane unless they are an
-  admitted tool's non-PR dispatch workflow. Classifier,
-  classifier-dependency, and routing-test changes use the broad lane.
-- **FR4 — Uncertainty fails closed.** A missing merge base, missing trusted
-  classifier dependency, failed classifier, empty or incomplete file list,
-  ambiguous rename, unknown path, or merge-group event without a trusted PR path
-  set MUST select the broad lane. No fallback may grant a specialized lane.
-- **FR5 — Mixed scope keeps every owner.** A change touching multiple classified
-  surfaces MUST run the union of their checks. It MUST NOT run specialized lanes
-  for untouched surfaces. A set containing `shared-or-unknown` (apart from a
-  Changeset or a carried Lab component's entry file beside a Lab-only change,
-  FR26), a fail-closed
-  condition from FR3–FR4, or any selected surface without a complete admitted
-  specialized owner route MUST use broad CI. A specification beside runtime code
-  does not hide the runtime surface.
-- **FR6 — Node-tooling admission is explicit.** A Node program may enter
-  `node-tooling` only when dependency analysis proves that package runtime,
-  component UI, theme/build output, Storybook/visual evidence, and browser
-  behavior are not changed directly, and every operational consumer has a Node
-  contract test. Directory-wide admission is allowed only for a directory
-  dedicated to non-shipped tooling; other directory- or extension-wide
-  admission is prohibited.
-- **FR7 — Required check names remain stable.** `test`, `build`, `docsite-test`,
-  and `lint` MUST continue to report on every pull request through their existing
-  jobs or join jobs. A specialized lane skips owned steps inside those jobs; it
-  does not remove historical required contexts. Any owned lane failure MUST fail
-  its join. Required lint does not compare main's package declaration with the newest
-  stable release; AST-017 assigns prerelease ordering to the canary publisher and keeps
-  immutable release merge-back validation in required lint.
-- **FR8 — Initial tooling admissions.** `node-tooling` covers
-  `scripts/score-ledger.mjs`, `scripts/score-ledger.test.mjs`,
-  `internal/scripts/`, and `.github/workflows/crowdin-upload.yml`. It runs the
-  Node project and the required lint
-  workflow, including repository guardrails. It skips the UI Vitest project,
-  component analysis, docsite generation, production package, Storybook and
-  Sandbox builds, preview/visual-report publication, and browser/theme/visual/
-  a11y/RTL jobs. The trusted post-CI workflow MUST explicitly report that visual
-  checks are not applicable and remove stale preview links without enqueueing the preview
-  publisher. The Sandbox score-ledger projection MUST have a Node contract test
-  for the exports it consumes before this lane can be enabled.
-- **FR9 — Routing tests are mutation-sensitive.** Tests MUST prove both the
-  intended fast path and the unsafe near misses. At minimum they cover pure
-  tooling; pure spec; component spec plus component code; module spec plus Table
-  plugin code; tooling plus component code; workflow or classifier self-change;
-  unknown paths; shared infrastructure; rename history; incomplete input; and
-  public source in every component-bearing package. Removing any fail-closed edge
-  MUST make a test fail.
-- **FR10 — New surfaces follow one admission convention.** A new surface MUST be
-  admitted by an owner-approved amendment to this record before implementation.
-  The amendment MUST name its positive path ownership, dependency boundary, test
-  commands, one independently routed test owner, build commands and one
-  independently routed build owner when a build applies, mixed-scope behavior,
-  required-check projection, and mutation-sensitive routing tests. A new suite,
-  feature, component, theme family, or test type is not a new surface by itself.
-- **FR11 — Each surface owns one test and applicable build lane.** A surface MAY
-  define multiple test or build commands, jobs, or steps, but exactly one
-  independently routed test lane and, when applicable, one independently routed
-  build lane MUST own them. New coverage inside an existing surface MUST join
-  those owners and MUST NOT create a separately routed lane or required context.
-  Existing historical joins remain stable. The default touched-components
-  check (FR12) is the visual, accessibility and RTL owners' pull-request
-  coverage for the components a change touches: its visual part runs inside
-  `pr-visual`, and its accessibility and RTL part runs in one advisory job
-  beside them that reports no required context. The touched components'
-  browser accessibility contracts (FR12) run in their own parallel job, which
-  reports no required context of its own: the existing `test` join waits on
-  it and fails with it (FR7), so `test` stays the one required name and it
-  routes no new surface lane. A selected surface whose dedicated
-  owner is not yet admitted continues through broad CI. The Build package's test
-  owner includes its production CSS-layer cascade behavior. Theme-family
-  compilation remains `theme-build` and does not become Build merely because both
-  behaviors concern CSS.
-- **FR12 — Visual regression has one shared pull-request workflow.** Every
-  visual-regression test from every surface MUST use the existing Storybook
-  framework and the single shared owner in `.github/workflows/ci.yml`
-  (`pr-visual`). That workflow MAY use multiple jobs, steps, and artifacts, but
-  visual capture and regression comparison MUST NOT run in another workflow,
-  including scheduled, post-CI, post-merge, or manual replacement owners.
-  Publication of the canonical run's reports is not another test owner: it MUST
-  consume that run's artifacts without recapturing or recomparing pixels.
-  Explicit full-plan baseline capture MUST remain in `ci.yml`; it is a maintenance
-  operation, not a release gate. A reviewed baseline update MUST consume that
-  capture, update the versioned repository baseline through a normal pull request,
-  and remain separate from automatic merge or release work. GitHub Pages MUST NOT
-  be baseline or report storage.
-  Release evidence MUST come from an explicit `operation=release-check`
-  `workflow_dispatch` in this same workflow, dispatched from `main` and bound to
-  its exact event SHA. It MUST run the canonical `pr-visual` (**Stable visual
-  regression**), `pr-a11y`, and `pr-rtl` owners with full scope: the closed stable
-  visual plan and unfiltered accessibility/RTL component rosters. Changed-file,
-  focused, smoke, and no-op paths MUST NOT narrow release checks. On a pull
-  request, the visual (`visual-scout`, `pr-visual`), accessibility (`pr-a11y`
-  with its guards and specs) and RTL (`pr-rtl` with its legs) owners MUST each
-  run at their opted-in scope (FR13) only when the pull request carries that
-  suite's label at the event:
-  `ci:run-visual`, `ci:run-a11y` or `ci:run-rtl`, in each case last applied by
-  someone with write, maintain or admin access, and a lookup that cannot
-  confirm that runs nothing. A label runs only its own suite. A Lab-only pull
-  request (FR26) runs no default touched-components check and no contract
-  job; its labels still
-  run their suites. Without a label, a pull request update
-  runs none of these owners at their opted-in scope, and no required context
-  depends on them; it runs one default touched-components check instead:
-  visual, accessibility and RTL for only the components the change touches,
-  never their reverse dependents, against the pull request's Storybook build
-  and within the 15-minute budget. Its visual part is `pr-visual`'s default
-  mode, a focused check of the touched Core components that never escalates
-  to the release plan, so `pr-visual` stays the one visual owner; its
-  accessibility and RTL parts and the per-component record are
-  `pr-touched-components`, on one standard runner. A wide change skips it: one
-  that touches more than five components, or changes shared styles (themes,
-  tokens, or a `.stylex.ts` file in a package's shared `theme`, `utils`,
-  `hooks`, `internal` or `Layer` folder); behaviour-only shared code is not a
-  wide change. Every change, a wide one included, also gets an
-  accessibility audit, new violations only, of each story file it adds or
-  changes that no other audit in the pull request covers. Nothing starts a full suite on its own; a wide change's check
-  is the full suites behind the labels. No required context depends on the
-  touched check, and it records each touched component's pass, fail, changed
-  or not-run result per suite, or that the change was wide and how many
-  components it touched, for the pull-request comment. Beside the default check, one contract job runs, in Chromium, the
-  browser accessibility contracts of the components the change touches. It
-  needs only the pull request's Storybook build. First it runs the browser
-  accessibility spec files the change adds or modifies, at most four, in path
-  order, routed by their own `@pr-a11y` lines read from the merge commit; a
-  changed `audit` spec waits for its component-audit pull request. Then, a
-  wide change included, it runs the `scoped` and `release-only` spec files that
-  each touched component owns, in path order, found by the same `@pr-a11y`
-  scope and spec-location mapping the labelled run uses. Then, in the time
-  left and for at most one minute of it, it runs the `scoped` and
-  `release-only` spec files of the component folders that render a touched
-  component through their source value imports, nearest first. It runs no unchanged `audit` or `always` spec. `.a11y.browser.spec.ts` files run in Chromium in CI; their WebKit project runs locally and in the weekly WebKit run, which reports their failures without failing (DEC-24). For a shared primitive named in `.github/a11y-shared-primitives.json`, FR12's touched-component rule also runs a dependent-audits leg on every pull-request CI run that includes a change to it: at most three legs, each at most 10 minutes, covering the audits of components that use it. The list starts with Button and IconButton. Layer joins when a Layer change breaks release-check or a dependent audit at release; other additions are a CI & Release and chief-of-staff call. A change to a component's source also runs that component's own audit specs in the same leg, on every pull-request CI run that includes the change, within the same three legs of ten minutes. Audits beyond that budget are listed by name as not yet run, and they run on a later run at the same head, which may use more legs; merge-guard merges only on a run at the exact head that ran every owed audit. When GitHub cannot list a pull request's changed files, every audit is owed and no run at that head is complete, so merge-guard does not merge it; the pull request must be split. A main-only dispatch may run every owed audit at a pull request's exact head, as untrusted code under the same limits as the pull request's own run; merge-guard accepts its record for that head as it accepts the pull request run's. With contracts requested, the same dispatch also runs, at that head, the scoped accessibility contract specs a labelled pull-request run selects; merge-guard accepts its result as that head's opt-in accessibility evidence only when every selected spec ran and passed. The contract job runs in parallel with the unit-test jobs and
-  MUST NOT become the pull request's critical path: it starts after the
-  Storybook build and MUST finish before the slowest unit-test job, so the
-  time until the required `test` join reports does not grow. It stops after
-  eight minutes and plans six of them: it starts a file only when that file's
-  recorded duration fits what is left of those six, so a runner up to a third
-  slower than the plan still finishes every file it starts. A contract file
-  that cannot finish within the budget is reported as not run, not split. Each file it does not run, for that budget
-  or the four-file limit, is reported as not run in the check's summary and
-  annotations, with the label that runs it. A spec that starts and does not
-  finish fails. A failing contract fails the required `test` join (FR7) and
-  blocks the merge. A not-run file passes the join, so a skip never reads as a
-  pass and an overflow never reads as a failure. An opted-in PR's a11y MUST
-  remain scoped to changed components plus fast interaction guards, and also
-  runs the `release-only` spec files a changed component owns directly, never
-  through a shared scope token or an unknown scope; full a11y
-  sweeps, whole-repository spec-test contracts, and their evidence uploads MUST
-  run only for `release-check` in this workflow, except the weekly WebKit run's `.a11y.browser.spec.ts` files, which report their failures without failing (DEC-24). Missing,
-  failed, cancelled, or skipped required work MUST block the release-check join.
-  The request and join MUST verify that the checked SHA is the dispatch event SHA
-  and remains an ancestor of current remote `main` at the start and completion of
-  the run. Release callers MUST fetch and recheck that same ancestry immediately
-  before creating the release branch. Later fast-forward movement of `main` does
-  not invalidate that receipt: the release MUST cut from the exact checked SHA, and
-  later commits remain next-release input. A rewrite or divergence that removes
-  the checked SHA from current `main` history invalidates the receipt.
-  This replaces constituent-PR-only release gating, not the canonical checks'
-  existing finding policies. Main's heavy-lane workflow MUST dispatch that
-  release-check for `main`'s tip, bound to that commit, on a push to `main` and
-  on a quarter-hourly schedule, unless the tip already has one or one was
-  dispatched in the last 175 minutes, so the quarter-hourly tick after
-  three hours dispatches (DEC-11, FR24). A check replaced while waiting,
-  which never ran, does not count. A check covers every merge up to its commit,
-  so every merge is covered by the next one. The dispatched checks share one
-  concurrency group that cancels a running check only for a release re-check
-  (FR23): at most one runs and one waits. A push whose commit `main` has already
-  moved past leaves its check to the newer push. That release-check run is
-  main's result, and a failure is fixed forward by an atomic pull request.
-  Main's own fast checks (typecheck, the package build with its per-commit size
-  record, and export sync) still run for every push; its full unit suites run
-  about hourly on their own schedule, and with every release-check, as FR21
-  says. Release checks MUST NOT
-  capture baseline candidates, publish baselines, or use a separate daily
-  workflow or retroactive acceptance status. Deployment, accessibility, RTL, and
-  vibe evidence MAY retain their workflows and artifacts when they do not
-  duplicate visual regression. A new or existing surface, component, package,
-  theme family, or visual suite MUST join the canonical workflow. A repository
-  guard MUST reject independent visual owners while preserving legitimate
-  non-visual artifact use.
-- **FR13 — Broad CI on a pull request runs what the change reaches.** On a
-  `pull_request` event whose trusted classification finds no shared
-  infrastructure, broad CI keeps every required context and every owner FR12
-  routes to a pull request, and narrows what those owners run. The Vitest test owner runs the tests whose module graph
-  reaches a changed file, against the merge commit's base parent, plus every test
-  that reads repository sources through the file system, directly or through a
-  module it imports; a computed `import()`, a child process, or a library that
-  reads sources for it (the TypeScript compiler, a bundler) counts as reading
-  sources; and every test that loads a changed workspace package from its build,
-  by the package's name or a path into its `dist/`. When a pull request runs
-  them at their opted-in scope (FR12: only with their `ci:run-visual` or
-  `ci:run-rtl` label), the visual and RTL owners audit one affected set of
-  component folders: the changed components
-  and their reverse dependents, the folders of the components, in any package,
-  whose built bundle, `import()` targets included, reaches a changed module.
-  Visual audits each dependent folder that has a stable story, and runs the
-  whole plan when the dependents exceed its focused budget or none has one; RTL
-  audits every component each of those folders implements. A Changeset renders nothing and widens no audit. A changed module that no component bundle holds adds none, and without
-  a readable build the audits run in full. PR accessibility, when it runs, stays
-  scoped to changed components (FR12). Without a label, the default
-  touched-components check audits only the touched components, and the
-  contract job runs the browser accessibility spec files the change adds or
-  modifies, those the touched components own, and, for at most one minute of the time left, those of the component folders that render a touched
-  component (FR12, DEC-23); neither
-  widens to shared modules or to a full suite. Shared infrastructure runs the full suite of the owners the
-  pull request runs (visual, accessibility and RTL only with their `ci:run-*`
-  labels, FR12): root
-  dependency manifests and lockfile, root configuration, a package's manifest,
-  build or test configuration and test setup, `internal/` (the test harness
-  included), `theme-build` paths (tokens and themes), Storybook configuration,
-  `node-tooling` paths (FR8 keeps their whole Node project), and every other
-  `shared-or-unknown` path. Changesets are excepted, and so, in a Lab-only
-  change, are a carried Lab component's entry files (FR26), the route lock
-  under `internal/` included. The interaction harness
-  (`internal/interaction-harness/`) and the repository's lint plugin
-  (`internal/eslint-plugin-astryx/`) narrow only the Vitest test owner, to the
-  tests whose module graph reaches the change and every test that reads
-  repository sources; every other owner runs as for shared infrastructure, all
-  interaction proofs and the repository-wide lint included.
-  A change with any other shared path runs every Vitest test. Every fail-closed
-  condition of FR3–FR4 also runs the full suite. `main`, release branches,
-  merge-group entries and `release-check` dispatches always run the full suite,
-  and release checks keep FR12's full scope.
-- **FR14 — Every workflow declares when it runs, as an allowlist.** Each
-  workflow in `.github/workflows` states the positive condition that makes it
-  relevant, and runs only when that condition holds. A workflow whose push or
-  pull-request trigger serves no required context lists the paths that make it
-  relevant on that trigger (`paths:`), and those paths name what the workflow
-  reads or runs, never everything; a merge-group entry, which cannot filter by
-  path, keeps running. A workflow that reports a required context (`build`,
-  `test`, `docsite-test`, `lint`, `review-required`)
-  starts on every pull request and is never path-filtered: the trusted
-  classifier's positive surfaces (FR1–FR5) choose the work inside it, and a job
-  whose suite does not apply reports success without running it (FR7). A push
-  to `main`, a schedule, a manual dispatch, and review, comment, check and
-  deployment events are relevance conditions of their own. No workflow uses
-  `paths-ignore` or another exclusion list, which would run on any path no one
-  thought to exclude.
+- **FR3 — 分类使用可信基策略。** 拉取请求代码 MUST NOT 选择自己的通道。工作流 MUST 从可信基 ref 加载分类器以及分类器的每一项依赖，然后把该策略应用于合并基准三点路径集。对于 Lab 组件的入口文件（FR26），可信分类器还会读取 GitHub 为这三个文件提供的补丁文本。它把该文本当作数据读取，逐行与固定模式匹配，绝不执行它，因此拉取请求只提供由基策略裁决的数据，绝不提供策略本身。工作流变更使用宽通道，除非它们是已准入工具的非 PR 派发工作流。分类器、分类器依赖和路由测试变更使用宽通道。
+- **FR4 — 不确定时失败关闭。** 合并基准缺失、可信分类器依赖缺失、分类器失败、文件列表为空或不完整、重命名有歧义、路径未知，或者合并组事件没有可信 PR 路径集，MUST 选择宽通道。任何回退都不得授予专用通道。
+- **FR5 — 混合范围保留每个所有者。** 触及多个已分类覆盖面的变更 MUST 运行这些覆盖面检查的并集。它 MUST NOT 为未触及的覆盖面运行专用通道。包含 `shared-or-unknown`（除与仅 Lab 变更相邻的 Changeset 或被携带 Lab 组件的入口文件外，FR26）、来自 FR3–FR4 的失败关闭条件，或任何缺少完整已准入专用所有者路由的选中覆盖面的集合，MUST 使用全量 CI。运行时旁边的规格不会隐藏运行时覆盖面。
+- **FR6 — Node 工具准入是显式的。** 仅当依赖分析证明包运行时、组件 UI、主题/构建产物、Storybook/视觉证据和浏览器行为都没有被直接改动，并且每个运维性使用方都有 Node 契约测试时，一个 Node 程序才可以进入 `node-tooling`。整目录准入只允许用于专门存放非发布工具的目录；其他按目录或按扩展名的准入被禁止。
+- **FR7 — 必需检查名称保持稳定。** `test`、`build`、`docsite-test` 和 `lint` MUST 通过其现有作业或汇合作业在每个拉取请求上继续报告。专用通道跳过这些作业内部由它拥有的步骤；它不移除历史必需上下文。任何由通道拥有的失败 MUST 使其汇合失败。必需 lint 不把 main 的包声明与最新稳定发布相比较；AST-017 把预发布排序分配给 canary 发布者，并把不可变发布合并回校验保留在必需 lint 中。
+- **FR8 — 初始工具准入。** `node-tooling` 覆盖 `scripts/score-ledger.mjs`、`scripts/score-ledger.test.mjs`、`internal/scripts/` 和 `.github/workflows/crowdin-upload.yml`。它运行 Node 项目和必需的 lint 工作流，包括仓库护栏。它跳过 UI Vitest 项目、组件分析、docsite 生成、生产包、Storybook 与 Sandbox 构建、预览/视觉报告发布，以及浏览器/主题/视觉/a11y/RTL 作业。可信的 post-CI 工作流 MUST 显式报告视觉检查不适用，并移除过期的预览链接，而不将预览发布者入队。在启用该通道之前，Sandbox score-ledger 投影 MUST 为其消费的导出提供 Node 契约测试。
+- **FR9 — 路由测试对变异敏感。** 测试 MUST 同时证明预期的快速路径和不安全的近似情形。至少覆盖：纯工具；纯规格；组件规格加组件代码；模块规格加 Table 插件代码；工具加组件代码；工作流或分类器自身变更；未知路径；共享基础设施；重命名历史；不完整输入；以及每个含组件的包中的公开源码。移除任何失败关闭边缘 MUST 使测试失败。
+- **FR10 — 新覆盖面遵循同一准入约定。** 新覆盖面 MUST 在实现之前通过经所有者批准的对本记录的修订获得准入。该修订 MUST 指明其正向路径所有权、依赖边界、测试命令、一个独立路由的测试所有者、构建命令以及在适用构建时的一个独立路由的构建所有者、混合范围行为、必需检查投影，和对变异敏感的路由测试。新的套件、功能、组件、主题 family 或测试类型本身都不是新覆盖面。
+- **FR11 — 每个覆盖面拥有一个测试通道和适用的构建通道。** 一个覆盖面 MAY 定义多个测试或构建命令、作业或步骤，但 MUST 由恰好一个独立路由的测试通道，以及在适用时一个独立路由的构建通道拥有它们。现有覆盖面内的新增覆盖 MUST 加入这些所有者，MUST NOT 创建单独路由的通道或必需上下文。既有的历史汇合保持稳定。默认的触及组件检查（FR12）是视觉、无障碍与 RTL 所有者对一个变更所触及组件的拉取请求覆盖：其视觉部分在 `pr-visual` 内运行，其无障碍与 RTL 部分在它们旁边的一个咨询性作业中运行，该作业不报告任何必需上下文。触及组件的浏览器无障碍契约（FR12）在其各自的并行作业中运行，该作业不报告自己的必需上下文：现有 `test` 汇合等待它并随它一起失败（FR7），因此 `test` 仍是那一个必需名称，且它不路由任何新的覆盖面通道。专用所有者尚未准入的选中覆盖面继续走全量 CI。Build 包的测试所有者包含其生产环境 CSS 层级联行为。theme family 编译仍属 `theme-build`，不会仅仅因为两种行为都涉及 CSS 就成为 Build。
+- **FR12 — 视觉回归只有一个共享的拉取请求工作流。** 来自每个覆盖面的每个视觉回归测试 MUST 使用现有的 Storybook 框架以及 `.github/workflows/ci.yml` 中唯一的共享所有者（`pr-visual`）。该工作流 MAY 使用多个作业、步骤和产物，但视觉捕获与回归比较 MUST NOT 在另一个工作流中运行，包括计划任务、post-CI、post-merge 或人工替换的所有者。发布规范运行的报告不是另一个测试所有者：它 MUST 消费该运行的产物，不得重新捕获或重新比较像素。显式的完整计划基线捕获 MUST 保留在 `ci.yml` 中；它是一项维护操作，不是发布闸门。经审阅的基线更新 MUST 消费该捕获，通过普通拉取请求更新受版本控制的仓库基线，并与自动合并或发布工作保持分离。GitHub Pages MUST NOT 作为基线或报告存储。发布证据 MUST 来自同一工作流中显式的 `operation=release-check` `workflow_dispatch`，从 `main` 派发并绑定到其确切的事件 SHA。它 MUST 以完整范围运行规范的 `pr-visual`（**Stable visual regression**）、`pr-a11y` 和 `pr-rtl` 所有者：已关闭的稳定视觉计划，以及未过滤的无障碍/RTL 组件名册。变更文件、聚焦、冒烟和空操作路径 MUST NOT 收窄发布检查。在拉取请求上，仅当该拉取请求在事件发生时携带该套件的标签——`ci:run-visual`、`ci:run-a11y` 或 `ci:run-rtl`，且每种标签最后一次由具有 write、maintain 或 admin 权限的人施加，而无法确认这一点的查找不会运行任何东西——视觉（`visual-scout`、`pr-visual`）、无障碍（`pr-a11y` 及其护栏与规格）与 RTL（`pr-rtl` 及其分片）所有者 MUST 各自以其选择加入的范围（FR13）运行。一个标签只运行自己的套件。仅 Lab 的拉取请求（FR26）不运行默认的触及组件检查，也不运行契约作业；其标签仍然运行各自的套件。没有标签时，拉取请求更新不会以选择加入的范围运行这些所有者中的任何一个，也没有必需上下文依赖它们；它改为运行一项默认的触及组件检查：仅针对变更所触及的组件——绝不包括其反向依赖方——在拉取请求的 Storybook 构建上、在 15 分钟预算内运行视觉、无障碍与 RTL。其视觉部分是 `pr-visual` 的默认模式，即对触及的 Core 组件做聚焦检查，绝不升级为发布计划，因此 `pr-visual` 仍是唯一的视觉所有者；其无障碍与 RTL 部分以及每组件记录是 `pr-touched-components`，在一个标准运行器上运行。大范围变更会跳过它：即触及超过五个组件，或改动共享样式（主题、token，或某个包共享的 `theme`、`utils`、`hooks`、`internal` 或 `Layer` 文件夹中的 `.stylex.ts` 文件）；仅涉及行为的共享代码不算大范围变更。每项变更（包括大范围变更）还会对其新增或修改、且拉取请求中没有其他审计覆盖的每个 story 文件做一次无障碍审计，仅报告新增违规。任何东西都不会自行启动完整套件；大范围变更的检查是标签背后的完整套件。没有必需上下文依赖触及检查；它为拉取请求评论记录每个触及组件在每套件中的通过、失败、已变更或未运行结果，或记录该变更为大范围以及它触及了多少个组件。在默认检查旁边，还有一个契约作业在 Chromium 中运行变更所触及组件的浏览器无障碍契约。它只需要拉取请求的 Storybook 构建。它首先运行变更新增或修改的浏览器无障碍 spec 文件，最多四个，按路径顺序，由从合并提交读取的各自 `@pr-a11y` 行路由；变更后的 `audit` spec 会等待其组件审计拉取请求。然后（包括大范围变更），它按路径顺序运行每个触及组件所拥有的 `scoped` 和 `release-only` spec 文件，这些文件由与带标签运行相同的 `@pr-a11y` 范围和 spec 位置映射找到。随后，在剩余时间内且至多占用其中一分钟，它运行那些通过源码值导入渲染某个触及组件的组件文件夹的 `scoped` 和 `release-only` spec 文件，最近的优先。它不运行任何未变更的 `audit` 或 `always` spec。`.a11y.browser.spec.ts` 文件在 CI 中于 Chromium 运行；其 WebKit 项目在本地以及每周的 WebKit 运行中执行，后者报告它们的失败但不判定失败（DEC-24）。对于 `.github/a11y-shared-primitives.json` 中列出的共享原语，FR12 的触及组件规则还会在每一次包含对该原语变更的拉取请求 CI 运行中运行一个依赖审计分片：至多三个分片，每个至多 10 分钟，覆盖使用该原语的组件审计。该列表从 Button 和 IconButton 开始。当 Layer 变更破坏了发布检查或发布时的依赖审计时，Layer 加入；其他新增由 CI & Release 与 chief-of-staff 决定。对某个组件源码的变更还会在每一次包含该变更的拉取请求 CI 运行中，在同一分片内运行该组件自身的审计 spec，且不超出同样三个十分钟分片。超出该预算的审计按名称列为尚未运行，它们会在同一 head 的后续运行中执行，后者可以使用更多分片；merge-guard 只在已运行所有应付审计的确切 head 的运行上合并。当 GitHub 无法列出某个拉取请求的变更文件时，所有审计都算应付，该 head 的任何运行都不完整，因此 merge-guard 不会合并它；该拉取请求必须拆分。仅由 main 发起的派发可以在某个拉取请求的确切 head 上运行所有应付审计，作为不可信代码，并受与拉取请求自身运行相同的限制；merge-guard 接受该 head 的这份记录，如同接受拉取请求运行的记录。在请求契约时，同一派发还会在该 head 上运行带标签的拉取请求运行所选的 scoped 无障碍契约 spec；仅当每个被选中的 spec 都运行并通过时，merge-guard 才将其结果作为该 head 的选择加入无障碍证据接受。契约作业与单元测试作业并行运行，MUST NOT 成为拉取请求的关键路径：它在 Storybook 构建之后开始，MUST 在最慢的单元测试作业之前完成，因此到必需 `test` 汇合报告的时间不会增长。它在八分钟后停止，并按六分钟规划：仅当某文件的记录时长能放进那六分钟的剩余部分时才启动该文件，因此即使运行器比计划慢三分之一，也仍能完成它启动的每个文件。无法在预算内完成的契约文件会被报告为未运行，而不是拆分。它未运行的每个文件（因该预算或四文件限制）都会在该检查的摘要与注解中报告为未运行，并附上运行它的标签。开始但未完成的 spec 判定失败。失败的契约会使必需 `test` 汇合失败（FR7）并阻塞合并。未运行的文件通过汇合，因此跳过永远不会读作通过，溢出也永远不会读作失败。选择加入的 PR 的 a11y MUST 保持限定在变更组件加上快速交互护栏，并且还会运行变更组件直接拥有的 `release-only` spec 文件，绝不通过共享范围 token 或未知范围运行；完整的 a11y 扫描、全仓库 spec 测试契约及其证据上传 MUST 仅在本工作流中为 `release-check` 运行，例外是每周 WebKit 运行的 `.a11y.browser.spec.ts` 文件，它们报告失败但不判定失败（DEC-24）。缺失、失败、取消或跳过的必需工作 MUST 阻塞发布检查汇合。请求与汇合 MUST 校验被检查的 SHA 是该派发事件的 SHA，并且在运行开始和完成时仍是当前远端 `main` 的祖先。发布调用方 MUST 在创建发布分支之前立即获取并重新校验同一祖先关系。`main` 后续的快进移动不会使该回执失效：发布 MUST 从确切被检查的 SHA 切出，后续提交仍是下一轮的发布输入。若重写或分叉使被检查的 SHA 从当前 `main` 历史中移除，则该回执失效。这取代了仅以组成 PR 为据的发布门禁，而不改变规范检查现有的发现策略。main 的重通道工作流 MUST 在推送到 `main` 时以及按每十五分钟的计划，为 `main` 的最新提交派发该发布检查并绑定到该提交，除非该最新提交已有一个，或最近 175 分钟内已派发过一个，因此三小时后的十五分钟刻度会派发（DEC-11、FR24）。在等待期间被替换且从未运行的检查不计入。一次检查覆盖到其提交为止的每次合并，因此每次合并都由下一次检查覆盖。派发的检查共享一个并发组，该并发组仅在发布重检（FR23）时取消正在运行的检查：至多一个在运行、一个在等待。若某次推送的提交已被 `main` 越过，则该检查留给更新的推送。该发布检查运行就是 main 的结果，失败由一个原子化的拉取请求向前修复。main 自身的快速检查（类型检查、带每提交体积记录的包构建，以及导出同步）仍会为每次推送运行；其完整单元套件按自己的计划大约每小时运行一次，并在每次发布检查时运行，如 FR21 所述。发布检查 MUST NOT 捕获基线候选、发布基线，或使用单独的每日工作流或追溯性接受状态。部署、无障碍、RTL 与 vibe 证据 MAY 保留各自的工作流和产物，前提是它们不与视觉回归重复。新的或现有的覆盖面、组件、包、主题 family 或视觉套件 MUST 加入规范工作流。仓库护栏 MUST 拒绝独立的视觉所有者，同时保留合法的非视觉产物用途。
+- **FR13 — 拉取请求上的全量 CI 运行变更所到达的内容。** 在可信分类未发现共享基础设施的 `pull_request` 事件上，全量 CI 保留每个必需上下文以及 FR12 路由到拉取请求的每个所有者，并收窄这些所有者运行的内容。Vitest 测试所有者运行其模块图到达某个变更文件的测试（以合并提交的基父提交为参照），再加上每个通过文件系统直接读取或经由其导入的模块读取仓库源码的测试——计算式 `import()`、子进程，或替它读取源码的库（TypeScript 编译器、打包器）都算作读取源码——以及每个从构建加载某个变更工作区包的测试，无论通过包名还是通过指向其 `dist/` 的路径。当拉取请求以其选择加入的范围运行它们时（FR12：仅当其带有 `ci:run-visual` 或 `ci:run-rtl` 标签），视觉与 RTL 所有者审计一组受影响的组件文件夹：变更组件及其反向依赖方，即在任何包中其构建产物（包括 `import()` 目标）到达某个变更模块的组件文件夹。视觉审计每个拥有稳定 story 的依赖文件夹，当依赖方超出其聚焦预算或没有一个拥有稳定 story 时运行整个计划；RTL 审计这些文件夹各自实现的每个组件。Changeset 不渲染任何东西，也不扩大任何审计。没有任何组件构建产物包含的变更模块不会新增任何文件夹；在构建不可读时，审计以完整方式运行。PR 无障碍在运行时仍限定于变更组件（FR12）。没有标签时，默认的触及组件检查只审计触及的组件，而契约作业运行变更新增或修改的浏览器无障碍 spec 文件、触及组件所拥有的 spec 文件，以及在剩余时间至多一分钟内，渲染某个触及组件的组件文件夹的 spec 文件（FR12、DEC-23）；两者都不会扩大到共享模块或完整套件。共享基础设施运行拉取请求所运行所有者的完整套件（视觉、无障碍与 RTL 仅在其带有 `ci:run-*` 标签时运行，FR12）：根依赖清单与锁文件、根配置、某个包的清单、构建或测试配置与测试设置、`internal/`（包括测试框架）、`theme-build` 路径（token 与主题）、Storybook 配置、`node-tooling` 路径（FR8 保留其整个 Node 项目），以及所有其他 `shared-or-unknown` 路径。例外是 Changeset，并且在仅 Lab 变更中还包括被携带 Lab 组件的入口文件（FR26），也包括 `internal/` 下的路由锁。交互框架（`internal/interaction-harness/`）与仓库的 lint 插件（`internal/eslint-plugin-astryx/`）只收窄 Vitest 测试所有者，收窄到模块图到达该变更的测试以及每个读取仓库源码的测试；其他每个所有者都按共享基础设施的方式运行，包括所有交互证明和全仓库 lint。带有任何其他共享路径的变更运行每个 Vitest 测试。FR3–FR4 的每个失败关闭条件也会运行完整套件。`main`、发布分支、合并组条目和 `release-check` 派发始终运行完整套件，发布检查保持 FR12 的完整范围。
+- **FR14 — 每个工作流以允许列表的方式声明何时运行。** `.github/workflows` 中的每个工作流都陈述使其相关的正向条件，并且仅当该条件成立时运行。若某工作流的 push 或拉取请求触发器不服务于任何必需上下文，它就要列出使它在那个触发器上相关的路径（`paths:`），这些路径应指明该工作流读取或运行的内容，绝不是全部内容；无法按路径过滤的合并组条目则继续运行。报告必需上下文（`build`、`test`、`docsite-test`、`lint`、`review-required`）的工作流在每个拉取请求上启动，且从不受路径过滤：可信分类器的正向覆盖面（FR1–FR5）选择其内部的工作，而套件不适用的作业在不运行的情况下报告成功（FR7）。推送到 `main`、计划任务、手动派发，以及审查、评论、检查与部署事件本身就是相关性条件。没有工作流使用 `paths-ignore` 或其他排除列表，因为那会在没人想到要排除的路径上运行。
 
-- **FR15 — One review gate carries code review and spec approval.** The
-  review workflow (`review-signal.yml`) and `review-clear.yml` publish
-  `review-required`, which carries both the code review and spec-owner approval
-  (`architecture:knowledge-contracts` DEC-14); no other workflow publishes a
-  review or spec context. `spec-owner-approval` carries the spec-owner job's decision,
-  which the other writers of `review-required` read; it is not a required
-  check. The spec-owner job
-  evaluates pull-request, review, and owner-command comment events, runs
-  without cancel-in-progress, and publishes a terminal state for the head it
-  read. A run that would exceed the job's request budget leaves the gate
-  pending, saying the pull request is too large to reconcile automatically; a
-  maintainer-dispatched run is exempt from the budget and decides normally. It
-  skips fork review events, whose tokens are read-only; fork approvals
-  use the owner command. An engineering owner's owner command re-evaluates
-  both halves of `review-required` from the head it reads, including the code
-  review, so a fork's approval takes effect through it. Only the review-signal
-  job keeps a per-pull-request cancel group. Each writer of `review-required`
-  composes both halves and links a spec wait to the spec decision's details.
-  Comments that are not owner commands start no runner, and no scheduled job
-  reads approvals.
-- **FR16 — One author's pull requests share the heavy suites.** On a pull
-  request, the heavy browser suites (the interaction proofs and the Build
-  package's browser and fixture-contrast contracts) run only when the pull
-  request is among its author's fifteen oldest open non-draft pull requests and
-  the author has had at most one hundred heavy runs that UTC day. A heavy run is
-  a CI run on one of those pull requests in which a heavy suite ran; a cancelled
-  run does not count, and neither does a run whose heavy suites were held. Pull
-  requests from the shared agent login count per branch prefix, and that login
-  as a whole is also held to its five oldest pull requests and forty heavy runs
-  a day. Engineering owners listed in `.github/ENGOWNERS`, as the pull request's
-  base commit lists them, are exempt from all of these limits, the shared
-  login's included, and so are bot accounts. A held suite's check fails with
-  "Queued behind your 15 oldest PRs: runs on a push once it is among them, or at
-  the pre-merge re-run.", "Queued behind the shared login's 5 oldest PRs: runs
-  on a push once it is among them, or at the pre-merge re-run." or "Daily
-  heavy-run cap reached, runs tomorrow or at pre-merge.", so no pull request
-  passes the required checks without its heavy suites. A re-run, which is the
-  pre-merge restart, is exempt from both limits, and when the limits cannot be
-  looked up the suite runs. Merge-queue entries, `main`, release checks and the
-  visual, accessibility and RTL owners a maintainer opts a pull request into
-  with their `ci:run-*` labels are unaffected by these per-author limits. Every
-  run of the CI and Main workflows, of any event, waits for room before its jobs
-  start, except the CI workflow's Storybook build, which starts as soon as there
-  is room for it while every job that uses it waits for room for the run: it
-  starts once the other active runs' estimated jobs plus its own most fit under
-  about ninety, and a pull-request run also waits, for that wait's first
-  fifteen minutes, while a `main` full check, release re-check or baseline
-  capture is waiting, looking twice on a pull
-  request, at once and after twelve minutes, and about every four minutes for
-  up to two hours for `main`, whose wait runs on a standard runner (DEC-16); a pull-request run that would fit but waits for a
-  `main` check looks again every two minutes while it does, and a run within ten
-  jobs of room every four minutes, inside its longest wait. A pull-request run
-  that finds no room waits like the others, on its slim runner, until its
-  longest wait (12 minutes); waiting runs count only what they run: their
-  waiting job and a Storybook build that found room. A pull-request run still without room at its
-  longest wait looks once more and starts only if no other pull-request run
-  started at its longest wait in the last ten minutes and no run that waited
-  longer still waits; otherwise it stops with "CI is full: re-run all jobs or
-  push later", and its required checks report the stopped run. A run stopped
-  for no room fails its waiting job, so a re-run of its failed jobs waits again
-  from the start. A pull request that may not run CI admits nothing, and
-  waiting never fails a job, so every required context reports as before. A
-  tool that grants CI capacity reads it through the same count admission uses
-  (`.github/actions/ci-admission/count.mjs`), with no count of its own. The contributor class of FR29 is granted by the capacity tool before this admission; its runs are then admitted like any pull request run.
-- **FR17 — A pull request runs CI when it is ready and a maintainer can vouch
-  for it.** A draft pull request runs no CI, and marking it ready for review
-  starts its pull-request run, which runs what the change reaches (FR13,
-  DEC-6). A pull request runs CI when its head branch lives in this repository,
-  which pushing needs write access for, or when it carries the
-  maintainer-applied `ci:run` label. Applying or removing a label starts no run by itself; the label takes effect on the next push, a close and reopen, or marking the pull request ready. For a pull
-  request that may not run CI, the required contexts (FR7) report failure with
-  "Waiting for a maintainer's ci:run label", never success, because a skipped
-  required check would count as passing. Events other than a pull request (a
-  push to `main`, a merge-group entry, a dispatch) are unaffected, and a fork's
-  code never runs with the repository's secrets. The contributor job of FR29 starts a run the same way: the label plus a draft-and-ready toggle.
-- **FR18 — Runtime performance has one nightly lane, outside the pull-request
-  surfaces.** `perf-nightly.yml` measures a fixed set of Sandbox perf scenes in
-  Chromium on every nightly run of `main` and on manual dispatch: mount long
-  tasks and layouts, interaction layouts and latency, and the JS heap and event
-  listeners left after unmount, as the median of several samples. Its result is
-  trend data: it reports no required context and gates no merge or release. A
-  nightly or dispatched run on `main` is compared with the median of `main`'s
-  recorded runs in the seven days before it, as follows: each run records its
-  CPU model and a calibration score; a timing metric (mount long tasks,
-  interaction latency) is compared only with those runs recorded on the same
-  CPU model, and with fewer than three of them, that metric has no baseline,
-  informational and never a pass; a calibration-normalized comparison may be
-  shown beside it but gates nothing; count metrics are compared with all of
-  them. A metric more than 10% worse, and
-  worse by at least that metric's floor, on that run and on the recorded run
-  before it opens the one open regression issue or comments on it, naming the
-  commits since the last run with no metric over the threshold. A metric over
-  the threshold on one run alone is reported as pending. A pull request runs the
-  lane only while it carries `ci:run-perf`, last applied by someone with write,
-  maintain or admin access, under the same label rule and timing as FR12's suite
-  labels and FR17, and only when its paths touch what the scenes measure (FR14);
-  a pull request run is compared with the same history and records nothing. The
-  lane runs on standard runners within the pull-request job budget. During a
-  measured interaction, a scene's driver adds no rendering work whose amount
-  depends on the runner's speed.
-- **FR19 — A pull request that changes CI states its CI impact.** A pull
-  request that changes a workflow, a composite action or a CI script carries
-  its CI impact in its description's `CI impact:` line: each changed job's
-  runner class (standard GitHub-hosted or non-standard), job-minutes per
-  pull-request update before and after, the change in runner-pool usage
-  (runner-minutes a day and average concurrent jobs) and time to green. The
-  pull-request comment measures these for CI's own workflow (`ci.yml`) from
-  its change and recent pull-request runs, without starting a job: a changed job counts as often as
-  it ran in those runs, time to green compares with runs that ran the same
-  jobs, and another changed workflow, a composite action or a CI script is
-  named as not measured.
-  A `node-tooling` pull request (FR8) gets no pull-request comment, so its
-  description's line stands alone. The comment flags a job moving onto a
-  non-standard runner, more than 10% added runner-pool usage, or more than two
-  minutes added to time to green. A flag asks the reviewer to weigh the cost;
-  it fails no check.
+- **FR15 — 一个审查闸门同时承载代码审查与规格批准。** 审查工作流（`review-signal.yml`）与 `review-clear.yml` 发布 `review-required`，它同时承载代码审查与规格所有者批准（`architecture:knowledge-contracts` DEC-14）；没有其他工作流发布审查或规格上下文。`spec-owner-approval` 承载规格所有者作业的决定，`review-required` 的其他写入方读取该决定；它不是必需检查。规格所有者作业评估拉取请求、审查和所有者命令评论事件，在不启用 cancel-in-progress 的情况下运行，并为其读取的 head 发布终态。会超出该作业请求预算的运行会让闸门保持待定，并说明该拉取请求过大、无法自动调和；由维护者派发的运行不受该预算限制，并正常裁决。它跳过 token 为只读的 fork 审查事件；fork 批准使用所有者命令。工程所有者的所有者命令会从它读取的 head 重新评估 `review-required` 的两个部分，包括代码审查，因此 fork 的批准通过它生效。只有 review-signal 作业保留按拉取请求的取消组。`review-required` 的每个写入方都组合两个部分，并把规格等待链接到规格决定的详情。不是所有者命令的评论不会启动任何运行器，也没有计划任务读取批准。
+- **FR16 — 一个作者的拉取请求共享重套件。** 在拉取请求上，仅当该拉取请求属于其作者最旧的十五个开放非草稿拉取请求之一，且该作者在该 UTC 日之内最多有一百次重运行时，重浏览器套件（交互证明以及 Build 包的浏览器与测试夹具对比契约）才运行。一次重运行是指在那些拉取请求之一上、且其中有重套件运行过的 CI 运行；被取消的运行不计入，其重套件被暂缓的运行也不计入。来自共享 agent 登录的拉取请求按分支前缀分别计数，而该登录整体还受限于其最旧的五个拉取请求和每天四十次重运行。`.github/ENGOWNERS` 中列出的工程所有者（以拉取请求的基提交所列者为准）豁免于所有这些限制，包括共享登录的限制，机器人账户同样豁免。被暂缓套件的检查会失败并显示 "Queued behind your 15 oldest PRs: runs on a push once it is among them, or at the pre-merge re-run."、"Queued behind the shared login's 5 oldest PRs: runs on a push once it is among them, or at the pre-merge re-run." 或 "Daily heavy-run cap reached, runs tomorrow or at pre-merge."，因此没有拉取请求在没有其重套件的情况下通过必需检查。重跑（即合并前重启）豁免于两项限制，当无法查询这些限制时该套件运行。合并队列条目、`main`、发布检查，以及维护者用其 `ci:run-*` 标签让拉取请求选择加入的视觉、无障碍与 RTL 所有者，都不受这些按作者限制的影响。CI 与 Main 工作流的每次运行（无论何种事件）都在其作业启动前等待空位，例外是 CI 工作流的 Storybook 构建——它一有空位就启动，而使用它的每个作业都在等待该运行的空位：当其他活动运行的估计作业数加上它自身的最大作业数能容纳于约九十个作业之内时，它便启动；拉取请求运行还会等待，在其等待的前十五分钟内，当某个 `main` 完整检查、发布重检或基线捕获正在等待时，在拉取请求上查看两次（立即一次，十二分钟后一次），对 `main` 大约每四分钟查看一次、最多持续两小时，`main` 的等待在标准运行器上运行（DEC-16）；本可放得下却在等 `main` 检查的拉取请求运行，在等待期间每两分钟再看一次，而距空位在十个作业以内的运行在其最长等待内每四分钟看一次。找不到空位的拉取请求运行会同其他运行一样，在其精简运行器上等待，直到其最长等待时间（12 分钟）；等待中的运行只计入它自己实际运行的东西：其等待作业和一个找到空位的 Storybook 构建。在其最长等待时仍无空位的拉取请求运行会再看一次，仅当过去十分钟内没有其他拉取请求运行在其最长等待时启动、且没有等待更久的运行仍在等待时，它才启动；否则它停止并显示 "CI is full: re-run all jobs or push later"，其必需检查报告这次已停止的运行。因无空位而停止的运行会使其等待作业失败，因此对其失败作业的重跑要重新从头等待。不得运行 CI 的拉取请求不会被准入任何东西，而等待从不会使作业失败，因此每个必需上下文都照旧报告。授予 CI 容量的工具通过准入所用的同一计数（`.github/actions/ci-admission/count.mjs`）读取容量，没有自己的计数。FR29 的贡献者类别在该准入之前由容量工具授予；其运行随后像任何拉取请求运行一样被准入。
+- **FR17 — 拉取请求在就绪且维护者可为其担保时运行 CI。** 草稿拉取请求不运行 CI，将其标记为可供审查即启动其拉取请求运行，该运行执行变更所到达的内容（FR13、DEC-6）。当拉取请求的 head 分支位于本仓库（推送它需要写权限）时，或当它带有维护者施加的 `ci:run` 标签时，它运行 CI。施加或移除标签本身不会启动运行；该标签在下一次推送、关闭后重新打开，或把拉取请求标记为就绪时生效。对于不得运行 CI 的拉取请求，必需上下文（FR7）报告失败并显示 "Waiting for a maintainer's ci:run label"，绝不报告成功，因为被跳过的必需检查会被算作通过。拉取请求以外的事件（推送到 `main`、合并组条目、派发）不受影响，且 fork 的代码绝不在带有仓库密钥的情况下运行。FR29 的贡献者作业以同样方式启动运行：标签加上草稿与就绪的切换。
+- **FR18 — 运行时性能有一个夜间通道，位于拉取请求覆盖面之外。** `perf-nightly.yml` 在每次 `main` 夜间运行和手动派发时，于 Chromium 中测量一组固定的 Sandbox 性能场景：挂载长任务与布局、交互布局与延迟，以及卸载后残留的 JS 堆和事件监听器，取多次采样的中位数。其结果属于趋势数据：它不报告任何必需上下文，也不对任何合并或发布设闸。`main` 上的夜间运行或派发运行会与其之前七天内 `main` 已记录运行的中位数比较，规则如下：每次运行记录其 CPU 型号和校准分数；计时指标（挂载长任务、交互延迟）只与在同一 CPU 型号上记录的那些运行比较，若少于三次，该指标没有基线、仅供参考且永不判定通过；校准归一化后的比较可以并列显示，但不对任何东西设闸；计数指标与所有这些运行比较。若某个指标在该次运行上以及在其之前那次已记录运行上都劣化超过 10%，且劣化幅度至少达到该指标的下限，即打开那一个开放的回归议题或对其发表评论，并指明自上一次没有指标超过阈值的运行以来的提交。仅在单次运行上超过阈值的指标报告为待定。拉取请求仅当带有 `ci:run-perf`（最后一次由具有 write、maintain 或 admin 权限的人施加，遵循与 FR12 套件标签和 FR17 相同的标签规则与时序），并且仅当其路径触及场景所测量的内容时（FR14）才运行该通道；拉取请求运行与同一历史比较，且不记录任何东西。该通道在拉取请求作业预算内于标准运行器上运行。在受测交互期间，场景的驱动不增加任何数量取决于运行器速度的渲染工作。
+- **FR19 — 改动 CI 的拉取请求要陈述其 CI 影响。** 改动工作流、复合动作或 CI 脚本的拉取请求在其描述的 `CI impact:` 行中承载其 CI 影响：每个变更作业的运行器类别（标准 GitHub 托管或非标准）、每次拉取请求更新前后的作业分钟数、运行器池用量的变化（每天的运行器分钟数和平均并发作业数）以及到通过的时间。拉取请求评论依据其变更和最近的拉取请求运行，为 CI 自身的工作流（`ci.yml`）测量这些数值，且不启动任何作业：某个变更作业按其在这些运行中运行过的次数计入，到通过的时间与运行了相同作业的运行比较，而另一个变更的工作流、复合动作或 CI 脚本则被指明为未测量。`node-tooling` 拉取请求（FR8）不会得到拉取请求评论，因此其描述中的该行独立成立。该评论会标记：某作业迁移到非标准运行器、运行器池用量增加超过 10%，或到通过的时间增加超过两分钟。标记是请审查者权衡成本；它不使任何检查失败。
 
-- **FR20 — An agent lane's push runs the fast checks; the heavy suites run when
-  it is ready and before merge.** A push to a ready pull request authored by the
-  shared agent login, into `main`, in its run's first attempt, runs only
-  typecheck in the CI workflow (lint keeps its own workflow), unless its trusted
-  classification is spec-only or Lab-only (FR26); the path-filtered workflows
-  (FR14) are
-  unaffected. Its heavy jobs skip, and the required contexts `test`, `build` and `docsite-test` (FR7)
-  report failure with "Heavy CI deferred: runs when marked ready and before
-  merge", never success, so nothing merges on that run; the PR report says the
-  same. Marking the pull request ready, opening or reopening it, and any later
-  attempt of its run (the pre-merge re-run of all jobs) run every suite at that
-  head. A release merge-back, a release-branch pull request, every other
-  author, the review and spec gates (FR15) and the heavy-suite caps (FR16) are
-  unaffected (DEC-14).
+- **FR20 — agent 通道的推送运行快速检查；重套件在就绪时和合并前运行。** 对由共享 agent 登录撰写、已就绪的拉取请求的推送，推送到 `main`，在其运行的第一次尝试中，只运行 CI 工作流中的类型检查（lint 保留自己的工作流），除非其受信分类为仅规格或仅 Lab（FR26）；按路径过滤的工作流（FR14）不受影响。其重作业会被跳过，必需上下文 `test`、`build` 和 `docsite-test`（FR7）报告失败并显示 "Heavy CI deferred: runs when marked ready and before merge"，绝不报告成功，因此那次运行不会让任何东西合并；PR 报告也这样说明。把该拉取请求标记为就绪、打开或重新打开它，以及其运行的任何后续尝试（所有作业的合并前重跑）都会在该 head 上运行每个套件。发布合并回、发布分支上的拉取请求、所有其他作者、审查与规格闸门（FR15）以及重套件上限（FR16）均不受影响（DEC-14）。
 
-- **FR21 — Main's full unit run is about hourly and always finishes.** The
-  Main workflow runs its unit suites (every Vitest project of every package,
-  never scoped to a change) only in a dispatched run, such as the one main's
-  heavy-lane workflow dispatches for `main`'s tip, naming that commit, about
-  once an hour on its own schedule: a push
-  dispatches it at once when none started in the last 55 minutes, and the
-  quarter-hourly schedule picks up the tip a burst left. Every release-check of
-  `main`'s tip (FR12), the scheduler's or one a person dispatches such as the
-  release owner's own, brings a unit run of that commit while it is still the
-  tip; a person may also dispatch the Main workflow beside their check, naming
-  the commit as `sha`. A unit run counts only for the commit it names. That run reports one pass or
-  fail for that exact commit. It runs to completion: it
-  has its own concurrency group, which no push cancels, and a newer dispatch
-  queues behind it; only a release re-check replaces it (FR22, DEC-18). A unit run that is skipped, cancelled or otherwise does not
-  complete makes the next one dispatch at once and is reported in the
-  guardian's issue; a newer run that replaced it, such as a recheck, leaves
-  nothing to report. Once main's newest full unit run succeeds, the dispatcher comments on that issue, naming the run and the commit it tested, and closes it; it closes only an issue it opened, and a failed lookup retries on the next tick. A stable release publishes only from a cut commit with
-  both a passing release-check and a passing full unit run (DEC-15).
+- **FR21 — Main 的完整单元运行大约每小时一次，且总会完成。** Main 工作流仅在派发的运行中运行其单元套件（每个包的每个 Vitest 项目，从不按变更限定范围），例如 main 的重通道工作流为 `main` 的 tip 派发的那个运行——它会指明该提交，按自身计划大约每小时一次：如果最近 55 分钟内没有启动过，推送会立刻派发一次，而每刻钟的计划会拾起一次突发推送留下的 tip。对 `main` tip 的每次 release-check（FR12）、调度器的派发或由人派发的（例如发布所有者自己的），都会在该提交仍是 tip 时为其带来一次单元运行；人也可以在自己的检查旁边派发 Main 工作流，把该提交命名为 `sha`。一次单元运行只对它所命名的提交计数。该运行针对那个确切提交报告一次通过或失败。它运行至完成：它有自己的并发组，任何推送都不会取消它，更新的派发会排在它后面；只有发布重检会替换它（FR22、DEC-18）。被跳过、被取消或以其他方式未完成的单元运行会使下一次立刻派发，并在 guardian 的议题中报告；替换了它的更新运行（例如重检）则没有需要报告的东西。一旦 main 最新的完整单元运行成功，派发器就会在该议题下发表评论，指明该运行及其测试的提交，并关闭它；它只关闭自己打开的议题，查找失败则在下一次滴答时重试。稳定发布只从一个同时具有通过的 release-check 和通过的完整单元运行的切出提交发布（DEC-15）。
 
-- **FR22 — Main's full unit run finishes in minutes.** The Main workflow runs
-  every Vitest leg of `main`'s full unit run at once, with no `max-parallel`
-  hold: six UI legs and six Node legs beside the build-and-typecheck lane, each
-  inside the fifteen-minute job budget (DEC-17). Node legs, here and on a pull
-  request, split the files by their recorded test time rather than by count, so
-  the slowest files never share a leg and the slowest single file sets the
-  floor; a file with no recorded time counts as the median, and which files run
-  never depends on the times. A dispatch may name `sha`, a commit in `main`'s
-  history that has the size records the build lane keeps, and every lane checks
-  that commit out; without it the run validates `main`'s tip. A person's `sha` run
-  waits for no other validation and replaces nothing; like every Main run, it
-  waits for room under CI's ceiling (FR16). One full unit run of `main` runs at
-  a time and a newer one waits (FR21); a push's fast checks run beside it. Only
-  a release re-check, which the workflow token sends with `recheck` and `main`'s
-  tip as `sha`, cancels the running unit run, because the re-check validates
-  that commit in full itself. Pull-request legs keep their
-  shape.
+- **FR22 — Main 的完整单元运行在几分钟内完成。** Main 工作流一次性运行 `main` 完整单元运行的所有 Vitest 分片，不设 `max-parallel` 限制：六个 UI 分片和六个 Node 分片，外加构建与类型检查通道，每个都在十五分钟的作业预算之内（DEC-17）。Node 分片——在此处和在拉取请求上——按记录下的测试时间而非数量来拆分文件，因此最慢的文件绝不会共用一个分片，最慢的单个文件决定了下限；没有记录时间的文件按中位数计算，而跑哪些文件从不取决于这些时间。派发可以指定 `sha`，即 `main` 历史中具有构建通道所保有的体积记录的一个提交，每个通道都检出该提交；不指定时，该运行校验 `main` 的 tip。人的 `sha` 运行不等待其他任何校验，也不替换任何东西；与每次 Main 运行一样，它等待 CI 上限下的空位（FR16）。`main` 的一次完整单元运行一次只跑一个，更新的会等待（FR21）；推送的快速检查在它旁边运行。只有发布重检——工作流 token 以 `recheck` 和 `main` 的 tip 作为 `sha` 发送——会取消正在运行的单元运行，因为重检本身会完整校验该提交。拉取请求的分片保持其形态。
 
-- **FR23 — A release-check finishes in minutes, and the release owner can
-  re-check `main`'s tip at once.** A release-check runs its browser owners in
-  legs that all start together: six accessibility-audit legs, six contract
-  legs, eight visual-scout legs and six Core RTL legs, beside the other RTL
-  packages. A contract spec file longer than one leg's share is cut into
-  consecutive runs of its tests in different legs, and every listed test runs
-  in exactly one leg. Pull requests keep their narrower legs, and every leg
-  stays inside the fifteen-minute job budget (DEC-17). An admin or maintainer
-  dispatches the release re-check workflow with `main`'s tip. It starts the
-  release-check and the Main workflow's full unit run on that commit, and each
-  takes its lane at once, cancelling the check running there (DEC-18). With
-  `failed-only`, the workflow re-runs only the failed jobs of that commit's
-  latest re-check runs. A run whose re-run passes is a full passing check of
-  that commit. A fix is a new commit and gets a full re-check.
+- **FR23 — release-check 在几分钟内完成，发布所有者可以立刻重检 `main` 的 tip。** release-check 以同时启动的分片运行其浏览器所有者：六个无障碍审计分片、六个契约分片、八个 visual-scout 分片和六个 Core RTL 分片，外加其他 RTL 包。超过单个分片份额的契约规格文件会被切成其测试在不同分片中的连续运行，且列出的每个测试都恰好在一个分片里运行。拉取请求保留其更窄的分片，每个分片都在十五分钟的作业预算之内（DEC-17）。admin 或 maintainer 用 `main` 的 tip 派发发布重检工作流。它在该提交上启动 release-check 和 Main 工作流的完整单元运行，两者各自立刻占用其通道，取消正在那里运行的检查（DEC-18）。使用 `failed-only` 时，该工作流只重跑该提交最新重检运行中失败的作业。重跑通过的运行即该提交的一次完整通过检查。修复是一个新提交，会得到一次完整重检。
 
-- **FR24 — Main's release-check runs every three hours, and once before each
-  weekday cut.** FR12's release-check of `main`'s tip is dispatched when none
-  started in the last 175 minutes, so about every three hours on the
-  quarter-hourly schedule, and once each weekday at about 06:30 Pacific time
-  whatever the window, as the pre-cut release-evidence run, so a check finishes
-  about an hour before the 08:00 release cut. The pre-cut run starts even when
-  a monitoring check already ran on the tip: a release cut's evidence is a
-  release-check that a person or the release tooling dispatches, or one of the two release-evidence runs the workflows start, the scheduled pre-cut run and the release re-check (FR23), each titled "Release evidence of <sha>". The three-hourly
-  monitoring checks are not release evidence. The full unit run keeps its own
-  hourly schedule (FR21), and the release cut's own exact-commit checks are
-  unchanged (DEC-19).
+- **FR24 — Main 的 release-check 每三小时运行一次，并在每个工作日切割前运行一次。** FR12 对 `main` tip 的 release-check 在最近 175 分钟内没有启动过时派发，因此在每刻钟的计划上大约每三小时一次，并在每个工作日太平洋时间约 06:30 无条件各一次，作为切割前的发布证据运行，因此检查大约在 08:00 发布切割前一小时完成。即使监控检查已在 tip 上运行过，切割前的运行也会启动：发布切割的证据是一次由人或发布工具派发的 release-check，或工作流启动的两次发布证据运行之一——计划的切割前运行和发布重检（FR23），它们各自的标题都是 "Release evidence of <sha>"。每三小时的监控检查不是发布证据。完整单元运行保有其自己的每小时计划（FR21），而发布切割自身对确切提交的检查不变（DEC-19）。
+- **FR26 — 仅 Lab 的 pull request 运行 Lab 测试与 Storybook 构建。** 若一个 pull request 的所有变更路径都位于 Lab 包（`packages/lab/`）内，此外还包括它自身携带的任何 Changesets 以及这些变更所涉 Lab 组件的入口文件，那么它会在 UI 通道上运行 Lab 包的测试，在 UI 与 Node 通道上运行读取源码的守卫测试（如同任何限定范围的 pull request 运行它们那样，FR13），还会运行 Storybook 构建、针对该构建所产出的包对 Lab 包与 Storybook 故事做类型检查，以及仓库级守卫：完整 lint 与 UI 通道的版权、包导出、CLI API 类型、token 文档、Lab 就绪性与知识 schema 检查。它不运行 docsite 构建或测试（下文 route-lock 检查除外），不运行完整类型检查，不运行 Build 包的测试，不运行交互证明，不运行受触及组件检查，也不运行视觉、无障碍或 RTL 套件——除非维护者的标签触发其中之一（FR12）；并且 agent 通道的推送不推迟任何内容（FR20）。必需的 `build`、`test` 与 `docsite-test` 上下文以通知 "Lab-only: Lab tests + Storybook build" 报告成功，绝不会是跳过。一个 Lab 组件的入口文件是它在 `internal/shadcn-registry/routes.lock.json` 中的路由、它在 `packages/cli/assets/discover/official-packages.json` 中 Lab 包部分的条目，以及一个从 `@astryxdesign/lab` 导入的新故事 `apps/storybook/stories/<Name>.stories.tsx`；对于以自身文件夹命名、且该变更所触及的 Lab 组件而言，入口文件就是这些。位于家族文件夹中的组件保留完整套件。分类器把这些文件的 diff 当作数据读取，绝不执行它们；它无法读取的 diff，或提到其他任何内容的行，都会使该变更成为混合变更。仅 Lab 的变更还会在第一个 Node 通道上运行 CLI official-packages 检查；当它的路由锁与合并基不同（或合并基未知）时，还会运行 route-lock 检查：在 canary 目标上执行 docsite 的数据生成，并针对 Storybook 构建所产出的包进行。新增或修改故事的一类变更还会构建 Storybook，而该通道本来就会这么做。对任何其他路径的变更都属于混合变更，并按任何 pull request 的方式运行 CI：Core（含其内部模块）、CLI、脚本、共享或根配置、lockfile、对现有故事的变更，以及变更未携带的组件的故事。不完整的文件列表，或基分支的分类器没有仅 Lab 通道，也是如此。外部贡献者的 pull request 仍然需要 `ci:run`（FR17），而 `main` 与发布检查一如既往地覆盖 Lab（DEC-21）。仅 Lab 的 pull request 若更改了交互规格文件（`*.interaction.browser.spec.ts`），仍然会运行每个变更的规格；当限定范围的通道不会运行它时，就在它自己的通道中运行；上文的交互证明跳过仅覆盖 Lab 源码变更。
+- **FR27 — 公开文本带有内部引用的 pull request 会让 Lint 失败。** 公开文本指的是该 pull request 自身的每条提交信息、它新增的每一行，以及检查运行时 pull request 标题与描述所呈现的内容。没有人书写的生成文本——lockfile 与摘要列表——不会被读取。必需的 Lint 作业运行基分支上该检查的副本，因此 pull request 无法更改评判它的检查。该检查匹配内部标识符与宿主的通用形态，以及内部名称的加盐摘要；仓库不以明文保存任何内部名称。失败会指出位置与引用类型，绝不给出匹配到的文本，并告知贡献者移除该位置处的引用；当引用不清楚时，可在维护者帮助下处理。它无法读取的范围会使检查失败。维护者通过常规的修复前行路径处理误报，不存在绕过。
+- **FR28 — 发布交互检查的一次性 pull request 运行 WebKit 的发布范围。** 发布交互检查的一次性 pull request 位于发布工具为某次具名发布尝试创建的 `interaction-check/` 分支上，它会运行 WebKit 的发布范围（DEC-24）：每次发布都在发布提交上运行完整的 WebKit 浏览器规格范围。工作流会验证分支前缀、创建者身份以及 head 仓库就是本仓库，因此只挑选了前缀的 pull request，或来自 fork 的 pull request，都不符合条件。创建者检查匹配共享自动化账号，因此该账号在 `interaction-check/` 分支上的另一个自动化 pull request 也符合条件；该前缀保留给发布工具使用。此类 pull request 保持不可合并，且这不会扩大任何其他 pull request 的范围（DEC-24）。
+- **FR29 — 稳定的贡献无需维护者即可运行 CI。** 来自 fork 的稳定贡献无需维护者即可运行 CI。一个自动化作业会为没有 `ci:run` 的 fork pull request 启动 CI（其分支位于另一个仓库，因此在 FR17 下 CI 不会在其推送时运行），前提是以下全部成立：它不是草稿；其 CLA 检查通过；其 head 在 4 小时内没有推送；审查机器人（`astracat-bot[bot]`）在恰好该 head 上的审查为 APPROVED，或为 COMMENTED 且没有任何被该审查标记为阻塞的问题（其正文或行内评论包含 "**Blocking"、"Requesting changes" 或 "Changes requested"）；CHANGES_REQUESTED，或该 head 上没有审查，绝不算数；链接守卫通过（merge-guard 在该 head 上的 `external-links` 状态为 success 或缺失，且该 pull request 没有 `needs-human:external-link` 标签）；GitHub 未报告它与基分支冲突；其最后一次推送不超过 30 天；并且它不更改任何工作流或 CI 路径（`.github/**`、CI 脚本）。为启动运行，该作业会添加 `ci:run`，并先把 pull request 标记为草稿、再标记为就绪，于是 ready 事件会在恰好该 head 上启动一次运行（FR17）。同一个 ready 事件还会重新请求其最新审查为要求更改的人类审查者，正如维护者自己的切换操作所做的那样。一旦运行开始，它就会移除该标签，但仅当最新的 `ci:run` 标签事件由它自己发出时，因此之后的推送不会运行任何内容，直到它再次经过审核。该作业对每个 head 最多启动一次；当新的 head 满足相同条件时，它便符合条件。只有在容量工具中没有排队的发布检查或 main 中断等待者、且在 CI 作业上限之下还容得下一次 pull-request 运行时，它才会启动运行；每次扫描最多启动一次；位于由所有者设定独立每日 runner 分钟预算的贡献者类别中；按每个 head 已保持稳定的时长先进先出；随后该运行会像任何 pull request 运行一样在 FR16 下被接纳。每日报告会显示已用分钟数与预算的对比，标出等待超过 2 天的合格 head，并列出合格但已过期的 head（距最后一次推送超过 30 天），供分诊为需要 rebase。维护者仍然可以手动启动 CI：`ci:run` 配合草稿-就绪切换、一次推送或一次重新打开，都会在稳定性条件与贡献者预算之外运行它，并在 FR16 下被接纳；自动化作业绝不会移除或重新添加维护者设置的标签。（DEC-26）
+- **FR30 — 非生成的发布分支候选运行广泛 CI。** 生成的版本 pull request 只有在每个变更路径都是其生成输出之一时，才保留其狭窄的记账通道。任何其他指向 `release/v*` 基分支的 pull request 都会运行所有常规产品与测试通道，并且仍然需要 `release-bump` 上下文。该上下文应用受信任基分支的发布校验器，并且只能接纳 `spec:AST-017/FR61` 所定义的发布测试修复类别。空的、不可用的或被截断的文件列表同样会运行广泛 CI 并记录未定范围；不确定性绝不会授予生成通道。
+- **FR31 — Chromium 交互通道运行变更所触达的内容。** 在 pull request 上，Chromium 交互证明（`pr-interaction`）必须运行变更所更改或触及的组件及其依赖方的交互规格，以及变更所新增或修改的每个交互规格文件。受触及组件来自可信分类（FR1–FR3），经由 FR12 所使用的同一受触及组件映射得出。依赖方是一个组件文件夹，它通过其源码值导入渲染或导入某个已更改或受触及的组件，正如 FR12 的契约作业所发现的那样；仅类型的导入不会增加依赖方。当变更触及共享代码时，通道必须运行完整交互套件：`shared-or-unknown` 路径（FR2）、共享基础设施（FR13），或 `.github/a11y-shared-primitives.json` 列出的共享原语（FR12）。发布检查与对 `main` 的夜间运行必须运行完整交互套件，正如 FR13 的其他全套件事件那样。一个变更的 Storybook 故事会加入它按值导入的组件文件夹的交互规格，以及每个会打开其某个 story id 的交互规格；这些文件夹不算受触及，因此不会增加依赖方，其中若有一个被列出的原语，也不会运行完整套件。一个取用该包中任何组件文件夹都不拥有的包根名称的故事，或整个包，会运行完整交互套件；被移除的故事、某个规格中本可能指向它却没有任何引号名称加以填充的模板化 story id，或某个打开没有任何故事文件生成的 story id 的规格，也是如此。它导入的共享子路径（theme、hooks、utils）不会增加任何内容。选择会失败关闭：当依赖图无法计算、当变更的源码路径映射不到任何组件，或出现 FR3–FR4 的任何失败关闭条件时，通道必须运行完整套件。对于交互通道，对组件文件夹的单元测试（`*.test.*`）、文档（`*.doc.mjs`、`*.md`）或无障碍规格的变更不会触及任何组件，除非有交互规格或证明页面在 pull request 的 head 的导入图中直接或间接地导入了该文件；这样的导入会将其选为受触及组件，而无法计算的图则运行完整套件。FR13 的主题源码仍属共享。选择不会改变任何必需上下文（FR7），也不改变 FR16 的任何限制。FR26 保留仅 Lab 规则，WebKit 通道保留它自己的触碰与手势范围（DEC-24），而发布检查会运行 WebKit 的完整套件（FR28）。漏网是指某个交互规格中的回归：选择性运行没有运行它，而完整运行、发布检查或 `main` 随后捕获了它。每个漏网都必须记录，并且该规则必须在通道开始选择性运行四周后依据该日志进行评审。对最近一组 pull request（`vjeux` 通道的 spike 集）的重放必须表明，选择性运行能捕获完整运行所捕获的每一次失败（DEC-28）。FR31 缺口：选择逻辑及其测试尚无实现；该通道运行每个交互规格。
 
-- **FR26 — A Lab-only pull request runs the Lab tests and the Storybook
-  build.** A pull request whose every changed path is in the Lab package
-  (`packages/lab/`), beside any Changesets and the entry files of the Lab
-  components the change itself carries, runs the Lab package's tests on the
-  UI legs, the source-reading guard tests on the UI and Node legs as any scoped
-  pull request runs them (FR13), the Storybook build, a typecheck of the Lab package and the
-  Storybook stories against the packages that build made, and the
-  repository-wide guards: full lint and the UI lane's copyright,
-  package-exports, CLI API type, token-docs, Lab readiness and knowledge-schema
-  checks. It runs no docsite build or tests (beyond the route-lock check
-  below), no full typecheck, no
-  Build-package tests, no interaction proofs, no touched-components check,
-  and no visual, accessibility or RTL suite unless a maintainer's label runs
-  one (FR12), and an agent lane's push defers
-  nothing (FR20). The required `build`, `test` and `docsite-test` contexts
-  report success with the notice "Lab-only: Lab tests + Storybook build",
-  never a skip. A Lab component's entry files are its routes in
-  `internal/shadcn-registry/routes.lock.json`, its entry in the Lab package's
-  part of `packages/cli/assets/discover/official-packages.json`, and a new
-  story `apps/storybook/stories/<Name>.stories.tsx` that imports from
-  `@astryxdesign/lab`, for a Lab component named for its own folder, which
-  the change touches. A component in a family folder keeps the full suite.
-  The classifier reads those files' diffs as data and never runs them; a diff
-  it cannot read, or a line naming anything else, makes the change mixed. A
-  Lab-only change also runs the CLI official-packages check on the first Node
-  leg, and, when its route lock differs from the merge base (or the merge base
-  is unknown), the route-lock check: the docsite's data generation at the
-  canary target, against the packages the Storybook build made. One that adds
-  or changes a story also builds Storybook, which the lane always does. A change to any other path is mixed and runs CI as for any
-  pull request: Core (its internal modules included), the CLI, scripts, shared
-  or root configuration, the lockfile, a change to an existing story, and a
-  story of a component the change does not carry. So does an incomplete file
-  list or a base whose classifier has no Lab-only lane. An outside
-  contributor's pull request still needs `ci:run` (FR17), and `main` and the
-  release-check cover Lab as before (DEC-21). A Lab-only pull request that changes an interaction spec file (`*.interaction.browser.spec.ts`) still runs each changed spec, in its own leg when the scoped legs would not run it; the skip of interaction proofs above covers only Lab source changes.
-- **FR27 — Lint fails a pull request whose public text carries an internal
-  reference.** Public text is each of the pull request's own commit messages and each line it adds, and the pull request's title and description as they read when the check runs. Generated text that no person writes, the
-  lockfile and the digest list, is not read.
-  The required Lint job runs the base branch's copy of the check, so a pull
-  request cannot change the check that judges it. The check matches generic
-  shapes of internal identifiers and hosts, and salted digests of internal
-  names; the repository holds no internal name in plain text. A failure names
-  the location and the kind of reference, never the matched text, and tells
-  the contributor to remove the reference at that location, with a maintainer's
-  help when the reference is unclear. A range it cannot read fails the check. A
-  maintainer handles a false positive through the normal fix-forward route,
-  with no bypass.
-- **FR28 — A release interaction check's throwaway pull request runs WebKit's
-  release scope.** A release interaction check's throwaway pull request, on an
-  `interaction-check/` branch that the release tooling creates for a named
-  release attempt, runs WebKit's release scope (DEC-24): the full WebKit
-  browser spec scope at the release commit, every release. The workflow
-  verifies the branch prefix, the creator identity and that the head repository
-  is this one, so a pull request that only picks the prefix, or comes from a
-  fork, does not qualify. The creator check matches the shared automation
-  account, so another automated pull request from that account on an
-  `interaction-check/` branch also qualifies; the prefix is reserved for the
-  release tooling. Such pull requests stay non-mergeable, and this widens the
-  scope of no other pull request (DEC-24).
-- **FR29 — A stable contribution runs CI without a maintainer.** A stable contribution from a fork runs CI without a maintainer. An automated job starts CI for a fork pull request without `ci:run` (a branch in another repository, so CI doesn't run on its pushes under FR17) when all of these hold: it isn't a draft; its CLA check passes; its head has had no push for 4 hours; the review bot's (`astracat-bot[bot]`) review at that exact head is APPROVED, or COMMENTED with no finding the review marks as blocking (its body or inline comments contain "**Blocking", "Requesting changes" or "Changes requested"); CHANGES_REQUESTED, or no review at the head, never counts; the link guard passes (merge-guard's `external-links` status at the head is success or absent, and the pull request has no `needs-human:external-link` label); GitHub doesn't report it as conflicting with its base; its last push is no more than 30 days old; and it changes no workflow or CI path (`.github/**`, CI scripts). To start the run, the job adds `ci:run` and marks the pull request draft and then ready again, so the ready event starts a run at that exact head (FR17). The same ready event re-requests a human reviewer whose latest review requested changes, as a maintainer's own toggle does. Once the run has started it removes the label, but only when the latest `ci:run` label event is its own, so a later push runs nothing until it is vetted again. The job starts a head at most once, and a new head becomes eligible when it meets the same conditions. It starts a run only when the capacity tool has no release-check or main-break waiter queued in the capacity tool, and room for one more pull-request run under the CI job ceiling, at most one start per sweep, in a contributor class with its own daily runner-minute budget set by the owner, first in, first out by how long each head has been stable; the run is then admitted under FR16 like any pull request run. A daily report shows the minutes used against the budget, flags eligible heads that waited more than 2 days, and lists eligible-but-stale heads (over 30 days since the last push) for triage as needing a rebase. A maintainer can still start CI by hand: `ci:run` with a draft-and-ready toggle, a push, or a reopen runs it outside the stability conditions and the contributor budget, admitted under FR16; the automated job never removes or re-adds a label a maintainer set. (DEC-26)
-- **FR30 — A non-generated release-branch candidate runs broad CI.** The
-  generated version pull request keeps its narrow bookkeeping lane only when
-  every changed path is one of its generated outputs. Any other pull request to
-  a `release/v*` base runs every normal product and test lane and still requires
-  the `release-bump` context. That context applies the trusted base branch's
-  release validator and may admit only the release test-repair class that
-  `spec:AST-017/FR61` defines. An empty, unavailable, or truncated file list
-  also runs broad CI and records undecided scope; uncertainty never grants the
-  generated lane.
-- **FR31 — The Chromium interaction lane runs what the change reaches.** On a
-  pull request, the Chromium interaction proofs (`pr-interaction`) MUST run the
-  interaction specs of the components the change changes or touches and of
-  their dependents, and each interaction spec file the change adds or
-  modifies. The touched components come from the trusted classification
-  (FR1–FR3) through the same touched-component mapping FR12 uses. A dependent
-  is a component folder that renders or imports a changed or touched component
-  through its source value imports, as FR12's contract job finds it; a
-  type-only import adds none. The lane MUST run the full interaction suite
-  when the change touches shared code: a `shared-or-unknown` path (FR2),
-  shared infrastructure (FR13), or a shared primitive that
-  `.github/a11y-shared-primitives.json` lists (FR12). Release checks and a
-  nightly run of `main` MUST run the full interaction suite, as FR13's other
-  full-suite events do.
-  A changed Storybook story adds the interaction specs of the component
-  folders it imports by value, and every interaction spec that opens one of
-  its story ids; those folders are not touched, so they add no dependents, and
-  a listed primitive among them does not run the full suite. A story that takes
-  a package-root name no component folder in that package holds, or a whole
-  package, runs the full interaction suite, as does a removed story, a
-  spec's templated story id that could name it and that no quoted name fills,
-  or a spec that opens a story id no story file makes.
-  A shared subpath it imports (theme, hooks, utils) adds nothing. Selection fails closed: when the dependency graph
-  cannot be computed, when a changed source path maps to no component, or on
-  any fail-closed condition of FR3–FR4, the lane MUST run the full suite.
-  For the interaction lanes, a change to a component folder's unit tests
-  (`*.test.*`), docs (`*.doc.mjs`, `*.md`) or accessibility specs touches no
-  component, unless an interaction spec or proof page imports that file,
-  directly or transitively, in the import graph at the pull request's head;
-  such an import selects as a touched component, and a graph that cannot be
-  computed runs the full suite. FR13's theme sources stay shared.
-  Selection changes no required context (FR7) and none of FR16's limits. FR26
-  keeps the Lab-only rule, and the WebKit lane keeps its own touch and gesture
-  scope (DEC-24), with a release check running WebKit's full suite (FR28). An
-  escape is a regression in an interaction spec that a selective run did not
-  run and that a full run, a release check or `main` then caught. Every escape
-  MUST be logged, and the rule MUST be reviewed against that log four weeks
-  after the lane starts to run selectively. A replay of a recent set of pull
-  requests (the `vjeux` lane's spike set) MUST show that selective runs catch
-  every failure the full runs caught (DEC-28). FR31 gap: the selection and its tests have no implementation yet; the lane runs every interaction spec.
-
-- **FR32 — A changed release spec runs in full before merge.** A pull request
-  runs a release spec in full, alone (`--workers=1`), on `4-core-ubuntu`, the
-  runner class whose release-check timings gate, in one of the release-spec shards, when it adds
-  or changes the spec, changes a module the spec imports where the
-  touched-component mapping can see it, or changes a component the spec
-  visits. A release spec is a `*.release.*.spec.ts` file or a spec tagged
-  `@pr-a11y release-only`. A spec visits a component through a story id
-  (`core-<component>--…`) or a sandbox path that maps to the component's
-  folder; a visit that cannot be resolved runs the spec. A Lab-only pull request (FR26) runs the release specs it triggers. The shards MUST NOT drop a spec as not run, and the `release-specs (changed)` check passes only when every shard passes. Merge-guard requires that check only when a pull request
-  triggers it; a missing, skipped, or stale-head result waits and fails
-  closed. A timing-budget miss in a shard is a failure, not a flake; it is not
-  retried automatically, and a budget question goes to the specification
-  owner (DEC-29). FR32 gap: the plan reads visits only from Storybook story
-  ids and pages on the served Storybook; it maps no sandbox path to a
-  component folder.
+- **FR32 — 变更的发布规格在合并前完整运行。** 当 pull request 新增或更改某个发布规格、更改该规格导入且受触及组件映射能够看到的模块，或更改该规格访问的组件时，它会在 `4-core-ubuntu`（其发布检查计时作为门禁的 runner 类别）上，单独（`--workers=1`）在发布规格分片之一中完整运行该发布规格。发布规格是 `*.release.*.spec.ts` 文件，或带有 `@pr-a11y release-only` 标签的规格。规格通过 story id（`core-<component>--…`）或映射到组件文件夹的 sandbox 路径来访问组件；无法解析的访问会运行该规格。仅 Lab 的 pull request（FR26）会运行它触发的发布规格。各分片绝不得以“未运行”为由丢弃规格，并且 `release-specs (changed)` 检查只有在每个分片都通过时才通过。只有在 pull request 触发该检查时，merge-guard 才要求它；缺失、被跳过或 head 已过期的结果会等待并失败关闭。分片中的计时预算未达标属于失败，而不是偶发问题；它不会自动重试，预算方面的疑问应交由规格所有者处理（DEC-29）。FR32 缺口：该计划仅从 Storybook story id 与所服务 Storybook 上的页面读取访问情况；它不把任何 sandbox 路径映射到组件文件夹。
 
 ### Platform support
 
-- Supported feature/engine floor: GitHub pull-request and merge-group workflows
-  on the repository's supported Node and runner versions.
-- Unsupported behavior: incomplete or unavailable classification receives no fast
-  path and runs broad CI.
-- Browser evidence: routing itself has no visual claim; the browser checks FR12
-  routes to a pull request remain mandatory whenever their owning surface is
-  present or scope is uncertain, and visual, accessibility and RTL run on `main`
-  and release checks (FR12).
+- 支持的功能/引擎下限：在仓库受支持的 Node 与 runner 版本上运行 GitHub pull-request 与 merge-group 工作流。
+- 不支持的行为：不完整或不可用的分类不会获得快速路径，而是运行广泛 CI。
+- 浏览器证据：路由本身没有视觉主张；每当由 FR12 路由到 pull request 的浏览器检查所拥有的表面存在或范围不确定时，这些检查仍然是必需的；而视觉、无障碍与 RTL 在 `main` 与发布检查上运行（FR12）。
 
 ## Current-state impact
 
-Current CI has singleton fast paths for canonical specification records, the
-docsite, admitted Node tooling and the Lab package (FR26). All other changes run broad Node/UI, build,
-browser, and application checks. This accepted record changes no workflow by
-itself.
+当前 CI 为规范规格记录、docsite、已接纳的 Node 工具以及 Lab 包拥有单例快速路径（FR26）。所有其他变更都会运行广泛的 Node/UI、构建、浏览器与应用检查。这条已接受的记录本身不改变任何工作流。
 
-Implementation begins by preserving those existing singleton surface sets and
-making their ownership model reusable. Existing package, theme/build, and
-Storybook/visual surfaces remain on broad CI until their dedicated owners are
-admitted. Within broad CI, a pull request runs what its change reaches (FR13),
-while `main`, merge-group entries and release checks run everything. The current
-broad workflow may dispatch surface-owned jobs; their names
-describe implementation, but they do not receive a specialized route until the
-classifier and join contract are complete. New surfaces may add lanes only through
-FR10. New coverage joins its current surface owner; visual regression remains in
-the shared Storybook PR owner.
+实现从保留这些现有的单例表面集合、并使其所有权模型可复用开始。现有的包、theme/build 与 Storybook/视觉表面在各自的专属所有者被接纳之前，仍留在广泛 CI 上。在广泛 CI 内，pull request 运行其变更所触达的内容（FR13），而 `main`、merge-group 条目与发布检查运行所有内容。当前的广泛工作流可能会分派由表面拥有的作业；它们的名称描述实现，但在分类器与接合契约完成之前，它们不会获得专门的路由。新表面只能通过 FR10 增加通道。新覆盖并入其当前的表面所有者；视觉回归仍留在共享的 Storybook PR 所有者中。
 
-Outside the classifier-routed workflows, the Internal Registry dependency check,
-the CLI smoke test and the hardening-issue opener run only when the paths they
-read change (FR14).
-The nightly perf lane is the one scheduled measurement outside them (FR18).
+在分类器路由的工作流之外，Internal Registry 依赖检查、CLI 冒烟测试与加固问题开启器仅当它们所读取的路径发生变更时才运行（FR14）。夜间性能通道是它们之外唯一按计划进行的度量（FR18）。
 
 ## Verification
 
-| Contract | Verification                                                                                                                                                                                  | Representative states                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Mutation or failure expectation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| FR1–FR2  | classifier unit tests expose the surface set; `fs-guard-tests.test.mjs` spec-reader cases                                                                                                     | knowledge; docsite; admitted tool; Core/Lab/Charts/Rich Text/Vega source; shared config; unknown; a spec-only change to a record a test reads                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | an unclassified path receives a specialized lane, a category has no check owner, or a spec-only change skips a test that reads its record                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| FR3–FR4  | workflow contract tests execute an isolated trusted-base classifier                                                                                                                           | valid base; missing merge base; missing matcher/registry; classifier self-change; merge group                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | PR-controlled policy grants a lane, or missing trust data skips checks                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| FR5      | mixed-surface and incomplete-owner routing tests                                                                                                                                              | spec+component; tooling+component; named surface without admitted lane; docsite+shared                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | one surface hides another owner or a named-but-incomplete surface skips broad CI                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| FR6–FR8  | Node-tooling dependency, CI workflow, and trusted post-CI workflow tests                                                                                                                      | both admitted score-ledger paths; Sandbox projection imports; test/build joins; preview/visual publisher                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | UI/browser/build work or preview publication runs for the singleton tool set, an operational consumer is untested, a visual status stays pending, or a required context disappears                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| FR9      | mutation-sensitive classifier and workflow fixtures                                                                                                                                           | unknown path; rename from unknown; truncated list; package-specific public paths                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | weakening a fail-closed rule leaves the suite green                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| FR10     | surface-admission and routing contract tests                                                                                                                                                  | existing surface; proposed surface with and without the full admission contract                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | a new surface adds lanes without its approved paths, commands, ownership, projections, and routing tests                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| FR11     | surface owner, internal-job, and required-join contract tests                                                                                                                                 | Build package browser behavior; CLI; theme-family broad fallback; mixed Core+CLI                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | a second owner is routed for one surface, an internal job masquerades as a lane, an owned failure misses its join, or an unrelated owner runs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| FR12     | Storybook visual-plan, canonical workflow, and repository-owner guard tests                                                                                                                   | PR scope; full-plan maintenance; report-only publication; deployment/a11y/RTL/vibe artifacts                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | another workflow captures or compares pixels, a renamed or aliased owner escapes the guard, or legitimate non-visual artifacts are rejected                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| FR12     | `touched-components.test.mjs` changed-spec routing; `a11y-pr-contracts.test.mjs` `changedOnly` cases; `a11y-changed-stories.test.mjs` and the touched job's story-audit contract              | a pull request that adds a browser accessibility spec; one that changes an `always` spec; one that changes a `release-only` or an `audit` spec; one that changes more spec files than the limit; a component change with no spec change; a pull request that adds an `a11y/` story no component owns; one that adds a story to an untouched component's story file beside a touched component                                                                                                                                                                                                                                                                                                                                                                                                    | a pull request that adds a browser accessibility spec that fails is not caught on that pull request, a spec of a component that is neither changed, touched nor rendering a touched component runs in the contract job, or an unchanged `audit` spec does, a not-run file reads as passed or fails the join, a failing contract leaves the `test` join green, or a new violation in a changed story no component owns passes the touched check                                                                                                                                                                                                                           |
-| FR12     | `a11y-pr-contracts.test.mjs` ownership cases; the CI workflow contract; contract-job and unit-test-job timings on 17 component pull requests                                                  | a pull request that touches one component with an owned `release-only` contract, passing and failing; a contract file that cannot finish within the budget; a wide change; a reverse dependent of the touched component; measured: setup up to about 1.5 minutes plus the 8-minute stop, against the slowest unit-test job finishing 9.9 to 25 minutes after the Storybook build; a wide change touching Spinner (its own specs run); the folders that render a touched component, nearest first, type-only imports left out, within a one-minute share, and one that does not fit (reported as not run)                                                                                                                                                                                         | a touched component's owned `release-only` contract does not run on its pull request, a failing contract leaves the `test` join green, a skipped file is split, does not show as "not run" in the check's summary or fails the join, the contract job finishes after the slowest unit-test job, or a touched component's own spec does not run on a wide change, or a rendering folder's spec runs before an owned one                                                                                                                                                                                                                                                   |
-| FR12     | `a11y-dependent-audits.test.mjs` planning cases and the CI workflow contract                                                                                                                  | a Button change; an IconButton change; a test, story or doc change in a primitive's folder; a change to no primitive; the plan's legs and their recorded times                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | a Button change that leaves a dependent component's audit out, plans more than three legs or a leg over ten minutes, or a dependent audit failure the `test` join passes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| FR12     | `a11y-dependent-audits.test.mjs` own-audit and deferral cases; the dependent-audit record                                                                                                     | a component source change; an over-budget set on a first run; a later run at the same head                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | a component source change that leaves its own audits out; an over-budget set whose deferred audits are not listed by name; a head that merges on a run that left an owed audit unrun                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| FR12     | `a11y-dependent-audits.test.mjs` undecided-scope cases; `test-scope-action.test.mjs` truncated-diff case                                                                                      | a diff over GitHub's file-list limit on a first run and on a later run                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | such a diff whose record is complete, that omits the split message, or that merge-guard merges                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| FR12     | `audits-at-head.test.mjs` record contract; merge-guard's exact-head record check                                                                                                              | a dispatch record at the exact head that ran every owed audit; one at another head; one missing an owed audit; with contracts, a complete passing result, and one with a selected spec missing or failing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | merge-guard refuses the first or the complete contracts, or accepts any of the others                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| FR12     | `ci-webkit-weekly.test.mjs` WebKit accessibility cases; `webkit-a11y-report.test.mjs`                                                                                                         | the weekly run's `.a11y.browser.spec.ts` files in WebKit: a failing spec, a flaky spec, a run that leaves no results                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | a failing WebKit accessibility spec that fails its job or turns `webkit-weekly-verdict` red, a failure the report leaves out or lists without a command that runs it again, or a run without results that reads as a pass                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| FR13     | classifier, workflow contract, component-analysis and RTL-scope tests                                                                                                                         | component change; shared module; Changeset beside code; infrastructure path; incomplete list; no build; an interaction-harness or lint-plugin path beside code, alone and with another shared path, and a script or other shared path beside one                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | an infrastructure path is scoped, a file-system guard test is skipped, a reverse dependent leaves visual/RTL or enters PR accessibility, or a full-suite event is narrowed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| FR14     | `workflow-paths.test.mjs` over every workflow                                                                                                                                                 | path allowlist; required-context workflow                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | a `paths-ignore`, a match-all or exclusion glob, or a path filter on a workflow that reports a required context fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| FR15     | workflow contract and reconciler tests                                                                                                                                                        | ENGOWNER spec PR; owner command; other comment; fork review; non-spec PR; run over the request budget; maintainer dispatch; fork PR, code-only: an owner's exact-head approval plus the owner command clears the code half                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | `review-required` succeeds while spec approval is missing, another workflow publishes a review context, a fork review starts the spec checks, a non-command comment starts a runner, an over-budget run decides, or a fork's approved code-only PR stays pending after the owner command                                                                                                                                                                                                                                                                                                                                                                                 |
-| FR16     | `heavy-caps-action.test.mjs` cap cases and heavy-job contract; `ci-admission.test.mjs`                                                                                                        | sixteenth-oldest PR; 101st heavy run of the day, beside cancelled, light and other-branch runs; agent lane and its five-PR and forty-run backstops; an engineering owner, including the shared login past those backstops, a commented-out or trailing-comment handle and an unreadable roster; bot; the deciding run; re-run; failed lookup; a run with room, without room, past its longest wait, beside a waiting `main` check, as a draft or unlabelled fork, with opt-in labels, beside small workflows past their measured most, and with the API unreadable; each workflow's most jobs; every required context's rule; a full queue: the capacity tool and admission agree there is no room                                                                                               | a heavy suite that runs ahead of the author's fifteen oldest PRs, or past the daily cap, a capped job that passes, an engineering owner or a re-run that is held, or a roster read from the pull request's head, a run that starts without room before its longest wait, a pull-request run that starts while `main` has waited under fifteen minutes, a job admission could skip, a peak below the jobs its run holds, or a job on a slim runner planned past its fifteen-minute cap fails                                                                                                                                                                              |
-| FR16     | `ci-admission.test.mjs` cases for one start at the longest wait at a time and the workflow contract                                                                                           | a pull-request run at its longest wait alone, within ten minutes of another pull-request run's start there and after them, behind a run that waited longer and ahead of a younger one; another run that found room earlier, a fork's stopped run and a `main` run that waited its longest; a `main` run and a merge-queue entry at their longest wait; the rest of a run whose Storybook build found room; ten runs out of time together; the required contexts and ci-full for either wait; a pull-request run that finds ten others waiting and room only for its Storybook build, and one at its longest wait behind more than ten that waited longer; two waiting `main` dispatches, the older and the younger, and two that began in the same second (each counting the other's peak fails) | two pull-request runs start at their longest wait within ten minutes, a younger run starts ahead of a longer waiter, a `main` run or merge-queue entry stops, a run CI is full for builds, or a required context passes or skips                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| FR16     | `ci-admission.test.mjs` re-run case                                                                                                                                                           | a run stopped for no room; a re-run of its failed jobs; a re-run of the second wait alone                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | a re-run of the failed jobs that reuses an earlier attempt's room result or clock                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| FR17     | `ci-pr-gate.test.mjs` over every `pull_request` workflow and the shared conditions                                                                                                            | branch here, fork with and without `ci:run`, another label, draft with the label, ready, push, merge group, dispatch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | a job that can start on a pull request without the condition, a label trigger, a required job that skips for a pull request that may not run CI, or a draft or unlabelled fork that runs fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| FR18     | `perf-nightly-workflow.test.mjs`, `perf-trend.test.mjs` and `run-labels.test.mjs`                                                                                                             | nightly and dispatch; labelled, unlabelled, draft and unvouched-fork pull requests; write, read and no access; newest label event; failed lookup; 10% boundary; metric floors; seven-day window edges; fewer than three runs; a metric over once, twice in a row, or a different metric before; recorded and pull request runs                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | a run on an unlabelled pull request, a label honoured from read access, a regression called at exactly 10%, under its floor or on one run alone, a run outside the window in the baseline, a pull request run that records, or a second regression issue fails                                                                                                                                                                                                                                                                                                                                                                                                           |
-| FR18     | `overlay-churn-settled` on one commit, five samples per run                                                                                                                                   | medians within 1% between a standard run and a `PERF_CPU_THROTTLE=4` run on the same runner (Chromium's CPU slowed four times)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | interaction-layout medians more than 1% apart fail                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| FR18     | `perf-trend.test.mjs` same-CPU cases                                                                                                                                                          | a run on a second CPU model whose timing metrics are about 75% higher on the same commit; a timing regression on one CPU model; a count metric across CPU models; a first run, and a run with no CPU model, with no timing baseline                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | a slower CPU model reported as a regression, a same-CPU timing regression missed, a count metric compared on one CPU model only, or a timing metric with no baseline that passes silently fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| FR19     | `ci-impact.test.mjs`, `pr-preview.test.mjs` and the maintenance template                                                                                                                      | CI change and non-CI change; standard, non-standard and expression runners; added, removed and changed jobs; trigger change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | a CI change reports no impact, a move onto a non-standard runner or a pool or time-to-green rise past its threshold goes unflagged, or the section names a price                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| FR20     | `ci-heavy-deferral.test.mjs` over ci.yml, lint.yml and pr-comment.yml                                                                                                                         | agent push; marked ready; opened; reopened; re-run; another author; release branch; merge-back; spec-only change; Lab-only change; a release-check and an opt-in label run, where the decision skips; a failed-jobs re-run of a deferred push                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | a heavy job runs on a deferred push, a required context passes or skips on one, a ready, reopened or re-run pull request defers, a spec-only or Lab-only change defers, the report hides the deferral, or a job below the decision skips because it skipped                                                                                                                                                                                                                                                                                                                                                                                                              |
-| FR21     | `ci-heavy-lanes.test.mjs` dispatch cases, `main-unit-run.test.mjs` over deploy.yml, `release-check-receipt.test.mjs`                                                                          | push run; dispatched unit run; tip with the scheduler's or a person's release-check, or a person's maintenance capture; unit run cancelled, skipped or timed out; newer recheck or person's run of the tip; a person's validation of an older commit; cut commit with and without a passing unit run                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | a push runs the unit suites, a push cancels a unit run, a release-check comes without a unit run of its commit, an incomplete run goes unreported or waits a window, or a cut publishes without a passing unit run                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| FR21     | `ci-heavy-lanes.test.mjs` issue-closing cases                                                                                                                                                 | a newest unit run that succeeded with the bot's issue open; a person's issue with the same title; no open issue; a newest run that did not complete; a failed lookup; a named run whose event commit differs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | the bot's issue stays open after a success, a person's issue closes, a call runs with no open issue, the issue closes on an incomplete run, a failed lookup fails the dispatcher, or the comment names the event commit                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| FR22     | `main-validation-workflow.test.mjs` over the Main workflow and its commit resolver; `vitest-shard-sequencer.test.mjs` over the recorded Node times                                            | six UI and six Node legs; dispatch without a commit, with a commit in main's history, with a commit outside it and with a malformed one; a re-check from the workflow token and from a person, and one that names `sha`; a `sha` before the size records, and one of only spaces; four and six Node legs over the recorded suite, a file with no recorded time, a project other than `node`                                                                                                                                                                                                                                                                                                                                                                                                      | a hold, a leg past the fifteen-minute budget, a commit outside main's history that validates, a person's dispatch or a person's `sha` run that cancels or replaces a validation of main, a `sha` lane that checks out another commit, or a `sha` run named for main's tip, or two of the slowest Node files in one leg, a file run by no leg or by two, or a split that depends on collection order fails                                                                                                                                                                                                                                                                |
-| FR23     | `release-check-shape.test.mjs`, `a11y-contract-shard.test.mjs` and the release-check workflow contract                                                                                        | release-check and pull-request legs; a contract file longer than a leg's share, one it cannot name exactly, and a serial one; the recorded suite; a re-check from an admin, a maintainer and a writer, from another branch, with a short SHA and with an older commit; failed-only beside a passed, a running and a missing run                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | a narrower release-check, a held or over-budget leg, a test selected by no leg or by two, a re-check that a writer can start, that waits for main's running check, or that re-runs jobs of another commit fails                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| FR24     | `ci-heavy-lanes.test.mjs` cadence cases                                                                                                                                                       | release-check 170 and 176 minutes old; the unit lane hourly beside it; weekday 06:37 Pacific inside the window in standard and daylight time; the pre-cut check already started; the tip already checked; a weekend morning; before 06:30 and after 07:30                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | a release-check starts inside the 175-minute window, the pre-cut check is skipped or starts twice, or it runs on a weekend                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| FR24     | `ci-heavy-lanes.test.mjs` release-evidence cases and `release-check-receipt.test.mjs`                                                                                                         | a pre-cut run on a tip a monitoring check already covered; a monitoring check, a person's release-check, and the two release-evidence runs as cut evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | a pre-cut run skipped because a monitoring check ran; a monitoring check counted as release evidence; or a person's release-check, the pre-cut run or a release re-check refused as cut evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| FR26     | `ci-lab-only-routing.test.mjs`, `change-scope.test.mjs` and `test-scope-action.test.mjs` Lab-only cases                                                                                       | a Lab-only change, with and without a Changeset; a new Lab component with its routes, discovery entry and story; Lab beside core, charts, a core Storybook story, a route or discovery entry for another component, an entry-file diff GitHub leaves out, the docsite, the Sandbox, a workflow, the lockfile, root configuration, internal tooling or a spec record; a rename into or out of Lab; an incomplete list; a base classifier without the lane; each required context, its owners, the UI legs' Lab tests, the UI and Node guard tests, the repository guards, the Storybook build and Lab typecheck, the heavy suites with and without a label, lint and an agent push                                                                                                                | a mixed change takes the Lab-only lane; a new Lab component's own entry files make it mixed, or another component's do not; a changed existing story, a story for a component the change does not carry, or a renamed entry file keeps the lane; the CLI official-packages check, the route-lock check when the lock changed, or the Storybook build does not run for one; a required context skips or fails, or passes without its notice; a Lab test, a guard test, a repository guard, the Lab typecheck or the Storybook build does not run; an unlabelled heavy suite, the docsite or the full typecheck runs, or a label's suite cannot audit Lab; lint is skipped |
-| FR26     | `test-scope-action.test.mjs` Lab-only interaction spec case; `ci-interaction-lab-specs.test.mjs`                                                                                              | a Lab-only pull request that edits a Lab interaction spec; one that changes only Lab source                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | the first runs no interaction proof or runs specs it did not edit, or the second runs any                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| FR27     | `check-public-text.test.mjs` over the check and the Lint workflow step                                                                                                                        | each identifier shape; a hashed name and host made up in the test; ordinary text; a finding in a commit message, an added line and the description; a match before the merge base; an empty range, a bad sha, a missing commit and a missing digest file                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | a reference passes; the output holds the matched text; a match on the base branch fails a later pull request; an unreadable range passes; the step runs the pull request's own copy                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| FR27     | `check-public-text.test.mjs` commit-list cases                                                                                                                                                | a pull request whose merge base resolves too far back in a shallow clone; its own commit with an internal reference                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | the check flags the base branch's commits, or passes the pull request's own reference                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| FR28     | `playwright-legs.test.mjs` creator, prefix and head-repository cases ("decides the WebKit scope only for the release tooling's interaction-check/ pull request"); `ci-webkit-weekly.test.mjs` | release interaction-check PRs: the release tooling's pull request; the same prefix from another author or from a fork; the tooling account on another branch. A release run lists the full WebKit suite at its release commit, whatever the weekly run's verdict                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | A prefix-only, other-author or fork pull request gets WebKit's release scope, or the tooling's interaction-check pull request does not. A release lists the subset, or any scope other than the full WebKit suite at its release commit, whatever the weekly run's verdict                                                                                                                                                                                                                                                                                                                                                                                               |
-| FR29     | the contributor CI job's rule tests and its dry-run report                                                                                                                                    | an eligible fork pull request; each condition failing alone (including a conflict with the base and a last push over 30 days old); a second sweep on the same head; a new stable head                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | the eligible pull request does not get `ci:run` once, a single failing condition still adds the label, a second sweep on the same head adds anything, or a new stable head is not labelled                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| FR29     | the contributor CI job's rule tests and its dry-run report                                                                                                                                    | an eligible head when the day's contributor budget is spent; the daily report                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | the head runs before the next day's budget, or the report does not list the minutes used against the budget or flag eligible heads that waited more than 2 days                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| FR29     | the contributor CI job's rule tests and its dry-run report                                                                                                                                    | every write the job makes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | the job adds any other label or merges                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| FR29     | the contributor CI job's rule tests and its dry-run report                                                                                                                                    | a manual `ci:run` with a ready toggle on an ineligible pull request                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | it does not run, it is counted against the contributor budget, or the job removes or re-adds it                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| FR29     | the contributor CI job's rule tests and its dry-run report                                                                                                                                    | An eligible-but-stale head (over 30 days since the last push)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | it does not appear in the daily report's triage list                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| FR29     | the contributor CI job's rule tests and its dry-run report                                                                                                                                    | the job's own label after its run starts; a later push to that pull request                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | the job removes a label it did not set, keeps its own label after the run starts, or a later push runs CI                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| FR29     | the contributor CI job's rule tests and its dry-run report                                                                                                                                    | A branch in this repository, or a fork pull request that already carries `ci:run`, is never started by the job (CI already runs on its pushes)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | the job starts it                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| FR29     | the contributor CI job's rule tests and its dry-run report                                                                                                                                    | A contributor head while a release-check or main-break waiter is queued in the capacity tool, or without room for one more pull-request run under the CI job ceiling, does not start; at most one starts per sweep                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | it starts, or more than one starts in a sweep                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| FR29     | the contributor CI job's rule tests and its dry-run report                                                                                                                                    | Of two eligible heads, the one stable longer starts first                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | the one stable for less time starts first                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| FR30     | `test-scope-action.test.mjs` release-branch cases and the required release-validator contract                                                                                                 | generated outputs only; one test-repair path; mixed or product paths; empty, failed, and truncated file lists                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | a non-generated release candidate gets the narrow lane, uncertainty skips broad CI, or the required release validator disappears                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| FR31     | Chromium interaction selection cases in `playwright-legs.test.mjs` and the CI workflow contract                                                                                               | a change to one component; a component that another component's folder renders; a type-only importer; a changed interaction spec file; a `shared-or-unknown` path; a listed shared primitive; a changed source path in no component folder; a dependency graph that cannot be computed; a release check, a nightly run of `main` and a merge-group entry                                                                                                                                                                                                                                                                                                                                                                                                                                         | a dependent's spec is left out, a type-only importer's spec runs, a shared, unmapped or fail-closed change runs less than the full suite, or a full-suite event is narrowed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| FR31     | `playwright-legs.test.mjs` story-mapping cases and the Chromium selection                                                                                                                     | a story that imports a component; a package-root name no folder in its package holds; a whole-package import; a shared subpath; a removed story; a story whose meta names no id; a spec that opens a story id no story file makes; an inline meta and a data row's title; an unfilled template whose whole prefix could name the story; the `ChatVirtualizer` story; a `TextInput` story change and the spec in `Field` that opens it                                                                                                                                                                                                                                                                                                                                                            | a changed story that runs the full suite when its scope resolves, misses its components' or openers' specs, or adds a shared subpath                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| FR31     | a replay of the `vjeux` lane's spike set: each selective plan against its full run's failures. FR31 gap: the replay validation has no committed record yet                                    | every failure a full run caught in that set                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | a failure that a full run caught is outside the selective plan                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| FR32     | workflow contract tests for the `release-specs (changed)` job                                                                                                                                 | an added, a changed, and an unchanged release spec; a changed module a release spec imports; a spec tagged `@pr-a11y release-only`; a changed component a spec visits by story id or sandbox path, and an unresolvable visit; a Lab-only pull request; merge-guard's required-when-triggered check with a missing, skipped, and stale-head result                                                                                                                                                                                                                                                                                                                                                                                                                                                | a changed release spec not run, a skipped or stale result that passes, or a timing miss retried automatically                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| 契约    | 验证                                                                                                                                                              | 代表性状态                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | 变更或失败预期                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1–FR2 | 分类器单元测试暴露表面集合；`fs-guard-tests.test.mjs` 的规格读取器用例                                                                                            | knowledge；docsite；已准入工具；Core/Lab/Charts/Rich Text/Vega 源码；共享配置；未知；仅针对某条记录的规格改动（该记录会被某个测试读取）                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | 未分类路径获得了专用泳道、某类别没有检查所有者，或仅规格改动跳过了读取其记录的测试                                                                                                                                                                                                                                                                                                                                                                                               |
+| FR3–FR4 | 工作流契约测试执行一个隔离的可信基线分类器                                                                                                                        | 有效基线；缺失合并基线；缺失匹配器/注册表；分类器自身变更；合并组                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | 由 PR 控制的策略授予了泳道，或缺失信任数据导致检查被跳过                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| FR5     | 混合表面与不完整所有者的路由测试                                                                                                                                  | spec+组件；工具+组件；已命名但没有已准入泳道的表面；docsite+共享                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | 一个表面掩盖了另一个所有者，或已命名但不完整的表面跳过了广泛 CI                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| FR6–FR8 | Node 工具依赖、CI 工作流以及可信的 CI 后置工作流测试                                                                                                              | 两条已准入的 score-ledger 路径；Sandbox 投影导入；测试/构建汇合；预览/视觉发布器                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | 针对单例工具集运行了 UI/浏览器/构建工作或预览发布、某个运营使用方未被测试、视觉状态保持待定，或某个必需上下文消失                                                                                                                                                                                                                                                                                                                                                                |
+| FR9     | 对变更敏感的分类器与工作流测试夹具                                                                                                                                | 未知路径；从未知路径重命名；截断的列表；包特定的公共路径                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | 削弱某条失败即关闭的规则后测试套件仍然全绿                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| FR10    | 表面准入与路由契约测试                                                                                                                                            | 现有表面；带完整准入契约和不带完整准入契约的提议表面                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | 新表面在缺少其已批准的路径、命令、所有权、投影与路由测试的情况下添加了泳道                                                                                                                                                                                                                                                                                                                                                                                                       |
+| FR11    | 表面所有者、内部任务与必需汇合的契约测试                                                                                                                          | Build 包的浏览器行为；CLI；主题族的广泛回退；混合 Core+CLI                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | 同一表面被路由到第二个所有者、内部任务伪装成泳道、有所有者的失败未进入其汇合，或无关所有者被运行                                                                                                                                                                                                                                                                                                                                                                                 |
+| FR12    | Storybook 视觉计划、规范工作流与仓库所有者守卫测试                                                                                                                | PR 范围；完整计划维护；仅报告发布；部署/a11y/RTL/vibe 产物                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | 另一个工作流捕获或比较像素、被重命名或取别名的所有者逃过了守卫，或合法的非视觉产物被拒绝                                                                                                                                                                                                                                                                                                                                                                                         |
+| FR12    | `touched-components.test.mjs` 的变更规格路由；`a11y-pr-contracts.test.mjs` 的 `changedOnly` 用例；`a11y-changed-stories.test.mjs` 以及 touched 作业的故事审计契约 | 新增浏览器无障碍规格的拉取请求；修改 `always` 规格的拉取请求；修改 `release-only` 或 `audit` 规格的拉取请求；修改的规格文件数超过上限的拉取请求；组件变更但没有规格变更；新增一个没有组件拥有的 `a11y/` 故事的拉取请求；在被触及组件旁边往未触及组件的故事文件里添加故事的拉取请求                                                                                                                                                                                                                                                                                                                      | 新增的浏览器无障碍规格失败却未在该拉取请求上被捕获；既未变更、未被触及也未曾渲染被触及组件的某组件规格在契约作业中运行，或未变更的 `audit` 规格运行；未运行的文件被读作通过或使汇合失败；失败的契约让 `test` 汇合保持绿色；或变更故事中不属于任何组件的新违规通过了 touched 检查                                                                                                                                                                                                 |
+| FR12    | `a11y-pr-contracts.test.mjs` 的所有权用例；CI 工作流契约；17 个组件拉取请求上契约作业与单元测试作业的耗时                                                         | 触及一个组件且带有自有 `release-only` 契约的拉取请求，通过和失败两种；无法在预算内完成的契约文件；广泛变更；被触及组件的反向依赖；实测：准备时间最多约 1.5 分钟加上 8 分钟的停止限制，对照最慢的单元测试作业在 Storybook 构建后 9.9 到 25 分钟完成；触及 Spinner 的广泛变更（其自身规格运行）；渲染被触及组件的文件夹，按距离由近到远、排除仅类型导入、在一分钟份额内，以及一个无法容纳的（报告为未运行）                                                                                                                                                                                               | 被触及组件的自有 `release-only` 契约未在其拉取请求上运行；失败的契约让 `test` 汇合保持绿色；被跳过的文件被拆分、未在检查摘要中显示为“未运行”或使汇合失败；契约作业在最慢的单元测试作业之后完成；或广泛变更时被触及组件自身的规格未运行，或渲染文件夹的规格先于自有的规格运行                                                                                                                                                                                                     |
+| FR12    | `a11y-dependent-audits.test.mjs` 的计划用例与 CI 工作流契约                                                                                                       | Button 变更；IconButton 变更；原语文件夹中的测试、故事或文档变更；未涉及任何原语的变更；计划的各段及其记录的时间                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Button 变更遗漏了依赖组件的审计、计划了超过三段或某段超过十分钟，或依赖审计失败却被 `test` 汇合放行                                                                                                                                                                                                                                                                                                                                                                              |
+| FR12    | `a11y-dependent-audits.test.mjs` 的自有审计与延后用例；依赖审计记录                                                                                               | 组件源码变更；首次运行中超预算的一组；同一 head 上的后续运行                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | 组件源码变更遗漏了其自有审计；超预算的一组中延后的审计未按名称列出；在仍有应付未运行审计的那次运行上该 head 被合并                                                                                                                                                                                                                                                                                                                                                               |
+| FR12    | `a11y-dependent-audits.test.mjs` 的未定范围用例；`test-scope-action.test.mjs` 的截断 diff 用例                                                                    | 首次运行和后续运行中超出 GitHub 文件列表限制的 diff                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | 此类 diff 其记录完整、省略了拆分消息，或 merge-guard 将其合并                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| FR12    | `audits-at-head.test.mjs` 的记录契约；merge-guard 的精确 head 记录检查                                                                                            | 在精确 head 上运行了每一项应付审计的 dispatch 记录；位于另一个 head 的记录；缺少某项应付审计的记录；带契约的记录、完整通过的结果，以及所选规格缺失或失败的记录                                                                                                                                                                                                                                                                                                                                                                                                                                          | merge-guard 拒绝第一个或完整的契约，或接受了其他任何一个                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| FR12    | `ci-webkit-weekly.test.mjs` 的 WebKit 无障碍用例；`webkit-a11y-report.test.mjs`                                                                                   | 每周运行在 WebKit 中的 `.a11y.browser.spec.ts` 文件：失败的规格、不稳定的规格、没有留下结果的运行                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | 失败的 WebKit 无障碍规格使其作业失败或让 `webkit-weekly-verdict` 变红；报告遗漏的失败，或列出失败却未给出可再次运行它的命令；或没有结果却被读作通过的运行                                                                                                                                                                                                                                                                                                                        |
+| FR13    | 分类器、工作流契约、组件分析与 RTL 范围测试                                                                                                                       | 组件变更；共享模块；代码旁的 Changeset；基础设施路径；不完整列表；无构建；交互测试工具或 lint 插件路径与代码并列（单独出现以及与另一共享路径一起），以及脚本或其他共享路径与其中之一并列                                                                                                                                                                                                                                                                                                                                                                                                                | 基础设施路径被划定范围、文件系统守卫测试被跳过、反向依赖脱离 visual/RTL 或进入 PR 无障碍，或全量套件事件被收窄                                                                                                                                                                                                                                                                                                                                                                   |
+| FR14    | `workflow-paths.test.mjs` 覆盖每个工作流                                                                                                                          | 路径允许列表；必需上下文工作流                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `paths-ignore`、全匹配或排除 glob，或报告必需上下文的工作流上的路径过滤器会失败                                                                                                                                                                                                                                                                                                                                                                                                  |
+| FR15    | 工作流契约与协调器测试                                                                                                                                            | ENGOWNER 规格 PR；所有者命令；其他评论；fork 审查；非规格 PR；超出请求预算的运行；维护者 dispatch；仅代码的 fork PR：所有者的精确 head 批准加上所有者命令即可清除代码那一半                                                                                                                                                                                                                                                                                                                                                                                                                             | 规格批准缺失时 `review-required` 却成功、另一个工作流发布了审查上下文、fork 审查启动了规格检查、非命令评论启动了运行器、超预算运行做出了判定，或 fork 中已批准的仅代码 PR 在所有者命令后仍保持待定                                                                                                                                                                                                                                                                               |
+| FR16    | `heavy-caps-action.test.mjs` 的上限用例与 heavy 作业契约；`ci-admission.test.mjs`                                                                                 | 第 16 老的 PR；当天第 101 次 heavy 运行，与已取消、轻量和其它分支的运行并列；agent 泳道及其五个 PR 与四十次运行的后备限制；工程所有者，包括越过这些后备限制的共享登录、被注释掉或带尾随注释的 handle 以及无法读取的名单；bot；做出判定的运行；重跑；查找失败；有空间和没有空间的运行、超过其最长等待的运行、与等待中的 `main` 检查并列、作为草稿或未标记的 fork、带 opt-in 标签、与小工作流并列并超出其测得的最大值、以及 API 不可读；每个工作流的最多作业数；每个必需上下文的规则；队列已满：容量工具与准入都同意没有空间                                                                              | heavy 套件运行在作者最老的十五个 PR 之前或超出每日上限；受限的作业却通过；工程所有者或重跑被挡住；名单从拉取请求的 head 读取；运行在其最长等待之前于没有空间时启动；拉取请求运行在 `main` 等待不足十五分钟时启动；准入可以跳过的作业；峰值低于其运行所持有的作业数；或瘦运行器上超过十五分钟上限的计划作业通过，都算失败                                                                                                                                                         |
+| FR16    | `ci-admission.test.mjs` 关于每次只在最长等待处启动一个的用例以及工作流契约                                                                                        | 单独处于其最长等待的拉取请求运行，与另一次拉取请求运行在该处的启动相距十分钟以内及其之后，排在一个等待更久的运行之后并排在一个更年轻的运行之前；另一次更早找到空间的运行、fork 被停止的运行，以及等待到其最长等待的 `main` 运行；处于其最长等待的 `main` 运行与合并队列条目；其 Storybook 构建找到空间的运行的其余部分；十个一起超时的运行；任一等待下的必需上下文与 ci-full；发现另外十个在等待且只有其 Storybook 构建有空间的拉取请求运行，以及排在其最长等待处、身后有超过十个等待更久者的运行；两个等待中的 `main` dispatch，较老的和较年轻的，以及两个在同一秒开始的（各自把对方的峰值计入会失败） | 两次拉取请求运行在十分钟内于其最长等待处启动；更年轻的运行先于等待更久者启动；`main` 运行或合并队列条目停止；CI 为构建已满的运行；或某个必需上下文通过或跳过                                                                                                                                                                                                                                                                                                                     |
+| FR16    | `ci-admission.test.mjs` 的重跑用例                                                                                                                                | 因没有空间而停止的运行；其失败作业的重跑；仅第二次等待的重跑                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | 失败作业的重跑复用了较早尝试的空间结果或时钟                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| FR17    | `ci-pr-gate.test.mjs` 覆盖每个 `pull_request` 工作流与共享条件                                                                                                    | 此处的分支、带与不带 `ci:run` 的 fork、其他标签、带该标签的草稿、就绪、push、合并组、dispatch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 作业在没有该条件的情况下也能在拉取请求上启动、标签触发、必需作业对不得运行 CI 的拉取请求跳过，或草稿或未标记的 fork 运行，都算失败                                                                                                                                                                                                                                                                                                                                               |
+| FR18    | `perf-nightly-workflow.test.mjs`、`perf-trend.test.mjs` 与 `run-labels.test.mjs`                                                                                  | 夜间运行与 dispatch；已标记、未标记、草稿和未担保 fork 的拉取请求；写、读和无访问权限；最新的标签事件；查找失败；10% 边界；指标下限；七天窗口边缘；少于三次运行；某指标超限一次、连续两次，或此前是另一个指标；已记录的运行与拉取请求运行                                                                                                                                                                                                                                                                                                                                                               | 未标记拉取请求上的运行、凭读权限就认可的标签、在恰为 10% 时或低于其下限或仅凭一次运行就判定的回归、基线中包含窗口之外的运行、会做记录的拉取请求运行，或出现第二个回归 issue，都算失败                                                                                                                                                                                                                                                                                            |
+| FR18    | `overlay-churn-settled` 在单个提交上，每次运行五个样本                                                                                                            | 同一运行器上标准运行与 `PERF_CPU_THROTTLE=4` 运行之间中位数相差在 1% 以内（Chromium 的 CPU 被降速四倍）                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | 交互布局中位数相差超过 1% 即失败                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| FR18    | `perf-trend.test.mjs` 的同 CPU 用例                                                                                                                               | 在第二个 CPU 型号上的运行，其计时指标在同一提交上约高 75%；某个 CPU 型号上的计时回归；跨 CPU 型号的计数指标；首次运行，以及没有 CPU 型号、没有计时基线的运行                                                                                                                                                                                                                                                                                                                                                                                                                                            | 更慢的 CPU 型号被报告为回归、同 CPU 计时回归被漏掉、计数指标只在单个 CPU 型号上比较，或没有基线的计时指标悄悄通过，都算失败                                                                                                                                                                                                                                                                                                                                                      |
+| FR19    | `ci-impact.test.mjs`、`pr-preview.test.mjs` 与维护模板                                                                                                            | CI 变更与非 CI 变更；标准、非标准与表达式运行器；新增、移除和变更的作业；触发器变更                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | CI 变更未报告影响；迁移到非标准运行器，或池或 time-to-green 上升超过其阈值而未被标记；或该节提及价格                                                                                                                                                                                                                                                                                                                                                                             |
+| FR20    | `ci-heavy-deferral.test.mjs` 覆盖 ci.yml、lint.yml 与 pr-comment.yml                                                                                              | 代理 push；标记为就绪；打开；重新打开；重跑；另一位作者；发布分支；合并回；仅规格变更；仅 Lab 变更；一次 release-check 与一次 opt-in 标签运行，其中该决策跳过；对一次延迟 push 的失败作业重跑                                                                                                                                                                                                                                                                                                                                                                                                           | 重型作业在延迟的 push 上运行、必需上下文在其上通过或跳过、就绪、重新打开或重跑的拉取请求被延迟、仅规格变更或仅 Lab 变更被延迟、报告隐藏了该延迟，或决策之下的某个作业因自身被跳过而跳过，都算失败                                                                                                                                                                                                                                                                                |
+| FR21    | `ci-heavy-lanes.test.mjs` 的 dispatch 用例、覆盖 deploy.yml 的 `main-unit-run.test.mjs`、`release-check-receipt.test.mjs`                                         | push 运行；dispatch 的单元运行；带有调度器或人工 release-check 的 tip，或人工的维护捕获；被取消、跳过或超时的单元运行；对 tip 更新的复查或人工运行；人工对较旧提交的验证；带与不带通过单元运行的切出提交                                                                                                                                                                                                                                                                                                                                                                                                | push 运行单元套件、push 取消了单元运行、release-check 没有其提交的单元运行、不完整的运行未被报告或等待某个窗口，或切出在没有通过的单元运行的情况下发布，都算失败                                                                                                                                                                                                                                                                                                                 |
+| FR21    | `ci-heavy-lanes.test.mjs` 的议题关闭用例                                                                                                                          | 最新单元运行成功且机器人的议题处于打开状态；同标题的人工议题；没有打开的议题；最新运行未完成；查找失败；一次具名运行，其事件提交不同                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | 机器人的议题在成功后仍然打开、人工议题被关闭、在没有打开议题的情况下调用运行、议题在不完整的运行上关闭、查找失败导致调度器失败，或评论点明了事件提交，都算失败                                                                                                                                                                                                                                                                                                                   |
+| FR22    | 覆盖 Main 工作流及其提交解析器的 `main-validation-workflow.test.mjs`；覆盖已记录 Node 时间的 `vitest-shard-sequencer.test.mjs`                                    | 六个 UI 腿与六个 Node 腿；不带提交的 dispatch、带 main 历史中提交的、带其之外提交的，以及带格式错误提交的；来自工作流令牌与来自人工的复查，以及一次指定 `sha` 的复查；在大小记录之前的 `sha`，以及只含空格的 `sha`；针对已记录套件的四个与六个 Node 腿、一个没有记录时间的文件、一个不是 `node` 的项目                                                                                                                                                                                                                                                                                                  | 出现 hold、某个腿超出十五分钟预算、main 历史之外的提交被验证、人工 dispatch 或人工 `sha` 运行取消或替换了对 main 的验证、`sha` 通道检出了另一个提交、`sha` 运行以 main 的 tip 命名、两条最慢 Node 文件落在同一个腿、某个文件没有腿运行或被两个腿运行，或存在依赖收集顺序的拆分，都算失败                                                                                                                                                                                         |
+| FR23    | `release-check-shape.test.mjs`、`a11y-contract-shard.test.mjs` 与 release-check 工作流契约                                                                        | release-check 与拉取请求的腿；比某个腿的份额更长的契约文件、无法精确指名的契约文件，以及串行的契约文件；已记录的套件；来自 admin、maintainer 与 writer 的复查，来自另一个分支的复查，带短 SHA 的复查与带较旧提交的复查；仅在失败时重跑，与已通过、运行中和缺失的运行并列                                                                                                                                                                                                                                                                                                                                | 更窄的 release-check、被挂起或超出预算的腿、没有被任何腿选中或被两个腿选中的测试、writer 可以发起的复查、等待 main 运行中检查的复查，或重跑另一个提交作业的复查，都算失败                                                                                                                                                                                                                                                                                                        |
+| FR24    | `ci-heavy-lanes.test.mjs` 的节奏用例                                                                                                                              | 已有 170 与 176 分钟的 release-check；其旁边每小时的单元通道；太平洋时间工作日 06:37，处于标准时间与夏令时的窗口内；切出前检查已经启动；tip 已被检查；周末早晨；06:30 之前与 07:30 之后                                                                                                                                                                                                                                                                                                                                                                                                                 | release-check 在 175 分钟窗口内启动、切出前检查被跳过或启动两次，或它在周末运行，即失败                                                                                                                                                                                                                                                                                                                                                                                          |
+| FR24    | `ci-heavy-lanes.test.mjs` 的发布证据用例与 `release-check-receipt.test.mjs`                                                                                       | 在监控检查已覆盖的 tip 上的一次切出前运行；作为切出证据的一次监控检查、一次人工 release-check，以及两次发布证据运行                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | 因监控检查已运行而跳过切出前运行、监控检查被计为发布证据，或人工 release-check、切出前运行或发布复查被拒绝作为切出证据，即失败                                                                                                                                                                                                                                                                                                                                                   |
+| FR26    | `ci-lab-only-routing.test.mjs`、`change-scope.test.mjs` 与 `test-scope-action.test.mjs` 的仅 Lab 用例                                                             | 带与不带 Changeset 的仅 Lab 变更；带有其路由、发现入口与 story 的新 Lab 组件；Lab 与 core、charts、某个 core Storybook story、为另一个组件新增的路由或发现入口、GitHub 省略掉的入口文件差异、docsite、Sandbox、某个工作流、lockfile、根配置、内部工具或某条规格记录并列；移入或移出 Lab 的重命名；不完整的列表；不含该通道的基础分类器；每个必需上下文、它的所有者、UI 各腿的 Lab 测试、UI 与 Node 守卫测试、仓库守卫、Storybook 构建与 Lab 类型检查、带与不带标签的重型套件、lint 与一次代理 push                                                                                                      | 混合变更走了仅 Lab 通道；新 Lab 组件自身的入口文件使其变成混合，而另一个组件的入口文件则不会；被改动的既有 story、为变更并未携带的组件新增的 story，或重命名的入口文件仍保持该通道；CLI 官方包检查、lock 变更时的路由锁检查，或 Storybook 构建未针对它运行；某个必需上下文跳过或失败，或未经通知就通过；Lab 测试、守卫测试、仓库守卫、Lab 类型检查或 Storybook 构建没有运行；未加标签的重型套件、docsite 或完整类型检查运行，或某个标签的套件无法审计 Lab；lint 被跳过，都算失败 |
+| FR26    | `test-scope-action.test.mjs` 的仅 Lab 交互规格用例；`ci-interaction-lab-specs.test.mjs`                                                                           | 编辑 Lab 交互规格的仅 Lab 拉取请求；只改动 Lab 源代码的那种                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | 前者不运行任何交互证明或运行它未编辑的规格，或后者运行了任何内容，即失败                                                                                                                                                                                                                                                                                                                                                                                                         |
+| FR27    | 覆盖该检查与 Lint 工作流步骤的 `check-public-text.test.mjs`                                                                                                       | 每种标识符形态；在测试中虚构的哈希名称与主机；普通文本；出现在提交信息、新增行与描述中的命中；合并基线之前的匹配；空范围、错误的 sha、缺失的提交与缺失的摘要文件                                                                                                                                                                                                                                                                                                                                                                                                                                        | 某条引用通过、输出保留了匹配到的文本、基础分支上的匹配使后续拉取请求失败、不可读的范围通过、该步骤运行拉取请求自己的副本，都算失败                                                                                                                                                                                                                                                                                                                                               |
+| FR27    | `check-public-text.test.mjs` 的提交列表用例                                                                                                                       | 合并基线在浅克隆中解析得过远的拉取请求；其自身带内部引用的提交                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 该检查标记了基础分支的提交，或放过了拉取请求自身的引用，即失败                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| FR28    | `playwright-legs.test.mjs` 的创建者、前缀与 head 仓库用例（“仅针对发布工具的 interaction-check/ 拉取请求决定 WebKit 范围”）；`ci-webkit-weekly.test.mjs`          | 发布 interaction-check PR：发布工具的拉取请求；来自另一位作者或来自 fork 的相同前缀；工具账户在另一个分支上。一次发布运行在其发布提交上列出完整的 WebKit 套件，无论每周运行的判定如何                                                                                                                                                                                                                                                                                                                                                                                                                   | 仅前缀、其他作者或 fork 的拉取请求获得 WebKit 的发布范围，或工具的 interaction-check 拉取请求没有得到。发布列出子集，或在其发布提交上列出完整 WebKit 套件之外的任何范围，无论每周运行的判定如何，即失败                                                                                                                                                                                                                                                                          |
+| FR29    | 贡献者 CI 作业的规则测试及其 dry-run 报告                                                                                                                         | 符合条件的 fork 拉取请求；每个条件单独失败（包括与基础分支的冲突，以及最后一次 push 超过 30 天）；对同一 head 的第二次扫描；一个新的稳定 head                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 符合条件的拉取请求没有恰好获得一次 `ci:run`、单个条件失败仍然添加了标签、对同一 head 的第二次扫描添加了任何东西，或新的稳定 head 未被加标签，即失败                                                                                                                                                                                                                                                                                                                              |
+| FR29    | 贡献者 CI 作业的规则测试及其 dry-run 报告                                                                                                                         | 当天贡献者预算已用尽时的合格 head；每日报告                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | 该 head 在次日预算之前运行，或报告没有列出相对预算已使用的分钟数，也没有标记等待超过 2 天的合格 head，即失败                                                                                                                                                                                                                                                                                                                                                                     |
+| FR29    | 贡献者 CI 作业的规则测试及其 dry-run 报告                                                                                                                         | 该作业进行的每一次写入                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | 该作业添加了任何其他标签或执行合并，即失败                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| FR29    | 贡献者 CI 作业的规则测试及其 dry-run 报告                                                                                                                         | 在不合格的拉取请求上带就绪开关手动施加的 `ci:run`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | 它没有运行、它被计入贡献者预算，或该作业移除或重新添加了它，即失败                                                                                                                                                                                                                                                                                                                                                                                                               |
+| FR29    | 贡献者 CI 作业的规则测试及其 dry-run 报告                                                                                                                         | 合格但过期的 head（距最后一次 push 超过 30 天）                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | 它没有出现在每日报告的分诊列表中，即失败                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| FR29    | 贡献者 CI 作业的规则测试及其 dry-run 报告                                                                                                                         | 该作业在运行开始后自己添加的标签；之后对该拉取请求的 push                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | 该作业移除了不是它设置的标签、在运行开始后保留自己的标签，或之后的 push 运行了 CI，即失败                                                                                                                                                                                                                                                                                                                                                                                        |
+| FR29    | 贡献者 CI 作业的规则测试及其 dry-run 报告                                                                                                                         | 本仓库中的分支，或已带有 `ci:run` 的 fork 拉取请求，永远不会被该作业启动（CI 已在其 push 上运行）                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | 该作业启动了它，即失败                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| FR29    | 贡献者 CI 作业的规则测试及其 dry-run 报告                                                                                                                         | 当容量工具中排队着 release-check 或 main-break 等待者，或在 CI 作业上限之下没有再多一个拉取请求运行的空间时，贡献者 head 不启动；每次扫描最多启动一个                                                                                                                                                                                                                                                                                                                                                                                                                                                   | 它启动了，或一次扫描中启动了多个，即失败                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| FR29    | 贡献者 CI 作业的规则测试及其 dry-run 报告                                                                                                                         | 在两个合格 head 中，稳定更久的那个先启动                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | 稳定时间更短的那个先启动，即失败                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| FR30    | `test-scope-action.test.mjs` 的发布分支用例与必需的 release-validator 契约                                                                                        | 仅生成输出；单条测试修复路径；混合或产品路径；空、失败与被截断的文件列表                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | 非生成的发布候选获得狭窄通道、不确定性跳过宽泛 CI，或必需的 release validator 消失，即失败                                                                                                                                                                                                                                                                                                                                                                                       |
+| FR31    | `playwright-legs.test.mjs` 中的 Chromium 交互选择用例与 CI 工作流契约                                                                                             | 对一个组件的改动；由另一个组件文件夹渲染的组件；仅类型导入者；被改动的交互规格文件；`shared-or-unknown` 路径；已列出的共享原语；不在任何组件文件夹中的被改动源代码路径；无法计算的依赖图；一次发布检查、一次 `main` 夜间运行与一个合并组入口                                                                                                                                                                                                                                                                                                                                                            | 依赖方的规格被遗漏、仅类型导入者的规格运行、共享的、未映射的或失败关闭的变更运行少于完整套件，或完整套件事件被收窄，即失败                                                                                                                                                                                                                                                                                                                                                       |
+| FR31    | `playwright-legs.test.mjs` 的 story 映射用例与 Chromium 选择                                                                                                      | 导入某个组件的 story；其包内没有任何文件夹持有的包根名称；整包导入；共享子路径；被移除的 story；meta 未指定任何 id 的 story；打开了没有任何 story 文件生成的 story id 的规格；内联 meta 与数据行的标题；整个前缀都可能命名该 story 的未填充模板；`ChatVirtualizer` story；`TextInput` story 的改动，以及 `Field` 中打开它的规格                                                                                                                                                                                                                                                                         | 被改动的 story 在其范围可解析时运行完整套件、遗漏其组件或打开者的规格，或添加共享子路径，即失败                                                                                                                                                                                                                                                                                                                                                                                  |
+| FR31    | 对 `vjeux` 通道探针集的重放：每个选择性计划对照其完整运行的失败。FR31 缺口：该重放验证尚无已提交记录                                                              | 完整运行在该集合中捕获的每一次失败                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | 完整运行捕获到的失败落在选择性计划之外，即失败                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| FR32    | 针对 `release-specs (changed)` 作业的工作流契约测试                                                                                                               | 新增的、改动的与未改动的发布规格；发布规格导入的已改动模块；带 `@pr-a11y release-only` 标签的规格；规格通过 story id 或 sandbox 路径访问的已改动组件，以及无法解析的访问；仅 Lab 的拉取请求；merge-guard 的“触发时必需”检查，分别带缺失、跳过与陈旧 head 的结果                                                                                                                                                                                                                                                                                                                                         | 已改动的发布规格未运行、被跳过或陈旧的结果通过，或时序未命中被自动重试，即失败                                                                                                                                                                                                                                                                                                                                                                                                   |
 
 ## Decision log
 
 ### DEC-1 — Surfaces form a union; lanes are projections
 
 **Reference:** `spec:AST-030/DEC-1`
+
 **Decider:** `cixzhang`, `2026-09-07`
 
-A mixed change retains every touched surface and therefore every check owner. A
-specialized lane is safe only for an exact surface set whose checks are complete.
+混合变更保留每一个被触及的表面，因此也保留每一个检查所有者。专用通道仅对检查完整的精确表面集合才是安全的。
 
-Rejected: mutually exclusive labels where `spec-only`, `docs`, or `tooling` can
-win over runtime code elsewhere in the same pull request.
+否决：互斥标签，其中 `spec-only`、`docs` 或 `tooling` 可以在同一个拉取请求中压过其他位置的运行时代码。
 
 ### DEC-2 — Unknown and self-modifying scope uses broad CI
 
 **Reference:** `spec:AST-030/DEC-2`
+
 **Decider:** `cixzhang`, `2026-09-07`
 
-Classification policy comes from the base branch, and every inability to prove a
-specialized set selects broad CI. This keeps a pull request from weakening the
-classifier or its dependencies to skip its own checks.
+分类策略来自基础分支，任何无法证明专用集合的情况都会选择宽泛 CI。这防止拉取请求通过削弱分类器或其依赖来跳过自己的检查。
 
-Rejected: head-branch classification, two-dot fallback, directory heuristics, or
-a bootstrap fallback that grants a fast path.
+否决：head 分支分类、双点回退、目录启发式，或授予快速路径的引导回退。
 
 ### DEC-3 — Start with one explicit Node-tooling ownership group
 
 **Reference:** `spec:AST-030/DEC-3`
+
 **Decider:** `cixzhang`, `2026-09-07`
 
-The score-ledger program and tests form the first narrow operational tool group.
-Its implementation is validated by Node tests, repository guardrails, ESLint, and
-a Node contract for the Sandbox projection; unrelated UI, browser, and production
-build work does not observe that change.
+score-ledger 程序与测试构成第一个狭窄的运营工具组。其实现由 Node 测试、仓库护栏、ESLint，以及针对 Sandbox 投影的 Node 契约验证；无关的 UI、浏览器与生产构建工作不会观察到该变更。
 
-Rejected: admitting all of `scripts/`, all JavaScript files, or every Node test by
-pattern. Those sets contain generators and build/release inputs with different
-owners.
+否决：按模式接纳整个 `scripts/`、所有 JavaScript 文件或每一个 Node 测试。这些集合包含生成器与构建/发布输入，它们有不同的所有者。
 
 ### DEC-4 — CI grows only at a surface boundary
 
 **Reference:** `spec:AST-030/DEC-4`
+
 **Decider:** `cixzhang`, `2026-09-12`; clarified `2026-09-15`
 
-Each surface may expose the test and build commands it needs, but pull-request CI
-has one independently routed test owner and, when applicable, one independently
-routed build owner for that surface. One owner may dispatch multiple jobs or
-steps and feed a stable required-check join; those mechanics do not create more
-lanes. Existing-surface coverage joins those owners. A genuinely new surface may
-add owners only after the complete FR10 admission contract is approved. A named
-surface without a complete admitted owner remains on broad CI.
+每个表面可以暴露它所需的测试与构建命令，但拉取请求 CI 对该表面只有一个独立路由的测试所有者，并在适用时只有一个独立路由的构建所有者。一个所有者可以派发多个作业或步骤，并汇入一个稳定的必需检查连接点；这些机制不会产生更多通道。既有表面的覆盖面会加入这些所有者。真正新的表面只有在完整的 FR10 接纳契约获批之后才可以添加所有者。被命名但没有完整已接纳所有者的表面仍留在宽泛 CI 上。
 
-Visual regression is the exception to per-surface routing: every surface
-registers its cases with the one shared Storybook-backed PR visual owner in
-`ci.yml`. Its jobs, steps, artifacts, and report publication are not additional
-visual lanes; a second workflow that captures or compares those pixels is.
-The single-workflow wording clarifies the existing shared-system requirement;
-it does not admit a new owner.
-The default touched-components check (FR12) is the visual, accessibility and
-RTL owners' own pull-request coverage of touched components: its visual part
-is `pr-visual`'s default mode, and its advisory accessibility and RTL job feeds
-no required context, so it is not a new lane.
+视觉回归是逐表面路由的例外：每个表面都把其用例注册到 `ci.yml` 中唯一的、由 Storybook 支撑的 PR 视觉所有者。它的 job、step、产物与报告发布都不是额外的视觉泳道；捕获或比较这些像素的第二个工作流才是。单工作流的表述澄清了既有的共享系统要求；它并未准入新的所有者。默认的被触及组件检查（FR12）就是视觉、无障碍与 RTL 所有者自身对被触及组件的拉取请求覆盖：其视觉部分为 `pr-visual` 的默认模式，其咨询性的无障碍与 RTL 作业不供给任何必需上下文，因此它不是新的泳道。
 
-Build's production CSS-layer cascade is a Build package integration contract, so
-it belongs to Build's test owner. Theme-family compilation remains owned by
-`theme-build`; sharing CSS concepts does not collapse those surfaces.
+Build 的生产 CSS 层叠是 Build 包的集成契约，因此归 Build 的测试所有者。主题族编译仍由 `theme-build` 拥有；共享 CSS 概念不会把这些表面合并。
 
-Rejected: per-suite, per-component, per-feature, per-theme-family, or separate
-PR visual owners; counting internal jobs or required status projections as
-lanes; and implicit expansion under an undefined “additional specialized
-surface” exception.
+已否决：逐套件、逐组件、逐功能、逐主题族或彼此分离的 PR 视觉所有者；把内部作业或必需状态投影算作泳道；以及在未定义的“额外专用表面”例外下做隐式扩张。
 
 ### DEC-5 — Release checks reuse the canonical owners on an exact main commit
 
 **Reference:** `spec:AST-030/DEC-5`
+
 **Decider:** `cixzhang`, `2026-09-23`; clarified `2026-10-07`
 
-Run release evidence against an exact commit in current `main` history, not only
-constituent PR heads. Use an explicit release-time dispatch in `ci.yml` so full
-visual, accessibility, and RTL checks do not run on every main push (DEC-7
-supersedes this sentence: they run after merges to `main`). Reuse existing
-test/build owners, keep their finding policies, and fail closed on incomplete
-scope, missing work, or when the checked commit is no longer in current `main`
-history.
-Baseline capture and the reviewed pull request that
-versions an accepted candidate remain separate operations.
+针对当前 `main` 历史中的一个精确提交运行发布证据，而不只是组成它的各个 PR head。在 `ci.yml` 中使用显式的发布时 dispatch，使完整的视觉、无障碍与 RTL 检查不在每次 main push 上运行（DEC-7 取代这句话：它们在合并到 `main` 之后运行）。复用既有的测试/构建所有者，保留它们的发现策略，并在范围不完整、工作缺失，或所检查的提交已不在当前 `main` 历史中时失败即关闭。基线捕获与对被接受候选进行版本化的已审查拉取请求仍是彼此分离的操作。
 
-PR accessibility, when a pull request runs it at its opted-in scope (DEC-7), is
-a scoped, fast check: audit only explicitly resolved changed component owners
-and retain the fast modal-close, theme-var, and story-play browser guards. The
-default touched-components check (FR12) audits the touched components' stories
-without the guards, which run with the accessibility owner. Never widen a PR to the exhaustive accessibility sweep because a
-shared path changed or the component set is empty. Missing or approximate analysis
-fails the scoped check rather than silently claiming no work. Multi-component
-folders expand only to their own canonical component owners or existing umbrella
-Storybook routes; an exported name without either route cannot be passed to axe. The full
-accessibility roster and the whole-repository spec-test contracts and their
-evidence uploads run only on `release-check` in this workflow.
-The release path retains the complete suite and cannot substitute a scoped result.
+拉取请求的无障碍，当某个拉取请求在其选择加入的范围上运行它时（DEC-7），是一项有范围的快速检查：只审计明确解析出的已变更组件所有者，并保留快速的 modal-close、theme-var 与 story-play 浏览器守卫。默认的被触及组件检查（FR12）审计被触及组件的故事，不带这些守卫——这些守卫随无障碍所有者运行。绝不因为共享路径发生了变化或组件集合为空，就把某个 PR 扩宽到穷尽式无障碍扫描。缺失或近似的分析会使该有范围的检查失败，而不是默默声称没有工作。多组件文件夹只扩张到它们自己的规范组件所有者或既有的伞形 Storybook 路由；没有这两条路由中任何一条的导出名称无法传给 axe。完整的无障碍名册与全仓库的规格测试契约及其证据上传，在本工作流中只在 `release-check` 上运行。发布路径保留完整套件，不能以有范围的结果替代。
 
-Rejected: a separate workflow, per-push full audits (DEC-7 supersedes this for
-pushes to `main`), and treating a maintenance
-capture, skipped check, a checked SHA no longer in current `main` history, or
-retroactive status as release evidence.
+已否决：单独的工作流；每次 push 都做全量审计（对 push 到 `main`，DEC-7 取代这一条）；以及把一次维护性捕获、被跳过的检查、已不在当前 `main` 历史中的被检查 SHA，或事后补记的状态当作发布证据。
 
-Amended 2026-11-12 under DEC-24's amendment (the chief of staff with CI &
-Release and the release owner): the weekly WebKit run also runs the
-`.a11y.browser.spec.ts` files, report-only.
+2026-11-12 依 DEC-24 的修订（幕僚长与 CI & Release 及发布所有者）修订：每周的 WebKit 运行也运行 `.a11y.browser.spec.ts` 文件，仅作报告。
 
 ### DEC-7 — Full visual, accessibility and RTL suites run on main; pull request updates check only touched components
 
 **Reference:** `spec:AST-030/DEC-7`
+
 **Decider:** `cixzhang`, `2026-10-28`
-**Superseded in part by:** `spec:AST-030/DEC-11` (main is checked about hourly,
-not on every push); `spec:AST-030/DEC-18` (a release re-check cancels the check
-running in main's lane); `spec:AST-030/DEC-22` (a touched component's own
-accessibility contracts run, and block, on its pull request)
 
-Run the visual, accessibility and RTL owners on every push to `main`, through
-the same exact-commit `release-check` the release gate uses, and before a cut;
-a pull request runs each at its opted-in scope only when it opts in with that
-suite's `ci:run-visual`, `ci:run-a11y` or `ci:run-rtl` label, and otherwise
-only the touched-components check (FR12). Main-push checks are throttled: one runs at a time, a
-burst of pushes collapses to its newest commit, and a running check is never
-cancelled, so every check that starts finishes.
-Pull request updates keep the fast checks and every required context, and add
-the touched-components check (FR12), which audits only what the change touches,
-its visual part in `pr-visual`'s default mode and its accessibility and RTL
-parts in one standard-runner job, so each update spends few runner-minutes
-while the full
-suites stay behind their labels; the
-modal-close, theme-var and story-play guards are steps of the accessibility
-owner, so they run with it, after merge or on a labelled pull request. A
-browser accessibility spec file a pull request adds or modifies, and every
-`scoped` or `release-only` spec file a touched component owns, runs in its
-own job, in parallel with the unit-test jobs, so a component's own contracts
-are checked on its own pull request rather than first on `main`'s release
-check; an `audit` spec still first runs on its audit pull request. A failing
-contract blocks the merge through the `test` join (DEC-22). A
-failure on `main` is repaired forward with an atomic pull request, not reverted
-first. This supersedes DEC-5's choice to keep these checks off main pushes:
-running the browser suites on every update of every open pull request costs
-far more than running them once per merge burst on `main`. The label opts a
-pull request into the head-scoped owners FR13 describes; it adds no run of its
-own, and the merged result is checked on `main`, so it is not
-the label-triggered full run DEC-6 rejects.
+**Superseded in part by:** `spec:AST-030/DEC-11`（main 约每小时检查一次，而不是每次 push 都检查）；`spec:AST-030/DEC-18`（发布重检会取消 main 泳道中正在运行的检查）；`spec:AST-030/DEC-22`（被触及组件自身的无障碍契约在其拉取请求上运行并阻止合并）
 
-Rejected: keeping the suites on every pull request update (spend); a separate
-scheduled or daily owner (FR12 keeps one canonical workflow).
+在每次 push 到 `main` 时、在发布切割之前，通过与发布闸门所用的同一个精确提交 `release-check`，运行视觉、无障碍与 RTL 所有者；拉取请求只有在用该套件的 `ci:run-visual`、`ci:run-a11y` 或 `ci:run-rtl` 标签选择加入时，才在它选择加入的范围上运行每一项，否则只运行被触及组件检查（FR12）。main push 检查会被节流：一次只运行一个，一串 push 会坍缩到其最新提交，运行中的检查绝不被取消，因此每个已开始的检查都会完成。拉取请求更新保留快速检查与每一个必需上下文，并加入被触及组件检查（FR12），它只审计变更所触及的内容，其视觉部分为 `pr-visual` 的默认模式，其无障碍与 RTL 部分在一个标准运行器作业中，因此每次更新只花少量运行器分钟，而完整套件留在各自的标签之后；modal-close、theme-var 与 story-play 守卫是无障碍所有者的步骤，因此它们随它一起运行，在合并之后或在带标签的拉取请求上运行。某拉取请求新增或修改的浏览器无障碍规格文件，以及被触及组件拥有的每个 `scoped` 或 `release-only` 规格文件，都在自己的作业中、与单元测试作业并行运行，因此组件自身的契约在其自己的拉取请求上就被检查，而不是首先在 `main` 的发布检查上被检查；`audit` 规格仍首先在其审计拉取请求上运行。失败的契约通过 `test` 汇合阻止合并（DEC-22）。`main` 上的失败以原子拉取请求向前修复，而不是先回滚。这取代 DEC-5 把这些检查留在 main push 之外的选择：在每个打开的拉取请求的每次更新上运行浏览器套件，成本远高于在 `main` 上每次合并串运行一次。该标签把拉取请求选择加入 FR13 所描述的 head 范围所有者；它不增加自己的运行，而合并后的结果在 `main` 上被检查，因此它不是 DEC-6 所否决的标签触发的全量运行。
+
+已否决：让套件在每次拉取请求更新时都运行（开销）；单独的定时或每日所有者（FR12 保留一个规范工作流）。
 
 ### DEC-6 — Pull requests run what the change reaches; full runs stay where landing is decided
 
 **Reference:** `spec:AST-030/DEC-6`
+
 **Decider:** `cixzhang`, `2026-10-26`
 
-A pull request's Vitest legs and browser audits follow what its change reaches:
-the module graph for tests and built-bundle reach for components. Tests that
-read sources through the file system run whole, because no import reaches what
-they read. Shared infrastructure, uncertainty, `main`, merge-group entries and
-release checks run everything, except where FR13 narrows the Vitest owner for
-the interaction harness and the lint plugin, so no landing or release gate
-narrows; a pull
-request runs the visual, accessibility and RTL owners at their opted-in scope
-only with the suite's `ci:run-*` label, and otherwise only the
-touched-components check for the components it touches (DEC-7).
+拉取请求的 Vitest 作业段与浏览器审计遵循其变更所达到的范围：测试按模块图，组件按构建产物可达性。通过文件系统读取源码的测试整体运行，因为没有导入能到达它们所读的内容。共享基础设施、不确定性、`main`、合并组条目与发布检查运行全部内容，除了 FR13 为交互测试工具与 lint 插件收窄 Vitest 所有者之处，因此任何落地或发布闸门都不收窄；拉取请求只在带套件 `ci:run-*` 标签时按其选择加入的范围运行视觉、无障碍与 RTL 所有者，否则只对它触及的组件运行被触及组件检查（DEC-7）。
 
-Rejected: a full run triggered by approval, a label or a draft-to-ready change,
-which tests the pull request's head rather than the merged result.
+已否决：由批准、标签或草稿转就绪触发的全量运行，它测试的是拉取请求的 head，而不是合并后的结果。
 
 ### DEC-8 — A workflow states what makes it run, never what does not
 
 **Reference:** `spec:AST-030/DEC-8`
+
 **Decider:** `cixzhang`, `2026-10-28`
 
-Every workflow names the positive condition that makes it relevant: the paths it
-reads or runs, the classifier surfaces inside a required context, or the event
-it answers. An exclusion list (`paths-ignore`) runs on every new directory,
-package or root file no one remembered to exclude, so unrelated changes keep
-paying for it; an allowlist misses only what its owner did not name. Required
-contexts stay unfiltered so a pull request never waits on a check that never
-starts.
+每个工作流都命名使其相关的正向条件：它读取或运行的路径、必需上下文内的分类器表面，或它所响应的事件。排除列表（`paths-ignore`）会运行在每个没人记得排除的新目录、包或根文件上，因此无关变更一直在为它付出代价；允许列表只会漏掉其所有者未命名的内容。必需上下文保持不过滤，这样拉取请求永远不会等待一个从不开始的检查。
 
-Rejected: `paths-ignore` lists (they run on whatever is new); path-filtering a
-required context (its check would never report).
+已否决：`paths-ignore` 列表（它们会在任何新内容上运行）；对必需上下文做路径过滤（其检查将永远不会报告）。
 
 ### DEC-9 — Spec-owner approval runs in the review workflow
 
 **Reference:** `spec:AST-030/DEC-9`
+
 **Decider:** `cixzhang`, `2026-10-28`
 
-The spec-owner gate and the review gate read the same pull-request events, so
-they run in one workflow, and a contributor reads one review gate:
-`review-required` names whichever review is still missing, code first.
-`spec-owner-approval` stays as the spec-owner job's decision record, which the
-other writers read; it is not a required check, so a contributor waits on
-`review-required` alone.
+规格所有者闸门与审查闸门读取相同的拉取请求事件，因此它们在一个工作流中运行，贡献者只需读一个审查闸门：`review-required` 命名仍缺失的那个审查，代码优先。`spec-owner-approval` 保留为规格所有者作业的决策记录，供其他写入方读取；它不是必需检查，因此贡献者只需等待 `review-required`。
 
-Rejected: keeping a separate spec-owner workflow, which split one review state
-across two workflows and two visible gates.
+已否决：保留单独的规格所有者工作流，它把一个审查状态拆到两个工作流和两个可见闸门中。
 
 ### DEC-10 — Runtime performance is a nightly trend on main
 
 **Reference:** `spec:AST-030/DEC-10`
+
 **Decider:** `cixzhang`, `2026-10-31`
 
-Runtime cost (long tasks, forced layouts, interaction latency, what an unmount
-leaves behind) shows only in a real browser and drifts in small steps, so one
-nightly measurement of fixed scenes on `main`, compared with its own recent
-median, finds a regression within two days and names its commit range.
-Standard runners differ in CPU model, and a timing metric can double from one
-model to another, so timing compares only runs on the same model (FR18). On one
-model a runner's speed still varies by about a fifth, more than the threshold,
-so a regression counts only when two recorded runs in a row show it. It belongs to no surface's test owner: it reads composites across
-components, it judges a trend rather than a pass or fail, and it reports no
-required context, so FR11's rule against new lanes inside a surface does not
-reach it. The history travels between recorded runs as a workflow artifact, so
-the lane needs no write access to the repository's contents. A pull request opts
-in with `ci:run-perf` on the same terms as the CI suite labels.
+运行时成本（长任务、强制布局、交互延迟、卸载后留下的东西）只在真实浏览器中显现，并且以很小的步长漂移，因此在 `main` 上每天夜间对固定场景做一次测量，并与它自己近期的中位数比较，能在两天内发现回归并命名其提交范围。标准运行器在 CPU 型号上不同，某个计时指标在一种型号上可能是另一种的两倍，因此计时只比较同一型号上的运行（FR18）。在同一型号上，运行器的速度仍会变化约五分之一，超过阈值，因此只有连续两次记录到的运行都显示回归时才计入。它不属于任何表面的测试所有者：它读取跨组件的复合体，它判定的是趋势而非通过或失败，并且它不报告任何必需上下文，因此 FR11 关于表面内不得有新泳道的规则不适用于它。历史作为工作流产物在记录到的各次运行之间传递，因此该泳道不需要对仓库内容的写权限。拉取请求以 `ci:run-perf` 按照与 CI 套件标签相同的条件选择加入。
 
-Rejected: measuring on every pull request (noise and runner time for a signal that needs a trend).
+已否决：在每次拉取请求上测量（对于一个需要趋势的信号而言，既不划算又带来噪声与运行器时间）。
 
 ### DEC-11 — Main's release-check runs about once an hour
 
 **Reference:** `spec:AST-030/DEC-11`
+
 **Decider:** `cixzhang`
-**Superseded in part by:** `spec:AST-030/DEC-19` (every three hours, with a
-pre-cut check)
 
-Dispatched on every push, main's release-check ran back to back through busy
-hours, about 65 full runs a day of roughly 165 runner-minutes each. A check
-covers every merge up to its commit, so one check about an hour keeps every
-merge covered with about a third of the runs. A push after a quiet hour is
-checked at once; in a burst, the next check starts at most 55 minutes after
-the last one, plus up to 15 minutes for the schedule to notice, so a failing
-merge is reported within about two hours of landing instead of about one and a
-quarter. A release cut dispatches its own exact-commit check, which this does
-not affect.
+**Superseded in part by:** `spec:AST-030/DEC-19`（每三小时一次，并带一次切割前检查）
 
-Rejected: waiting for main to be quiet for some minutes (busy hours never go
-quiet, so the check would starve); holding a runner to wait out each push (it
-is billed while it waits); a daily check (main's result would lag a whole
-day).
+main 的 release-check 在每次 push 时 dispatch，在繁忙时段接连运行，每天约 65 次全量运行，每次约 165 运行器分钟。一次检查覆盖直到其提交的每一次合并，因此约每小时一次检查就能以约三分之一的运行次数覆盖每一次合并。安静一小时后到来的 push 会立刻被检查；在一次突发中，下一次检查最迟在上一次结束后 55 分钟开始，加上最多 15 分钟供调度注意到，因此失败的合并会在落地后约两小时内被报告，而不是约一小时一刻钟。发布切割会 dispatch 自己的精确提交检查，本决策不影响它。
+
+已否决：等待 main 安静若干分钟（繁忙时段从不会安静，因此检查会饿死）；占用一个运行器等待每次 push 结束（它在等待期间照常计费）；每日一次检查（main 的结果会滞后一整天）。
 
 ### DEC-14 — Agent lanes run the heavy suites when ready and before merge
 
 **Reference:** `spec:AST-030/DEC-14`
+
 **Decider:** `cixzhang`
 
-Most pull-request runs come from the shared agent login, and an agent pushes
-many times while it works; each push ran every heavy suite on a head that was
-replaced minutes later. The heavy suites now run at the two heads that decide
-a merge: the one that becomes ready and the one re-run before merge. Between
-them lint and typecheck give fast feedback. A deferred required context fails
-with its reason rather than passing as skipped, because a skipped required
-check counts as passing (FR17's rule), so a deferred head cannot merge.
+大多数拉取请求运行来自共享的 agent 登录，而 agent 在工作时会 push 很多次；每次 push 都在一个几分钟后就被替换的 head 上运行每个重型套件。重型套件现在在两个决定合并的 head 上运行：变为就绪的那个，以及合并前重跑的那个。两者之间，lint 与类型检查提供快速反馈。被延后的必需上下文以其原因失败，而不是以跳过方式通过，因为被跳过的必需检查算作通过（FR17 的规则），因此被延后的 head 无法合并。
 
-Rejected: leaving the required contexts pending (a commit status beside the
-job's check run of the same name is ambiguous to branch protection); deferring
-spec-only changes (their heavy jobs already do nothing, and every push would
-then need a re-run to merge).
+已否决：让必需上下文保持待定（与作业同名运行并排的提交状态对分支保护而言是有歧义的）；延后仅规格改动（它们的重型作业本来什么也不做，而那样每次 push 都需要重跑才能合并）。
 
 ### DEC-15 — Main's unit suites run about hourly, in full, to completion
 
 **Reference:** `spec:AST-030/DEC-15`
+
 **Decider:** `cixzhang`
 
-Main ran both unit suites after every push, about a hundred full runs a day,
-to catch the rare break two pull requests that pass alone make together. One
-full run about an hour, beside the release-check of the same commit, catches
-that break within about an hour and a half. The run is never scoped, and no push
-cancels it; one that does not finish is run again at once and reported, unless
-a release re-check replaced it (DEC-18), so every merge is covered by a unit
-run that completed. The fast checks that
-pull requests rely on, typecheck and the build with its size record, stay on
-every push.
+Main 在每次 push 后运行两个单元套件，每天约一百次全量运行，以捕捉两个单独通过、合在一起才出现的罕见断裂。在与同一提交的 release-check 并行的情况下，约每小时一次全量运行能在约一个半小时内捕捉到该断裂。该运行从不划定范围，也没有任何 push 会取消它；未完成的运行会立刻重跑并报告，除非某次发布重检取代了它（DEC-18），因此每一次合并都由一次已完成的单元运行覆盖。拉取请求所依赖的快速检查——类型检查与带体积记录的构建——仍留在每次 push 上。
 
-Rejected: running the unit suites on main's push cadence with a scope (a
-scoped run on main would miss the cross-change break it exists for);
-cancelling an older unit run for a newer push (a run that never finishes
-covers nothing).
+已否决：按 main 的 push 节奏带范围地运行单元套件（`main` 上带范围的运行会漏掉它之所以存在的跨变更断裂）；为更新的 push 取消较旧的单元运行（从未完成的运行什么也覆盖不了）。
 
 ### DEC-17 — Main's full runs spend runner-minutes to finish in minutes
 
 **Reference:** `spec:AST-030/DEC-17`
+
 **Decider:** `cixzhang`, `2026-10-31`
 
-A full check of `main` may cost more runner-minutes if it finishes sooner: the
-release train can then fix and re-check within minutes, and pull requests, which
-run far more often, carry the per-update cost. A full run starts every
-leg at once, with no `max-parallel` hold, on standard runners, and gets as many
-legs as shorten its slowest lane. Legs stop growing where one indivisible piece
-of work sets the floor, such as the longest test file. Pull requests keep their
-shape, which bounds the spend of each update.
+`main` 的一次全量检查如果更快完成，可以花更多运行器分钟：发布列车随后能在几分钟内修复并重检，而运行频率高得多的拉取请求承担每次更新的成本。全量运行在标准运行器上立刻启动每一段，没有 `max-parallel` 限制，并获得足够多的段以缩短其最慢的泳道。当某个不可分割的工作单元（例如最长的测试文件）构成下限时，段就不再增加。拉取请求保持其形态，这限定了每次更新的开销。
 
-Rejected: larger runners for these lanes (measured no faster than the standard
-four-core runners); keeping four unit legs, whose slowest leg took about eight
-minutes.
+已否决：为这些泳道使用更大的运行器（实测并不比标准四核运行器更快）；保留四个单元段，其最慢的一段耗时约八分钟。
 
 ### DEC-16 — CI holds itself to about ninety jobs, and main fits first
 
 **Reference:** `spec:AST-030/DEC-16`
+
 **Decider:** `cixzhang`, `2026-10-31`
 
-GitHub offers no repository-wide limit on concurrent jobs: a `concurrency` group
-serializes runs and does not count jobs. So every run of the CI and Main
-workflows waits at its start until the other active runs' estimated jobs plus
-its own fit under ninety. Small workflows that are not admitted (linting, review
-bookkeeping, report publishing) always count at least eighteen jobs, so the room
-they can take stays free. Over a day's runs they peaked at twenty jobs at once,
-and rose by at most fourteen within two minutes in ninety-nine looks of a
-hundred (seventeen at most), so a margin over the jobs they run at a look would
-not hold the ceiling, and eighteen covers all but the rarest rises without
-lengthening every run's wait. Each CI or Main run counts its live jobs: a
-pull-request run still waiting counts the jobs it runs, the job that waits and a
-Storybook build that found room, so waiting runs hold each other back by no more
-than they use, and a run admitted in the last forty-five seconds, before its
-jobs appear, counts at least its planned most. A run GitHub still lists as
-active but has not updated in two hours holds no runner and counts nothing. A
-look reads the active runs and each CI or Main run's jobs once, so it costs two
-run listings plus one call per active CI or Main run. A pull request spends at
-most two looks, at once and after twelve minutes; a look that finds it within
-ten jobs of room spends none, and the next comes four minutes later, so a nearly
-full CI admits it within minutes of the room freeing. A run starts rather than
-spend a low API budget. A `main` full check, release re-check or baseline
-capture (every dispatch of the CI workflow) goes first: while one waits,
-pull-request runs wait too, their Storybook builds included. A pull-request run
-that would fit and waits only for a `main` check looks again every two minutes
-until it starts. It yields that way only during the `main` check's first fifteen minutes of waiting. A longer `main` wait still counts its whole peak, so a pull-request run starts only when it fits beside that peak. While `main` waits, the pull-request runs that do not fit start one per ten minutes at their longest wait and the rest stop with "CI is full", for up to the two-hour wait. The extra looks happen only while
-CI is near full or `main` waits. Every pull-request job ends within its
-fifteen-minute budget, so `main` usually fits within fifteen minutes. A `main`
-run still waits until there is room, up to two hours, and its waiting job runs
-on a standard runner: a slim runner stops a job at fifteen minutes and so cancels the whole run. Waiting
-`main` runs queue by when they began waiting, both read on GitHub's clock and a
-tie going to the lower run id: to a `main` run, another that began waiting after
-it counts only its waiting job, so of two waiting `main` runs exactly one counts
-the other's peak. Nothing is
-reserved for `main` outside its wait. A pull-request run that finds no room
-waits like the others, on its slim runner, until its longest wait: a waiting slim
-job costs less than a stopped run that someone has to start again. A
-pull-request run still without room at its longest wait looks once more, at a
-cost of one more look plus one call for its own jobs, and starts only if no
-other pull-request run started at its longest wait in the last ten minutes,
-about the time one run takes, and no run that waited longer still waits;
-otherwise it stops the same way. A run counts as started there once its
-admission job succeeded, and any run that waited out about its whole longest
-wait counts, room on its last look or not; until then it ranks as a waiter. Runs that wait out the same burst then start
-one at a time instead of together. A `main` run is never stopped.
+GitHub 对并发作业没有仓库级上限：`concurrency` 组会串行化运行，但不计作业数。因此 CI 与 Main 工作流的每次运行在其开始处都会等待，直到其他活动运行的估算作业数加上它自身能容纳在九十以内。未被准入的小工作流（lint、审查簿记、报告发布）始终至少按十八个作业计算，因此它们可能占用的空间保持空闲。在一天的各次运行中，它们同时在跑二十个作业达到峰值，并在百次观察中的九十九次里于两分钟内增长至多十四个作业（最多十七个），因此按它们在某一观察时刻所运行的作业数加余量并不能守住上限，而十八个足以覆盖除最罕见增长之外的所有情况，且不会延长每次运行的等待。每次 CI 或 Main 运行都会计算其存活作业：仍在等待的拉取请求运行按其运行的作业、等待的作业以及一个找到空间的 Storybook 构建来计，因此等待中的运行相互牵制的程度不超过它们自身的使用量，而在最后四十五秒内被准入、其作业尚未出现的运行，至少按其计划的最大值计入。GitHub 仍列为活动但两小时未更新的运行不占运行器，也不计入任何数。一次观察读取活动运行以及每个 CI 或 Main 运行的作业各一次，因此其成本为两次运行列表加每个活动 CI 或 Main 运行一次调用。拉取请求最多花两次观察：一次立刻，一次在十二分钟后；若某次观察发现它距离空间在十个作业以内，则不花费下一次，而下一次在四分钟后到来，因此一个几乎满载的 CI 会在空间释放后几分钟内准入它。API 预算低时运行会直接开始，而不是花费预算。`main` 全量检查、发布重检或基线捕获（CI 工作流的每次 dispatch）优先：当其中之一在等待时，拉取请求运行（包括其 Storybook 构建）也等待。一个本可容纳、仅在等待 `main` 检查的拉取请求运行每两分钟再观察一次，直到它开始。它只在 `main` 检查等待的前十五分钟内以此方式让位。更长的 `main` 等待仍然计入其整个峰值，因此拉取请求运行只有在它能与该峰值并排容纳时才会开始。当 `main` 在等待时，放不下的拉取请求运行在其最长等待处以每十分钟一个启动，其余则以“CI 已满”停止，最长可达两小时等待。额外观察只在 CI 接近满载或 `main` 正在等待时发生。每个拉取请求作业都在其十五分钟预算内结束，因此 `main` 通常能在十五分钟内被容纳。`main` 运行仍会等到有空间，最长两小时，其等待作业在标准运行器上运行：瘦运行器会在十五分钟时停止作业，从而取消整个运行。等待中的 `main` 运行按它们开始等待的时间排队，两者都按 GitHub 的时钟读取，平局归于较小的运行 id：对某个 `main` 运行而言，在它之后开始等待的另一个运行只计其等待作业，因此在两个等待中的 `main` 运行中，恰好一个计入另一个的峰值。在它的等待之外，不为 `main` 保留任何东西。找不到空间的拉取请求运行像其他运行一样，在其瘦运行器上等待到其最长等待：一个等待中的瘦作业比一个需要有人重新启动的已停止运行成本更低。在其最长等待处仍无空间的拉取请求运行会再观察一次，成本为再观察一次加上为它自己作业的一次调用，并且只有在过去十分钟内（约一次运行的时间）没有其他拉取请求运行在其最长等待处启动，且没有等待更久的运行仍在等待时才启动；否则它以同样方式停止。一个运行在其准入作业成功时才算在此启动，而任何等满了约其整个最长等待的运行都计入，无论最后一次观察是否有空间；在此之前它按等待者排序。在同一个突发中一起等出来的运行随后逐个启动，而不是一起启动。`main` 运行绝不会被停止。
 
-CI can still pass ninety in five bounded ways, the first three rare:
+CI 仍可能以五种有界方式超过九十，前三种罕见：
 
-- A run that has waited its longest (two hours for `main`, twelve minutes for
-  a pull request) starts whatever the load, even while a `main` check waits, at
-  most one pull-request run in ten minutes. That happens when a job outlives
-  its budget, such as the thirty-minute macOS Swift job, or when a `main` check
-  held the waiting runs until their longest waits; CI is over by at most one
-  pull-request run's jobs, and each `main` run's, until they end.
-- Runs that look within the same few seconds can each see room. A random
-  0–20 s on every later look spreads them, and the excess is at most one run's
-  jobs until its next look.
-- A run starts when the GitHub API cannot be read, a rate limit included. It is
-  over by at most its own jobs.
-- A waiting run's own waiting job starts before it finds room; its Storybook
-  build starts only once there is room for it. CI is over by at most one
-  waiting job per waiting run, pull requests, merge-queue entries and `main`
-  runs alike, with no limit on how many wait, for at most a wait (twelve
-  minutes for a pull request, two hours for `main`).
-- Small workflows can run more jobs at once than the eighteen counted for them:
-  they peaked at twenty in a day's runs, two over, while their jobs ran.
+- 一个已等满其最长等待的运行（`main` 两小时，拉取请求十二分钟）无论负载如何都会启动，即使某个 `main` 检查正在等待，最多每十分钟一个拉取请求运行。这发生在某个作业超出其预算时，例如三十分钟的 macOS Swift 作业，或某个 `main` 检查把等待中的运行拖到其最长等待时；CI 至多超出一次拉取请求运行的作业数，以及每次 `main` 运行的作业数，直到它们结束。
+- 在同一几秒内观察的运行可能都看到空间。每次后续观察上随机的 0–20 秒会把它们分散开，而超出的部分至多是一次运行的作业数，直到它的下一次观察。
+- 当 GitHub API 无法读取时（包括速率限制），运行会启动。超出部分至多为它自己的作业数。
+- 等待中的运行其自身的等待作业会在它找到空间之前启动；它的 Storybook 构建只有在有空间时才开始。CI 至多超出每个等待运行一个等待作业，拉取请求、合并队列条目与 `main` 运行同理，无论有多少在等待都没有上限，最长为一个等待时间（拉取请求十二分钟，`main` 两小时）。
+- 小工作流一次能运行的作业数可能超过为其计入的十八个：在一天的各次运行中它们峰值达到二十个，多出两个，在其作业运行期间。
 
-Rejected: a fixed reserve for `main` (it left about half the ceiling idle and
-stalled the pull-request queue); starting `main`'s checks at once (a burst would
-pass ninety); a check in every job (it spent the shared API budget); admitting
-the small workflows too (one or two slim jobs a run do not repay two API calls
-each).
+已否决：为 `main` 保留固定余量（它让约一半上限空置，并让拉取请求队列停滞）；立刻启动 `main` 的检查（一次突发就会超过九十）；在每个作业中都做检查（它花掉了共享 API 预算）；也把小工作流纳入准入（每次运行一两个瘦作业不足以回报每次两个 API 调用）。
 
 ### DEC-18 — A release re-check takes main's lanes
 
 **Reference:** `spec:AST-030/DEC-18`
+
 **Decider:** `cixzhang`, `2026-10-31`
 
-`main` holds one full release-check and one full unit run at a time. A release
-re-check uses the same lanes and cancels whatever is running there instead of
-waiting behind it. It checks `main`'s tip in full, so the cancelled run's
-commits stay covered, and the release owner waits only for the re-check itself.
-Re-running only failed jobs is allowed at the same commit, because that run's
-passing jobs already checked it. This narrows DEC-7's never-cancel rule to every
-check other than a release re-check.
+`main` 一次只保留一个全量 release-check 和一个全量单元运行。发布重检使用相同的泳道，并取消正在那里运行的任何东西，而不是在它后面等待。它完整检查 `main` 的末端，因此被取消运行的提交仍被覆盖，而发布所有者只需等待重检本身。在同一提交上只重跑失败作业是允许的，因为该运行的通过作业已经检查过它。这把 DEC-7 的永不取消规则收窄为除发布重检之外的每个检查。
 
-Rejected: a separate lane for re-checks (`main` would run two full checks at
-once and need room for both); re-running only failed legs after a fix (a fix can
-break a leg that passed before).
+已否决：为重检设单独泳道（`main` 会同时运行两个全量检查，并需要容纳两者的空间）；修复后只重跑失败的段（一次修复可能弄坏此前通过的一段）。
 
 ### DEC-19 — Main's release-check every three hours, with a pre-cut run
 
 **Reference:** `spec:AST-030/DEC-19`
+
 **Decider:** `cixzhang`
 
-Main's visual, accessibility and RTL check is its longest run. Checked about
-hourly, it still ran about twenty times a day, though a check covers every
-merge before it and the guardian repairs `main` forward. Every three hours
-keeps every merge covered with about a third of the runs. The weekday cut
-needs a fresh check, so one starts at about 06:30 Pacific and finishes about
-an hour before the 08:00 cut. A visual, accessibility or RTL break is then
-reported within about three and a half hours of landing. The full unit run
-keeps its own hourly schedule (FR21).
+Main 的视觉、无障碍与 RTL 检查是它最长的一次运行。在约每小时检查一次的情况下，它每天仍运行约二十次，尽管一次检查覆盖它之前的每一次合并，且守护者会向前修复 `main`。每三小时一次能以约三分之一的运行次数覆盖每一次合并。工作日的切割需要一次新检查，因此一次检查在太平洋时间约 06:30 开始，并在 08:00 切割前约一小时完成。视觉、无障碍或 RTL 断裂随后会在落地后约三个半小时内被报告。全量单元运行保留其自身的每小时调度（FR21）。
 
-Rejected: a check only at the cut (main's result would lag a whole day);
-keeping it hourly (the run is the largest share of main's runner use).
+已否决：只在切割时检查（main 的结果会滞后一整天）；保持每小时一次（该运行是 main 运行器使用中最大的份额）。
 
 ### DEC-21 — A Lab-only change runs only what checks Lab
 
 **Reference:** `spec:AST-030/DEC-21`
+
 **Decider:** `cixzhang`, `2026-11-01`
 
-The Lab package is published only to npm's `canary` dist-tag, never as a
-stable release, so no user of a stable release can be affected by a Lab
-change, and its changes merge without the spec gates. The
-decider's words: "Lab can just merge since its not shipped"; "Lab could
-likely skip a lot of CI"; "LAb-only updates at least. Maybe it only runs the
-lab tests"; "Theymight need storybook". A Lab-only pull request therefore
-runs the Lab tests and the Storybook build, which holds Lab's stories and the
-pull request's preview.
+Lab 包只发布到 npm 的 `canary` dist-tag，从不作为稳定发布，因此任何使用稳定发布的人都不会受 Lab 变更影响，其变更无需规格闸门即可合并。决策者的话是：“Lab can just merge since its not shipped”；“Lab could likely skip a lot of CI”；“LAb-only updates at least. Maybe it only runs the lab tests”；“Theymight need storybook”。因此仅 Lab 的拉取请求运行 Lab 测试与 Storybook 构建，后者承载 Lab 的故事与该拉取请求的预览。
 
-The repository-wide guards, the source-reading guard tests and the Lab
-typecheck are an addition to those words. The guards and guard tests read the
-whole repository on every pull request, and the full typecheck checks Lab's
-tests, docs and stories, so a Lab change that broke one would turn every later
-pull request red until `main` was repaired. They cost about half of what the
-lane would otherwise save.
+全仓库守卫、读取源码的守卫测试与 Lab 类型检查是对那些话语的补充。守卫与守卫测试在每次拉取请求上读取整个仓库，而完整类型检查会检查 Lab 的测试、文档与故事，因此一个弄坏其中之一的 Lab 变更会让此后每个拉取请求都变红，直到 `main` 被修复。它们的成本约为该泳道原本可节省的一半。
 
-The docsite and the Sandbox import Lab, and their checks do not run on a
-Lab-only pull request; the CLI's tests that load Lab or read its files run
-with the guard tests. A Lab change that breaks the docsite or Sandbox build
-shows as a failing preview deployment on its own pull request and on `main`'s
-production deployment. One that breaks a docsite test fails only the next
-pull request's `docsite-test`: `main` runs no docsite tests. A Lab break that
-lands also reaches the `canary` dist-tag until the next canary
-replaces it. That is the accepted cost: about one pull-request run in a
-hundred is Lab-only, and each skips most of a full run's work.
+docsite 与 Sandbox 导入 Lab，而它们的检查不会在仅 Lab 的拉取请求上运行；CLI 中加载 Lab 或读取其文件的测试随守卫测试一起运行。一个弄坏 docsite 或 Sandbox 构建的 Lab 变更，会在其自己的拉取请求上以及 `main` 的生产部署上显示为失败的预览部署。弄坏某个 docsite 测试的变更只会让下一个拉取请求的 `docsite-test` 失败：`main` 不运行任何 docsite 测试。落地的 Lab 断裂也会触及 `canary` dist-tag，直到下一次 canary 替换它。这就是被接受的成本：约每一百次拉取请求运行中有一次是仅 Lab 的，而每一次都会跳过全量运行的大部分工作。
 
-Rejected: keeping full CI for Lab (it spends shipped-surface checks on a
-package no stable release includes); Lab tests alone, without the
-repository-wide guards (a landed guard break blocks everyone else's pull
-requests); counting a story under `apps/storybook/stories/` as Lab-only by its
-path alone (stories share the visual surface, and a path cannot tell a Lab
-story from a core one). FR26 admits only a carried Lab component's new story,
-and only after the trusted classifier reads the story's patch text as data
-(FR3).
+已否决：为 Lab 保留完整 CI（它把已发布表面的检查花在一个任何稳定发布都不包含的包上）；只跑 Lab 测试而没有全仓库守卫（落地的守卫断裂会挡住其他人所有的拉取请求）；仅凭路径就把 `apps/storybook/stories/` 下的某个故事算作仅 Lab 的（故事共享视觉表面，而路径无法区分 Lab 故事与核心故事）。FR26 只准入被携带的 Lab 组件的新故事，且只在可信分类器把该故事的补丁文本作为数据读取之后（FR3）。
 
 ### DEC-22 — A touched component's own accessibility contracts run, and block, on its pull request
 
 **Reference:** `spec:AST-030/DEC-22`
+
 **Decider:** `cixzhang`, `2026-11-02`
 
-A Switch change merged with every required check green while its own
-aborted-press contract failed: a press released away from the switch still
-turned it on (WCAG 2.5.2). The contract was `release-only`, so no pull request
-ran it. Main's release check found the failure, and the release waited for a
-fix-forward. About fifty spec files across about thirty components are
-`release-only`, so no pull request runs them.
+一次 Switch 变更在自身的中止按压契约失败的情况下，带着所有必需检查全绿合并了：一次在远离开关处释放的按压仍然把它打开（WCAG 2.5.2）。该契约是 `release-only`，因此没有任何拉取请求运行它。`main` 的发布检查发现了该失败，发布也为此等待了一次向前修复。约三十个组件中约五十个规格文件是 `release-only`，因此没有拉取请求运行它们。
 
-The decider chose to run each touched component's own `scoped` and
-`release-only` contracts on its pull request, and to let a failure block the
-merge, on one condition: the work runs in parallel with the tests, so the time
-to green does not grow. One contract job therefore runs them, with the spec
-files the change edits, in parallel with the unit-test jobs: it needs only the
-Storybook build, stops after eight minutes, and finishes before the slowest
-unit-test job. The required `test` check waits on it, so a failure blocks the
-merge and no new required name appears.
+决策者选择在每个被触及组件的拉取请求上运行该组件自身的 `scoped` 与 `release-only` 契约，并让失败阻止合并，条件只有一个：该工作与测试并行运行，因此变绿时间不增长。因此一个契约作业把它们与变更所编辑的规格文件一起，与单元测试作业并行运行：它只需要 Storybook 构建，在八分钟后停止，并在最慢的单元测试作业之前完成。必需的 `test` 检查等待它，因此失败会阻止合并，且不会出现新的必需名称。
 
-The result reports what happened. A file that the budget or a limit leaves out
-is "not run" in the check's summary and annotations, with the label that runs
-it, and is never split; it never reads as a pass and never fails the join. Shared modules keep their scope (DEC-23 covers wide changes and the folders
-that render a touched component), `audit` bindings
-still first run on their audit pull request, and the release check still runs
-every contract.
+结果会报告实际发生了什么。被预算或某个限制排除在外的文件，在检查的摘要与注解中显示为“未运行”，并附上运行它的标签，绝不被拆分；它永远不会被读作通过，也永远不会使汇合失败。共享模块保持其范围（DEC-23 覆盖广泛变更以及渲染被触及组件的文件夹），`audit` 绑定仍首先在其审计拉取请求上运行，而发布检查仍运行每个契约。
 
-Rejected: an advisory result (a red advisory check does not stop a merge when
-the required checks are green, so it would not have stopped the Switch change);
-release-check-only owned contracts (each miss holds a release until a
-fix-forward lands).
+已否决：只给咨询性结果（当必需检查全绿时，一个红色的咨询性检查不会阻止合并，因此它本不会阻止那次 Switch 变更）；只由 release-check 拥有的契约（每一次遗漏都要让一次发布等到向前修复落地）。
 
 ### DEC-23 — The contract job also runs for a wide change, and for the folders that render a touched component
 
 **Reference:** `spec:AST-030/DEC-23`
+
 **Decider:** chief of staff with the release owner, `2026-11-05`
-**Superseded in part by:** `spec:AST-030/DEC-25` (a changed component runs its
-own `audit` specs, and a shared primitive's change runs the `audit` specs of
-the components that use it)
 
-A wide refactor that changed Spinner's behavior (its role and its shared
-announcement, across eight components) merged without Spinner's own motion
-contract running: a wide change ran only the spec files it edited. A consumer's
-contract that rendered the changed Spinner did not run either. Main's release
-check found both failures, and the release waited a day for fix-forwards.
+**Superseded in part by:** `spec:AST-030/DEC-25`（被变更的组件运行其自身的 `audit` 规格，而共享原语的变更会运行使用它的那些组件的 `audit` 规格）
 
-The decider chose, for the contract job only, to run each touched component's
-own `scoped` and `release-only` contracts for a wide change too, and then, in
-the time left, those of the component folders that render a touched component
-through their source value imports, nearest first, for at most one minute.
-The job keeps its eight-minute budget, so a wide change cannot make it slower
-or the critical path; each file that does not fit is reported as not run with
-the label that runs it. The one-minute share holds the added runner time to about 360 minutes a day: the owned contracts are the proven catch, and the
-rendering folders' share widens only if it catches failures the owned
-contracts miss. The default touched-components check keeps its wide-change skip, and
-unchanged `audit` and `always` specs still do not run on a pull request, except
-a changed component's own audits and the dependent audits of a shared primitive
-(DEC-25).
+一次改变了 Spinner 行为的广泛重构（它的 role 与其共享播报，跨八个组件）在 Spinner 自身运动契约未运行的情况下合并了：广泛变更只运行它所编辑的规格文件。某个渲染了被变更 Spinner 的使用方契约也没有运行。`main` 的发布检查发现了这两处失败，发布为此等了一天以等待向前修复。
 
-Rejected: dropping the five-component limit for every audit (the visual,
-accessibility and RTL audits of a wide change do not fit the default check's
-time).
+决策者选择，仅对契约作业，也针对广泛变更运行每个被触及组件自身的 `scoped` 与 `release-only` 契约，然后，在剩余时间内，运行那些通过源码值导入渲染了被触及组件的组件文件夹的契约，由近到远，最多一分钟。该作业保持其八分钟预算，因此广泛变更不会使它变慢，也不会使它成为关键路径；每个容纳不下的文件都会连同运行它的标签被报告为未运行。这一分钟份额把增加的运行器时间保持在每天约 360 分钟：自有契约是被证明有效的捕捉手段，而渲染文件夹的份额只有在它捕捉到自有契约漏掉的失败时才扩大。默认的被触及组件检查保留其广泛变更跳过，而未变更的 `audit` 与 `always` 规格仍不在拉取请求上运行，除了被变更组件自身的审计与共享原语的依赖审计（DEC-25）。
+
+已否决：为每个审计取消五组件限制（广泛变更的视觉、无障碍与 RTL 审计无法容纳在默认检查的时间内）。
 
 ### DEC-24 — Release WebKit runs the full suite at its release commit, with a weekly full run on main
 
 **Reference:** `spec:AST-030/DEC-24`
+
 **Decider:** the Chief with the release owner, `2026-11-06`
 
-A release runs WebKit's touch and gesture subset, the same subset a pull
-request runs. WebKit's full interaction suite runs weekly on main. A release
-runs the full WebKit suite instead when the last full weekly run failed or is
-more than 7 days old (age is the time since the last green full run completed
-at a recorded commit on main), and every minor release (for example 0.8.0)
-runs it at its exact commit. A reproducing failure in a weekly full run blocks
-the next release until it is fixed forward. The visual, accessibility and
-right-to-left release gates are unchanged.
+一次发布运行 WebKit 的触摸与手势子集，与拉取请求运行的子集相同。WebKit 的完整交互套件每周在 main 上运行。当上一次每周全量运行失败或已超过 7 天（老化是指自上一次在 main 上某个记录提交处完成的绿色全量运行以来的时间）时，发布改为运行完整 WebKit 套件，并且每一次次版本发布（例如 0.8.0）都在其精确提交处运行它。每周全量运行中可复现的失败会阻止下一次发布，直到它被向前修复。视觉、无障碍与从右到左的发布闸门不变。
 
-A release interaction check's throwaway pull request (FR28) qualifies only
-when its head branch starts with `interaction-check/`, the release tooling's
-account opened it, and its head repository is this repository. Such pull
-requests stay non-mergeable, and the rule widens the scope of no other pull
-request.
+发布交互检查的一次性拉取请求（FR28）只有在其 head 分支以 `interaction-check/` 开头、由发布工具的账户开启，且其 head 仓库是本仓库时才算合格。此类拉取请求保持不可合并，而该规则不会扩大任何其他拉取请求的范围。
 
-Rejected: any pull request on the prefix (a prefix alone is spoofable).
+已否决：前缀上的任何拉取请求（仅凭前缀就可被伪造）。
 
-Amended 2026-11-08 by the chief of staff with CI & Release and the release
-owner: per-release WebKit runs the touch and gesture subset; the full suite
-moves to a weekly run on main, with the fallbacks above. CI & Release reviews
-escaped WebKit defects on 2026-12-06.
+2026-11-08 由幕僚长与 CI & Release 及发布所有者修订：每次发布运行触摸与手势子集；完整套件移到 main 上的每周运行，并有上述回退。CI & Release 在 2026-12-06 审查逃逸的 WebKit 缺陷。
 
-Amended 2026-11-12 by the chief of staff with CI & Release and the release
-owner: the weekly WebKit run also runs the `.a11y.browser.spec.ts` files in
-WebKit and reports their failures without failing the run or holding a
-release. It becomes a blocking gate only when a weekly run is clean, or every
-failure has an owner and a fix in progress, and the chief of staff and release
-owner confirm it.
+2026-11-12 由幕僚长与 CI & Release 及发布所有者修订：每周 WebKit 运行也在 WebKit 中运行 `.a11y.browser.spec.ts` 文件，并报告其失败，而不使该运行失败或拖住发布。只有当某次每周运行是干净的，或者每个失败都有所有者且修复正在进行，并且幕僚长与发布所有者确认时，它才成为阻塞闸门。
 
-Amended 2026-11-14 by the Chief with the release owner: every release runs
-WebKit's full interaction suite at its release commit, so neither the touch
-and gesture subset nor a weekly run's verdict decides a release's WebKit
-scope. Over v0.7.14 to v0.7.16, the subset with the components that import a
-release's changed shared code would have run 92% to 93% of WebKit's
-interaction specs. The weekly full run on main, with its report-only
-accessibility status, is unchanged.
+2026-11-14 由 Chief 与发布所有者修订：每次发布都在其发布提交处运行 WebKit 的完整交互套件，因此决定一次发布 WebKit 范围的既不是触摸与手势子集，也不是每周运行的裁决。在 v0.7.14 到 v0.7.16 上，子集加上导入某次发布所变更共享代码的组件，本会运行 WebKit 交互规格的 92% 到 93%。main 上带其仅报告无障碍状态的每周全量运行不变。
 
 ### DEC-25 — A shared primitive's change runs its dependents' audits
 
 **Reference:** `spec:AST-030/DEC-25`
+
 **Decider:** the chief of staff with CI & Release, `2026-11-07`
 
-A change to shared Button's disabled state passed every pull-request check and
-then failed the release check in a Chat component's `audit` spec, which no
-pull request runs. A change to a shared primitive that
-`.github/a11y-shared-primitives.json` lists now runs the `audit` specs of the
-components that use it, on every pull-request CI run that includes the
-change, in at most three legs of about ten minutes each (FR12). The list starts
-with Button and IconButton. A Button change runs about 20 audit spec files in
-two legs of about five minutes each, about 11 runner-minutes a run. The legs
-start after the Storybook build and end before the slowest unit-test job, so
-the time until the required `test` join reports does not grow. Pull-request runs are
-every run a merge rests on: the merge queue has not run since 2026-03-04, and
-a merge rests on the pull request's own run at its exact head. Layer,
-which nearly every audited component uses, joins only when a Layer change
-breaks the release check or a dependent audit at release.
+对共享 Button 禁用状态的一次变更通过了每一个拉取请求检查，随后在一个 Chat 组件的 `audit` 规格中使发布检查失败，而该规格没有任何拉取请求运行。对 `.github/a11y-shared-primitives.json` 所列共享原语的变更，现在会在包含该变更的每次拉取请求 CI 运行上，运行那些使用它的组件的 `audit` 规格，最多三段、每段约十分钟（FR12）。该列表从 Button 与 IconButton 开始。一次 Button 变更会以两段、每段约五分钟运行约 20 个审计规格文件，每次运行约 11 运行器分钟。这些段在 Storybook 构建之后开始，并在最慢的单元测试作业之前结束，因此直到必需的 `test` 汇合报告的时间不会增长。拉取请求运行是合并所依赖的每一次运行：合并队列自 2026-03-04 起未运行过，而合并依赖于拉取请求在其精确 head 上的自身运行。几乎每个被审计组件都使用的 Layer，只有在 Layer 变更使发布检查或发布时的某个依赖审计失败时才加入。
 
-Extended 2026-11-07 (19:40) by the chief of staff with CI & Release: a
-component's own audits join the leg. A first run fits what it can into the same
-three legs and lists the rest by name; a later run at the same head runs every
-owed audit, and merge-guard merges only on a run that ran them all.
+2026-11-07（19:40）由幕僚长与 CI & Release 扩展：组件自身的审计加入该段。首次运行把能容纳的放进同样的三段，并按名称列出其余；同一 head 上更晚的运行会运行每一项应付审计，而 merge-guard 只在其运行了全部的某次运行上合并。
 
-Rejected: running the audits only when the pull request is marked ready and on
-a re-run (a push after ready merges without them); every audit spec on every
-Layer change (about 37 minutes of recorded time on a change that lands about
-four times a day).
+已否决：只在拉取请求被标记为就绪时以及重跑时运行审计（就绪后的一次 push 会在没有它们的情况下合并）；在每次 Layer 变更上运行每个审计规格（对于一项约每天落地四次的变更，记录时间约 37 分钟）。
 
 ### DEC-26 — A stable contribution runs CI from a contributor budget
 
 **Reference:** `spec:AST-030/DEC-26`
+
 **Decider:** `cixzhang`, `2026-11-09`
 
-The owner asked for "some system that will activate ci:run on contribution PRs that are stable", "Or we have some contrib lane that runs off a budget", and "plus ci:run to override?" (FR29). She approved the budget with "Ok 600": The owner set the budget at 600 runner-minutes per UTC day; unused minutes don't carry over.
+所有者要求“some system that will activate ci:run on contribution PRs that are stable”，“Or we have some contrib lane that runs off a budget”，以及“plus ci:run to override?”（FR29）。她以“Ok 600”批准了该预算：所有者把预算设为每个 UTC 日 600 运行器分钟；未使用的分钟不会结转。
 
 ### DEC-27 — A release test repair runs every ordinary pull-request lane
 
 **Reference:** `spec:AST-030/DEC-27`
+
 **Decider:** the Chief with the release owner, `2026-11-09`
 
-The generated release pull request is the only release-branch change that gets
-its narrow bookkeeping lane. A later test-repair candidate runs broad CI while
-the trusted release validator proves the narrower admission rule (FR30 and
-`spec:AST-017/FR61`). This makes a green required check evidence of the amended
-rule, not a skipped or manually overridden check.
+生成的发布拉取请求是唯一获得其狭窄簿记泳道的发布分支变更。较晚的测试修复候选运行广泛 CI，同时可信发布校验器证明更窄的准入规则（FR30 与 `spec:AST-017/FR61`）。这使全绿的必需检查成为修订后规则的证据，而不是被跳过或被手动覆盖的检查。
 
-Rejected: treating every release-branch pull request as generated, or letting
-the head branch choose its own scope or validator.
+已否决：把每个发布分支拉取请求都当作生成的，或让 head 分支自己选择其范围或校验器。
 
 ### DEC-28 — The Chromium interaction lane runs selectively
 
 **Reference:** `spec:AST-030/DEC-28`
+
 **Decider:** Chief of staff (delegated CI authority), `2026-11-09`
 
-The chief ruling 11/09 22:24 makes the Chromium interaction lane run the specs
-of the changed and touched components and their dependents on a pull request
-(FR31), because a full interaction run on every pull request spends runner
-time and time to green on specs the change cannot reach, while shared code,
-release checks and a nightly run of `main` keep the full suite.
+11/09 22:24 的幕僚长裁决使 Chromium 交互泳道在拉取请求上运行已变更与被触及组件及其依赖者的规格（FR31），因为在每次拉取请求上运行完整交互会为变更无法到达的规格花掉运行器时间与变绿时间，而共享代码、发布检查与 `main` 的夜间运行保留完整套件。
 
-Rejected: running the full interaction suite on every pull request.
+已否决：在每次拉取请求上运行完整交互套件。
 
-Amended by the same delegated authority (chief ruling 11/09 22:24, refined 11/09 23:19): a component folder's unit tests, docs and accessibility specs select nothing for the interaction lanes unless an interaction spec or proof page imports them.
+由同一受委托权限修订（幕僚长裁决 11/09 22:24，11/09 23:19 细化）：组件文件夹的单元测试、文档与无障碍规格不会为交互泳道选中任何东西，除非某个交互规格或证明页面导入它们。
 
 ### DEC-29 — A changed release spec runs in full on its pull request
 
 **Reference:** `spec:AST-030/DEC-29`
+
 **Decider:** Chief of staff (delegated CI authority), `2026-11-10`
 
-A pull request that adds or changes a release spec runs it in full, alone, on `4-core-ubuntu` (FR32). This extends DEC-28's
-rule that a changed spec always runs to release specs, because FR12's
-contract plan can drop a changed release spec as not run, so the spec first
-runs at a release check after it merged. Running alone on `4-core-ubuntu`, the runner class whose release-check timings gate, keeps other specs' load out of its timings; a spec whose record needs the same isolation in the release check names it there.
+新增或修改发布规格的拉取请求会在 `4-core-ubuntu` 上单独完整运行它（FR32）。这为发布规格扩展了 DEC-28 关于被变更规格始终运行的规则，因为 FR12 的契约计划可能把某个被变更的发布规格作为未运行而丢弃，于是该规格会在合并后的发布检查中才首次运行。单独在 `4-core-ubuntu` 上运行（该运行器类别决定发布检查的计时），可把其他规格的负载排除在其计时之外；某规格若其记录在发布检查中需要同样的隔离，就在那里指明。
 
-Rejected: keeping changed release specs inside the contract plan (it can drop
-them), and running them only at release checks (a broken release spec then
-reaches `main`).
+已否决：把被变更的发布规格留在契约计划内（它可能丢弃它们），以及只在发布检查中运行它们（损坏的发布规格随后会到达 `main`）。
 
-Amended by the same delegated authority (chief ruling 11/10 10:09): FR32
-also covers specs tagged `@pr-a11y release-only` and runs a release spec when
-a pull request changes a component it visits, because a release spec that
-renders a component through a page imports none of it; a visit that cannot be
-resolved runs the spec.
+由同一受委托权限修订（幕僚长裁决 11/10 10:09）：FR32 也覆盖标记为 `@pr-a11y release-only` 的规格，并在拉取请求变更某个发布规格所访问的组件时运行该发布规格，因为通过页面渲染组件的发布规格不会导入它的任何内容；无法解析的访问会运行该规格。
 
 ## Open questions
 
-None.
+无。

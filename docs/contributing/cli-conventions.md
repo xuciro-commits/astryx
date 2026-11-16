@@ -1,311 +1,177 @@
-# CLI conventions for contributors
+# 贡献者 CLI 约定
 
-This guide turns the CLI surface architecture (`docs/architecture/cli-surface.md`)
-and the admission rules (`docs/specs/AST-042-cli-command-admission/spec.md`) into
-the steps you follow when you change `packages/cli`. It does not create policy.
-Where it disagrees with either record, the record wins.
+本指南将 CLI 表面架构（`docs/architecture/cli-surface.md`）和准入规则（`docs/specs/AST-042-cli-command-admission/spec.md`）转化为你更改 `packages/cli` 时遵循的步骤。它不创建策略。当它与任一记录不一致时，以记录为准。
 
-## Who the CLI is for
+## CLI 面向谁
 
-The caller is an agent. It runs the CLI in a subprocess, reads `--json`, and
-acts on the result without a person watching. A person reading the text output
-is a supported reader, never the caller the design serves.
+调用方是 agent。它在子进程中运行 CLI，读取 `--json`，并在无人观察的情况下根据结果行动。阅读文本输出的真人是一个受支持的读者，但绝不是设计所服务的调用方。
 
-Two things follow, and they settle most arguments before they start:
+由此得出两点，它们能在大多数争论开始之前将其解决：
 
-- **The CLI must not impede the agent's flow.** No prompt, no confirmation, no
-  question. A command that cannot finish returns an error with a code the agent
-  can branch on and a suggestion it can act on.
-- **The output is data first.** `--json` is the source of truth. The text output
-  is a projection of the same values, produced by the formatters.
+- **CLI 不得阻碍 agent 的流程。** 没有提示、没有确认、没有问题。无法完成的命令会返回一个错误，其中包含 agent 可用于分支的代码以及可据此行动的建议。
+- **输出首先是数据。** `--json` 是事实来源。文本输出是相同值经格式化器生成的投影。
 
-## What the CLI is for
+## CLI 的用途
 
-Give an agent access to everything that helps it build with Astryx: what
-components and templates exist, what they do, how they are used, what is wrong
-with the code in front of it, and the utilities that change that code.
+让 agent 能够访问一切有助于它使用 Astryx 构建的内容：存在哪些组件和模板、它们做什么、如何使用、它面前的代码有什么问题，以及改变该代码的工具。
 
-The measure of the CLI is coverage and depth of that surface, not the number of
-commands on it. Most valuable work makes an existing command answer better.
+衡量 CLI 的标准是这一表面的覆盖范围和深度，而不是其上的命令数量。最有价值的工作是让现有命令回答得更好。
 
-## Adding a command
+## 添加命令
 
-The bar depends on the tier (`spec:AST-042` FR4):
+门槛取决于层级（`spec:AST-042` FR4）：
 
-- **A new top-level command** needs a current system spec that authorizes it,
-  approved by an approval owner (an owner listed in the knowledge schema's
-  `approvalOwners`). Write the spec first.
-- **A new subcommand** stays inside its parent's one job. State its case in the
-  pull request, and get approval from a code owner of `packages/cli`.
-  `.github/CODEOWNERS` is the source of truth for who that is.
-- **A new flag** follows the flag rules below and needs no extra approval.
+- **新的顶级命令**需要一份授权它的当前系统规范，并由批准所有者（knowledge schema 的 `approvalOwners` 中列出的所有者）批准。先编写规范。
+- **新的子命令**必须留在其父级的单一职责内。在拉取请求中说明其理由，并获得 `packages/cli` 代码所有者的批准。`.github/CODEOWNERS` 是确定谁是代码所有者的事实来源。
+- **新的标志**遵循下面的标志规则，无需额外批准。
 
-Propose a command before you write it: a command is a permanent concept — it
-appears in help, in the manifest, in the README, and in every agent's cheat
-sheet, and removing one is a breaking change.
+在编写命令之前先提出它：命令是一个永久概念——它出现在帮助、清单、README 和每个 agent 的速查表中，移除一个命令是破坏性变更。
 
-Every command is a thin layer over one exported `api/` function: parse the
-arguments, call the function, render the result. The function does the work, so
-an agent that scripts the API gets the same result as one that runs the command.
+每个命令都是对单个导出的 `api/` 函数的薄封装：解析参数、调用函数、渲染结果。函数完成工作，因此编写 API 脚本的 agent 与运行命令的 agent 得到相同结果。
 
-A command earns its place when all four hold:
+一个命令在以下四点同时成立时才配有一席之地：
 
-1. **It answers a question an agent actually has** while building with Astryx —
-   not a function the CLI happens to be able to expose.
-2. **No existing command can be deepened to answer it.** Deepening is the
-   default. Reach for a new command only after naming the command you would
-   have extended and saying why extending it is wrong.
-3. **It is one job.** If the summary needs an "and", it is two commands.
-4. **Its result is worth returning as data.** If the useful output is prose for
-   a person, it is a docs topic, not a command.
+1. **它回答 agent 在使用 Astryx 构建时实际拥有的问题**——而不是 CLI 恰好能够暴露的某个函数。
+2. **没有现有命令可以通过加深来回答它。** 加深是默认做法。只有在指出你本应扩展的命令并说明为什么扩展它是错误之后，才考虑新命令。
+3. **它只承担一项职责。** 如果摘要需要一个“和”，那就是两个命令。
+4. **它的结果值得作为数据返回。** 如果有用的输出是给人看的散文，那它是文档主题，而不是命令。
 
-A command that fails any of these is usually a flag, a subcommand, or a docs
-topic.
+未能满足其中任何一条的命令，通常应是一个标志、一个子命令或一个文档主题。
 
-## Adding a flag
+## 添加标志
 
-Flags are more forgiving than commands, and they do not need a proposal, but
-`spec:AST-042` FR5 makes the rules below binding. They are not free: every flag
-is a branch an agent has to know about, and a combination somebody has to keep
-working.
+标志比命令更宽容，且不需要提案，但 `spec:AST-042` FR5 使下面的规则具有约束力。它们并非没有代价：每个标志都是 agent 必须知道的一个分支，也是某人必须保持可用的一个组合。
 
-A good flag:
+一个好的标志：
 
-- **Narrows or redirects work the command already does.** It never gives the
-  command a second job.
-- **Has a default that is the right answer most of the time.** A flag exists to
-  escape the default, not to reach the useful behaviour. If callers must pass it
-  to get a sensible result, the default is wrong.
-- **Is boolean-off or has a value.** A boolean flag that defaults to true is a
-  mis-named opt-out; name the opt-out instead.
-- **Changes what the command produces.** A flag that only changes how the same
-  result is presented belongs to the global set (`--json`, `--detail`,
-  `--lang`), not to your command.
-- **Is not a workaround.** If the flag exists so callers can avoid a defect, fix
-  the defect.
-- **Has a closed composition matrix.** See below — this is the check people
-  skip.
+- **收窄或重定向命令已经完成的工作。** 它绝不会给命令第二项职责。
+- **拥有在大多数情况下都是正确答案的默认值。** 标志的存在是为了摆脱默认值，而不是为了达到有用的行为。如果调用方必须传入它才能得到合理结果，那么默认值就是错的。
+- **是默认关闭的布尔值，或者带一个值。** 默认值为 true 的布尔标志是一个命名错误的退出选项；应当为退出选项命名。
+- **改变命令产生的内容。** 只改变同一结果呈现方式的标志属于全局集合（`--json`、`--detail`、`--lang`），不属于你的命令。
+- **不是变通方案。** 如果标志的存在是为了让调用方避开一个缺陷，那就修复缺陷。
+- **拥有封闭的组合矩阵。** 见下文——这是人们会跳过的检查。
 
-If the flag changes what the command _is_, it is a subcommand.
+如果标志改变命令的*本质*，那它就是一个子命令。
 
-## The composition matrix
+## 组合矩阵
 
-Before you land a flag, pair it with every flag already on that command and
-decide each cell. There are only three legal answers, and every cell needs one:
+在落地一个标志之前，将它和该命令上已有的每个标志配对，并决定每个单元格。只有三种合法答案，且每个单元格都需要一个：
 
-1. **They compose** — and a test proves it.
-2. **They are refused together** — with a clear message and a code.
-3. **They cannot co-occur** — because another rule already refuses the
-   combination that would reach them.
+1. **它们可以组合**——并且有测试证明。
+2. **它们被一起拒绝**——带有清晰的消息和代码。
+3. **它们不可能同时出现**——因为另一条规则已经拒绝了会触及它们的组合。
 
-An undecided cell is the defect. It ships as behaviour nobody chose, and an
-agent finds it before a person does.
+一个未决定的单元格就是缺陷。它会以无人选择的行为发布，而 agent 会比人更早发现它。
 
-## Flags with the same name
+## 同名标志
 
-A name is a promise across the whole CLI. Two rules:
+名称是整个 CLI 范围内的一个承诺。两条规则：
 
-- **The same flag name means the same thing everywhere, and is spelled the same
-  way.** Nothing else may take a flag name for another idea.
-- **No command is forced to carry a flag because a sibling has it.** Alignment is on
-  meaning, not on presence.
+- **相同的标志名称在任何地方都表示相同含义，并且拼写相同。** 其他任何东西都不得将某个标志名称用于另一个概念。
+- **没有命令因为它有兄弟命令就必须携带某个标志。** 对齐依据的是含义，而不是存在与否。
 
-## Where the code goes
+## 代码放在哪里
 
-Copy `api/blog` and `clients/cli/commands/blog.mjs`. They are the reference
-layout (`cli-surface` INV20–INV22).
+复制 `api/blog` 和 `clients/cli/commands/blog.mjs`。它们是参考布局（`cli-surface` INV20–INV22）。
 
-- The behavior lives in `api/<subject>/`: an entry `<subject>.mjs`, one leaf
-  folder per operation, a `FunctionDoc` and typedefs for each exported function,
-  and tests beside the code they cover.
-- Anything that touches the environment — files, the network, subprocesses,
-  loading the project or running discovery — goes in the subject's
-  `_adapter.mjs`. The leaves only shape the result.
-- The handler in `clients/cli/commands/` only parses, calls, and renders.
+- 行为位于 `api/<subject>/`：一个入口 `<subject>.mjs`，每个操作一个叶子文件夹，每个导出函数一个 `FunctionDoc` 和一组类型定义，以及与被覆盖代码相邻的测试。
+- 任何接触环境的东西——文件、网络、子进程、加载项目或运行发现——都放在该主题的 `_adapter.mjs` 中。叶子只负责塑造结果。
+- `clients/cli/commands/` 中的 handler 只负责解析、调用和渲染。
 
-## Output: use the shared functions
+## 输出：使用共享函数
 
-Never call `console.log`. Every path is provided:
+绝不要调用 `console.log`。每一种输出都提供了对应的函数：
 
-| You want                    | Use                                                     |
-| --------------------------- | ------------------------------------------------------- |
-| A machine result            | `jsonOut({type, data, meta?})`                          |
-| An error                    | `jsonError(message, suggestions, code)` / `AstryxError` |
-| A heading, prose, a list    | `section()`, `text()`, `list()`                         |
-| One record, or many         | `record(obj, opts)`, `records(arr, opts)`               |
-| A code sample               | `code(source)`                                          |
-| To print any of the above   | `emit(...blocks)`                                       |
-| Chatter that JSON must hide | `humanLog()`, `humanWarn()`                             |
+| 你想要              | 使用                                                    |
+| ------------------- | ------------------------------------------------------- |
+| 机器可读的结果      | `jsonOut({type, data, meta?})`                          |
+| 错误                | `jsonError(message, suggestions, code)` / `AstryxError` |
+| 标题、散文、列表    | `section()`、`text()`、`list()`                         |
+| 一条记录或多条记录  | `record(obj, opts)`、`records(arr, opts)`               |
+| 代码示例            | `code(source)`                                          |
+| 打印上述任何内容    | `emit(...blocks)`                                       |
+| JSON 必须隐藏的闲聊 | `humanLog()`、`humanWarn()`                             |
 
-`emit` accepts only a renderer-produced `Block`, so a bare string will not
-compile. Keep text field names identical to the JSON keys — the text output is
-a view of the envelope, not a separate design. Do not pad strings, align
-columns, or draw tables yourself; map rows onto `records()`. A new block kind
-needs the evidence that `spec:AST-042` FR3 asks for.
+`emit` 只接受渲染器生成的 `Block`，因此裸字符串无法编译。保持文本字段名与 JSON 键完全一致——文本输出是信封的一个视图，而不是单独的设计。不要自己填充字符串、对齐列或绘制表格；将行映射到 `records()`。新的块类型需要 `spec:AST-042` FR3 所要求的证据。
 
-## Output: keep answers short
+## 输出：保持答案简短
 
-An agent that does not pass `--json` reads every byte a command prints, on
-every call. Before you add to an answer, think about what an agent does with
-each line. Keep the text short without losing anything it needs
-(`architecture:cli-surface` INV4 and INV5, `spec:AST-017` FR13):
+不传 `--json` 的 agent 会在每次调用时读取命令打印的每一个字节。在向答案添加内容之前，想一想 agent 会如何处理每一行。在不丢失它所需内容的前提下保持文本简短（`architecture:cli-surface` INV4 和 INV5，`spec:AST-017` FR13）：
 
-- **Shorten prose, never drop a field.** A long prose field may print its first
-  sentence (`firstSentence` in `foundation/text/string-utils.mjs`) when another
-  route prints it whole: `--verbose`, a focused view such as
-  `component <Name> --props`, or `--json`. Name that route in the answer, with
-  the read's own selector and scope, and print the field whole when the
-  pointer would cost more than the cut saves.
-- **One item per line.** A list prints each item on one line under a group
-  heading (a version, a package), not a block of `key: value` lines per item.
-  Use `records(items, {layout: 'inline'})`.
-- **Say a shared label once.** A label that applies to a run of items (Do and
-  Don't, a package) goes on one line above the run, with a blank line between
-  runs so each run stays its own Markdown list.
-- **Prefer records or a list to a table.** `spec:AST-042` FR3 admits no table
-  drawn from characters. Keep a yes/no value that readers count as its own
-  field, not a marker inside prose: `(optional)` inside prose can collide with
-  the same word in a description.
-- **Test the change with agents.** A shorter answer is a behavior change, and
-  so is a longer one. Give agents with no context the same tasks with the old
-  and the new output, and keep the change when every task comes out the same
-  or better.
+- **缩短散文，绝不丢弃字段。** 当另一条路径会完整打印时，长散文字段可以只打印其第一句（`foundation/text/string-utils.mjs` 中的 `firstSentence`）：`--verbose`、`component <Name> --props` 之类的聚焦视图，或 `--json`。在答案中指明该路径，连同读取自身的筛选器和范围；当指向该路径的代价超过削减所节省的内容时，就完整打印该字段。
+- **每行一项。** 列表在分组标题（一个版本、一个包）下将每一项打印在一行上，而不是为每一项打印一块 `key: value` 行。使用 `records(items, {layout: 'inline'})`。
+- **共享标签只说一次。** 适用于一串条目的标签（Do 和 Don't、一个包）放在该串上方的一行，各串之间留一个空行，使每一串保持为独立的 Markdown 列表。
+- **优先使用记录或列表，而不是表格。** `spec:AST-042` FR3 不允许用字符绘制的表格。将读者会计数的 yes/no 值保留为独立字段，而不是散文中的标记：散文中的 `(optional)` 可能与描述中相同的词冲突。
+- **用 agent 测试变更。** 更短的答案是一种行为变化，更长的答案也是如此。让没有上下文的 agent 用旧输出和新输出执行相同任务，当每个任务的结果相同或更好时保留该变更。
 
-## Errors: every failure carries a code
+## 错误：每个失败都携带代码
 
-Add a code to `foundation/response/error-codes.mjs` when no existing one fits.
-Codes are `ERR_<SUBJECT>[_<QUALIFIER>]`, grouped by subject, and **append-only**:
-once shipped, a code is never removed and never re-meant. Reword the message
-whenever it helps a reader; never make a caller match on it.
+当没有现成代码适用时，向 `foundation/response/error-codes.mjs` 添加一个代码。代码格式为 `ERR_<SUBJECT>[_<QUALIFIER>]`，按主题分组，并且**只追加**：一旦发布，代码永不删除，也永不改变含义。只要有助于读者，就重新措辞消息；绝不要让调用方匹配消息。
 
-Attach `suggestions` where the agent has an obvious next move — a near-miss
-name, the command that lists valid values.
+当 agent 有明显下一步时附加 `suggestions`——一个接近的名字、列出有效值的命令。
 
-## Every command ships a doc
+## 每个命令都附带文档
 
-A command is not done without its `CommandDoc` in `<name>.doc.mjs`. Fill in
-`summary`, `description`, `args`, `options` (each with a description),
-`examples`, `exitCodes`, `related`, and `outsideProject`: what the command does
-outside a project. Help text, the README tables, and the
-manifest are generated from it, so an undocumented flag is an invisible flag.
+没有 `<name>.doc.mjs` 中的 `CommandDoc`，命令就不算完成。填写 `summary`、`description`、`args`、`options`（每个都带描述）、`examples`、`exitCodes`、`related` 和 `outsideProject`：命令在项目之外做什么。帮助文本、README 表格和清单都由它生成，因此未记录的标志就是不可见的标志。
 
-Give at least one example that an agent would actually run, including a `--json`
-one.
+至少给出一个 agent 实际会运行的示例，包括一个 `--json` 示例。
 
-## Global mode: every command works outside a project
+## 全局模式：每个命令都能在项目之外工作
 
-People install the CLI once for their computer and run it in any folder
-(`spec:AST-081`). So every command also has to work, or explain itself, in a
-folder that is not a project, and its docs have to say which.
+人们为他们的电脑安装一次 CLI，然后在任何文件夹中运行它（`spec:AST-081`）。因此每个命令也必须在不是项目的文件夹中工作或解释自身，其文档必须说明是哪种。
 
-1. **Declare `outsideProject`** in the command doc: `same` (it answers as it
-   would in a new project), `refuse` (it writes nothing and fails before doing
-   any work, naming what it needs), or `own` (it does something else). A
-   command that only groups subcommands declares nothing.
-   `clients/cli/commands/outside-project.test.mjs` runs every command in an
-   empty folder and checks what it does against this value, and fails on a
-   command without one; an `own` command needs a test of its own there.
-2. **Add the note, for readers.** Every `refuse` and every `own` command
-   carries one prose note that starts `In global mode:`, says exactly what it
-   does outside a project (the error code and message it stops with, or what
-   it does instead), and links `{@link namespace:global}`.
-   `test/global-mode-notes.test.mjs` fails on a missing note, and
-   `test/global-mode-docs.test.mjs` checks that the error code a note names is
-   the one the command stops with. An API function whose result depends on
-   `cwd` being in a project carries the same sentence in its description.
-3. **Add a who-answers row** when a change touches which copy of the CLI
-   answers (an install layout, a door, a hand-off rule): one row in the global
-   and project table of `spec:AST-081` and its test in
-   `packages/cli/test/global-local.test.mjs`, named with the row's number
-   (`G12 …`); a test there fails on a gap in the row numbers.
-4. **Quote, never paraphrase, what the CLI prints.** A terminal line shown on a
-   global-mode page must be one the CLI prints; `test/global-mode-docs.test.mjs`
-   builds those lines from the CLI's own strings.
+1. **在命令文档中声明 `outsideProject`**：`same`（像在新项目中一样回答）、`refuse`（不写入任何内容，在做任何工作之前失败，并说明它需要什么）或 `own`（做其他事情）。只对子命令进行分组的命令不声明任何值。`clients/cli/commands/outside-project.test.mjs` 在空文件夹中运行每个命令，并根据该值检查其行为，且对没有该值的命令失败；`own` 命令需要在其中拥有自己的测试。
+2. **为读者添加注释。** 每个 `refuse` 和每个 `own` 命令都携带一条以 `In global mode:` 开头的散文注释，准确说明它在项目之外做什么（它停止时使用的错误代码和消息，或它改为做什么），并链接 `{@link namespace:global}`。`test/global-mode-notes.test.mjs` 对缺失注释失败，`test/global-mode-docs.test.mjs` 检查注释中命名的错误代码是否是命令停止时使用的代码。如果某个 API 函数的结果取决于 `cwd` 是否位于项目内，它的描述中也要携带同一句话。
+3. **当变更涉及由哪个 CLI 副本回答时（安装布局、入口、交接规则），添加一行“谁来回答”：** 在 `spec:AST-081` 的全局与项目表中添加一行，并在 `packages/cli/test/global-local.test.mjs` 中添加其测试，以行号命名（`G12 …`）；那里的一项测试会在行号出现缺口时失败。
+4. **引用 CLI 打印的内容，绝不要转述。** 全局模式页面上显示的终端行必须是 CLI 打印的行；`test/global-mode-docs.test.mjs` 从 CLI 自己的字符串构建这些行。
 
-The user-facing explanation lives in `astryx docs global`.
+面向用户的说明位于 `astryx docs global`。
 
-## Every integration item ships a typed doc
+## 每个集成项都附带类型化文档
 
-A discoverable contribution is not done without a strongly typed
-`<source-stem>.doc.mjs` beside its source or payload. Export the descriptor type
-from `@astryxdesign/cli/authoring`, annotate the descriptor with that type, and
-use the kind's canonical typed export. New descriptor kinds use the stamped
-default export. The descriptor is the only place for item metadata. The root
-integration manifest points at directories; it does not enumerate the items
-inside them.
+没有与其源码或 payload 相邻的强类型 `<source-stem>.doc.mjs`，可发现的贡献就不算完成。从 `@astryxdesign/cli/authoring` 导出描述符类型，用该类型标注描述符，并使用该 kind 的规范类型化导出。新的描述符 kind 使用盖章的默认导出。描述符是存放条目元数据的唯一位置。根集成清单指向目录；它不枚举其中的条目。
 
-When an item spans several files, define one confined item-local ownership
-boundary and make discovery, materialization, and pack verification enumerate the
-same complete set. Never repeat source identity in the descriptor when the
-same-stem pair proves it.
+当一个条目跨多个文件时，定义一个受限的条目本地所有权边界，并让发现、物化和打包验证枚举相同的完整集合。当同 stem 配对已经证明来源身份时，绝不要在描述符中重复它。
 
-Never catalog items centrally, for any kind: no file under a root that lists its
-items (like `themes/manifest.json`), and no per-item map or list in the
-integration manifest (like a map of template replacements). Per-item options
-such as `replaces` go in the item's own `.doc.mjs`. Adding one item changes no
-file its siblings share, apart from declaring a new root. 0.6 shipped a theme
-catalog and had to remove it as a breaking change; do not repeat it.
+绝不要对任何 kind 集中编目条目：根目录下不得有列出其条目的文件（如 `themes/manifest.json`），集成清单中也不得有逐条目映射或列表（如模板替换的映射）。`replaces` 之类的逐条目选项放在条目自己的 `.doc.mjs` 中。添加一个条目不会改变其兄弟共享的任何文件，除了声明一个新的根。0.6 发布了一个主题目录，不得不将其作为破坏性变更移除；不要重蹈覆辙。
 
-Released alternate readers may remain for compatibility, but new writers,
-examples, and contribution kinds use `.doc.mjs`. See `spec:AST-039` for the
-compatibility transition and the mandatory theme descriptor contract.
+已发布的替代读取器可以为了兼容性而保留，但新的写入器、示例和贡献 kind 使用 `.doc.mjs`。兼容性过渡和强制主题描述符契约见 `spec:AST-039`。
 
-## Marking work in progress
+## 标记进行中的工作
 
-Some of the surface is not finished, and today nothing on it says so. Callers
-cannot tell a settled command from one still being shaped.
+表面的一部分尚未完成，而如今没有任何东西说明这一点。调用方无法区分一个已稳定的命令和一个仍在成形的命令。
 
-When you land a command or subcommand that is not ready to be depended on, mark
-it, and say in the doc what is still expected to change. Treat an unmarked
-command as stable: changing its output shape or its flags is then a breaking
-change.
+当你落地一个尚未准备好被依赖的命令或子命令时，标记它，并在文档中说明仍预期会变化的内容。将未标记的命令视为稳定：此时更改其输出形状或标志就是破坏性变更。
 
-## Checklist before you open the pull request
+## 打开拉取请求前的检查清单
 
-- [ ] For a new top-level command: a current spec authorizes it. For a new
-      subcommand: a code owner approved its case.
-- [ ] The handler only parses, calls one exported `api/` function, and renders;
-      the subject's adapter does any file, network, or project access.
-- [ ] One file per command, with its sibling doc file.
-- [ ] Every new integration item has a typed, same-stem `.doc.mjs`; the root
-      manifest only locates its directory. No catalog file, no per-item map.
-- [ ] `--json` returns one envelope; the `type` matches the API function.
-- [ ] Every failure path carries a code; new codes are appended, never edited.
-- [ ] No `console.log`; all human output goes through the formatters, with no
-      hand-padded columns.
-- [ ] Text field names match the JSON keys.
-- [ ] You read the default text as an agent would, and tested any change to
-      its length with agents.
-- [ ] Exit code is the same with and without `--json`.
-- [ ] The composition matrix is closed: every pair composes with a test, is
-      refused with a message, or cannot co-occur.
-- [ ] Any path you write passes through `assertWithin`.
-- [ ] The doc lists the new flag, an example, and the exit codes.
-- [ ] The doc declares `outsideProject` (`same`, `refuse`, or `own`), and a test
-      run outside a project matches it.
-- [ ] Marked as work in progress if it is not ready to be depended on.
-- [ ] The command doc declares `outsideProject`; a value other than `same`
-      has its `In global mode:` note and a test of what it does outside a
-      project.
+- [ ] 对于新的顶级命令：有当前规范授权它。对于新的子命令：有代码所有者批准其理由。
+- [ ] handler 只解析、调用一个导出的 `api/` 函数并渲染；主题的适配器负责任何文件、网络或项目访问。
+- [ ] 每个命令一个文件，并有其同级文档文件。
+- [ ] 每个新的集成项都有一个类型化的同 stem `.doc.mjs`；根清单只定位其目录。没有编目文件，没有逐条目映射。
+- [ ] `--json` 返回一个信封；`type` 与 API 函数匹配。
+- [ ] 每个失败路径都携带代码；新代码只追加，从不编辑。
+- [ ] 没有 `console.log`；所有人类输出都经过格式化器，没有手工填充的列。
+- [ ] 文本字段名与 JSON 键匹配。
+- [ ] 你像 agent 一样阅读了默认文本，并用 agent 测试了其长度的任何变化。
+- [ ] 无论是否使用 `--json`，退出代码相同。
+- [ ] 组合矩阵已封闭：每一对要么有测试证明可组合，要么带有消息被拒绝，要么不可能同时出现。
+- [ ] 你写入的任何路径都经过 `assertWithin`。
+- [ ] 文档列出新标志、一个示例和退出代码。
+- [ ] 文档声明 `outsideProject`（`same`、`refuse` 或 `own`），并且项目外运行的测试与之一致。
+- [ ] 如果尚未准备好被依赖，则标记为进行中的工作。
+- [ ] 命令文档声明 `outsideProject`；非 `same` 的值有其 `In global mode:` 注释和一项在项目外行为的测试。
 
-## Common review smells
+## 常见的审查异味
 
-- **An item catalog below an integration root, or a per-item map in the
-  manifest.** Put metadata and options in the typed, same-stem `.doc.mjs`; the
-  root manifest points at the directory.
-- **A flag that only a maintainer would pass.** It is a debugging affordance;
-  keep it out of the surface.
-- **A new command whose summary contains "and".** Two commands.
-- **A handler that reads files or loads the project.** That work belongs in the
-  API subject's adapter.
-- **A flag added because another command has one.** Presence does not have to
-  align; meaning does.
-- **A composition cell nobody decided.** The most common defect in a flag PR.
-- **A code invented at the call site.** Codes live in one frozen table.
-- **Text output built with string concatenation.** It will drift from the JSON
-  within one release.
-- **`--json` output that omits what the text output shows.** The text is the
-  projection; it cannot be the richer of the two.
-- **An error message that tells the agent to "check your configuration".** Name
-  the file, the key, and the expected value, or give a suggestion.
-- **A flag whose default is the unhelpful answer.** Agents will not discover it.
+- **集成根目录下的条目目录，或清单中的逐条目映射。** 将元数据和选项放在类型化的同 stem `.doc.mjs` 中；根清单指向目录。
+- **只有维护者才会传的标志。** 它是一种调试便利；不要让它进入表面。
+- **摘要中包含“和”的新命令。** 那是两个命令。
+- **读取文件或加载项目的 handler。** 那项工作属于 API 主题的适配器。
+- **因为另一个命令有某个标志而添加的标志。** 存在与否不必对齐；含义才必须对齐。
+- **无人决定的组合单元格。** 标志 PR 中最常见的缺陷。
+- **在调用点临时发明的代码。** 代码存在于一张冻结的表中。
+- **用字符串拼接构建的文本输出。** 它会在一个发布周期内与 JSON 脱节。
+- **`--json` 输出省略了文本输出显示的内容。** 文本是投影；它不能是两者中更丰富的那个。
+- **告诉 agent“检查你的配置”的错误消息。** 指明文件、键和期望值，或给出建议。
+- **默认值是无用答案的标志。** agent 不会发现它。

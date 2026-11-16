@@ -28,140 +28,116 @@ system_specs: [spec:AST-005]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Public contract         | None changes. LinkProvider takes a required `component` and `children`.                                                                                                        |
-| Behavior                | Every Astryx link in the subtree that resolves through the shared link boundary renders with `component`, unless a per-component `as` overrides it. The nearest provider wins. |
-| End-user impact         | People get the app's client-side routing from Astryx links (no full page reload) where the app's router supports it. Unsafe destinations still never navigate.                 |
-| Builder impact          | None.                                                                                                                                                                          |
-| Compatibility/readiness | Records shipped behavior; no API, default, or DOM change.                                                                                                                      |
-| Review checks           | Reject a provider that renders its own element, overrides an explicit `as`, leaks past a nearer provider, or lets a rejected destination reach `component`.                    |
-| Governing rules         | `family:navigation-destinations` FR1, FR2, FR5, FR6, AV2; `spec:AST-005`.                                                                                                      |
+| Area                    | Contract                                                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Public contract         | 无变更。LinkProvider 接收必填的 `component` 与 `children`。                                                         |
+| Behavior                | 子树中每个通过共享链接边界解析的 Astryx 链接都用 `component` 渲染，除非组件级的 `as` 覆盖它。最近的 provider 生效。 |
+| End-user impact         | 在应用路由器支持的情况下，人们通过 Astryx 链接获得应用的客户端路由（不整页刷新）。不安全的目标仍然永不导航。        |
+| Builder impact          | 无。                                                                                                                |
+| Compatibility/readiness | 记录已发布行为；无 API、默认值或 DOM 变更。                                                                         |
+| Review checks           | 否决这样的 provider：它渲染自己的元素、覆盖显式 `as`、越过更近的 provider 泄漏，或让被拒绝的目标到达 `component`。  |
+| Governing rules         | `family:navigation-destinations` FR1、FR2、FR5、FR6、AV2；`spec:AST-005`。                                          |
 
-This table is a review projection; the body below is authoritative.
+此表是审查投影；以下正文具有权威性。
 
 ## Intent
 
-LinkProvider lets an app swap the native anchor for its router's link component
-once, for every Astryx link in a subtree. It is a collaborator of
-`family:navigation-destinations`. Consumer usage lives in
-`LinkProvider.doc.mjs`.
+LinkProvider 让应用只需一次就为子树中的每个 Astryx 链接把原生锚点换成其路由器的链接组件。它是 `family:navigation-destinations` 的协作者。使用方用法见 `LinkProvider.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`; without a provider, links render native
-  anchors
-- Compatibility class: records shipped behavior; no public prop, default,
-  export, or DOM change
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 已发布默认值保持不变：`yes`；没有 provider 时，链接渲染原生锚点
+- 兼容性类别：记录已发布行为；无公共 prop、默认值、导出或 DOM 变更
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- Supplying `component` to the subtree and its scoping.
+- 向子树提供 `component` 及其作用域。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- The router-facing `href` and `to` handoff, including the default `to` in FR3
-  — owned by the shared link boundary (`useLinkComponent`) under
-  `family:navigation-destinations`; the same default reaches an `as` component
-  without a provider.
-- Destination checks and inert rendering of rejected destinations — owned by
-  `family:navigation-destinations` FR6 and `spec:AST-005` FR7; FR4 points to
-  them.
-- When a component renders a link at all — owned by each component (for
-  example `component:Link` FR1 and `component:Button` FR11).
-- Imperative navigation from enlarged surfaces — owned by
-  `family:navigation-destinations` through its own hook.
-- The router component's own behavior.
+- 面向路由器的 `href` 与 `to` 交接，包括 FR3 中的默认 `to`——由 `family:navigation-destinations` 下的共享链接边界（`useLinkComponent`）拥有；同一默认值在没有 provider 时也会到达 `as` 组件。
+- 目标检查与被拒绝目标的惰性渲染——由 `family:navigation-destinations` FR6 与 `spec:AST-005` FR7 拥有；FR4 指向它们。
+- 组件究竟是否渲染链接——由各组件拥有（例如 `component:Link` FR1 与 `component:Button` FR11）。
+- 来自放大表面的命令式导航——由 `family:navigation-destinations` 通过其自身的 hook 拥有。
+- 路由器组件自身的行为。
 
 ## Public concepts
 
-| Concept        | Closed values or states | Meaning                                      | Availability by variant/orientation/state | Default       | Owner                    | Stability | Invalid-value behavior                                    |
-| -------------- | ----------------------- | -------------------------------------------- | ----------------------------------------- | ------------- | ------------------------ | --------- | --------------------------------------------------------- |
-| Link component | any element type        | Renders accepted link destinations in scope. | Inside the provider.                      | native anchor | `component:LinkProvider` | Stable    | A component that ignores `href` and `to` cannot navigate. |
+| Concept  | Closed values or states | Meaning                          | Availability by variant/orientation/state | Default  | Owner                    | Stability | Invalid-value behavior               |
+| -------- | ----------------------- | -------------------------------- | ----------------------------------------- | -------- | ------------------------ | --------- | ------------------------------------ |
+| 链接组件 | 任意元素类型            | 在作用域内渲染被接受的链接目标。 | 在 provider 内部。                        | 原生锚点 | `component:LinkProvider` | 稳定      | 忽略 `href` 与 `to` 的组件无法导航。 |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                | Basis                                                    |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| FR1 | LinkProvider renders only its children and adds no element.                                                                                                                                                                              | Current source                                           |
-| FR2 | Inside the provider, a link rendered through the shared link boundary uses `component`. A per-component `as` wins over the provider; with neither, a native anchor renders. The nearest provider wins.                                   | `family:navigation-destinations` FR2, AV2; current tests |
-| FR3 | Through the shared link boundary, `component` receives the accepted `href` and a `to` equal to `href` unless an accepted explicit `to` is supplied, which wins; a native anchor receives no `to`. LinkProvider only selects `component`. | `family:navigation-destinations` FR6; current tests      |
-| FR4 | A rejected destination never reaches `component`; the inert rendering and destination checks follow `family:navigation-destinations` FR6 and `spec:AST-005` FR7.                                                                         | `family:navigation-destinations` FR6; `spec:AST-005` FR7 |
-| FR5 | A component that renders no link in a given state does not use the provider: a disabled `component:Link` never renders the provider's component; which element it renders instead follows `component:Link` FR1 and FR5.                  | Current source and tests                                 |
+| ID  | Invariant                                                                                                                                                                    | Basis                                                    |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| FR1 | LinkProvider 只渲染其 children，不添加任何元素。                                                                                                                             | 当前源码                                                 |
+| FR2 | 在 provider 内部，通过共享链接边界渲染的链接使用 `component`。组件级的 `as` 优先于 provider；两者都没有时，渲染原生锚点。最近的 provider 生效。                              | `family:navigation-destinations` FR2、AV2；当前测试      |
+| FR3 | 通过共享链接边界，`component` 接收被接受的 `href` 以及一个等于 `href` 的 `to`，除非提供了被接受的显式 `to`，后者优先；原生锚点不接收 `to`。LinkProvider 只选择 `component`。 | `family:navigation-destinations` FR6；当前测试           |
+| FR4 | 被拒绝的目标永远不会到达 `component`；惰性渲染与目标检查遵循 `family:navigation-destinations` FR6 与 `spec:AST-005` FR7。                                                    | `family:navigation-destinations` FR6；`spec:AST-005` FR7 |
+| FR5 | 在给定状态下不渲染链接的组件不使用 provider：被禁用的 `component:Link` 永不渲染 provider 的组件；它改而渲染哪个元素遵循 `component:Link` FR1 与 FR5。                        | 当前源码与测试                                           |
 
 ### Allowed variation
 
-- **AV1 — Router shape.** `component` may be href-based or to-based; both
-  receive FR3's props.
+- **AV1 — 路由形态。** `component` 可以基于 href 或基于 to；两者都接收 FR3 的 props。
 
 ### Representative states
 
-| State                  | Required invariant                                       | Allowed variation |
-| ---------------------- | -------------------------------------------------------- | ----------------- |
-| No provider            | Native anchors.                                          | —                 |
-| Provider               | `component` renders accepted links with `href` and `to`. | Router.           |
-| Nested providers       | The inner provider wins.                                 | —                 |
-| `as` inside a provider | `as` wins for that link.                                 | —                 |
-| Rejected destination   | Inert native anchor; `component` not rendered.           | —                 |
+| State              | Required invariant                               | Allowed variation |
+| ------------------ | ------------------------------------------------ | ----------------- |
+| 没有 provider      | 原生锚点。                                       | —                 |
+| Provider           | `component` 渲染带 `href` 与 `to` 的被接受链接。 | 路由器。          |
+| 嵌套 provider      | 内层 provider 生效。                             | —                 |
+| provider 内的 `as` | `as` 对该链接生效。                              | —                 |
+| 被拒绝的目标       | 惰性原生锚点；不渲染 `component`。               | —                 |
 
 ### Transformation and precedence order
 
-- **ORD1 — Link component.** Per-component `as`, then the nearest
-  LinkProvider, then a native anchor.
-- **ORD2 — Router destination.** An accepted explicit `to`, then `href`.
+- **ORD1 — 链接组件。** 组件级 `as`，然后是最近的 LinkProvider，然后是原生锚点。
+- **ORD2 — 路由器目标。** 被接受的显式 `to`，然后是 `href`。
 
 ### Performance and resources
 
-- **PR1 — Stable value.** The provided value changes only when `component`
-  changes, so consumers do not re-render for an unchanged provider.
+- **PR1 — 稳定值。** 所提供的值仅在 `component` 变化时变化，因此使用方不会因为 provider 未变而重新渲染。
 
 ## Accessibility contract
 
-- **AR1 — No semantics of its own.** LinkProvider adds no role, name, or
-  focus behavior; the link component it supplies is responsible for rendering
-  an accessible link from the props it receives.
+- **AR1 — 自身无语义。** LinkProvider 不添加 role、名称或焦点行为；它所提供的链接组件负责根据收到的 props 渲染可访问的链接。
 
 ## Design relationships
 
-LinkProvider has no visual output. No design record governs it.
+LinkProvider 没有视觉输出。没有设计记录管辖它。
 
 ## Family and system relationships
 
-- `family:navigation-destinations` names LinkProvider a collaborator; the
-  shared link boundary applies the family's destination rules before
-  `component` sees a destination.
-- Every component that renders a link through the shared link boundary
-  consumes it, for example `component:Link` and `component:Button` link mode.
-  A component that renders a native anchor directly, as the family's adoption
-  table lists, does not.
+- `family:navigation-destinations` 将 LinkProvider 列为协作者；共享链接边界在 `component` 看到目标之前先应用该家族的目标规则。
+- 每个通过共享链接边界渲染链接的组件都消费它，例如 `component:Link` 与 `component:Button` 的链接模式。直接渲染原生锚点的组件（如该家族的采用表所列）则不消费。
 
 ## Verification map
 
-| Contract  | Verification                                                                            | Representative states                              | Mutation or failure expectation                                             | Audit section                      |
-| --------- | --------------------------------------------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------- |
-| FR2, ORD1 | `useLinkComponent.test.tsx` provider cases; `Link.test.tsx` provider and `as` cases     | Provider, nested providers, `as` override          | The wrong component, or an outer provider winning, fails.                   | `audit:LinkProvider/behavior`      |
-| FR3, ORD2 | `useLinkComponent.test.tsx` `to` suite                                                  | Provider and `as`; href-based and to-based routers | A missing or wrong `to`, or `to` on a native anchor, fails.                 | `audit:LinkProvider/behavior`      |
-| FR4       | `useLinkComponent.test.tsx` scheme, structured, and inert suites                        | Rejected `href` or `to`; structured destinations   | A rejected destination that reaches `component`, or a lost identity, fails. | `audit:LinkProvider/behavior`      |
-| FR5       | `Link.test.tsx` disabled custom-component case                                          | Disabled Link under a provider                     | A disabled Link rendered through `component` fails.                         | `audit:LinkProvider/behavior`      |
-| AR1       | `Link.a11y.chromium.spec.ts` provider-router state                                      | Link under a provider                              | A router link that loses the link role or name fails.                       | `audit:LinkProvider/accessibility` |
-| FR1, PR1  | Evidence gap: no test asserts that the provider adds no element or keeps a stable value | —                                                  | —                                                                           | `audit:LinkProvider/behavior`      |
+| Contract  | Verification                                                                           | Representative states                          | Mutation or failure expectation                    | Audit section                      |
+| --------- | -------------------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------- | ---------------------------------- |
+| FR2, ORD1 | `useLinkComponent.test.tsx` 的 provider 用例；`Link.test.tsx` 的 provider 与 `as` 用例 | Provider、嵌套 provider、`as` 覆盖             | 组件错误，或外层 provider 生效，则失败。           | `audit:LinkProvider/behavior`      |
+| FR3, ORD2 | `useLinkComponent.test.tsx` 的 `to` 套件                                               | Provider 与 `as`；基于 href 与基于 to 的路由器 | 缺少或错误的 `to`，或原生锚点上的 `to`，则失败。   | `audit:LinkProvider/behavior`      |
+| FR4       | `useLinkComponent.test.tsx` 的 scheme、structured 与 inert 套件                        | 被拒绝的 `href` 或 `to`；结构化目标            | 被拒绝的目标到达 `component`，或丢失身份，则失败。 | `audit:LinkProvider/behavior`      |
+| FR5       | `Link.test.tsx` 的禁用自定义组件用例                                                   | provider 下被禁用的 Link                       | 被禁用的 Link 通过 `component` 渲染，则失败。      | `audit:LinkProvider/behavior`      |
+| AR1       | `Link.a11y.chromium.spec.ts` 的 provider-router 状态                                   | provider 下的 Link                             | 路由器链接丢失链接 role 或名称，则失败。           | `audit:LinkProvider/accessibility` |
+| FR1, PR1  | 证据缺口：没有测试断言 provider 不添加元素或保持稳定值                                 | —                                              | —                                                  | `audit:LinkProvider/behavior`      |
 
 ## Decision log
 
-No component-local decision. LinkProvider applies
-`family:navigation-destinations`.
+无组件本地决策。LinkProvider 应用 `family:navigation-destinations`。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+此文件不复制使用方 prop 表/示例、当前审查结果、实现步骤或家族/系统规则。它链接到它们的所有者。

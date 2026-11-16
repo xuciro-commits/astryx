@@ -21,78 +21,59 @@ deciding_specs: []
 
 ## User intent
 
-Mixed controls should feel intentionally composed rather than assembled from
-unrelated sizing systems. Visual compactness should not make an interaction
-unreasonably difficult to target.
+混合控件应让人感觉是有意组合而成，而不是由互不相关的尺寸系统拼装出来的。视觉上的紧凑不应使交互变得不合理地难以命中。
 
 ## Design principles
 
-- **DR1 — Mixed controls align.** Fixed-height and content-sized controls used in
-  one row MUST share an intentional baseline and apparent height.
-- **DR2 — Size and density are tuned together.** Authors MUST evaluate outer size
-  and internal padding as one visual rhythm rather than independent settings.
-- **DR3 — Content has breathing room.** Text and icons MUST retain enough internal
-  space to remain legible and visually centered.
-- **DR4 — Visual size and target size serve different needs.** A control MAY look
-  compact while preserving an operable target appropriate to its input context.
+- **DR1 — 混合控件对齐。** 同一行中使用的固定高度控件与内容自适应控件必须共享有意设定的基线和视觉高度。
+- **DR2 — 尺寸与密度协同调校。** 作者必须将外部尺寸与内部内边距作为一个视觉节奏来评估，而不是作为独立设置。
+- **DR3 — 内容留有呼吸空间。** 文本和图标必须保留足够的内部空间，以保持可读性并视觉居中。
+- **DR4 — 视觉尺寸与目标尺寸服务于不同需求。** 控件可以看起来紧凑，同时保留适合其输入环境的可操作目标。
 
 ## Anatomy and hierarchy
 
-| Role                  | Purpose                            | Required relationship                                       |
-| --------------------- | ---------------------------------- | ----------------------------------------------------------- |
-| fixed control         | Provides a predictable silhouette  | Aligns with peer controls at the selected size              |
-| content-sized control | Accommodates variable text or rows | Tunes density to the surrounding rhythm                     |
-| content lane          | Holds text and icons               | Remains centered and free from edge crowding                |
-| target area           | Receives interaction               | May exceed the visible silhouette without disrupting layout |
+| 角色           | 用途               | 必需关系                     |
+| -------------- | ------------------ | ---------------------------- |
+| 固定控件       | 提供可预测的轮廓   | 在所选尺寸下与同级控件对齐   |
+| 内容自适应控件 | 容纳可变文本或行数 | 根据周围节奏调整密度         |
+| 内容通道       | 承载文本和图标     | 保持居中且不受边缘挤压       |
+| 目标区域       | 接收交互           | 可以超出可见轮廓而不破坏布局 |
 
 ## State representation
 
-Rest, focus, loading, value, and status states MUST preserve the intended row
-height and alignment unless the component contract explicitly defines expansion.
+静止、聚焦、加载、取值与状态等各类状态必须保持预期的行高和对齐，除非组件契约明确规定了扩展。
 
 ## Responsive and input behavior
 
-- **DR5 — Rows remain coherent under constraint.** Controls MAY wrap or stack, but
-  each resulting row MUST retain deliberate alignment.
-- **DR6 — Input context informs targets.** Compact pointer layouts MAY differ
-  visually from touch-oriented layouts while preserving the same control identity.
+- **DR5 — 行在约束下保持连贯。** 控件可以换行或堆叠，但由此产生的每一行都必须保持有意设定的对齐。
+- **DR6 — 输入环境指导目标尺寸。** 紧凑的指针布局在视觉上可以不同于面向触控的布局，同时保持相同的控件身份。
 
 ## Accessibility intent
 
-Compact treatment must not compromise readability, focus visibility, or
-operability. Target-size mechanics and minimum thresholds remain with component,
-accessibility, and audit contracts.
+紧凑处理不得损害可读性、焦点可见性或可操作性。目标尺寸机制和最小阈值仍由组件、无障碍和审计契约负责。
 
 ## Representative examples
 
-- A medium action and default-density field in one toolbar land on the same
-  apparent height and baseline.
-- A compact icon control retains a larger operable target than its glyph suggests.
+- 同一工具栏中的中等尺寸操作控件和默认密度字段落在相同的视觉高度和基线上。
+- 紧凑图标控件保留的可操作目标大于其字形所暗示的大小。
 
 ## Visual references
 
-No normative assets are included. Mixed field/action and pointer/touch examples
-should be added under `docs/design/assets/control-rhythm/` before promotion.
+未包含规范性资产。在提升为正式记录之前，应在 `docs/design/assets/control-rhythm/` 下添加字段与操作混合以及指针/触控示例。
 
 ## Component contract links
 
-No component links are asserted. `family:input-fields` is a candidate relationship
-pending adoption review.
+未声明任何组件链接。`family:input-fields` 是候选关系，尚待采纳审查。
 
 ## Decision log
 
-No repository design decision has approved this record yet. It distills the
-size-and-density intent from the public Design Conventions wiki.
+尚无仓库设计决策批准此记录。它提炼了公开 Design Conventions wiki 中的尺寸与密度意图。
 
 ## Open questions
 
-- **OQ1 — Target intent.** The source material describes a generous touch target
-  but a much smaller audit failure threshold. The design target and mechanical
-  floor need separate definitions.
-- **OQ2 — Reference row.** Which control combination should provide normative
-  visual evidence for each supported density?
+- **OQ1 — 目标尺寸意图。** 源材料描述了一个宽松的触控目标，但审计失败阈值要小得多。设计目标与机制下限需要分别定义。
+- **OQ2 — 参考行。** 哪种控件组合应为每种受支持的密度提供规范性视觉证据？
 
 ## Content boundary
 
-This file defines perceived rhythm and target intent. It does not define size
-values, density props, padding tokens, hit-area mechanics, or audit thresholds.
+本文件定义感知节奏和目标意图。它不定义尺寸值、密度 prop、内边距 token、命中区域机制或审计阈值。

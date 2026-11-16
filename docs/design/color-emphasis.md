@@ -26,85 +26,59 @@ deciding_specs: []
 
 ## User intent
 
-People should find the primary action and understand surface and status roles
-without decoding arbitrary colors. Color should preserve legibility and hierarchy
-across supported modes and themes.
+人们应当能够找到主要操作，并理解表面和状态角色，而无需解读随意的颜色。颜色应在受支持的模式和主题下保持易读性和层级。
 
 ## Design principles
 
-- **DR1 — Foreground and background are one decision.** A color choice MUST be
-  evaluated in the context of the surface it sits on.
-- **DR2 — Neutral color follows semantic role.** Interaction overlays, tracks,
-  content containers, and self-contained elements MUST remain distinguishable
-  even when their neutral values look similar.
-- **DR3 — Emphasis remains scarce.** A local action group SHOULD expose one clear
-  primary emphasis rather than making every action compete equally.
-- **DR4 — Status follows its canonical feedback contract.** Color emphasis MUST
-  preserve the non-color cues and prominence defined by
-  `design:system-states` rather than inventing another status treatment.
-- **DR5 — Interaction overlays preserve context.** Hover and press treatment
-  SHOULD visually combine with the underlying surface rather than replace it with
-  an unrelated opaque block.
+- **DR1 — 前景与背景是一项决策。** 颜色选择必须在其所处表面的上下文中进行评估。
+- **DR2 — 中性色遵循语义角色。** 交互覆盖层、轨道、内容容器和自包含元素即使其中性值看起来相似，也必须保持可区分。
+- **DR3 — 强调保持克制。** 局部操作组应只呈现一个清晰的主强调，而不是让每个操作都同等竞争。
+- **DR4 — 状态遵循其规范反馈契约。** 颜色强调必须保留 `design:system-states` 定义的非颜色提示和突出程度，而不是发明另一种状态处理。
+- **DR5 — 交互覆盖层保留上下文。** 悬停和按压处理应在视觉上与底层表面结合，而不是用一个不相关的完全不透明块替换它。
 
 ## Anatomy and hierarchy
 
-| Role             | Purpose                                              | Required relationship                                       |
-| ---------------- | ---------------------------------------------------- | ----------------------------------------------------------- |
-| base surface     | Establishes page, container, or element context      | Determines the meaning and legibility of foreground choices |
-| foreground       | Carries text, icon, or boundary information          | Remains legible against its paired surface                  |
-| interaction tint | Communicates transient response                      | Preserves the identity of the underlying surface            |
-| primary accent   | Directs attention to the most important local action | Remains visually stronger than peer actions                 |
+| 角色     | 用途                         | 必需关系                   |
+| -------- | ---------------------------- | -------------------------- |
+| 基础表面 | 建立页面、容器或元素上下文   | 决定前景选择的含义和易读性 |
+| 前景     | 承载文本、图标或边界信息     | 在与配对表面上保持易读     |
+| 交互色调 | 传达瞬态响应                 | 保留底层表面的身份         |
+| 主强调色 | 将注意力引向最重要的局部操作 | 在视觉上强于同级操作       |
 
 ## State representation
 
-Rest, hover, press, focus, selected, and disabled states MUST remain perceptually
-distinct in every supported mode. Status representation is owned by
-`design:system-states`. Supporting and disabled text MUST not become
-indistinguishable merely because both are quieter than body text.
+静止、悬停、按压、焦点、选中和禁用状态在每种受支持模式下都必须保持感知上可区分。状态表示由 `design:system-states` 拥有。辅助文本和禁用文本不得仅仅因为都比正文更安静而变得无法区分。
 
 ## Responsive and input behavior
 
-- **DR6 — Emphasis survives density.** When actions collapse or move, the primary
-  action MUST remain identifiable without amplifying every remaining control.
-- **DR7 — Hover color is optional feedback.** Touch and keyboard paths MUST retain
-  state meaning without depending on hover tint.
+- **DR6 — 强调在密集布局中依然存在。** 当操作折叠或移动时，主要操作必须保持可识别，而无需放大其余每个控件。
+- **DR7 — 悬停颜色是可选反馈。** 触控和键盘路径必须在不依赖悬停色调的情况下保留状态含义。
 
 ## Accessibility intent
 
-Foreground/background pairs must remain legible across supported modes. Color
-emphasis must not weaken the non-color status cues owned by
-`design:system-states`. Exact thresholds and mechanical contrast
-verification remain accessibility and audit responsibilities.
+前景/背景配对必须在受支持模式下保持易读。颜色强调不得削弱 `design:system-states` 拥有的非颜色状态提示。精确阈值和机械对比度验证仍属于无障碍和审计职责。
 
 ## Representative examples
 
-- A toolbar exposes one primary action while secondary and destructive actions
-  remain clear without sharing the same emphasis.
+- 一个工具栏呈现一个主要操作，同时次要操作和破坏性操作保持清晰，而不共享相同的强调。
 
 ## Visual references
 
-No normative assets are included. Action hierarchy and semantic-neutral examples
-should be added under `docs/design/assets/color-emphasis/` before promotion.
-Status examples remain with `design:system-states`.
+不包含规范性素材。在提升为正式记录之前，应在 `docs/design/assets/color-emphasis/` 下添加操作层级和语义中性色示例。状态示例仍由 `design:system-states` 负责。
 
 ## Component contract links
 
-No component links are asserted in this seed draft.
+本种子草案未声明任何组件契约链接。
 
 ## Decision log
 
-No repository design decision has approved this record yet. It distills color
-role and emphasis intent from the public Design Conventions wiki while delegating
-token vocabulary and theme mechanics to architecture.
+目前尚无仓库设计决策批准本记录。它提炼了公共 Design Conventions wiki 中关于颜色角色和强调的意图，同时将 token 词汇和主题机制委托给架构。
 
 ## Open questions
 
-- **OQ1 — Primary-action scope.** Which containers reset the local primary-action
-  hierarchy?
-- **OQ2 — Representative themes.** Which themes and modes form the minimum
-  evidence set for role preservation?
+- **OQ1 — 主要操作范围。** 哪些容器会重置局部主要操作层级？
+- **OQ2 — 代表性主题。** 哪些主题和模式构成角色保留的最小证据集？
 
 ## Content boundary
 
-This file defines color role and emphasis. It does not define token names, raw
-values, contrast thresholds, theme APIs, component props, or audit checks.
+本文件定义颜色角色和强调。它不定义 token 名称、原始值、对比度阈值、主题 API、组件 prop 或审计检查。

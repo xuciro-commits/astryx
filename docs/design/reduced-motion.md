@@ -33,180 +33,111 @@ deciding_specs: []
 
 ## User intent
 
-A person who asks their device to reduce motion still sees every change Astryx
-shows, with no travel, scaling, or springing. On a touch screen a change
-cross-fades, as iOS does with Reduce Motion and Prefer Cross-Fade, except an
-in-place value change and a hover or selection color, which apply at once;
-with a mouse, trackpad, or keyboard the change is immediate.
+要求设备减少动效的用户仍能看到 Astryx 显示的每一个变化，但没有位移、缩放或弹跳。在触摸屏上，变化会交叉淡化，正如 iOS 的“减弱动态效果”和“优先交叉淡化”那样；但原地值变化以及悬停或选中颜色会立即生效。使用鼠标、触控板或键盘时，变化是即时的。
 
 ## Design principles
 
-- **DR1 — No travel under reduced motion.** While the person prefers reduced
-  motion (`prefers-reduced-motion: reduce`), a transition that a core component
-  animates — an entrance, an exit, a switch between presentations, or a change
-  of state — MUST NOT move, scale, resize, or spring its content. DR2 and DR3
-  say what each pointer gets instead.
+- **DR1 — 减少动效下没有位移。** 当用户偏好减少动效（`prefers-reduced-motion: reduce`）时，核心组件所动画的过渡——进入、退出、呈现之间的切换或状态变化——绝不能移动、缩放、调整大小或让其内容弹跳。DR2 和 DR3 说明每种指针改为获得什么。
 
 ## Anatomy and hierarchy
 
-| Role              | Purpose                                      | Required relationship                                                                    |
-| ----------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| origin state      | What the person sees before the change       | Leaves without moving                                                                    |
-| destination state | What the person sees after the change        | Appears in its final place, size, and order                                              |
-| cross-fade        | Connects the two states on a touch screen    | Changes opacity only, 200 ms or less                                                     |
-| direct movement   | Content the person moves with their own hand | Follows the pointer or finger, and coasts on after a throw (DR2); it is not a transition |
+| 角色     | 用途                     | 必需关系                                              |
+| -------- | ------------------------ | ----------------------------------------------------- |
+| 起始状态 | 变化前用户看到的内容     | 离开时不移动                                          |
+| 目标状态 | 变化后用户看到的内容     | 以其最终位置、尺寸和顺序出现                          |
+| 交叉淡化 | 在触摸屏上连接两个状态   | 仅改变不透明度，200 毫秒或更短                        |
+| 直接移动 | 用户用自己的手移动的内容 | 跟随指针或手指，并在抛出后继续滑行（DR2）；它不是过渡 |
 
 ## State representation
 
-| State                                             | Required representation                                                                         | Allowed variation          |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------- |
-| reduced motion, coarse pointer                    | Opacity-only cross-fade of 200 ms or less (DR2); in-place values and colors apply at once (DR2) | A shorter cross-fade       |
-| reduced motion, any other pointer                 | Immediate change (DR3), except a touch drag's release (DR2)                                     | None                       |
-| no reduced-motion preference, theme on `'system'` | Outside this record                                                                             | Component and theme motion |
-| a theme on `'always'` (DR2a)                      | As reduced motion, whatever the person's setting                                                | DR1–DR3                    |
+| 状态                              | 必需表示                                                                 | 允许的变体     |
+| --------------------------------- | ------------------------------------------------------------------------ | -------------- |
+| 减少动效，粗指针                  | 仅不透明度的交叉淡化，200 毫秒或更短（DR2）；原地值和颜色立即生效（DR2） | 更短的交叉淡化 |
+| 减少动效，任何其他指针            | 立即变化（DR3），触摸拖拽的释放除外（DR2）                               | 无             |
+| 无减少动效偏好，主题为 `'system'` | 不在本记录范围内                                                         | 组件和主题动效 |
+| 主题为 `'always'`（DR2a）         | 如同减少动效，无论用户设置如何                                           | DR1–DR3        |
 
 ## Responsive and input behavior
 
-- **DR2 — Touch presentations cross-fade.** Under reduced motion, when the
-  primary pointer is coarse (`pointer: coarse`), or when the release of a touch
-  drag starts the transition, each DR1 transition MUST change opacity only and MUST finish in 200 ms or less. An entering element
-  appears in its final place and fades in; a leaving element fades out where it
-  is. Momentum that continues a throw after release, a decay coast and its
-  settle at an edge, is direct movement and does not cross-fade, as scrolling
-  keeps decelerating under iOS Reduce Motion. A transition a component starts on
-  release, such as snapping to a detent, dismissing, or paging to a target,
-  still cross-fades. Native scrolling is the browser's and is untouched; a
-  coast Astryx animates itself after a throw behaves like native momentum
-  under Reduce Motion. An in-place value change, such as a progress fill's length or
-  another continuous value, does not cross-fade: under reduced motion it
-  applies at once on any pointer, with no added element (DEC-3). A control's
-  hover or selection color, such as SelectableCard's selection border and
-  ring, also applies at once on any pointer, as on iOS (DEC-4). So does the
-  onset of its press color. A color that changes with a part that cross-fades
-  follows that cross-fade, such as Switch's track with its thumb
-  (`component:Switch` FR15). A touch press's release keeps its fade of 200 ms
-  or less.
-- **DR2a — A theme may reduce motion for everyone.** A theme's
-  `reducedMotion: 'always'` applies DR1–DR3 for every person, whatever their
-  setting; `'system'` follows each person's setting (`spec:AST-108`). No theme
-  option loosens DR1–DR4.
-- **DR3 — Fine-pointer presentations change at once.** Under reduced motion,
-  every other DR1 transition, when the primary pointer is not coarse, MUST complete
-  immediately, with no animated property.
-- **DR4 — No opt-out in core.** A core component, its props, and its theme
-  values offer no way to keep travel, scaling, springs, or a longer animation
-  under reduced motion, and a component's own motion settings do not override
-  DR1–DR3.
+- **DR2 — 触摸呈现交叉淡化。** 在减少动效下，当主指针为粗指针（`pointer: coarse`），或触摸拖拽的释放启动过渡时，每个 DR1 过渡必须仅改变不透明度，并必须在 200 毫秒或更短时间内完成。进入的元素以其最终位置出现并淡入；离开的元素在原地淡出。释放后继续抛掷的动量——衰减滑行及其在边缘的停靠——属于直接移动，不会交叉淡化，正如 iOS 的“减弱动态效果”下滚动会继续减速。组件在释放时启动的过渡，例如吸附到档位、关闭或翻页到目标，仍会交叉淡化。原生滚动由浏览器负责，不受影响；Astryx 在抛掷后自行动画的滑行在“减弱动态效果”下表现得像原生动量。原地值变化，例如进度填充的长度或其他连续值，不会交叉淡化：在减少动效下，它在任何指针上都立即生效，不添加元素（DEC-3）。控件的悬停或选中颜色，例如 SelectableCard 的选中边框和光环，也会在任何指针上立即生效，如同 iOS（DEC-4）。其按下颜色的起始也是如此。随交叉淡化部件一起变化的颜色会跟随该交叉淡化，例如 Switch 的轨道随其滑块（`component:Switch` FR15）。触摸按压的释放保持其 200 毫秒或更短的淡化。
+- **DR2a — 主题可以为所有人减少动效。** 主题的 `reducedMotion: 'always'` 对每个人应用 DR1–DR3，无论其设置如何；`'system'` 遵循每个人的设置（`spec:AST-108`）。没有任何主题选项会放宽 DR1–DR4。
+- **DR3 — 精细指针呈现立即变化。** 在减少动效下，当主指针不是粗指针时，其他每个 DR1 过渡都必须立即完成，没有任何动画属性。
+- **DR4 — 核心中不允许退出。** 核心组件、其 props 和其主题值不提供在减少动效下保留位移、缩放、弹簧或更长动画的方式，组件自身的动效设置也不会覆盖 DR1–DR3。
 
-Content that moves with the person's own pointer or finger during a drag
-follows it as direct manipulation and is not a DR1 transition, and neither is
-the momentum that continues a throw (DR2). A transition a
-component starts when a touch drag is released, such as a swiped row sliding
-out or returning after a finger's swipe (`spec:AST-057` FR5), cross-fades as
-DR2 says, because a finger started it; one a trackpad started follows DR2 on
-a coarse primary pointer and DR3 otherwise. Any other transition, such as one sheet handing off to
-another (`component:BottomSheetSwitcher` FR3), follows DR2 on a coarse primary
-pointer and DR3 otherwise.
+在拖拽过程中随用户自己的指针或手指移动的内容作为直接操作跟随它，不是 DR1 过渡，继续抛掷的动量也不是（DR2）。组件在触摸拖拽释放时启动的过渡，例如滑动的行滑出或在手指滑动后返回（`spec:AST-057` FR5），按 DR2 所述进行交叉淡化，因为它是由手指启动的；由触控板启动的过渡在粗主指针下遵循 DR2，否则遵循 DR3。任何其他过渡，例如一个 sheet 交接给另一个（`component:BottomSheetSwitcher` FR3），在粗主指针下遵循 DR2，否则遵循 DR3。
 
 ## Accessibility intent
 
-Reduced motion removes movement, never information. The person still perceives
-that something appeared, left, or changed, and the result is the same as
-without the preference. Focus and announcements are unchanged.
+减少动效去除的是移动，绝不是信息。用户仍能感知到某些内容出现、离开或改变，结果与没有该偏好时相同。焦点和播报保持不变。
 
 ## Representative examples
 
-- With Reduce Motion on a phone, a menu opened by a tap fades in where it lands
-  instead of sliding or scaling in.
-- With Reduce Motion on a phone, a bottom sheet presented by a tap fades in at
-  its resting height instead of rising from the bottom edge.
-- With reduced motion and a mouse, a Tooltip, Popover, or Dialog appears and
-  disappears in one frame.
+- 在手机上开启“减弱动态效果”时，通过点按打开的菜单在落点处淡入，而不是滑入或缩放进入。
+- 在手机上开启“减弱动态效果”时，通过点按呈现的底部面板在其静止高度处淡入，而不是从底边升起。
+- 在减少动效且使用鼠标时，Tooltip、Popover 或 Dialog 在一帧内出现和消失。
 
 ## Visual references
 
-No normative assets are included.
+不包含规范性资产。
 
 ## Component contract links
 
-- `spec:AST-057` FR5 implements DR2 and DR3 for a swiped row's slide out,
-  spring back, and hold-out.
-- `component:BottomSheetSwitcher` FR3 and ORD1 implement DR2 and DR3 for a
-  handoff between sheets.
+- `spec:AST-057` FR5 为滑动行的滑出、弹回和保持实现 DR2 和 DR3。
+- `component:BottomSheetSwitcher` FR3 和 ORD1 为 sheet 之间的交接实现 DR2 和 DR3。
 
 ### Verification
 
-| Contract     | Verification                                                                   | Representative states                                                                                         | Failure signal                                                                                                              |
-| ------------ | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| DR1, DR2     | Real-browser computed animations under reduced motion, coarse pointer          | Layer entrance and exit (Tooltip, Popover, menu); Dialog; modal BottomSheet; a presentation switch            | An animated transform, size, or position; a spring; a property other than opacity; over 200 ms; a change with no cross-fade |
-| DR2 momentum | Real-browser computed animations under reduced motion after a touch throw      | A flick that coasts and settles at an edge; a release that snaps to a detent, dismisses, or pages to a target | A coast replaced by a cross-fade or stopped at release; a snap, dismissal, or page that travels instead of cross-fading     |
-| DR2 values   | Real-browser computed animations under reduced motion, coarse and fine pointer | A determinate ProgressBar's fill and another continuous value changing in place                               | A value that animates, cross-fades, or adds an element under reduced motion fails                                           |
-| DR2 colors   | Real-browser computed animations under reduced motion, coarse and fine pointer | Button's press onset; ClickableCard's, SelectableCard's and Thumbnail's hover, border and selection colors    | A hover or selection color, or a press onset, that animates or cross-fades; a touch release fade over 200 ms                |
-| DR1, DR3     | Real-browser computed animations under reduced motion, fine pointer            | The same components                                                                                           | Any animated property, or a frame where the change is partly applied                                                        |
-| DR4          | Component prop and theme review plus the browser checks above                  | A component with a motion prop or theme motion value set                                                      | A prop or theme value that restores travel or a longer animation under reduced motion                                       |
+| 契约     | 验证                                             | 代表性状态                                                                           | 失败信号                                                                                    |
+| -------- | ------------------------------------------------ | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| DR1、DR2 | 减少动效、粗指针下真实浏览器的计算动画           | 层进入和退出（Tooltip、Popover、菜单）；Dialog；模态 BottomSheet；呈现切换           | 动画化的 transform、尺寸或位置；弹簧；不透明度以外的属性；超过 200 毫秒；没有交叉淡化的变化 |
+| DR2 动量 | 触摸抛掷后减少动效下真实浏览器的计算动画         | 滑动后滑行并在边缘停靠；释放后吸附到档位、关闭或翻页到目标                           | 滑行被交叉淡化取代或在释放时停止；吸附、关闭或翻页发生位移而非交叉淡化                      |
+| DR2 值   | 减少动效、粗指针和精细指针下真实浏览器的计算动画 | 确定性 ProgressBar 的填充和另一个原地变化的连续值                                    | 在减少动效下动画化、交叉淡化或添加元素的值不合格                                            |
+| DR2 颜色 | 减少动效、粗指针和精细指针下真实浏览器的计算动画 | Button 的按下起始；ClickableCard、SelectableCard 和 Thumbnail 的悬停、边框和选中颜色 | 动画化或交叉淡化的悬停或选中颜色，或按下起始；超过 200 毫秒的触摸释放淡化                   |
+| DR1、DR3 | 减少动效、精细指针下真实浏览器的计算动画         | 相同的组件                                                                           | 任何动画属性，或变化被部分应用的帧                                                          |
+| DR4      | 组件 prop 和主题评审加上上述浏览器检查           | 设置了动效 prop 或主题动效值的组件                                                   | 在减少动效下恢复位移或更长动画的 prop 或主题值                                              |
 
 ## Decision log
 
 ### DEC-1 — Reduced motion matches iOS: cross-fade on touch, immediate otherwise
 
-**Reference:** `design:reduced-motion/DEC-1`
-**Decider:** `cixzhang`, `2026-10-24`
+**参考：** `design:reduced-motion/DEC-1`
+**决策者：** `cixzhang`、`2026-10-24`
 
-People who turn on Reduce Motion on a touch device expect the platform's
-behavior, where changes cross-fade instead of moving, and a fade keeps the
-change noticeable without travel. With a fine pointer the change happens at
-once, so nothing moves and nothing waits. One rule for every core component,
-with no component able to keep its motion, means the preference is honored
-everywhere the same way.
+在触摸设备上开启“减弱动态效果”的用户期望平台的行为：变化交叉淡化而不是移动，而淡化让变化保持可察觉且没有位移。使用精细指针时，变化立即发生，因此没有任何东西移动，也没有任何等待。对每个核心组件采用同一条规则，且没有任何组件可以保留自己的动效，这意味着该偏好在所有地方都以相同方式得到遵循。
 
-Rejected: a per-component setting that keeps full motion under reduced motion.
+已拒绝：在减少动效下保留完整动效的按组件设置。
 
 ### DEC-2 — Momentum after a throw continues, as on iOS
 
-**Reference:** `design:reduced-motion/DEC-2`
-**Decider:** `cixzhang`, `2026-10-24`
+**参考：** `design:reduced-motion/DEC-2`
+**决策者：** `cixzhang`、`2026-10-24`
 
-Under iOS Reduce Motion, a flicked scroll view keeps coasting and settles at
-its edge; only the transitions an app starts change to cross-fades. Matching
-that keeps a throw feeling like the person's own movement and keeps content
-from stopping dead at release, while snaps, dismissals, and paging, which a
-component starts, still cross-fade under DR2.
+在 iOS 的“减弱动态效果”下，轻扫的滚动视图会继续滑行并在其边缘停靠；只有应用启动的过渡才改为交叉淡化。与此保持一致能让抛掷感觉像是用户自己的动作，并防止内容在释放时戛然而止；而组件启动的吸附、关闭和翻页在 DR2 下仍会交叉淡化。
 
-Rejected: cross-fading or stopping momentum at release.
+已拒绝：在释放时交叉淡化或停止动量。
 
 ### DEC-3 — An in-place value change applies at once
 
-**Reference:** `design:reduced-motion/DEC-3`
-**Decider:** `cixzhang`, `2026-10-26`
+**参考：** `design:reduced-motion/DEC-3`
+**决策者：** `cixzhang`、`2026-10-26`
 
-A progress fill's length and similar continuous values change where they are;
-cross-fading two lengths would need a second element and still show motion.
-Under reduced motion they take the new value at once on any pointer.
+进度填充的长度和类似的连续值在其所在位置变化；对两个长度进行交叉淡化需要第二个元素，而且仍会显示运动。在减少动效下，它们在任意指针上立即采用新值。
 
-Rejected: a cross-fade between the old and new value on a touch screen.
+已拒绝：在触摸屏上对旧值和新值进行交叉淡化。
 
 ### DEC-4 — A color-only change of state applies at once
 
-**Reference:** `design:reduced-motion/DEC-4`
-**Decider:** `cixzhang`, `2026-11-03`; companion clause per the owner's motion rule (2026-11-04)
+**参考：** `design:reduced-motion/DEC-4`
+**决策者：** `cixzhang`、`2026-11-03`；附带条款依据所有者的动效规则（2026-11-04）
 
-A control's hover and selection colors, and the onset of its press color,
-change where they are and move nothing, so reduced motion has nothing to
-remove from them. Under reduced motion they take the new color at once on any
-pointer, as iOS does and as an in-place value does (DEC-3). A color that
-changes with a part that cross-fades, such as Switch's track with its thumb,
-follows that cross-fade, so the two never show different states. A touch
-press's release keeps its fade of 200 ms or less, which confirms the tap.
+控件的悬停和选中颜色，以及其按下颜色的起始，在所在位置变化且不移动任何东西，因此减少动效没有可从其中去除的内容。在减少动效下，它们在任意指针上立即采用新颜色，如同 iOS 和原地值（DEC-3）那样。随交叉淡化部件一起变化的颜色，例如 Switch 的轨道随其滑块，会跟随该交叉淡化，因此两者绝不会显示不同的状态。触摸按压的释放保持其 200 毫秒或更短的淡化，用以确认点按。
 
-Rejected: a cross-fade of a hover or selection color on a touch screen.
+已拒绝：在触摸屏上对悬停或选中颜色进行交叉淡化。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This record defines what a person sees under reduced motion. It does not
-define durations or easing outside reduced motion, tokens, CSS properties,
-animation APIs, continuous status indicators such as a spinner, or audit
-checks.
+本记录定义用户在减少动效下看到的内容。它不定义减少动效之外的持续时间或缓动、token、CSS 属性、动画 API、诸如 spinner 之类的连续状态指示器，或审计检查。

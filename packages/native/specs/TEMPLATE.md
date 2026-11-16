@@ -1,61 +1,52 @@
 # <Name> (<language>)
 
-<!-- Copy into the core component's folder as <Name>.<language>.spec.md (Swift:
-docs/specs/components/<ComponentRoot>/<Name>.swift.spec.md). Fill every section;
-write "None" rather than deleting one. Present tense: describe what the
-component does, not how it was decided. Rules: AST-093. -->
+<!-- 复制到 core 组件的文件夹中，命名为 <Name>.<language>.spec.md（Swift：
+docs/specs/components/<ComponentRoot>/<Name>.swift.spec.md）。填写每个章节；
+不要删除章节，而是写 "None"。使用现在时：描述组件做什么，而不是它是如何被决定的。
+规则：AST-093。 -->
 
-## Summary
+## 概述
 
-<!-- One to three sentences: who uses this component, in what situation, and
-what they get. -->
+<!-- 一到三句话：谁在什么情况下使用这个组件，以及他们能得到什么。 -->
 
-## Contract
+## 契约
 
-- Core component: `<Name>` (core contract in `packages/native/src/components/<Name>.ts`).
-- Platforms: `<ios | macos>`.
-- Platform props: <!-- props only this platform offers, or "None". Never rename
-  or change a core prop. -->
+- Core 组件：`<Name>`（core 契约位于 `packages/native/src/components/<Name>.ts`）。
+- 平台：`<ios | macos>`。
+- 平台 props：<!-- 仅此平台提供的 props，或 "None"。绝不重命名或更改 core prop。 -->
 
-## Native control
+## 原生控件
 
-<!-- The platform control this is built on (SwiftUI first, then UIKit or
-AppKit). If the component draws its own control, name the platform control you
-looked for and why it does not fit. -->
+<!-- 构建所基于的平台控件（优先 SwiftUI，其次 UIKit 或 AppKit）。如果组件自行绘制控件，请说明你查找过的平台控件以及它为何不适用。 -->
 
-## Platform guidelines
+## 平台指南
 
-<!-- The Apple Human Interface Guidelines pages this follows, and what each one
-decides here: hit target, Dynamic Type, SF Symbols, materials, motion and
-Reduce Motion, haptics. -->
+<!-- 遵循的 Apple 人机界面指南页面，以及每个页面在此决定的内容：点击目标、Dynamic Type、SF Symbols、材质、动效与“减弱动态效果”、触感反馈。 -->
 
-## Brand through the theme
+## 通过主题体现品牌
 
-| What           | Theme value                           |
-| -------------- | ------------------------------------- |
-| <!-- color --> | <!-- token or native theme member --> |
+| 项目          | 主题值                        |
+| ------------- | ----------------------------- |
+| <!-- 颜色 --> | <!-- token 或原生主题成员 --> |
 
-<!-- Every brand value the component reads. Nothing here is hard-coded. -->
+<!-- 组件读取的每一个品牌值。此处没有任何硬编码。 -->
 
-## States
+## 状态
 
-<!-- Every state the core contract names (default, pressed, disabled, loading,
-error, ...) and how each looks and behaves on this platform. -->
+<!-- core 契约指定的每一个状态（默认、按下、禁用、加载、错误等），以及每个状态在此平台上的外观和行为。 -->
 
-## Accessibility
+## 无障碍
 
-<!-- VoiceOver label, traits, and value for each state; focus behavior; what is
-announced. These come from the core contract. -->
+<!-- 每个状态的 VoiceOver 标签、特征和值；焦点行为；播报内容。这些来自 core 契约。 -->
 
-## Test and validation
+## 测试与验证
 
-- Unit tests: <!-- what the package's test target covers -->
-- Contract: parameters match the generated contract; drift tests pass.
-- Accessibility: <!-- assertions, and the largest Dynamic Type check -->
-- Theme: renders from two different themes with no value of its own.
-- Captures: every state, light and dark, largest text size, from a simulator or
-  device. <!-- list anything not measured -->
+- 单元测试：<!-- 包的测试目标覆盖的内容 -->
+- 契约：参数与生成的契约一致；漂移测试通过。
+- 无障碍：<!-- 断言，以及最大 Dynamic Type 检查 -->
+- 主题：使用两个不同主题渲染，且自身不带任何值。
+- 截图：每个状态、浅色和深色、最大字号，来自模拟器或设备。<!-- 列出任何未测量的内容 -->
 
-## Open questions
+## 待解决问题
 
-<!-- Unanswered questions only, or "None". -->
+<!-- 仅未回答的问题，或 "None"。 -->

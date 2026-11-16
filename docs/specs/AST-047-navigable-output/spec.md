@@ -20,188 +20,95 @@ affects_consumer_docs: [cli]
 
 ## Intent
 
-Every read the CLI prints is a node in a graph. A reader who lands anywhere,
-from a search hit, a link, or a guess, must see where they are and every move
-they can make next, as commands they can run: up to the level the node sits
-in, down to its children, across to its neighbors, and out to the nodes it
-names. Nobody has to know a route in advance or read a long page to find one
-fact: they search, land on the smallest node that answers, and move from there.
+CLI 打印的每一次读取都是图中的一个节点。无论读者从哪里进入——搜索结果、链接还是猜测——都必须看到自己身在何处，以及接下来能做的每一个移动，而且这些移动都是可直接运行的命令：向上到该节点所在的层级，向下到它的子节点，横向到它的邻居，向外到它所指向的节点。谁都不必事先知道某条路线，也不必为了找到一个事实而读一长页内容：他们搜索，落到能回答该问题的最小节点，再从那里继续移动。
 
-This record owns the moves a read offers and how they appear in text and JSON.
-`spec:AST-046` owns the docs tree those moves walk first.
+本记录负责一次读取所提供的移动，以及这些移动在文本和 JSON 中如何呈现。`spec:AST-046` 负责这些移动首先遍历的文档树。
 
 ## Non-goals
 
-- What the nodes of each command are. The docs tree is `spec:AST-046`'s; each
-  command that adopts this record decides its own nodes.
-- Interactive navigation. There are no prompts, pagers, or state kept between
-  runs; each move is its own command.
-- Links out of the CLI, such as docsite URLs.
+- 各条命令的节点是什么。文档树归 `spec:AST-046` 所有；每个采用本记录的命令自行决定其节点。
+- 交互式导航。没有提示符、分页器，也不在多次运行之间保留状态；每个移动都是独立的命令。
+- 指向 CLI 之外的链接，例如 docsite URL。
 
 ## Requirements
 
-- **FR1 — A read names where it is.** A read below the top MUST name its
-  place: a docs-tree node its breadcrumb, a section its topic, and a search hit
-  the path of titles above it (`Astryx CLI › API › Functions › search()`).
-- **FR2 — Up.** Every read except the top MUST offer the command that opens the
-  level it sits in: for a section, its topic's section list; for a node or a
-  topic, the level it sits in (a guide's namespace, or the Guides or Foundations
-  level for a flat topic, `spec:AST-046` FR12); for a top-level namespace, the
-  topic list.
-- **FR3 — Down.** A read that has children MUST list them, each with its
-  summary, and give the command that opens one: a namespace its children, a
-  topic's index its sections, and the topic list its topics and namespaces. In text,
-  a topic with more than one section is read one level at a time: a bare read
-  lists its sections, and `--full` prints the whole doc; the dense variant is
-  written to be read whole, so `--dense` prints it whole. The JSON contract is
-  unchanged: `docs(topic)` and `--json` return the whole doc, and `--index` its
-  sections.
-- **FR4 — Across.** A read with a place in an ordered level MUST offer the
-  commands that open the item before it and the item after it, when they exist:
-  a section's neighbors in its topic, and a docs-tree node's neighbors in its
-  parent's slot.
-- **FR5 — Out.** A read that names another node MUST give the command that
-  opens it: a command doc its API function, a function doc its command, and a
-  typed doc each doc it lists as related.
-- **FR6 — Search lands on nodes.** Each search hit MUST be one node, the
-  smallest that answers (`spec:AST-046` FR10), with the command that reads it
-  and the command that opens the level above it.
-- **FR7 — Moves are commands, and JSON carries them.** In text, each move MUST
-  be a whole command that starts with the command name `spec:AST-081` FR5
-  picks. In JSON, a read MUST carry its moves as data: `links`, with `up`,
-  `previous` and `next` where FR4 applies, and
-  `related` where FR5 applies to a typed doc, each an `astryx ...` command; a search hit carries `command` and
-  `parent`. `links` MUST be present on every read but the topic list, as a field
-  added to each existing response, and the published types MUST type each move
-  as an `astryx docs` command. The text view
-  MUST stay a projection of the JSON.
-- **FR8 — A wrong move says where to go.** A route, topic, or section that does
-  not exist MUST fail with a stable error code and suggest the nodes a reader
-  can reach from the nearest level that does exist (`spec:AST-046` FR6).
-- **FR9 — Moves are derived, not written.** The CLI MUST derive Up, Down, and
-  Across from the docs tree and a topic's sections, and Out from a typed doc's
-  own fields, so no doc lists its own moves and every provider's docs, from
-  Core, the CLI, or an integration, get the same moves. A link from one doc to
-  another MUST name its target by doc identity, never by route or title. A bare
-  name in a typed field (`fn`, `command`, `related`) names a doc of its own
-  provider, so it is a doc identity: it resolves among the kinds its field
-  allows, and a name that matches docs of more than one allowed kind is an
-  error, never a silent pick. Inside a doc's text, a link MUST be written
-  `{@link <target>}` and read as the command that opens its doc; a link that
-  names no doc MUST print as written. A topic's section MAY hold a `reference`
-  block, which includes the doc it names instead of a copy: a read MUST inline
-  it as that doc's content (a schema's content narrowed to the fields its
-  projection names), then a line naming that doc and the command that opens
-  it, so a read still returns only the stable content blocks. A target, field,
-  or projection the block cannot include MUST fail the authoring check.
-  `workflow` and `collection` blocks (GraphContentBlock) belong to a namespace
-  doc's `blocks`, which a later phase renders. A target without a
-  provider names a doc of the provider that wrote the link: in a topic that
-  merges sections from several providers, each section resolves against its
-  own. A component doc's text fields (`description`, `summary`, `label`, at any
-  depth, an example's label included; never code or defaults) and a topic's description and
-  summary hold links too, and a component doc's bare target names a doc of
-  the component's provider, where a Core component's provider is the CLI's
-  docs, which hold Core's guides. A search hit's description reads the same.
-  The CLI MUST resolve
-  every link when it reads a doc, and Doctor MUST warn on a link that is
-  unresolved or ambiguous. A link names a doc identity, not a provider instance,
-  so it survives version changes.
-- **FR10 — Phase 1 covers docs and search.** `astryx docs` and `astryx search`
-  MUST meet FR1–FR9, FR11, and FR12. A command a doc shows as an example, in a code
-  block or in prose, is not a link: FR11 keeps it true. Other commands adopt
-  this record in later phases, each as its own change.
-- **FR11 — Nothing a read shows can go stale.** A move or a cross-link MUST be
-  derived when the read is made, never stored in a doc. Every other `astryx`
-  command that a doc, a hint line, or the repository's agent prompt shows MUST
-  name a real command and only options that command takes, and every
-  `astryx docs` command it shows MUST open; a test MUST fail the build
-  otherwise. A command a doc shows wrong on purpose, as an error-code example,
-  MUST be listed as such, and the list MUST fail when an entry is no longer
-  shown.
-- **FR12 — Every doc is one walk away.** Every doc a provider ships MUST be
-  reachable from `astryx docs` by following the moves reads offer: Down from the
-  topic list and each namespace, then Across and Out. Neighbors MUST agree: the
-  read an item's Next opens names that item as its Previous. A test MUST walk
-  the whole graph from the top and fail on a doc file it cannot reach, a move
-  that does not open, or a link that names no doc.
+- **FR1 — 一次读取会指明自己所在的位置。** 顶层以下的读取必须指明其位置：文档树节点给出其面包屑，小节给出其主题，搜索结果给出其上方标题的路径（`Astryx CLI › API › Functions › search()`）。
+- **FR2 — 向上。** 除顶层外的每次读取都必须提供打开其所在层级的命令：对小节，给出其主题的小节列表；对节点或主题，给出其所在层级（指南所属的命名空间，或扁平主题对应的 Guides 或 Foundations 层级，`spec:AST-046` FR12）；对顶层命名空间，给出主题列表。
+- **FR3 — 向下。** 有子节点的读取必须列出它们，每一项都带其摘要，并给出打开其中一项的命令：命名空间给出其子节点，主题的索引给出其小节，主题列表给出其主题与命名空间。在文本中，小节多于一个的主题按一次一层的方式读取：不带参数的读取列出其小节，`--full` 打印整篇文档；dense 变体本身就是为整篇读取而写的，因此 `--dense` 会整篇打印。JSON 契约不变：`docs(topic)` 和 `--json` 返回整篇文档，`--index` 返回其小节。
+- **FR4 — 横向。** 在有顺序的层级中占据位置的读取，必须在存在时提供打开其前一项和后一项的命令：小节在其主题中的邻居，以及文档树节点在其父级槽位中的邻居。
+- **FR5 — 向外。** 指明了另一个节点的读取必须给出打开它的命令：命令文档给出其 API 函数，函数文档给出其命令，类型化文档给出它列为相关的每一篇文档。
+- **FR6 — 搜索落在节点上。** 每个搜索结果都必须是一个节点，即能回答问题的最小节点（`spec:AST-046` FR10），并带上读取它的命令和打开其上一层的命令。
+- **FR7 — 移动是命令，JSON 承载它们。** 在文本中，每个移动都必须是一条完整命令，以 `spec:AST-081` FR5 选定的命令名开头。在 JSON 中，读取必须把其移动作为数据携带：`links`，在 FR4 适用处包含 `up`、`previous` 和 `next`，在 FR5 对类型化文档适用处包含 `related`，每一项都是一条 `astryx ...` 命令；搜索结果携带 `command` 和 `parent`。除主题列表外，每次读取都必须存在 `links`，作为添加到每个现有响应中的字段，并且已发布的类型必须把每个移动都标注为 `astryx docs` 命令。文本视图必须始终是 JSON 的投影。
+- **FR8 — 错误的移动会说明该往哪里去。** 不存在的路线、主题或小节必须以稳定的错误码失败，并建议读者可从最近一个确实存在的层级到达的节点（`spec:AST-046` FR6）。
+- **FR9 — 移动是推导出来的，不是写死的。** CLI 必须从文档树和主题的小节推导出向上、向下和横向移动，并从类型化文档自身的字段推导出向外移动，这样没有文档需要列出自己的移动，而且来自 Core、CLI 或集成的每个提供方的文档都会得到相同的移动。从一篇文档到另一篇文档的链接必须以文档标识指明其目标，绝不能以路线或标题指明。类型化字段（`fn`、`command`、`related`）中的裸名指的是其所属提供方的某篇文档，因此它是一个文档标识：它在其字段允许的类别中解析，若某个名称匹配不止一个允许类别的文档，那就是错误，绝不是静默选取。在文档正文内部，链接必须写成 `{@link <target>}`，并读取为打开其文档的命令；不指向任何文档的链接必须按原样打印。主题的小节可以包含一个 `reference` 块，它纳入其指明的文档而不是一份副本：读取必须把它内联为该文档的内容（schema 的内容收窄为该投影所指明的字段），随后一行指明该文档以及打开它的命令，因此读取仍然只返回稳定的内容块。该块无法纳入的目标、字段或投影必须使创作检查失败。`workflow` 和 `collection` 块（GraphContentBlock）属于命名空间文档的 `blocks`，由后续阶段渲染。不带提供方的目标指的是写下该链接的提供方的某篇文档：在合并了多个提供方小节的某个主题中，每个小节针对其自身的提供方解析。组件文档的文本字段（`description`、`summary`、`label`，任意深度，包括示例的 label；从不包括代码或默认值）以及主题的描述和摘要也持有链接，组件文档的裸目标指的是该组件所属提供方的某篇文档，其中 Core 组件的提供方是 CLI 的文档，后者持有 Core 的指南。搜索结果的描述同样如此。CLI 在读取文档时必须解析每一条链接，Doctor 必须对未解析或有歧义的链接发出警告。链接指的是文档标识，而不是提供方实例，因此它能经受版本变化。
+- **FR10 — 阶段 1 覆盖文档与搜索。** `astryx docs` 和 `astryx search` 必须满足 FR1–FR9、FR11 和 FR12。文档在代码块或正文中作为示例展示的命令不是链接：FR11 保证它是真实的。其他命令在后续阶段采用本记录，每个命令都作为各自独立的改动。
+- **FR11 — 读取所展示的内容都不会过时。** 移动或交叉链接必须在进行读取时推导出来，绝不存储在文档中。文档、提示行或仓库的 agent 提示所展示的其他每条 `astryx` 命令，都必须指明真实存在的命令且只使用该命令接受的选项，而它所展示的每条 `astryx docs` 命令都必须能打开；否则测试必须使构建失败。文档故意展示为错误的命令（作为错误码示例）必须按此列入清单，当某条目不再被展示时该清单必须失败。
+- **FR12 — 每篇文档都只需走一遍即可到达。** 提供方随附的每篇文档都必须能从 `astryx docs` 出发，沿着读取所提供的移动到达：从主题列表和每个命名空间向下，然后横向和向外。邻居必须一致：某项的 Next 所打开的读取会把该项指明为其 Previous。测试必须从顶部遍历整张图，并在遇到无法到达的文档文件、无法打开的移动，或不指向任何文档的链接时失败。
 
 ### Platform support
 
-The moves are plain commands that start with the command name `spec:AST-081`
-FR5 picks, so they run in any shell the CLI runs in. JSON carries them without
-that name.
+这些移动是以 `spec:AST-081` FR5 选定的命令名开头的普通命令，因此它们能在 CLI 运行的任何 shell 中运行。JSON 在不带该命令名的情况下承载它们。
 
 ## Current-state impact
 
-Before this record, only docs-tree namespaces and typed docs offered a way up,
-and only in text; a section, a topic, and a topic's index were dead ends.
+在本记录之前，只有文档树命名空间和类型化文档提供向上的途径，而且仅在文本中；小节、主题以及主题的索引都是死路。
 
-Phase 1 changes:
+阶段 1 的改动：
 
-- in text, a bare topic read lists the topic's sections when it has more than
-  one; `--full` and `--dense` print it whole; `docs(topic)` and `--json` still
-  return the whole doc;
-- `docs.node`, `docs.index`, `docs.detail`, and `docs.detail.section` carry
-  `links`: `up` on every read, and `previous` and `next` on sections and
-  docs-tree nodes;
-- a section read, a whole-topic read, and a topic's index end with their moves;
-- a docs search hit carries `parent` and the path of titles above it;
-- links between docs are typed (`{@link <target>}` in text, and the typed
-  fields), resolved on every read, and checked by Doctor, which warns; the
-  hand-written `astryx docs` links in the CLI's own docs become typed links;
-- a test proves every command a doc or hint shows is a real command with real
-  options, and every docs command opens;
-- a test walks the whole graph from the top and reaches every doc file the CLI
-  ships, as FR12 states.
+- 在文本中，不带参数的主题读取在小节多于一个时列出该主题的小节；`--full` 和 `--dense` 整篇打印；`docs(topic)` 和 `--json` 仍返回整篇文档；
+- `docs.node`、`docs.index`、`docs.detail` 和 `docs.detail.section` 携带 `links`：每次读取都有 `up`，小节和文档树节点还有 `previous` 和 `next`；
+- 小节读取、整主题读取和主题的索引都以它们的移动结束；
+- 文档搜索结果携带 `parent` 及其上方标题的路径；
+- 文档之间的链接是有类型的（文本中的 `{@link <target>}`，以及那些类型化字段），在每次读取时解析，并由 Doctor 检查（它发出警告）；CLI 自身文档中手写的 `astryx docs` 链接变为类型化链接；
+- 测试证明文档或提示所展示的每条命令都是带真实选项的真实命令，且每条 docs 命令都能打开；
+- 测试从顶部遍历整张图并到达 CLI 随附的每个文档文件，如 FR12 所述。
 
-`architecture:cli-surface` INV27 carries this record into the code.
+`architecture:cli-surface` INV27 把本记录带入代码。
 
 ## Verification
 
-| Contract     | Verification                                                                                      | Representative states                                                                                                        | Mutation or failure expectation                                                                     |
-| ------------ | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| FR1–FR5, FR7 | `docs()` dispatcher tests, CLI runs, and the graph walk (`packages/cli/test/docs-graph.test.mjs`) | a top-level namespace; a typed doc in the middle of its slot; the first and the last section of a guide; a flat topic, whole | A read with no way up, a move that does not run, or a text move with no `links`                     |
-| FR6          | Search tests                                                                                      | a section hit; a docs-tree hit; a topic hit                                                                                  | A hit without `parent`, or a `parent` that does not open the level above                            |
-| FR8          | `spec:AST-046` FR6 tests                                                                          | an unknown route, topic, and section                                                                                         | A dead end without suggestions                                                                      |
-| FR9          | Link tests, the doctor docs-tree check, and the graph walk                                        | an inline link, a link in a list and a table, and a typed field; a link to another provider; a link in code ticks            | A link that names no doc and still passes, a link resolved by guess, or a stored route              |
-| FR11         | The graph walk's shown-commands check                                                             | commands in doc prose and code blocks, CLI hint lines, and the agent prompt; the wrong-on-purpose list                       | A command or option the CLI does not have, a docs command that does not open, or a stale list entry |
-| FR12         | The graph walk (`packages/cli/test/docs-graph.test.mjs`)                                          | every tree node; every doc file the CLI ships; Next and Previous on sections, topics, guides, and tree nodes                 | A doc file no walk reaches, a move that does not open, or a Next whose read names another Previous  |
+| 契约         | 验证                                                                               | 代表性状态                                                                               | 变异或失败预期                                                                          |
+| ------------ | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| FR1–FR5、FR7 | `docs()` 调度器测试、CLI 运行以及图遍历（`packages/cli/test/docs-graph.test.mjs`） | 顶层命名空间；位于其槽位中部的类型化文档；指南的第一个和最后一个小节；一个扁平主题，整篇 | 没有向上途径的读取、无法运行的移动，或没有 `links` 的文本移动                           |
+| FR6          | 搜索测试                                                                           | 小节命中；文档树命中；主题命中                                                           | 没有 `parent` 的命中，或无法打开上一层的 `parent`                                       |
+| FR8          | `spec:AST-046` FR6 测试                                                            | 未知的路线、主题和小节                                                                   | 没有建议的死路                                                                          |
+| FR9          | 链接测试、doctor 文档树检查以及图遍历                                              | 行内链接、列表和表格中的链接，以及类型化字段；指向另一个提供方的链接；代码刻度中的链接   | 不指向任何文档却能通过的链接、靠猜测解析的链接，或存储的路线                            |
+| FR11         | 图遍历的已展示命令检查                                                             | 文档正文和代码块中的命令、CLI 提示行，以及 agent 提示；故意写错的清单                    | CLI 没有的命令或选项、无法打开的 docs 命令，或过时的清单条目                            |
+| FR12         | 图遍历（`packages/cli/test/docs-graph.test.mjs`）                                  | 每个树节点；CLI 随附的每个文档文件；小节、主题、指南和树节点上的 Next 与 Previous        | 没有任何遍历能到达的文档文件、无法打开的移动，或某个 Next 的读取把另一项指明为 Previous |
 
 ## Decision log
 
 ### DEC-1 — A move is a command, not a route
 
-**Reference:** `spec:AST-047/DEC-1`
-**Decider:** `josephfarina`, `2026-09-28`
+**参考：** `spec:AST-047/DEC-1`
 
-Each move is a whole `astryx ...` command that a reader can run as is.
+**决策者：** `josephfarina`、`2026-09-28`
 
-Rejected: bare routes. They make the reader rebuild the command and know which
-argument a section key goes in.
+每个移动都是一条完整的 `astryx ...` 命令，读者可以直接运行。
+
+已否决：裸路线。它们让读者必须重新拼出命令，并且要知道小节键该放在哪个参数里。
 
 ### DEC-2 — Across names the neighbors, not the whole level
 
-**Reference:** `spec:AST-047/DEC-2`
-**Decider:** `josephfarina`, `2026-09-28`
+**参考：** `spec:AST-047/DEC-2`
 
-FR4 names the item before and the item after; the whole level is one move up.
+**决策者：** `josephfarina`、`2026-09-28`
 
-Rejected: listing every sibling on every read, which makes each leaf as long as
-its parent.
+FR4 指明前一项和后一项；整个层级则是向上一次移动。
+
+已否决：在每次读取时列出所有兄弟项，这会让每个叶子节点和其父级一样长。
 
 ### DEC-3 — Adopt per command, docs and search first
 
-**Reference:** `spec:AST-047/DEC-3`
-**Decider:** `josephfarina`, `2026-09-28`
+**参考：** `spec:AST-047/DEC-3`
 
-Readers get lost in the docs first, and search is how they arrive. Other
-commands adopt the moves as their own changes.
+**决策者：** `josephfarina`、`2026-09-28`
 
-Rejected: one change for every command, which is too large to review and
-decides every command's nodes at once.
+读者最先在文档中迷路，而搜索正是他们到达的方式。其他命令在各自的改动中采用这些移动。
+
+已否决：为每条命令做一次改动，这样的改动太大而难以评审，并且会一次性决定每条命令的节点。
 
 ## Open questions
 
-- Which command adopts this record next, and what its nodes are.
-- Whether top-level namespaces offer `previous` and `next` among each other.
+- 下一条采用本记录的命令是哪条，以及它的节点是什么。
+- 顶层命名空间之间是否互相提供 `previous` 和 `next`。

@@ -32,170 +32,141 @@ system_specs: [spec:AST-038, spec:AST-085, spec:AST-102]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                                            |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | None changes. InputGroup takes `label`, `isLabelHidden`, `description`, `isOptional`, `isRequired`, `isDisabled`, `size`, `status`, `labelTooltip`, and input and addon children.                                                                   |
-| Behavior                | One Field-labelled `role="group"` row at the shared element height that joins admitted inputs, InputGroupText addons, and Button addons into one connected shape, and gives each grouped input the group's name and description.                    |
-| End-user impact         | People see a prefix, input, and suffix as one field, and screen-reader users hear the group label with each input's own label. A disabled group disables its inputs and Button addons together.                                                     |
-| Builder impact          | None.                                                                                                                                                                                                                                               |
-| Compatibility/readiness | Records shipped behavior; no API or DOM change and no changed prop value. The row holds a fixed height, Button addons scale under reduced motion, and the row accepts root styling against FR10's scope; all are listed under Current-state impact. |
-| Review checks           | Reject a grouped input that loses the group label or description, inner corners that round, a disabled group whose compatible children stay operable, or an internal input button reshaped as an addon.                                             |
-| Governing rules         | `family:input-fields` FR3, AV3; `architecture:component-size-cascade` INV3–INV8; `spec:AST-085` FR7; `spec:AST-038` FR7, FR8; `spec:AST-102` FR4; `design:reduced-motion` DR1.                                                                      |
+| Area          | Contract                                                                                                                                                                          |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公开契约      | 无变更。InputGroup 接受 `label`、`isLabelHidden`、`description`、`isOptional`、`isRequired`、`isDisabled`、`size`、`status`、`labelTooltip`，以及输入与附加组（addon）子元素。    |
+| 行为          | 在共享元素高度上，由 Field 标记标签的 `role="group"` 行把已获准的输入、InputGroupText 附加组和 Button 附加组连接成一个整体形状，并为每个分组的输入提供该组的名称与描述。          |
+| 终端用户影响  | 用户会把前缀、输入和后缀看作一个字段；屏幕阅读器用户会听到组标签与每个输入自身的标签一起播报。禁用状态的分组会同时禁用其输入与 Button 附加组。                                    |
+| 构建者影响    | 无。                                                                                                                                                                              |
+| 兼容性/就绪度 | 记录已交付的行为；无 API 或 DOM 变更，也无发生变化的 prop 值。该行保持固定高度，Button 附加组在减少动态效果下缩放，且该行按 FR10 的范围接受根样式；这些都在“当前状态影响”下列出。 |
+| 审查检查      | 拒绝以下情况：分组输入丢失组标签或描述；内侧圆角被倒圆；禁用分组中兼容子元素仍可操作；内部输入按钮被重塑为附加组。                                                                |
+| 治理规则      | `family:input-fields` FR3、AV3；`architecture:component-size-cascade` INV3–INV8；`spec:AST-085` FR7；`spec:AST-038` FR7、FR8；`spec:AST-102` FR4；`design:reduced-motion` DR1。   |
 
-This table is a review projection; the body below is authoritative.
+本表是审查视角的投影；以下正文具有权威性。
 
 ## Intent
 
-InputGroup joins an input with prefix and suffix addons into one connected
-row, as `family:input-fields` assigns: it owns the row height, the connected
-outer shape, edge alignment, and the group's label and supporting text.
-Consumer usage lives in `InputGroup.doc.mjs`.
+InputGroup 把输入与前缀、后缀附加组连接成一行，正如 `family:input-fields` 所分配：它拥有行高、连接的外形、边缘对齐，以及该组的标签与支持性文本。使用方的用法位于 `InputGroup.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`; `size="md"`, label visible, not disabled
-- Compatibility class: records shipped behavior; no public prop, default,
-  export, or DOM change
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 保留的已发布默认值：`yes`；`size="md"`、标签可见、未禁用
+- 兼容性类别：记录已交付的行为；无公开 prop、默认值、导出或 DOM 变更
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方的迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The group Field (label, description, optional or required marker, label
-  tooltip, detached status message) and the `role="group"` row.
-- The row height and the size it provides to descendants up to the next layer boundary.
-- The group context that tells admitted children they are grouped and which
-  label and description ids to compose.
-- Connected geometry for direct Button addons.
-- The `input-group` target.
+- 组 Field（标签、描述、可选或必需标记、标签 tooltip、分离的状态消息）以及 `role="group"` 行。
+- 行高，以及它提供给后代、直到下一个层级边界的尺寸。
+- 组上下文，用于告知获准的子元素它们已被分组，以及应组合哪些标签 ID 与描述 ID。
+- 直接 Button 附加组的连接几何。
+- `input-group` 目标。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Each grouped input's own adaptation (hidden inner label, no nested Field,
-  grouped corners, status icon handling) — owned by that input under
-  `family:input-fields` FR3.
-- The text addon — owned by `component:InputGroupText` (this lane).
-- Which inputs are admitted — decided per component under
-  `family:input-fields` FR3; membership alone does not admit one.
-- Disabling caller-owned controls that do not read the group — not provided.
+- 每个分组输入自身的适配（隐藏内部标签、不嵌套 Field、分组圆角、状态图标处理）——由该输入在 `family:input-fields` FR3 下拥有。
+- 文本附加组——由 `component:InputGroupText` 拥有（本泳道）。
+- 哪些输入获准——由各组件在 `family:input-fields` FR3 下决定；仅凭成员资格并不使其获准。
+- 禁用不读取该组的调用方自有控件——不提供。
 
 ## Public concepts
 
-| Concept  | Closed values or states                         | Meaning                                         | Availability by variant/orientation/state | Default                   | Owner                  | Stability | Invalid-value behavior           |
-| -------- | ----------------------------------------------- | ----------------------------------------------- | ----------------------------------------- | ------------------------- | ---------------------- | --------- | -------------------------------- |
-| Size     | `sm`, `md`, `lg`                                | Row height and default size for children.       | Always.                                   | Inherited size, else `md` | `family:input-fields`  | Stable    | TypeScript rejects other values. |
-| Status   | `error`, `warning`, `success`, optional message | Group validation state.                         | Always; the message is detached.          | none                      | `component:InputGroup` | Stable    | TypeScript rejects other types.  |
-| Disabled | off, on                                         | Disables the group and its compatible children. | Always.                                   | off                       | `component:InputGroup` | Stable    | Not applicable.                  |
+| Concept | Closed values or states                 | Meaning                  | Availability by variant/orientation/state | Default                 | Owner                  | Stability | Invalid-value behavior    |
+| ------- | --------------------------------------- | ------------------------ | ----------------------------------------- | ----------------------- | ---------------------- | --------- | ------------------------- |
+| 尺寸    | `sm`、`md`、`lg`                        | 行高与子元素的默认尺寸。 | 始终。                                    | 继承的尺寸，否则为 `md` | `family:input-fields`  | 稳定      | TypeScript 拒绝其他值。   |
+| 状态    | `error`、`warning`、`success`、可选消息 | 组的校验状态。           | 始终；消息是分离的。                      | 无                      | `component:InputGroup` | 稳定      | TypeScript 拒绝其他类型。 |
+| 禁用    | off、on                                 | 禁用该组及其兼容子元素。 | 始终。                                    | off                     | `component:InputGroup` | 稳定      | 不适用。                  |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Basis                                                                               |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| FR1 | InputGroup renders one Field in group-label mode with `label` (visible unless `isLabelHidden`), `description`, the optional or required marker, `labelTooltip`, and `status` as a detached message. Inside it, the row is one element with `role="group"`, `aria-labelledby` set to the label, and `aria-describedby` set to the description and status message ids that exist.                                                                                                                                                                                                                                                                                                                                     | `family:input-fields` FR3; current tests                                            |
-| FR2 | Grouped inputs receive the label id and description ids through context. Each admitted input is named by the group label plus its own label and described by the group's description and status plus its own.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | `family:input-fields` FR3; current tests                                            |
-| FR3 | The row is inline-flex, stretched, and transparent; its height is the shared element height for its size, as a minimum that grows with a set text size under `spec:AST-102` FR4. Implementation gap: the height is fixed at that size. It provides its resolved size to descendants up to the next layer boundary (`spec:AST-038` FR7, FR8): explicit `size`, then the nearest outer provider, then `md`.                                                                                                                                                                                                                                                                                                           | `family:input-fields` FR3; `architecture:component-size-cascade`; current source    |
-| FR4 | Direct Button addons join the shape: no inner corner rounding toward a neighbour, full row height, and their keyboard focus ring raised above the adjacent member. Buttons deeper inside a grouped input (clear, calendar, disclosure), and a Button addon wrapped in a Tooltip or HoverCard (not a direct child), keep their own shape. A following popover, template, or dialog element does not count as a neighbour. Addons are `component:Button`s outside a ButtonGroup, so their press scale MUST NOT apply under reduced motion (`design:reduced-motion` DR1). Implementation gap: it still applies under reduced motion.                                                                                   | Current source; `design:reduced-motion` DR1                                         |
-| FR5 | The `role="group"` row inside the Field box carries `astryx-input-group` and reflects `data-size` and `data-status`. `ref`, `data-testid`, and other DOM props reach the row. InputGroup composes Field, so `family:input-fields` FR10 forbids root `xstyle`, `className`, and `style`. Implementation gap: they are accepted and reach the row.                                                                                                                                                                                                                                                                                                                                                                    | `architecture:component-theming-surface`; `family:input-fields` FR10; current tests |
-| FR6 | The group is disabled when its own `isDisabled` or an enclosing InputGroup's is true. A disabled group sets `aria-disabled="true"` on the row, dims it to half opacity with the default cursor, passes the disabled state to the group Field, and disables every compatible child (TextInput, NumberInput, Selector, MultiSelector, DateInput, TimeInput, Typeahead, Tokenizer as an admitted member under `family:input-fields` FR3, and Button addons) and nested group up to the next layer boundary; each child then follows its own disabled contract. A child or nested group that disables itself stays disabled when the group is enabled. Caller-owned controls that do not read the group are unaffected. | `spec:AST-085` FR7; `spec:AST-038` FR7, FR8; current tests                          |
+| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Basis                                                                          |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| FR1 | InputGroup 以组标签模式渲染一个 Field，包含 `label`（除非 `isLabelHidden` 否则可见）、`description`、可选或必需标记、`labelTooltip`，以及作为分离消息的 `status`。在其中，该行是单个元素，带 `role="group"`、设置为该标签的 `aria-labelledby`，以及设置为存在的描述与状态消息 ID 的 `aria-describedby`。                                                                                                                                                                                                                         | `family:input-fields` FR3；当前测试                                            |
+| FR2 | 分组输入通过上下文接收标签 ID 与描述 ID。每个获准的输入由组标签加上其自身标签来命名，并由组的描述与状态加上其自身的描述与状态来描述。                                                                                                                                                                                                                                                                                                                                                                                            | `family:input-fields` FR3；当前测试                                            |
+| FR3 | 该行为 inline-flex、拉伸且透明；其高度是该尺寸下的共享元素高度，作为最小值，该最小值会随设置的文本尺寸在 `spec:AST-102` FR4 下增长。实现缺口：高度固定为该尺寸。它把解析后的尺寸提供给后代，直到下一个层级边界（`spec:AST-038` FR7、FR8）：显式 `size`，然后是最近的外层 provider，然后是 `md`。                                                                                                                                                                                                                                 | `family:input-fields` FR3；`architecture:component-size-cascade`；当前源码     |
+| FR4 | 直接 Button 附加组加入该形状：朝邻居的内侧圆角不倒圆，占满行高，且其键盘焦点环提升到相邻成员之上。分组输入更内部的按钮（清除、日历、展开）以及包裹在 Tooltip 或 HoverCard 中的 Button 附加组（不是直接子元素）保持自身形状。其后的 popover、template 或 dialog 元素不计为邻居。附加组是 ButtonGroup 之外的 `component:Button`，因此在减少动态效果下绝不能应用其按压缩放（`design:reduced-motion` DR1）。实现缺口：在减少动态效果下它仍会应用。                                                                                   | 当前源码；`design:reduced-motion` DR1                                          |
+| FR5 | Field 盒子内带 `role="group"` 的行携带 `astryx-input-group`，并反映 `data-size` 与 `data-status`。`ref`、`data-testid` 和其他 DOM props 会到达该行。InputGroup 组合了 Field，因此 `family:input-fields` FR10 禁止根级 `xstyle`、`className` 和 `style`。实现缺口：它们被接受并到达该行。                                                                                                                                                                                                                                         | `architecture:component-theming-surface`；`family:input-fields` FR10；当前测试 |
+| FR6 | 当自身的 `isDisabled` 或包住它的 InputGroup 的 `isDisabled` 为 true 时，该组被禁用。禁用的组会在该行上设置 `aria-disabled="true"`，以默认光标将其调暗为半透明，把禁用状态传给组 Field，并禁用每个兼容子元素（TextInput、NumberInput、Selector、MultiSelector、DateInput、TimeInput、Typeahead、Tokenizer 作为 `family:input-fields` FR3 下的获准成员，以及 Button 附加组）和嵌套组，直到下一个层级边界；每个子元素随后遵循其自身的禁用契约。自行禁用的子元素或嵌套组在该组启用时仍保持禁用。不读取该组的调用方自有控件不受影响。 | `spec:AST-085` FR7；`spec:AST-038` FR7、FR8；当前测试                          |
 
 ### Allowed variation
 
-- **AV1 — Members.** Any admitted input, InputGroupText, Button, and
-  Button-triggered controls may appear in any order.
-- **AV2 — Status paint.** A theme may paint the group from `data-status`; core
-  paints no group border for it.
+- **AV1 — Members.** 任何获准的输入、InputGroupText、Button 以及由 Button 触发的控件可以任意顺序出现。
+- **AV2 — Status paint.** 主题可以依据 `data-status` 为组着色；核心不会为其绘制组边框。
 
 ### Representative states
 
-| State                       | Required invariant                                               | Allowed variation |
-| --------------------------- | ---------------------------------------------------------------- | ----------------- |
-| Prefix text + TextInput     | One row; outer corners only; input named by group and own label. | Size.             |
-| Input + Button suffix       | Button full height, square toward the input.                     | Variant.          |
-| With description and status | Group and inputs described by both; message detached below.      | —                 |
-| Hidden label                | Label visually hidden; still names the group.                    | —                 |
+| State                | Required invariant                             | Allowed variation |
+| -------------------- | ---------------------------------------------- | ----------------- |
+| 前缀文本 + TextInput | 一行；仅外侧圆角；输入由组标签与自身标签命名。 | 尺寸。            |
+| 输入 + Button 后缀   | Button 占满高度，朝向输入的一侧为方形。        | 变体。            |
+| 带描述与状态         | 组与输入都由两者描述；消息分离于下方。         | —                 |
+| 隐藏标签             | 标签在视觉上隐藏；仍为组命名。                 | —                 |
 
 ### Transformation and precedence order
 
-- **ORD1 — Size.** Explicit `size`, then outer provider, then `md`; a grouped
-  input's own explicit `size` still wins for that input.
-- **ORD2 — Description.** Group description, then group status message.
+- **ORD1 — Size.** 显式 `size`，然后是外层 provider，然后是 `md`；分组输入自身显式的 `size` 对该输入仍然优先。
+- **ORD2 — Description.** 组描述，然后是组状态消息。
 
 ### Performance and resources
 
-- **PR1 — No measurement.** Geometry comes from CSS selectors; InputGroup adds
-  no observer or listener.
+- **PR1 — No measurement.** 几何来自 CSS 选择器；InputGroup 不添加任何 observer 或 listener。
 
 ## Accessibility contract
 
-- **AR1 — Group name.** `role="group"` labelled by the visible or hidden
-  label (FR1).
-- **AR2 — Input names.** Each admitted input combines the group label with its
-  own label, so its purpose stays specific (FR2).
-- **AR3 — Focus.** A focused member is raised above its neighbours so its
-  focus presentation is not covered.
+- **AR1 — Group name.** `role="group"` 由可见或隐藏的标签标记（FR1）。
+- **AR2 — Input names.** 每个获准的输入把组标签与自身标签组合，使其用途保持具体（FR2）。
+- **AR3 — Focus.** 获得焦点的成员被提升到相邻成员之上，使其焦点呈现不被覆盖。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                             | Representation authority | Hierarchy role | Component contract |
-| ---------------- | ---------------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Label            | Group label above the row, or hidden.          | Current source           | Prominent      | FR1                |
-| Prefix addon     | Text or Button before the input, joined to it. | Current source           | Supporting     | FR4                |
-| Input            | The admitted input, filling remaining width.   | Current source           | Prominent      | FR2                |
-| Suffix addon     | Text or Button after the input, joined to it.  | Current source           | Supporting     | FR4                |
+| Anatomy or state | Design requirement                  | Representation authority | Hierarchy role | Component contract |
+| ---------------- | ----------------------------------- | ------------------------ | -------------- | ------------------ |
+| 标签             | 组标签位于行上方，或被隐藏。        | 当前源码                 | 突出           | FR1                |
+| 前缀附加组       | 输入之前的文本或 Button，与其连接。 | 当前源码                 | 支持           | FR4                |
+| 输入             | 获准的输入，填满剩余宽度。          | 当前源码                 | 突出           | FR2                |
+| 后缀附加组       | 输入之后的文本或 Button，与其连接。 | 当前源码                 | 支持           | FR4                |
 
-`design:reduced-motion` governs the Button addons' press scale (FR4); no other
-design record governs InputGroup. The row carries `input-group`; the
-consumer anatomy names no row part, so this record carries no anatomy-theming
-map.
+`design:reduced-motion` 治理 Button 附加组的按压缩放（FR4）；没有其他设计记录治理 InputGroup。该行携带 `input-group`；使用方结构不命名任何行部件，因此本记录不携带结构主题映射。
 
 ## Family and system relationships
 
-- `family:input-fields` assigns InputGroup the row height, connected surface,
-  edge alignment, and group focus; admission stays with each input.
-- `component:InputGroupText` supplies the text addon.
-- `component:Button` applies FR4's addon geometry from the group context.
-- `architecture:component-size-cascade` owns size inheritance (FR3).
+- `family:input-fields` 把行高、连接表面、边缘对齐和组焦点分配给 InputGroup；准入仍由每个输入负责。
+- `component:InputGroupText` 提供文本附加组。
+- `component:Button` 依据组上下文应用 FR4 的附加组几何。
+- `architecture:component-size-cascade` 拥有尺寸继承（FR3）。
 
 ## Verification map
 
-| Contract               | Verification                                                                                                                                                                              | Representative states                                                                                      | Mutation or failure expectation                                                                                                                                                                                                                            | Audit section                    |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| FR1, AR1               | `InputGroup.test.tsx` label, description, status, hidden-label, marker and label-tooltip cases; `InputGroupAudit.a11y.chromium.spec.ts` label, hidden-label, description and status cases | Visible and hidden label; optional and required marker; label tooltip; description and status              | A missing group name or description, a missing marker or label tooltip, a hidden label that shows, or a status message missing from the description or not below the row fails.                                                                            | `audit:InputGroup/accessibility` |
-| FR2, AR2               | `InputGroup.test.tsx` grouped-input naming cases and the grouped DateInput semantics case                                                                                                 | TextInput, NumberInput, DateInput, Typeahead, Tokenizer, Selector, MultiSelector                           | A grouped input that loses the group or its own label fails.                                                                                                                                                                                               | `audit:InputGroup/accessibility` |
-| FR4                    | `InputGroupAudit.a11y.chromium.spec.ts` joined-corner and member-height checks                                                                                                            | Button addon combinations; prefix and suffix; right-to-left                                                | A member that rounds toward a neighbour, an outer corner that is square where it should round, or a member shorter than the row fails. Evidence gap: no test covers a wrapped addon or the reduced-motion press; `component:Button` verifies its own side. | `audit:InputGroup/layout`        |
-| FR5                    | `InputGroup.test.tsx` row-reflection and data-testid cases                                                                                                                                | Root; `size` and `status`                                                                                  | A missing `astryx-input-group` target, `data-size` or `data-status`, a `ref` that does not reach the row, or a dropped test id fails. Evidence gap: no test asserts `className`, `style`, or `xstyle`.                                                     | `audit:InputGroup/theming`       |
-| FR6                    | `InputGroup.test.tsx` disabled-propagation cases                                                                                                                                          | Every compatible input and Button addon; nested groups; re-enabled group with an explicitly disabled child | A child that stays operable in a disabled group, a nested group that opts out, or a re-enabled explicitly disabled child fails.                                                                                                                            | `audit:InputGroup/behavior`      |
-| FR3, ORD1              | `InputGroup.test.tsx` size-precedence case; `InputGroupAudit.a11y.chromium.spec.ts` row-height check                                                                                      | Explicit `size`, outer provider, and no `size` given; `sm`, `md`, `lg` rows                                | A size that ignores the prop or the provider, an input that does not take the group's size, or rows that do not grow from `sm` to `lg` fails. Evidence gap: no test asserts growth with a set text size (FR3's gap).                                       | `audit:InputGroup/layout`        |
-| FR6 (paint), ORD2, AR3 | `InputGroupAudit.a11y.chromium.spec.ts` disabled, description and focus cases; `InputGroup.test.tsx` description-order case                                                               | Disabled group; description then status; keyboard focus on each of two adjacent members                    | A disabled row that is not half opacity with the arrow cursor, a status message before the description, or a focused member that is not above every unfocused member fails.                                                                                | `audit:InputGroup/behavior`      |
-| PR1                    | Evidence gap: no test asserts the absence of observers                                                                                                                                    | —                                                                                                          | —                                                                                                                                                                                                                                                          | `audit:InputGroup/behavior`      |
+| Contract               | Verification                                                                                                                                          | Representative states                                                            | Mutation or failure expectation                                                                                                                                      | Audit section                    |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| FR1、AR1               | `InputGroup.test.tsx` 的标签、描述、状态、隐藏标签、标记和标签 tooltip 用例；`InputGroupAudit.a11y.chromium.spec.ts` 的标签、隐藏标签、描述和状态用例 | 可见与隐藏标签；可选与必需标记；标签 tooltip；描述与状态                         | 缺失组名称或描述、缺失标记或标签 tooltip、隐藏标签却显示、或状态消息未出现在描述中或未位于行下方，均失败。                                                           | `audit:InputGroup/accessibility` |
+| FR2、AR2               | `InputGroup.test.tsx` 的分组输入命名用例以及分组 DateInput 语义用例                                                                                   | TextInput、NumberInput、DateInput、Typeahead、Tokenizer、Selector、MultiSelector | 丢失组标签或自身标签的分组输入失败。                                                                                                                                 | `audit:InputGroup/accessibility` |
+| FR4                    | `InputGroupAudit.a11y.chromium.spec.ts` 的连接圆角与成员高度检查                                                                                      | Button 附加组组合；前缀与后缀；从右到左                                          | 朝邻居倒圆的成员、本应倒圆却为方形的外角、或短于行的成员，均失败。证据缺口：没有测试覆盖被包裹的附加组或减少动态效果下的按压；`component:Button` 验证其自身一侧。    | `audit:InputGroup/layout`        |
+| FR5                    | `InputGroup.test.tsx` 的行反射与 data-testid 用例                                                                                                     | 根；`size` 与 `status`                                                           | 缺失 `astryx-input-group` 目标、`data-size` 或 `data-status`，未到达该行的 `ref`，或丢失的测试 ID，均失败。证据缺口：没有测试断言 `className`、`style` 或 `xstyle`。 | `audit:InputGroup/theming`       |
+| FR6                    | `InputGroup.test.tsx` 的禁用传播用例                                                                                                                  | 每个兼容输入与 Button 附加组；嵌套组；重新启用且带有显式禁用子元素的组           | 禁用组中仍可操作的子元素、选择退出的嵌套组、或重新启用后仍显式禁用的子元素，均失败。                                                                                 | `audit:InputGroup/behavior`      |
+| FR3、ORD1              | `InputGroup.test.tsx` 的尺寸优先级用例；`InputGroupAudit.a11y.chromium.spec.ts` 的行高检查                                                            | 显式 `size`、外层 provider 与未给出 `size`；`sm`、`md`、`lg` 行                  | 忽略 prop 或 provider 的尺寸、不采用组尺寸的输入、或未从 `sm` 增长到 `lg` 的行，均失败。证据缺口：没有测试断言在设置的文本尺寸下增长（FR3 的缺口）。                 | `audit:InputGroup/layout`        |
+| FR6（绘制）、ORD2、AR3 | `InputGroupAudit.a11y.chromium.spec.ts` 的禁用、描述和焦点用例；`InputGroup.test.tsx` 的描述顺序用例                                                  | 禁用组；描述后接状态；两个相邻成员各自的键盘焦点                                 | 非半透明且非箭头光标的禁用行、位于描述之前的状态消息、或未位于每个未聚焦成员之上的聚焦成员，均失败。                                                                 | `audit:InputGroup/behavior`      |
+| PR1                    | 证据缺口：没有测试断言不存在 observer                                                                                                                 | —                                                                                | —                                                                                                                                                                    | `audit:InputGroup/behavior`      |
 
 ## Current-state impact
 
-- **Fixed height (FR3).** The row holds the fixed shared element height instead
-  of growing with a set text size, against `spec:AST-102` FR4.
-- **Addon press under reduced motion (FR4).** A Button addon scales to 0.98 on a
-  press when the person prefers reduced motion, as `component:Button` FR15
-  records, against `design:reduced-motion` DR1.
-- **Root styling (FR5).** InputGroup accepts root `className`, `style`, and
-  `xstyle` on its row, against the scope of `family:input-fields` FR10. FR10
-  item 3 names InputGroup as the caller's styling surface, and the family
-  coverage test `Field/fieldInputFamily.test.tsx` leaves InputGroup out of its
-  field inputs, so this gap may close by clarifying FR10 rather than by
-  changing code.
+- **固定高度（FR3）。** 该行保持固定的共享元素高度，而不随设置的文本尺寸增长，违反 `spec:AST-102` FR4。
+- **减少动态效果下的附加组按压（FR4）。** 当用户偏好减少动态效果时，Button 附加组在按压时缩放到 0.98，正如 `component:Button` FR15 所记录，违反 `design:reduced-motion` DR1。
+- **根样式（FR5）。** InputGroup 在其行上接受根 `className`、`style` 和 `xstyle`，违反 `family:input-fields` FR10 的范围。FR10 第 3 项把 InputGroup 命名为调用方的样式表面，而家族覆盖测试 `Field/fieldInputFamily.test.tsx` 将 InputGroup 排除在其字段输入之外，因此该缺口可能通过澄清 FR10 而非更改代码来关闭。
 
 ## Decision log
 
-No component-local decision. InputGroup applies `family:input-fields`.
+无组件本地决策。InputGroup 应用 `family:input-fields`。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不重复使用方的 prop 表/示例、当前审查结果、实现步骤或家族/系统规则。它链接到它们的所有者。

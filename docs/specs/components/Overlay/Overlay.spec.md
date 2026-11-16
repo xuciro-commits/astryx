@@ -33,185 +33,137 @@ system_specs: [spec:AST-002/DEC-1, spec:AST-017/FR5, spec:AST-027/FR2]
 
 <!-- Describe the system, not the project: present tense, what it does. No proposals, history, pull requests, or research in the record; see docs/contributing/spec-writing.md and report its rubric results in the pull request. -->
 
-This record governs how several pieces of content are placed over an Overlay's
-surface, each at a preset spot or at fractional coordinates, including the
-stacking of a container that holds such content. Overlay's scrim, reveal modes,
-own `position` values, and alignment remain described by its source, tests, and
-`Overlay.doc.mjs` until a record claims them.
+本记录规定如何将若干段内容放置在 Overlay 表面之上，每一段都位于预设位置或分数坐标处，包括承载这类内容的容器的堆叠。Overlay 的遮罩、显示模式、自身的 `position` 取值与对齐方式，仍由其源码、测试与 `Overlay.doc.mjs` 描述，直到有记录认领它们。
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                                                                                                                  |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | New `OverlayRegion` component, exported beside Overlay: `position` (required) is a preset (`'fill' \| 'top' \| 'bottom' \| 'center' \| 'top-start' \| 'top-end' \| 'bottom-start' \| 'bottom-end'`) or open placement `{x, y, width?, height?}` in 0–1 fractions; plus `children`, `ref`, `xstyle`, `className`, `style`. |
-| Behavior                | Inside a fill Overlay, a preset region sits at that spot (corners follow the writing direction) and open placement sits at fractions of the media measured from its top-left corner, never mirrored. A sized open region stays inside the media. Regions scale with the media.                                            |
-| End-user impact         | Several captions, tags, badges, or hotspots over one image or video each stay on their spot of the media at every size, in either text direction.                                                                                                                                                                         |
-| Builder impact          | None by default. A builder places content with `OverlayRegion` instead of hand-written absolute positioning; moving a region stays the builder's code.                                                                                                                                                                    |
-| Compatibility/readiness | Additive: a new component and export; an Overlay without a region renders and stacks exactly as before. This record is current authority; `OverlayRegion`, its consumer docs, region tests, and region stories have not shipped yet.                                                                                      |
-| Review checks           | Reject open placement that mirrors in right-to-left, corner presets that do not, JavaScript measurement or observers, drag or resize behavior inside Overlay, a role or focus stop on the region, a theme target on it, or a region placed inside a strip.                                                                |
-| Governing rules         | FR1–FR11 below; `design:bidirectionality/DR3`, `DR5`, `DR6`; `architecture:component-theming-surface/INV4`; `spec:AST-017/FR5`; `spec:AST-027/FR2`.                                                                                                                                                                       |
+| 领域          | 契约                                                                                                                                                                                                                                                                                                             |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共契约      | 新增 `OverlayRegion` 组件，与 Overlay 并列导出：`position`（必填）是一个预设值（`'fill' \| 'top' \| 'bottom' \| 'center' \| 'top-start' \| 'top-end' \| 'bottom-start' \| 'bottom-end'`）或开放式放置 `{x, y, width?, height?}`，取值为 0–1 的分数；此外还有 `children`、`ref`、`xstyle`、`className`、`style`。 |
+| 行为          | 在填充 Overlay 内，预设区域位于该位置上（角落遵循书写方向），开放式放置位于以媒体左上角为基准的分数处，从不镜像。带尺寸的开放区域保持在媒体内部。区域随媒体缩放。                                                                                                                                                |
+| 最终用户影响  | 一张图片或视频上的多条说明文字、标签、徽章或热点，在任意尺寸、任一文字方向下都各自保持在媒体上的原位。                                                                                                                                                                                                           |
+| 构建者影响    | 默认没有影响。构建者用 `OverlayRegion` 放置内容，而不是手写绝对定位；移动区域仍是构建者自己的代码。                                                                                                                                                                                                              |
+| 兼容性/就绪度 | 增量式：新增一个组件和导出；没有区域的 Overlay 渲染与堆叠与之前完全一致。本记录是当前权威；`OverlayRegion`、其使用方文档、区域测试与区域故事尚未发布。                                                                                                                                                           |
+| 审查检查      | 拒绝在从右到左时镜像的开放式放置、不翻转的角落预设、JavaScript 测量或观察器、Overlay 内的拖拽或缩放行为、区域上的 role 或焦点停靠点、区域上的主题目标，或放置在条带内的区域。                                                                                                                                    |
+| 治理规则      | 以下 FR1–FR11；`design:bidirectionality/DR3`、`DR5`、`DR6`；`architecture:component-theming-surface/INV4`；`spec:AST-017/FR5`；`spec:AST-027/FR2`。                                                                                                                                                              |
 
-This table is a review projection; the body below is authoritative.
+该表格是审查投影；下文正文具有权威性。
 
 ## Intent
 
-Overlay layers content over a bounded surface, usually media, and places that
-content as one block: the whole surface or a band at the top or bottom. Some
-surfaces carry several pieces of content, each belonging to its own spot: two
-captions drawn into an image, a badge in a corner beside a caption, a tag on a
-face. A spot is either one of Overlay's familiar places or a point on the media
-described as fractions of its width and height, because the media is shown at
-many sizes and the spot must stay on the same pixels of it. Overlay owns that
-placement because Overlay owns the surface it is measured against.
+Overlay 把内容层叠在一个有边界的表面（通常是媒体）之上，并把该内容作为一个整块放置：整个表面，或顶部/底部的一条带。有些表面承载多段内容，每段各属于自己的一处位置：画进图片的两条说明文字、说明文字旁角落里的徽章、人脸上的一枚标签。所谓位置，要么是 Overlay 熟悉的位置之一，要么是用媒体宽高的分数描述的一个点，因为媒体会以多种尺寸显示，而该位置必须停留在它的同一批像素上。该放置由 Overlay 负责，因为 Overlay 负责它所对照测量的表面。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`; an Overlay without a region renders and
-  stacks exactly as before. Only a container that holds a region isolates its
-  stacking (FR10).
-- Compatibility class: additive component and export.
-- Controlled/uncontrolled behavior: not applicable; a region holds no state.
-- Migration decision: none required (`spec:AST-017/FR5`).
+- 已发布的默认值保持不变：`yes`；没有区域的 Overlay 渲染与堆叠与之前完全一致。只有包含区域的容器才会隔离其堆叠（FR10）。
+- 兼容性类别：增量式组件与导出。
+- 受控/非受控行为：不适用；区域不持有状态。
+- 迁移决策：无需迁移（`spec:AST-017/FR5`）。
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**负责**
 
-- `OverlayRegion`: its `position` values, their geometry, clamping, scaling, and
-  reference box.
-- The rule that open placement is measured in the media's own physical space.
-- The rule that regions are placed only in fill overlays, and the fallback
-  everywhere else.
-- The stacking isolation of a container that holds a region.
+- `OverlayRegion`：其 `position` 取值、它们的几何、钳制、缩放与参考盒。
+- 开放式放置按媒体自身物理空间测量的规则。
+- 区域仅放置在填充 Overlay 中的规则，以及在其他任何地方的兜底行为。
+- 包含区域的容器的堆叠隔离。
 
-**Does not own / non-goals**
+**不负责 / 非目标**
 
-- Moving, dragging, or resizing a region, including pointer capture, keyboard
-  steps, snapping, and when a new position is reported — owned by the product
-  callsite (`component:Overlay/DEC-3`).
-- What a region paints: borders, fills, handles, and text — owned by the
-  region's content.
-- Making the base content fill the surface — owned by the caller, as for every
-  Overlay; fractions are measured against the surface, so media that does not
-  fill it does not line up with them.
-- Overlay's own `position` and `align` — unchanged; a region does not read or
-  alter them beyond FR2.
-- Placement relative to a trigger or outside the surface — owned by the layer
-  runtime (Popover, Tooltip, HoverCard).
+- 移动、拖拽或调整区域大小，包括指针捕获、键盘步进、吸附，以及何时报告新位置——由产品调用点负责（`component:Overlay/DEC-3`）。
+- 区域绘制什么：边框、填充、控制柄与文本——由区域的内容负责。
+- 让基础内容填满表面——与每个 Overlay 一样，由调用方负责；分数是相对于表面测量的，因此没有填满表面的媒体不会与这些分数对齐。
+- Overlay 自身的 `position` 与 `align`——不变；区域除 FR2 之外不读取也不修改它们。
+- 相对于触发器或表面之外的放置——由层运行时负责（Popover、Tooltip、HoverCard）。
 
 ## Public concepts
 
-| Concept        | Closed values or states                                                                 | Meaning                                                                                                                                                                                                                             | Availability by variant/orientation/state | Default             | Owner               | Stability | Invalid-value behavior                                                                                  |
-| -------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ------------------- | ------------------- | --------- | ------------------------------------------------------------------------------------------------------- |
-| Preset         | `fill`, `top`, `bottom`, `center`, `top-start`, `top-end`, `bottom-start`, `bottom-end` | `fill`, `top`, and `bottom` are the places Overlay's own `position` names: the whole surface, or a full-width band at that edge. `center` and the corners hold content-sized boxes at that spot.                                    | Fill overlays (FR2)                       | None; required prop | `component:Overlay` | stable    | Other strings are rejected by the public type                                                           |
-| Open placement | `{x, y, width?, height?}`; each a number from 0 to 1                                    | `x`, `y`: the region's top-left corner as fractions of its reference box, measured from that box's top-left corner. `width`, `height`: the region's size as fractions, extending right and down; omitted means it fits its content. | Fill overlays (FR2)                       | None; required prop | `component:Overlay` | stable    | Values clamped into 0–1; a non-finite coordinate is treated as 0 and a non-finite size as omitted (FR6) |
+| 概念       | 封闭取值或状态                                                                          | 含义                                                                                                                                             | 按变体/方向/状态的可用性 | 默认值       | 所有者              | 稳定性 | 无效值行为                                                           |
+| ---------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ | ------------ | ------------------- | ------ | -------------------------------------------------------------------- |
+| 预设       | `fill`, `top`, `bottom`, `center`, `top-start`, `top-end`, `bottom-start`, `bottom-end` | `fill`、`top` 与 `bottom` 是 Overlay 自身 `position` 所命名的位置：整个表面，或该边缘处一条全宽的带。`center` 与各角落在该位置放置内容尺寸的盒。 | 填充 Overlay（FR2）      | 无；必填属性 | `component:Overlay` | 稳定   | 其他字符串会被公共类型拒绝                                           |
+| 开放式放置 | `{x, y, width?, height?}`；每个都是 0 到 1 的数                                         | `x`、`y`：区域左上角在其参考盒中的分数，从该盒的左上角测量。`width`、`height`：区域尺寸的分数，向右和向下延展；省略表示贴合其内容。              | 填充 Overlay（FR2）      | 无；必填属性 | `component:Overlay` | 稳定   | 取值会被钳制到 0–1；非有限坐标按 0 处理，非有限尺寸按省略处理（FR6） |
 
 ## Behavioral and layout contract
 
-| ID   | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Basis                                                       | Draft review state |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------ |
-| FR1  | `OverlayRegion` rendered directly in the content of an Overlay or `useOverlay` host with `position="fill"`, the default, MUST position against that host's scrim box, which is the whole base surface: 0 and 1 are the media's edges, and the box matches the Overlay's `ref`. Any element between the region and the scrim that establishes a containing block for absolutely positioned descendants becomes its reference box instead. In this record, the surface means the region's reference box.                                                            | `component:Overlay/DEC-1`                                   | settled            |
-| FR2  | Regions are placed only in fill hosts. A region rendered anywhere else MUST NOT be placed: in the content of an Overlay or `useOverlay` host whose `position` is `"top"` or `"bottom"`, in an Overlay's `children`, or with no Overlay or `useOverlay` host at all, it renders its content as ordinary in-flow content where it stands (in a strip, that content reveals and slides with the strip) and MUST emit one development warning per mount naming the fill-only rule.                                                                                    | `component:Overlay/DEC-4`                                   | settled            |
-| FR3  | A preset region MUST sit at its spot inside Overlay's content inset: `fill` covers the inset box; `top` and `bottom` span its full width at that edge with content height; `center` is content-sized at its center; each corner is content-sized at that corner. Content larger than the inset box is clipped by the container, not shifted.                                                                                                                                                                                                                      | `component:Overlay/DEC-2`                                   | settled            |
-| FR4  | Corner presets MUST resolve `start` and `end` against the writing direction of the region's own context: `top-start` is the top-left corner in left-to-right and the top-right corner in right-to-left. `fill`, `top`, `bottom`, and `center` are symmetric and do not change with direction.                                                                                                                                                                                                                                                                     | `design:bidirectionality/DR3`                               | settled            |
-| FR5  | Open placement MUST measure `x` from the surface's left edge and `y` from its top edge in every writing direction, and MUST NOT mirror in right-to-left. The region's own content follows the ambient direction.                                                                                                                                                                                                                                                                                                                                                  | `design:bidirectionality/DR5`                               | settled            |
-| FR6  | Open coordinates and sizes MUST be clamped into 0–1 before placement. A non-finite coordinate MUST resolve to 0, and a non-finite size MUST resolve to omitted.                                                                                                                                                                                                                                                                                                                                                                                                   | Invalid-value behavior                                      | settled            |
-| FR7  | Open placement puts the region's top-left corner at (`x`, `y`) (`component:Overlay/DEC-6`). On an axis with a size, the region MUST be exactly that fraction of the surface, extending right or down, and MUST sit wholly inside it: its start is clamped between 0 and one minus the size. On an axis without a size, the region MUST fit its content starting at the coordinate, and any overhang past the container's edge is clipped, not shifted inward.                                                                                                     | `component:Overlay/DEC-5`                                   | settled            |
-| FR8  | When the surface changes size, every region MUST keep its spot: presets by their insets, open placement by its fractional position and size, without a re-render.                                                                                                                                                                                                                                                                                                                                                                                                 | `component:Overlay/DEC-1`                                   | settled            |
-| FR9  | A region MUST appear, hide, and become inert with the overlay content that contains it, following Overlay's `showOn` and `isOpen`, and MUST inherit the scrim's media theme. It adds no visibility rule of its own.                                                                                                                                                                                                                                                                                                                                               | Overlay's existing reveal behavior                          | settled            |
-| FR10 | A placed region MUST paint above the fill surface's in-flow overlay content, including positioned in-flow content written after it, and a later placed region MUST paint above an earlier one. A placed region inside a wrapper that forms a stacking context is ordered only among that wrapper's content. An Overlay or `useOverlay` container with a placed region anywhere inside it MUST own an isolated stacking context; a container with no region inside it keeps its stacking unchanged. A placed region MUST NOT take part in the scrim's flow layout. | Absolute positioning within the surface; `spec:AST-027/FR2` | settled            |
-| FR11 | Overlay and `OverlayRegion` MUST NOT move, drag, or resize a region, and MUST NOT attach pointer, keyboard, or gesture handlers to it. A region moves only when its caller passes a new `position`.                                                                                                                                                                                                                                                                                                                                                               | `component:Overlay/DEC-3`                                   | settled            |
+| ID   | 不变式                                                                                                                                                                                                                                                                                                                                                          | 依据                                 | 草案审查状态 |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | ------------ |
+| FR1  | 直接渲染在 `position="fill"`（默认值）的 Overlay 或 `useOverlay` 宿主的 content 中的 `OverlayRegion`，必须相对于该宿主的遮罩盒定位，遮罩盒即整个基础表面：0 与 1 是媒体的边缘，且该盒与 Overlay 的 `ref` 一致。位于区域与遮罩之间、为绝对定位后代建立包含块的任何元素，会改为成为其参考盒。在本记录中，表面指区域的参考盒。                                     | `component:Overlay/DEC-1`            | 已定         |
+| FR2  | 区域只在填充宿主中放置。渲染在其他任何位置的区域必须不被放置：在 `position` 为 `"top"` 或 `"bottom"` 的 Overlay 或 `useOverlay` 宿主的 content 中、在 Overlay 的 `children` 中，或完全没有 Overlay 或 `useOverlay` 宿主时，它把自身内容作为普通流内内容渲染在原位（在条带中，该内容随条带显示与滑动），并且必须在每次挂载时发出一条指明仅限填充规则的开发警告。 | `component:Overlay/DEC-4`            | 已定         |
+| FR3  | 预设区域必须位于 Overlay 内容内缩区内的其位置上：`fill` 覆盖内缩盒；`top` 与 `bottom` 在该边缘以内容高度横跨其全宽；`center` 在其中心处为内容尺寸；每个角落在该角落处为内容尺寸。大于内缩盒的内容由容器裁剪，而不是被移动。                                                                                                                                     | `component:Overlay/DEC-2`            | 已定         |
+| FR4  | 角落预设必须依据区域自身上下文的书写方向来解析 `start` 与 `end`：`top-start` 在从左到右时是左上角，在从右到左时是右上角。`fill`、`top`、`bottom` 与 `center` 是对称的，不随方向改变。                                                                                                                                                                           | `design:bidirectionality/DR3`        | 已定         |
+| FR5  | 开放式放置必须在任何书写方向下都从表面左边缘测量 `x`、从顶部边缘测量 `y`，并且不得在从右到左时镜像。区域自身的内容遵循环境方向。                                                                                                                                                                                                                                | `design:bidirectionality/DR5`        | 已定         |
+| FR6  | 开放坐标与尺寸必须在放置前钳制到 0–1。非有限坐标必须解析为 0，非有限尺寸必须解析为省略。                                                                                                                                                                                                                                                                        | 无效值行为                           | 已定         |
+| FR7  | 开放式放置把区域的左上角放在（`x`，`y`）处（`component:Overlay/DEC-6`）。在带尺寸的轴上，区域必须恰好是表面的该分数，向右或向下延展，并且必须完全位于其中：其起点被钳制在 0 与 1 减尺寸之间。在不带尺寸的轴上，区域必须从该坐标起贴合其内容，任何越过容器边缘的溢出都被裁剪，而不是向内移动。                                                                   | `component:Overlay/DEC-5`            | 已定         |
+| FR8  | 当表面改变尺寸时，每个区域都必须保持其位置：预设靠其内缩，开放式放置靠其分数位置与尺寸，且无需重新渲染。                                                                                                                                                                                                                                                        | `component:Overlay/DEC-1`            | 已定         |
+| FR9  | 区域必须随包含它的 overlay 内容一起出现、隐藏并变为惰性，遵循 Overlay 的 `showOn` 与 `isOpen`，并且必须继承遮罩的媒体主题。它不添加自己的任何可见性规则。                                                                                                                                                                                                       | Overlay 既有的显示行为               | 已定         |
+| FR10 | 被放置的区域必须绘制在填充表面的流内 overlay 内容之上，包括在其之后书写的定位流内内容，且后放置的区域必须绘制在先放置的区域之上。位于形成层叠上下文的包装器内的被放置区域，只在该包装器的内容之间排序。内部任何位置含被放置区域的 Overlay 或 `useOverlay` 容器必须拥有隔离的层叠上下文；内部没有区域的容器保持其层叠不变。被放置的区域不得参与遮罩的流布局。    | 表面内的绝对定位；`spec:AST-027/FR2` | 已定         |
+| FR11 | Overlay 与 `OverlayRegion` 不得移动、拖拽或调整区域大小，也不得在其上附加指针、键盘或手势处理器。区域仅在其调用方传入新的 `position` 时移动。                                                                                                                                                                                                                   | `component:Overlay/DEC-3`            | 已定         |
 
 ### Allowed variation
 
-- **AV1 — Content.** Any content may sit in a region; on an open region each
-  axis is sized or content-sized independently (FR7).
-- **AV2 — Surface size and shape.** The surface may be any size or aspect ratio,
-  and may change size at any time (FR8).
-- **AV3 — Mixed content.** In-flow overlay content, preset regions, and open
-  regions may share one surface (FR10).
+- **AV1 — 内容。** 任何内容都可以位于区域中；在开放区域上，每个轴独立地按尺寸或按内容定尺寸（FR7）。
+- **AV2 — 表面尺寸与形状。** 表面可以是任意尺寸或宽高比，并且可以随时改变尺寸（FR8）。
+- **AV3 — 混合内容。** 流内 overlay 内容、预设区域与开放区域可以共用一个表面（FR10）。
 
 ### Representative states
 
-| State                                                    | Required invariant                                                                                        | Allowed variation  |
-| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------ |
-| Two captions, `top` and `bottom` presets                 | Each spans the inset width at its edge, like Overlay's own strips.                                        | Caption text.      |
-| `top-start` badge, left-to-right and right-to-left       | Top-left corner in left-to-right; top-right corner in right-to-left.                                      | Badge content.     |
-| Open sized caption near the right edge                   | Box is the given fraction of the image and stays wholly inside, flush with that edge.                     | Which edge.        |
-| Open content-sized pin                                   | Pin starts at its point and extends right and down; overhang past the container is clipped.               | Pin content.       |
-| Open region, right-to-left page                          | Same spot on the media as left-to-right; the region's text reads right-to-left.                           | Writing direction. |
-| Surface resized from 640px to 320px wide                 | Every region keeps its spot, with no re-render.                                                           | Any surface size.  |
-| Region in an Overlay's `children` or outside any Overlay | Is not placed: its content flows where it stands, and it warns once in development.                       | Location.          |
-| Region in a `position="bottom"` Overlay                  | Is not placed: its content flows in the strip like other strip content, and it warns once in development. | Strip content.     |
-| `showOn="hover"` overlay at rest                         | Regions are hidden with the rest of the overlay content.                                                  | Reveal mode.       |
+| 状态                                                     | 必需不变式                                                               | 允许的变化     |
+| -------------------------------------------------------- | ------------------------------------------------------------------------ | -------------- |
+| 两条说明文字，`top` 与 `bottom` 预设                     | 每个都在其边缘处横跨内缩宽度，像 Overlay 自身的条带一样。                | 说明文字文本。 |
+| `top-start` 徽章，从左到右与从右到左                     | 从左到右为左上角；从右到左为右上角。                                     | 徽章内容。     |
+| 靠近右边缘的开放带尺寸说明文字                           | 盒是图片的给定分数，完全位于内部，与该边缘齐平。                         | 哪条边缘。     |
+| 开放内容尺寸的图钉                                       | 图钉从其点开始，向右和向下延展；越过容器的溢出被裁剪。                   | 图钉内容。     |
+| 开放区域，从右到左页面                                   | 与从左到右时媒体上的位置相同；区域的文本从右到左阅读。                   | 书写方向。     |
+| 表面宽度从 640px 调整到 320px                            | 每个区域保持其位置，且无需重新渲染。                                     | 任意表面尺寸。 |
+| 位于 Overlay 的 `children` 中或在任何 Overlay 之外的区域 | 不被放置：其内容在原位流动，并在开发环境中警告一次。                     | 位置。         |
+| 位于 `position="bottom"` Overlay 中的区域                | 不被放置：其内容像其他条带内容一样在条带中流动，并在开发环境中警告一次。 | 条带内容。     |
+| 静止状态的 `showOn="hover"` overlay                      | 区域随其余 overlay 内容一起隐藏。                                        | 显示模式。     |
 
 ### Transformation and precedence order
 
-- **ORD1 — Placement.** Resolve the reference box (FR1, FR2) → for a preset,
-  place it in the content inset and resolve start/end against direction (FR3,
-  FR4); for open placement, clamp values (FR6) and resolve each axis as sized or
-  content-sized in physical space (FR5, FR7) → express the result as insets and
-  fractions of the box (FR8). Styling inputs compose after placement in the order
-  `architecture:public-component-api/INV6` gives; a caller who overrides inset or
-  size properties owns the result.
+- **ORD1 — 放置。** 解析参考盒（FR1、FR2）→ 对预设，把它放在内容内缩区中，并依据方向解析 start/end（FR3、FR4）；对开放式放置，钳制取值（FR6），并在物理空间中把每个轴解析为按尺寸或按内容定尺寸（FR5、FR7）→ 把结果表达为盒的内缩与分数（FR8）。样式输入按 `architecture:public-component-api/INV6` 给出的顺序在放置之后组合；覆盖内缩或尺寸属性的调用方对结果负责。
 
 ### Performance and resources
 
-- **PR1 — CSS geometry only.** Placement, clamping, and scaling MUST be achieved
-  with arithmetic on the given values and CSS: no measurement, observer,
-  listener, state, Effect, or extra render pass. The fill-only check adds no
-  measurement, state, or extra render pass.
+- **PR1 — 仅 CSS 几何。** 放置、钳制与缩放必须仅通过对给定值做算术和 CSS 实现：没有测量、观察器、监听器、状态、Effect 或额外的渲染轮次。仅限填充的检查不增加测量、状态或额外的渲染轮次。
 
 ## Accessibility contract
 
-- **AR1 — Presentation only.** `OverlayRegion` MUST add no role, accessible name,
-  description, focus stop, or text. Its content keeps its own semantics.
-- **AR2 — Source order is reading order.** Assistive technology and keyboard
-  focus follow the regions' source order, not their position on the surface. A
-  caller renders regions in the order a reader should meet them.
-- **AR3 — Movement offers non-drag paths.** Overlay's documented move pattern
-  for open regions pairs pointer dragging with a single-pointer path that needs
-  no drag, where activating a spot on the media moves the region there, and a
-  keyboard path that moves a region whose content has focus by a fixed step per
-  arrow key, with arrow directions matching the visual axes
-  (`design:bidirectionality/DR6`).
+- **AR1 — 仅呈现。** `OverlayRegion` 不得添加 role、可访问名称、描述、焦点停靠点或文本。其内容保留自身的语义。
+- **AR2 — 源码顺序即阅读顺序。** 辅助技术与键盘焦点遵循区域的源码顺序，而不是它们在表面上的位置。调用方按读者应当遇到它们的顺序渲染区域。
+- **AR3 — 移动提供非拖拽路径。** Overlay 为开放区域记录的移动模式，把指针拖拽与一条无需拖拽的单指针路径配对，其中激活媒体上的某个点即可把区域移到那里；并提供键盘路径，按每个方向键以固定步长移动内容拥有焦点的区域，方向键方向与视觉轴一致（`design:bidirectionality/DR6`）。
 
 ## Design relationships
 
-| Anatomy or state     | Design requirement                                           | Representation authority      | Hierarchy role | Component contract |
-| -------------------- | ------------------------------------------------------------ | ----------------------------- | -------------- | ------------------ |
-| Preset region        | Reads as Overlay's own places, with Overlay's content inset. | Owner direction               | Supporting     | FR3                |
-| Corner preset in RTL | Leading and trailing corners follow reading order.           | `design:bidirectionality/DR3` | Supporting     | FR4                |
-| Open region          | Stays on the same spot of the media at every size.           | Owner direction               | Supporting     | FR7, FR8           |
-| Open region in RTL   | Media is physical content and does not mirror.               | `design:bidirectionality/DR5` | Supporting     | FR5                |
+| 结构或状态       | 设计要求                                             | 表示权威                      | 层级角色 | 组件契约 |
+| ---------------- | ---------------------------------------------------- | ----------------------------- | -------- | -------- |
+| 预设区域         | 读起来像 Overlay 自身的位置，带 Overlay 的内容内缩。 | 所有者方向                    | 支撑性   | FR3      |
+| RTL 中的角落预设 | 起始与结束角落遵循阅读顺序。                         | `design:bidirectionality/DR3` | 支撑性   | FR4      |
+| 开放区域         | 在任意尺寸下都停留在媒体上的同一位置。               | 所有者方向                    | 支撑性   | FR7, FR8 |
+| RTL 中的开放区域 | 媒体是物理内容，不进行镜像。                         | `design:bidirectionality/DR5` | 支撑性   | FR5      |
 
 ## Family and system relationships
 
-- `design:bidirectionality` owns direction behavior: FR4 applies DR3 to corner
-  presets, FR5 applies DR5 to open placement, and AR3 applies DR6 to movement.
-- `architecture:component-theming-surface/INV4` keeps a non-painting box out of
-  the theme surface: the region is a geometry-only box that paints nothing, so it
-  has no theme target and its content owns its paint.
-- `architecture:public-component-api` owns prop admission and styling-input
-  order; ORD1 applies INV6.
-- `spec:AST-027/FR2` puts the isolation boundary on the surface; FR10 makes the
-  Overlay or `useOverlay` container that holds a region that owner.
-- `spec:AST-017/FR5` classifies this as nonbreaking: it adds a new component,
-  changes no default, and a caller who never renders a region sees no change.
+- `design:bidirectionality` 负责方向行为：FR4 将 DR3 应用于角落预设，FR5 将 DR5 应用于开放式放置，AR3 将 DR6 应用于移动。
+- `architecture:component-theming-surface/INV4` 让非绘制的盒留在主题表面之外：区域是一个只提供几何、不绘制任何内容的盒，因此它没有主题目标，其绘制由它的内容负责。
+- `architecture:public-component-api` 负责属性准入与样式输入顺序；ORD1 应用 INV6。
+- `spec:AST-027/FR2` 把隔离边界放在表面上；FR10 让包含区域的 Overlay 或 `useOverlay` 容器成为该边界的所有者。
+- `spec:AST-017/FR5` 将此归类为非破坏性：它新增一个组件，不改变任何默认值，从不渲染区域的调用方不会看到任何变化。
 
 ## Verification map
 
-| Contract                      | Verification                                                                                      | Representative states                                                                                                                             | Mutation or failure expectation                                                                                                                                             | Audit section            |
-| ----------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| FR1, FR2, FR6, FR11           | `Overlay.test.tsx` region suite                                                                   | Region in Overlay and `useOverlay` content; in a `bottom` Overlay; outside any Overlay; out-of-range and non-finite input; pointer and key events | Unclamped values, a region outside the scrim, a placed region in a strip or a missing warning, or a region that moves on its own fails.                                     | `audit:Overlay/api`      |
-| FR3, FR4, FR5, FR7, FR8, FR10 | Real-Chromium assertions in the Overlay region story's play function                              | Every preset; open sized, edge-clamped, and content-sized; resized surface; RTL; a region before a positioned control                             | A region off its spot by more than 0.5px, a corner that does not flip or an open region that does, the in-flow control hit at a region's center, or wrong isolation, fails. | `audit:Overlay/layout`   |
-| FR9                           | `Overlay.test.tsx` reveal case with a region                                                      | `isOpen={false}`                                                                                                                                  | A region outside the scrim, or a closed scrim that is not inert, fails.                                                                                                     | `audit:Overlay/api`      |
-| AR1, AR2                      | `Overlay.test.tsx` DOM check of the region element                                                | Text content                                                                                                                                      | Any attribute other than `class` and `style` on the region element, or text it adds, fails.                                                                                 | `audit:Overlay/a11y`     |
-| AR3                           | Region move story's play function                                                                 | Arrow key and single activation on the media, LTR and RTL                                                                                         | ArrowRight moving a region left, or an activation that does not move the region to the activated spot, fails.                                                               | `audit:Overlay/a11y`     |
-| PR1                           | Source review of `OverlayRegion`                                                                  | All inputs                                                                                                                                        | A ref read, observer, listener, or Effect added for placement fails review.                                                                                                 | `audit:Overlay/layout`   |
-| RTL relation                  | RTL audit curated D4 target (`apps/storybook/rtl-audit/targets.json`) on `Overlay / Bottom strip` | Start-aligned scrim content; LTR and RTL                                                                                                          | Start-aligned content that does not move to the mirrored side of its container in RTL fails D4.                                                                             | `audit:Overlay/i18n-rtl` |
+| 契约                          | 验证                                                                                          | 代表性状态                                                                                                              | 变更或失败预期                                                                                         | 审计章节                 |
+| ----------------------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------ |
+| FR1, FR2, FR6, FR11           | `Overlay.test.tsx` 区域测试套件                                                               | Overlay 与 `useOverlay` content 中的区域；在 `bottom` Overlay 中；在任何 Overlay 之外；越界与非有限输入；指针与按键事件 | 未钳制的取值、遮罩之外的区域、条带中被放置的区域或缺失的警告、或自行移动的区域，均失败。               | `audit:Overlay/api`      |
+| FR3, FR4, FR5, FR7, FR8, FR10 | Overlay 区域故事的 play 函数中的真实 Chromium 断言                                            | 每个预设；开放带尺寸、边缘钳制与内容定尺寸；调整后的表面；RTL；位于定位控件之前的区域                                   | 区域偏离其位置超过 0.5px、未翻转的角落或翻转了的开放区域、区域中心处命中流内控件、或隔离错误，均失败。 | `audit:Overlay/layout`   |
+| FR9                           | `Overlay.test.tsx` 带区域的显示用例                                                           | `isOpen={false}`                                                                                                        | 遮罩之外的区域，或未变为惰性的已关闭遮罩，均失败。                                                     | `audit:Overlay/api`      |
+| AR1, AR2                      | `Overlay.test.tsx` 对区域元素的 DOM 检查                                                      | 文本内容                                                                                                                | 区域元素上除 `class` 与 `style` 之外的任何属性，或它添加的文本，均失败。                               | `audit:Overlay/a11y`     |
+| AR3                           | 区域移动故事的 play 函数                                                                      | 媒体上的方向键与单次激活，LTR 与 RTL                                                                                    | ArrowRight 把区域向左移动，或激活未把区域移到被激活的点，均失败。                                      | `audit:Overlay/a11y`     |
+| PR1                           | 对 `OverlayRegion` 的源码审查                                                                 | 所有输入                                                                                                                | 为放置而添加的 ref 读取、观察器、监听器或 Effect，审查失败。                                           | `audit:Overlay/layout`   |
+| RTL 关系                      | `Overlay / Bottom strip` 上的 RTL 审计精选 D4 目标（`apps/storybook/rtl-audit/targets.json`） | 起始对齐的遮罩内容；LTR 与 RTL                                                                                          | 起始对齐的内容在 RTL 中未移到其容器的镜像侧，D4 失败。                                                 | `audit:Overlay/i18n-rtl` |
 
 ## Decision log
 
@@ -219,88 +171,64 @@ Consumer migration instructions belong in consumer docs and release notes.
 
 ### DEC-1 — Several placed items are Overlay regions with one `position` prop
 
-**Reference:** `component:Overlay/DEC-1`
-**Decider:** cixzhang, 2026-10-22
+**参考：** `component:Overlay/DEC-1`
 
-Overlay places one content block, so a surface with several spots needs a child
-that places itself. `OverlayRegion` inside Overlay's content inherits Overlay's
-surface, reveal, and media theme with no new Overlay prop, and one `position`
-prop covers both kinds of spot: a named place or open placement. Sizes live
-inside the open placement object, so a region never carries `width` or `height`
-props whose numbers mean fractions while the same names mean pixels on Card,
-Button, and Grid.
+**决策者：** cixzhang, 2026-10-22
 
-Rejected: an object form of Overlay's own `position`, because it still places
-only one block.
+Overlay 放置一个内容块，因此有多个位置的表面需要一个能自行放置的子元素。位于 Overlay content 中的 `OverlayRegion` 继承 Overlay 的表面、显示行为与媒体主题，无需新增 Overlay 属性；一个 `position` 属性覆盖两类位置：命名位置或开放式放置。尺寸位于开放式放置对象内部，因此区域从不携带 `width` 或 `height` 属性——这些属性的数字表示分数，而同样的名字在 Card、Button 与 Grid 上表示像素。
+
+已否决：Overlay 自身 `position` 的对象形式，因为它仍然只放置一个块。
 
 ### DEC-2 — Presets reuse Overlay's places and add the center and corners
 
-**Reference:** `component:Overlay/DEC-2`
-**Decider:** cixzhang, 2026-10-22
+**参考：** `component:Overlay/DEC-2`
 
-`fill`, `top`, and `bottom` mean on a region what they mean on Overlay, so a
-builder reads one vocabulary. Static badges and labels need the center and the
-corners, which Overlay's single block cannot hold beside other content. Corners
-use `start` and `end` because a leading badge leads in either direction.
+**决策者：** cixzhang, 2026-10-22
+
+`fill`、`top` 与 `bottom` 在区域上的含义与在 Overlay 上相同，因此构建者只需读一套词汇。静态徽章与标签需要中心与角落，而 Overlay 的单个块无法在其他内容旁边容纳它们。角落使用 `start` 与 `end`，因为起始侧的徽章在任一方向上都位于起始侧。
 
 ### DEC-3 — Moving a region stays at the callsite
 
-**Reference:** `component:Overlay/DEC-3`
-**Decider:** cixzhang, 2026-10-22
+**参考：** `component:Overlay/DEC-3`
 
-What moving a region means differs by product: whether the position commits on
-release or live, the keyboard step, snapping, which regions move, and what
-happens while a new rendering of the media loads. Overlay therefore never moves
-a region; the caller converts pointer and keyboard input into new fractions
-measured against the region's reference box and passes them back.
+**决策者：** cixzhang, 2026-10-22
 
-Rejected: a drag hook on Overlay, because a shared drag primitive needs its own
-record and more than one caller's needs.
+移动区域意味着什么因产品而异：位置是在释放时提交还是实时提交、键盘步长、吸附、哪些区域移动，以及媒体新的渲染加载期间会发生什么。因此 Overlay 从不移动区域；调用方把指针与键盘输入转换为相对于区域参考盒测量的新分数，再传回。
+
+已否决：在 Overlay 上提供拖拽钩子，因为共享的拖拽原语需要自己的记录，并且需要不止一个调用方的需求。
 
 ### DEC-4 — Regions belong to fill overlays
 
-**Reference:** `component:Overlay/DEC-4`
-**Decider:** cixzhang, 2026-10-22
+**参考：** `component:Overlay/DEC-4`
 
-A spot on the media is meaningless inside a strip whose height follows its own
-content and which slides in and out. A strip is also the containing block of
-everything inside it, so CSS cannot place a region against the media from
-there. In a strip overlay a region therefore renders its content as ordinary
-strip content and warns in development, so the content stays visible. The
-public type cannot enforce the rule, because regions arrive through `content`.
-The same fallback applies outside any fill host, where there is no surface to
-measure against and nothing to isolate a region's paint order.
+**决策者：** cixzhang, 2026-10-22
 
-Rejected: placing a strip's regions against the container, because escaping the
-strip needs a second rendering layer that duplicates Overlay's reveal.
+在高度跟随自身内容并会滑入滑出的条带内部，媒体上的位置没有意义。条带也是其内部一切内容的包含块，因此 CSS 无法从那里把区域相对于媒体放置。因此在条带 overlay 中，区域把自身内容作为普通条带内容渲染，并在开发环境中警告，从而让内容保持可见。公共类型无法强制该规则，因为区域是通过 `content` 传入的。同样的兜底适用于任何填充宿主之外，在那里没有可供测量的表面，也没有任何东西可以隔离区域的绘制顺序。
+
+已否决：把条带的区域相对于容器放置，因为要脱离条带需要第二层渲染层，而它会重复 Overlay 的显示逻辑。
 
 ### DEC-5 — Open sized axes are clamped inside; content-sized axes are not
 
-**Reference:** `component:Overlay/DEC-5`
-**Decider:** cixzhang, 2026-10-22
+**参考：** `component:Overlay/DEC-5`
 
-A sized region can be kept inside the surface with arithmetic on the given
-fractions, so it never spills off the media however far it is moved. Keeping a
-content-sized region inside would require measuring it, which PR1 forbids, so
-the container clips any overhang.
+**决策者：** cixzhang, 2026-10-22
+
+带尺寸的区域可以通过对给定分数做算术而保持在表面内部，因此无论移动多远都不会溢出媒体。要让内容定尺寸的区域保持在内部，则需要测量它，而 PR1 禁止这样做，因此容器会裁剪任何溢出。
 
 ### DEC-6 — Open placement names the region's top-left corner
 
-**Reference:** `component:Overlay/DEC-6`
-**Decider:** cixzhang, 2026-10-22
+**参考：** `component:Overlay/DEC-6`
 
-`x` and `y` are the region's top-left corner, and `width` and `height` extend
-right and down. That matches how servers and editors report boxes (left, top,
-width, height) and how CSS insets read, so a reported box passes through with no
-conversion and is clamped with plain arithmetic.
+**决策者：** cixzhang, 2026-10-22
 
-Rejected: the region's center, because every reported box would need converting.
+`x` 与 `y` 是区域的左上角，`width` 与 `height` 向右和向下延展。这与服务器和编辑器报告盒的方式（left、top、width、height）以及 CSS 内缩的读法一致，因此报告的盒无需转换即可直接通过，并用普通算术钳制。
+
+已否决：以区域的中心为基准，因为每个报告的盒都需要转换。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不重复使用方属性表/示例、当前审计结果、实现步骤或家族/系统规则。它链接到它们的所有者。

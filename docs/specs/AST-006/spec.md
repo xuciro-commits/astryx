@@ -36,351 +36,167 @@ affects_consumer_docs: [theme]
 
 ## Intent
 
-Let a maintained theme reuse one of its own semantic decisions across component
-overrides without adding that decision to Astryx's portable token vocabulary.
-Theme authors get one explicit, checked path for theme-family-local reuse;
-component and application authors keep the same portable token contract they have
-today.
+让一个受维护的主题在组件覆盖中复用其自身的某条语义决策，而无需把该决策加入 Astryx 的可移植 token 词汇表。主题作者获得一条显式且受校验的、限定在主题族内部的复用路径；组件作者与应用作者则保留他们今天已有的同一套可移植 token 契约。
 
-The shipped API is one optional `DefineThemeInput.localTokens` field. Supplying it
-explicitly enrolls a theme in the contract; omitting it preserves existing behavior. A
-local token is declared with any valid CSS custom-property name and referenced by that
-same exact name. Prefixes do not grant, reserve, or restrict ownership. Descendants
-inherit enrollment and may replace exact names only through an enrolled exact
-`extends` lineage. Mere emitted CSS creates no contract, but a shipped enrolled
-definition recorded by its owning theme spec does: its exact name and semantic meaning
-are public within that theme family, not portable across themes or intended for Core
-component source.
+已交付的 API 是一个可选字段 `DefineThemeInput.localTokens`。提供该字段即显式让主题加入该契约；省略它则保留现有行为。本地 token 用任意合法的 CSS 自定义属性名声明，并以该完全相同名称引用。前缀不授予、不保留，也不限制所有权。子孙主题继承登记状态，并且只有通过已登记的精确 `extends` 世系才可以替换精确名称。仅仅输出 CSS 并不创建契约，但由拥有它的主题规格记录的、已交付的已登记定义会创建契约：其精确名称与语义含义在该主题族内部是公开的，不可跨主题移植，也不打算用于 Core 组件源码。
 
-This current record governs the cross-theme API and invariants independently of
-whether any particular theme has completed its own adoption evidence. The original
-local-token surface is shipped; the 2026-09-12 naming amendment is accepted and awaits
-its implementation. Theme-local names, meanings, values, mappings, and rendered
-evidence remain owned by each adopting theme's colocated record.
+本当前记录独立地治理跨主题 API 与不变式，无论某个具体主题是否已完成其自身的采用证据。原有的本地 token 表面已交付；2026-09-12 的命名修正案已被接受，并等待实现。主题本地名称、含义、值、映射与渲染证据仍归每个采用主题的同位记录所有。
 
 ## Non-goals
 
-- Changing the type, accepted inputs, runtime or build behavior, permissive
-  spread behavior, names, precedence, inheritance, output, or resolution of the
-  existing `DefineThemeInput.tokens` path.
-- Adding a `defineLocalTokens` helper, a second authoring operation, a shorter
-  role identifier, a reference alias, or a parallel local-token API.
-- Adding theme-local names to `TokenName`, `tokenVar`, `tokenVars`,
-  `resolveThemeToken`, generated portable token documentation, or Core component
-  source.
-- Creating an application-consumer token extension mechanism. A compiled custom
-  property is an implementation output of its maintained theme family, not
-  authorization for application code to depend on it.
-- Defining any adopting theme's role meaning, value, component mappings, or
-  evidence. Those belong to that theme's colocated record.
+- 不改变现有 `DefineThemeInput.tokens` 路径的类型、可接受输入、运行时或构建行为、宽松展开行为、名称、优先级、继承、输出或解析。
+- 不新增 `defineLocalTokens` 辅助函数、第二种编写操作、更短的角色标识符、引用别名或并行的本地 token API。
+- 不把主题本地名称加入 `TokenName`、`tokenVar`、`tokenVars`、`resolveThemeToken`、生成的可移植 token 文档或 Core 组件源码。
+- 不创建面向应用使用方的 token 扩展机制。编译后的自定义属性是其受维护主题族的实现输出，而不是授权应用代码依赖它的凭据。
+- 不定义任何采用主题的角色含义、值、组件映射或证据。这些属于该主题的同位记录。
 
 ## Requirements
 
-The requirements below are the current cross-theme contract.
+以下需求是当前的跨主题契约。
 
-- **FR1 — Local tokens are purely additive, optional, and explicitly enrolled.**
-  `DefineThemeInput` MUST gain at most one new authoring surface: optional
-  `localTokens`. Supplying `localTokens` explicitly enrolls that theme in the new
-  contract. A descendant inherits enrollment only by extending an enrolled exact
-  base. A theme that neither supplies the field nor extends an enrolled exact
-  base remains unenrolled and MUST produce byte-equivalent `DefinedTheme` data,
-  runtime behavior, static output, package output, and resolution behavior.
-- **FR2 — Existing token behavior is frozen and local values reuse its value
-  contract.** This contract MUST NOT change `tokens` typing, accepted inputs,
-  runtime handling, static handling, permissive unknown-key or broad-spread
-  behavior, names, precedence, inheritance, output, or resolution. Existing
-  casts, spreads, external CSS variables, and legacy token references MUST NOT
-  receive new warnings, failures, reinterpretation, or migration requirements.
-  Inside the opt-in `localTokens` field, each value MUST accept the complete
-  existing `TokenValue` contract: a CSS string or `[light, dark]` tuple. Runtime
-  and static build MUST apply the same value normalization semantics existing
-  `tokens` use, without changing that existing path or normalizing theme names.
-- **FR3 — One exact name survives every stage.** A local token declaration MUST
-  use its complete CSS custom-property name as the `localTokens` key. The same
-  exact string MUST be used in `var(...)` references, `DefinedTheme` data,
-  runtime CSS, static CSS, inherited replacement, and generated theme-specific
-  types or metadata. No transform may create a second identifier.
-- **FR4 — Any valid custom-property key is accepted.** Every newly declared
-  `localTokens` key MUST be a valid CSS custom-property name and MUST be preserved
-  byte-for-byte. No prefix is required, reserved, rewritten, or interpreted as owner
-  or enrollment metadata. A theme name and a local-token key are independent; this
-  contract defines no preferred replacement naming pattern.
-- **FR5 — Local use stays inside the maintained theme family.** A local name MAY
-  be referenced by the maintained enrolled theme that defines it and by
-  descendants enrolled through its exact `extends` lineage. It MUST NOT become a
-  portable cross-theme token or a dependency in Core component source. Mere CSS
-  emission from an unenrolled legacy path creates no contract. Once an enrolled
-  theme ships a local token documented in its colocated theme-level spec, the
-  exact name and semantic meaning ARE a public compatibility contract of that
-  theme family.
-- **FR6 — Extension is exact-name, enrollment, and lineage-aware.** A descendant
-  inherits enrollment and declarations only from an enrolled exact `extends` base. It
-  MAY replace an inherited local token only by restating that inherited complete name.
-  A newly declared name is owned by the declaring theme regardless of its spelling.
-  Prefix, suffix, or value similarity MUST NOT create ownership or lineage, and a child
-  MUST NOT claim another theme's declaration.
-- **FR7 — Validation is atomic for enrolled themes only.** Runtime and static build
-  MUST share one recursive validator. For a theme enrolled directly or through an
-  enrolled exact base, it MUST validate each declaration's custom-property syntax,
-  exact owner and lineage, collisions with portable `tokens`, and cycles among exact
-  declared references across local-token values, component overrides, media surfaces,
-  and adaptations before producing partial output. An adaptation `value.tokens` key
-  that exactly matches an effective local declaration MUST fail so the write uses
-  `value.localTokens` and retains owner, lineage, and cycle validation. A `var()`
-  reference is a local edge only when it exactly matches an effective enrolled
-  declaration; every other custom-property reference remains external. Prefixes have
-  no validation meaning.
-- **FR8 — Unenrolled legacy behavior is grandfathered unchanged.** When
-  `localTokens` is absent and the exact base is not enrolled, runtime and static build
-  MUST NOT add a new scan, rejection, warning, reservation, or interpretation for CSS
-  custom-property references. Existing custom properties continue unchanged. A
-  maintainer may leave that behavior unenrolled or explicitly migrate by supplying
-  `localTokens`; no prefix changes either path.
-- **FR9 — Source and built themes preserve one enrollment lineage.**
-  Source-defined and built themes MUST retain equivalent exact local-token maps,
-  enrollment state, and lineage metadata so descendants accept, inherit,
-  replace, reject, and emit the same names without requiring a base stylesheet.
-- **FR10 — Released names and meanings are compatibility obligations.** Once an
-  enrolled local token ships, its exact name and documented semantic meaning are
-  public contracts of the owning theme family. Renaming the local token or its
-  enrolled theme, or changing that meaning, MUST use an explicit reviewed
-  migration or alias that preserves the prior exact-name, meaning, and lineage
-  contract for its compatibility window. Silent key replacement, semantic broadening,
-  owner reassignment, and inferred descendant migration are prohibited.
-- **FR11 — The colocated theme spec owns definitions and mappings.** Each
-  theme-local token definition MUST live in the owning theme's colocated
-  theme-level spec, including its exact name, semantic meaning, value, mappings,
-  compatibility, and rendered evidence. A long generated name is acceptable when
-  it accurately names the meaning shared by every context where it is applied.
-  Adding a mapping is a theme-spec compatibility review: the context MUST
-  genuinely match the documented meaning and MUST provide rendered evidence for
-  its actual light/dark and relevant interaction states.
+- **FR1 — 本地 token 是纯粹增量的、可选的，并且显式登记。** `DefineThemeInput` 最多只能新增一个编写面：可选 `localTokens`。提供 `localTokens` 即显式让该主题加入新契约。子孙主题只有通过扩展已登记的精确基线才继承登记状态。既不提供该字段、也不扩展已登记精确基线的主题仍为未登记，且必须产出字节等价的 `DefinedTheme` 数据、运行时行为、静态输出、包输出与解析行为。
+- **FR2 — 现有 token 行为被冻结，本地值复用其值契约。** 本契约不得改变 `tokens` 的类型、可接受输入、运行时处理、静态处理、对未知键或宽泛展开的宽松行为、名称、优先级、继承、输出或解析。现有类型断言、展开、外部 CSS 变量与遗留 token 引用不得收到新的警告、失败、重新解释或迁移要求。在可选加入的 `localTokens` 字段内部，每个值必须接受完整的现有 `TokenValue` 契约：一个 CSS 字符串或 `[light, dark]` 元组。运行时与静态构建必须应用现有 `tokens` 使用的同一套值归一化语义，且不改变该现有路径，也不对主题名称做归一化。
+- **FR3 — 一个精确名称贯穿每个阶段。** 本地 token 声明必须以其完整的 CSS 自定义属性名作为 `localTokens` 键。同一个精确字符串必须在 `var(...)` 引用、`DefinedTheme` 数据、运行时 CSS、静态 CSS、继承替换以及生成的主题专用类型或元数据中使用。任何转换都不得创建第二个标识符。
+- **FR4 — 任何合法的自定义属性键都被接受。** 每个新声明的 `localTokens` 键必须是合法的 CSS 自定义属性名，并且必须按字节保留。不需要、不保留、不重写任何前缀，也不把前缀解释为所有者或登记元数据。主题名称与本地 token 键相互独立；本契约不定义首选的替代命名模式。
+- **FR5 — 本地用途限定在受维护的主题族内部。** 本地名称可以由定义它的受维护且已登记的主题引用，也可以由通过其精确 `extends` 世系登记的子孙主题引用。它不得成为可移植的跨主题 token，也不得成为 Core 组件源码中的依赖。来自未登记遗留路径的纯 CSS 输出不产生任何契约。一旦某个已登记主题交付了在其同位主题级规格中记录的本地 token，该精确名称与语义含义即成为该主题族的公开兼容性契约。
+- **FR6 — 扩展是按精确名称、登记状态与世系进行的。** 子孙主题只从已登记的精确 `extends` 基线继承登记状态与声明。它只有通过重申该继承来的完整名称，才可以替换某个继承来的本地 token。新声明的名称无论拼写如何都归声明它的主题所有。前缀、后缀或值相似不得创建所有权或世系，子主题也不得主张另一主题的声明。
+- **FR7 — 校验只对已登记主题是原子的。** 运行时与静态构建必须共用同一个递归校验器。对于直接登记或通过已登记精确基线登记的主题，它必须在产出任何部分输出之前，校验每条声明的自定义属性语法、精确所有者与世系、与可移植 `tokens` 的冲突，以及跨本地 token 值、组件覆盖、媒体表面与 adaptation 的精确已声明引用之间的循环。adaptation 的 `value.tokens` 键若与某条生效的本地声明完全匹配，必须失败，以便该写入改用 `value.localTokens` 并保留所有者、世系与循环校验。仅当 `var()` 引用与某条生效的已登记声明完全匹配时，它才是本地边；其他所有自定义属性引用仍为外部。前缀不具有任何校验含义。
+- **FR8 — 未登记的遗留行为按原样豁免。** 当 `localTokens` 缺省且精确基线未登记时，运行时与静态构建不得为 CSS 自定义属性引用新增扫描、拒绝、警告、保留或解释。现有自定义属性保持不变。维护者可以保留该行为不予登记，也可以通过提供 `localTokens` 显式迁移；前缀对两条路径都不产生影响。
+- **FR9 — 源主题与构建主题保持同一条登记世系。** 源定义主题与构建主题必须保留等价的精确本地 token 映射、登记状态与世系元数据，使子孙主题无需基础样式表即可接受、继承、替换、拒绝并输出相同的名称。
+- **FR10 — 已发布的名称与含义是兼容性义务。** 一旦某个已登记的本地 token 交付，其精确名称与已记录语义含义即成为拥有它的主题族的公开契约。重命名该本地 token 或其已登记主题，或更改该含义，必须使用经过评审的显式迁移或别名，在其兼容窗口内保留先前的精确名称、含义与世系契约。禁止静默替换键、语义扩大、所有者改派以及推断式子孙迁移。
+- **FR11 — 同位主题规格拥有定义与映射。** 每个主题本地 token 定义必须位于拥有它的主题的同位主题级规格中，包括其精确名称、语义含义、值、映射、兼容性与渲染证据。当生成的长名称能准确命名其在每个应用上下文中共享的含义时，该长名称是可接受的。新增映射属于主题规格兼容性审查：上下文必须真正匹配已记录含义，并且必须为其实际浅色/深色与相关交互状态提供渲染证据。
 
 ### Authoring shape
 
-`defineTheme` remains the only authoring operation. Each `localTokens` key is the
-complete CSS custom-property name used in `var(...)`, `DefinedTheme`, inheritance, and
-emitted output. The key is preserved byte-for-byte and has no required prefix. Values
-reuse the existing `TokenValue` contract and normalize exactly as existing `tokens`
-values do. An adopting `theme:*` record owns each concrete role, value, and component
-mapping.
+`defineTheme` 仍是唯一的编写操作。每个 `localTokens` 键即用于 `var(...)`、`DefinedTheme`、继承与输出结果中的完整 CSS 自定义属性名。该键按字节保留，且没有必需前缀。值复用现有 `TokenValue` 契约，并与现有 `tokens` 值以完全相同的方式归一化。采用该能力的 `theme:*` 记录拥有每条具体角色、值与组件映射。
 
 ### Platform support
 
-- Supported feature/engine floor: the same CSS custom-property,
-  `light-dark()`, theme scope, and browser support as existing web themes.
-- Unsupported behavior: a platform compiler that cannot preserve a local role
-  and its lineage MUST reject that enrolled input clearly rather than silently
-  omit it or expose the CSS spelling as shared cross-platform API.
-- Browser evidence: each adopting theme verifies its actual component mappings
-  and color modes in real Chromium. Name, validation, inheritance, and
-  runtime/static parity are structural and testable without visual evidence.
+- 支持的功能/引擎下限：与现有 Web 主题相同的 CSS 自定义属性、`light-dark()`、主题作用域与浏览器支持。
+- 不支持的行为：无法保留本地角色及其世系的平台编译器必须明确拒绝该已登记输入，而不是静默省略它，或把该 CSS 拼写暴露为共享的跨平台 API。
+- 浏览器证据：每个采用主题都在真实 Chromium 中验证其实际组件映射与配色模式。名称、校验、继承以及运行时/静态一致性属于结构性内容，无需视觉证据即可测试。
 
 ## Current-state impact
 
-Current `main` keeps its closed portable core/domain token vocabulary and ships the
-first-class `localTokens` field with the original prefix-based key validation. The
-2026-09-12 amendment broadens only accepted local-token key spelling; implementation
-remains pending. Unknown keys that reach permissive legacy paths can still serialize,
-but only explicit `localTokens` enrollment creates ownership, reference closure, and
-lineage validation.
+当前 `main` 保持其封闭的可移植 core/domain token 词汇表，并交付一等 `localTokens` 字段与原有的基于前缀的键校验。2026-09-12 修正案只放宽可接受的本地 token 键拼写；实现仍待落地。进入宽松遗留路径的未知键仍可序列化，但只有显式 `localTokens` 登记才会创建所有权、引用闭包与世系校验。
 
-- `architecture:theme-authoring-contract` owns the optional `localTokens`
-  input, its exact-name map, explicit enrollment state, flattened inheritance,
-  and lineage metadata;
-- `architecture:theme-compilation` emits that exact map through the shared
-  runtime/static compiler and applies one recursive validator only to themes
-  enrolled directly or through an enrolled exact base; and
-- `architecture:theme-tokens` continues to own the unchanged portable
-  vocabulary and explicitly excludes theme-local names from its public helpers
-  and documentation.
+- `architecture:theme-authoring-contract` 拥有可选 `localTokens` 输入、其精确名称映射、显式登记状态、展平后的继承与世系元数据；
+- `architecture:theme-compilation` 通过共享的运行时/静态编译器输出该精确映射，并且只对直接登记或通过已登记精确基线登记的主题应用一个递归校验器；以及
+- `architecture:theme-tokens` 继续拥有未变的可移植词汇表，并在其公共辅助函数与文档中明确排除主题本地名称。
 
-Those current architecture records project the approved behavior and cite the applicable
-AST-006 decisions. Prefix-independent key acceptance remains a named conformance gap
-until its implementation lands. A draft theme record may reference this current spec
-while keeping its own value, mapping, and evidence decisions unresolved.
+这些当前架构记录投射了已批准的行为，并引用了适用的 AST-006 决策。与前缀无关的键接受在其实现落地之前仍是一处已指明的符合性缺口。草稿主题记录可以在保留自身的值、映射与证据决策未决的同时引用本当前规格。
 
 ### Compatibility and adoption
 
-- Adoption is per maintained theme family and optional. Existing themes are not
-  migrated merely because the field exists.
-- A theme that omits `localTokens` and does not extend an enrolled exact base remains
-  byte-equivalent across `DefinedTheme`, runtime, static, and package outputs. Its CSS
-  custom-property references receive no new scan, rejection, warning, reservation, or
-  interpretation.
-- Enrollment accepts any valid custom-property key. To migrate an existing custom
-  property, the maintainer explicitly declares that exact key in `localTokens`;
-  prefixes do not affect eligibility or ownership.
-- Existing `tokens` and external-variable behavior remains byte-equivalent, including
-  permissive broad spreads and runtime inputs.
-- Local names and documented meanings become public theme-family compatibility
-  obligations after release; they never become portable cross-theme or global
-  Core token promises. Mere custom-property emission from an unenrolled legacy
-  path does not create that contract.
-- Each local definition and mapping lives in the owning package's colocated theme
-  spec. Every new mapping reviews whether its context genuinely matches the
-  documented meaning and supplies rendered evidence before adoption.
-- Descendant compatibility follows explicit enrollment and exact lineage. A
-  released enrolled theme or token rename, or semantic meaning change, requires
-  an explicit migration or alias before descendants move.
-- The infrastructure implementation carries its own Changeset. A later adopting
-  theme output change carries a separate release note.
+- 采用按受维护主题族进行，且为可选。现有主题不会仅因该字段存在而被迁移。
+- 缺省 `localTokens` 且未扩展已登记精确基线的主题，在 `DefinedTheme`、运行时、静态与包输出上保持字节等价。其 CSS 自定义属性引用不会收到任何新的扫描、拒绝、警告、保留或解释。
+- 登记接受任何合法的自定义属性键。要迁移现有自定义属性，维护者需在 `localTokens` 中显式声明该精确键；前缀不影响资格或所有权。
+- 现有 `tokens` 与外部变量行为保持字节等价，包括宽松的宽泛展开与运行时输入。
+- 本地名称与已记录含义在发布后成为公开的主题族兼容性义务；它们永远不会成为可移植的跨主题或全局 Core token 承诺。来自未登记遗留路径的纯自定义属性输出不创建该契约。
+- 每条本地定义与映射都位于其所属包的同位主题规格中。每条新增映射在采用前都要审查其上下文是否真正匹配已记录含义，并提供渲染证据。
+- 子孙兼容性遵循显式登记与精确世系。已登记主题或 token 的已发布重命名，或语义含义变更，在子孙迁移之前都需要显式迁移或别名。
+- 基础设施实现自带 Changeset。后续采用主题的输出变更自带单独的发布说明。
 
 ## Verification
 
-| Contract      | Verification                                                                   | Representative states                                                                                                                            | Mutation or failure expectation                                                                                                                |
-| ------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1, FR2, FR8 | Legacy type, runtime, build, resolution, and byte-output fixtures              | omitted field; direct tokens; broad spread; cast; external custom property; portable reference                                                   | Adding a scan to the omitted-field path changes legacy behavior.                                                                               |
-| FR2           | Local `TokenValue` parity fixtures                                             | CSS string; `[light, dark]` tuple; reference value; runtime/static normalization; existing-token control                                         | Local values reject an existing form, normalize differently across paths, or alter the existing `tokens` control.                              |
-| FR3, FR4      | Exact-name authoring, type, and output fixtures                                | valid custom-property keys with different prefixes; invalid custom-property key; exact reference; runtime and static output                      | Any stage rewrites a key, or validity/ownership changes because of a prefix.                                                                   |
-| FR5, FR6, FR9 | Source- and built-base enrollment/lineage fixtures                             | root opt-in; child inherits exact base; child exact replacement; child new role; unenrolled and unrelated names                                  | A child gains ownership from spelling rather than exact lineage, or source/built enrollment differs.                                           |
-| FR7, FR8      | Shared recursive validator fixtures for runtime and static build               | exact declared reference; external reference; portable collision; adaptation `value.tokens` collision; lineage mismatch; cycle; unenrolled theme | Enrolled errors emit partial output, paths disagree, a local write bypasses `value.localTokens`, or a prefix changes reference classification. |
-| FR10, FR11    | Theme-package compatibility fixtures, colocated theme spec, and release review | exact name; documented meaning; enrolled theme rename; local-token rename; meaning change; alias window                                          | A released name or meaning changes silently, a definition lacks an owner, or a descendant loses its inherited contract.                        |
-| FR11          | Per-mapping theme-spec review plus focused rendered evidence                   | exact role meaning; mapped components/states; light/dark; relevant interaction states                                                            | A mapping uses the token outside its documented meaning or ships without contextual rendered evidence.                                         |
+| 契约          | 验证                                           | 代表性状态                                                                                         | 变更或失败预期                                                                                               |
+| ------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| FR1, FR2, FR8 | 遗留类型、运行时、构建、解析与字节输出测试夹具 | 缺省字段；直接 `tokens`；宽泛展开；类型断言；外部自定义属性；可移植引用                            | 在缺省字段路径上新增扫描会改变遗留行为。                                                                     |
+| FR2           | 本地 `TokenValue` 对等性测试夹具               | CSS 字符串；`[light, dark]` 元组；引用值；运行时/静态归一化；现有 token 对照                       | 本地值拒绝某种既有形式、在不同路径上以不同方式归一化，或改动了现有 `tokens` 对照。                           |
+| FR3, FR4      | 精确名称的编写、类型与输出测试夹具             | 前缀不同的合法自定义属性键；非法自定义属性键；精确引用；运行时与静态输出                           | 任一阶段重写了键，或因前缀导致有效性/所有权发生变化。                                                        |
+| FR5, FR6, FR9 | 源基线与构建基线的登记/世系测试夹具            | 根主题选择加入；子主题继承精确基线；子主题精确替换；子主题新增角色；未登记与无关名称               | 子主题凭名称拼写而非精确世系获得所有权，或源与构建的登记状态不一致。                                         |
+| FR7, FR8      | 运行时与静态构建共享的递归校验器测试夹具       | 精确已声明引用；外部引用；可移植冲突；adaptation `value.tokens` 冲突；世系不匹配；循环；未登记主题 | 已登记主题的错误仍产出部分输出、两条路径结论不一致、本地写入绕过 `value.localTokens`，或前缀改变了引用分类。 |
+| FR10, FR11    | 主题包兼容性测试夹具、同位主题规格与发布审查   | 精确名称；已记录含义；已登记主题重命名；本地 token 重命名；含义变更；别名窗口                      | 已发布名称或含义被静默变更、定义缺少所有者，或子孙主题失去其继承契约。                                       |
+| FR11          | 逐映射的主题规格审查加上聚焦的渲染证据         | 精确角色含义；映射的组件/状态；浅色/深色；相关交互状态                                             | 映射在已记录含义之外使用该 token，或交付时缺少上下文相关的渲染证据。                                         |
 
 ### Completion criteria
 
-AST-006 remains `shipped`; the 2026-09-12 naming amendment reaches conformance when
-its implementation satisfies these criteria alongside the already shipped contract:
+AST-006 仍为 `shipped`；2026-09-12 命名修正案在其实现与已交付契约一同满足以下标准时达到符合性：
 
-- optional `DefineThemeInput.localTokens` is the only new local-token authoring
-  surface and its presence is the root enrollment trigger;
-- a theme with no `localTokens` and no enrolled exact base is proven byte-equivalent,
-  with no new custom-property scan, rejection, or warning;
-- local values accept both existing `TokenValue` forms—a CSS string and
-  `[light, dark]` tuple—and runtime/static normalization matches the existing
-  `tokens` value path without changing it;
-- every valid CSS custom-property key is accepted and preserved byte-for-byte through
-  declaration, `var(...)` use, `DefinedTheme`, source/built inheritance, and emitted
-  output, with no prefix semantics;
-- descendants inherit enrollment only from an enrolled exact base; spelling never
-  creates ownership or lineage;
-- custom-property syntax, token collision, exact owner and lineage, and cycle failures
-  are atomic and equal across runtime and static paths for enrolled themes only;
-- built themes retain enrollment and exact lineage metadata sufficient for descendants
-  without a base stylesheet;
-- every shipped local definition is owned by its colocated theme-level spec, and
-  its exact name and semantic meaning are treated as public compatibility
-  contracts within that theme family;
-- every added mapping passes theme-spec compatibility review and rendered
-  light/dark and relevant interaction-state evidence showing that its context
-  genuinely matches the documented meaning;
-- public portable token types, helpers, docs, and Core component source do not
-  expose local names as cross-theme API; and
-- each adopter's colocated `theme:*` record owns its names, meanings, values,
-  mappings, migration, and rendered evidence.
+- 可选 `DefineThemeInput.localTokens` 是唯一新增的本地 token 编写面，其存在即为根登记触发器；
+- 无 `localTokens` 且无已登记精确基线的主题被证明字节等价，且没有新增自定义属性扫描、拒绝或警告；
+- 本地值同时接受两种现有 `TokenValue` 形式——CSS 字符串与 `[light, dark]` 元组——并且运行时/静态归一化与现有 `tokens` 值路径一致，且不改变该路径；
+- 每个合法的 CSS 自定义属性键在声明、`var(...)` 使用、`DefinedTheme`、源/构建继承与输出结果中都被接受并按字节保留，且没有前缀语义；
+- 子孙主题只从已登记的精确基线继承登记状态；名称拼写从不创建所有权或世系；
+- 自定义属性语法、token 冲突、精确所有者与世系以及循环失败，仅对已登记主题而言是原子的，并且在运行时与静态路径上一致；
+- 构建主题保留登记与精确世系元数据，足以让子孙主题在没有基础样式表的情况下工作；
+- 每条已交付的本地定义都归其同位主题级规格所有，其精确名称与语义含义被视为该主题族内部的公开兼容性契约；
+- 每条新增映射都通过主题规格兼容性审查，并提供渲染的浅色/深色与相关交互状态证据，证明其上下文真正匹配已记录含义；
+- 公开的可移植 token 类型、辅助函数、文档与 Core 组件源码不把本地名称暴露为跨主题 API；以及
+- 每个采用方的同位 `theme:*` 记录拥有其名称、含义、值、映射、迁移与渲染证据。
 
 ## Decision log
 
-The decisions below were approved by `cixzhang` as part of this current specification.
+以下决策由 `cixzhang` 作为本当前规格的一部分批准。
 
 ### Amendment — Make local-token names prefix-independent
 
-**Decider:** `cixzhang`, `2026-09-12`
+**决策者：**`cixzhang`, `2026-09-12`
 
-Any valid CSS custom-property key is accepted in `localTokens`. Prefixes have no effect
-on validity, ownership, enrollment, or lineage. This supersedes the naming-pattern and
-reserved-prefix clauses previously recorded in FR4, FR6–FR8, DEC-2, DEC-3, and DEC-4.
-Exact key preservation, explicit enrollment, owner metadata, exact `extends` lineage,
-inheritance, portable-token collision checks, and cycle checks remain in force. This
-amendment defines no replacement naming pattern.
+任何合法的 CSS 自定义属性键在 `localTokens` 中都被接受。前缀对有效性、所有权、登记或世系没有任何影响。这取代了先前记录于 FR4、FR6–FR8、DEC-2、DEC-3 与 DEC-4 中的命名模式条款与保留前缀条款。精确键保留、显式登记、所有者元数据、精确 `extends` 世系、继承、可移植 token 冲突检查与循环检查仍然有效。本修正案不定义任何替代命名模式。
 
 ### DEC-1 — Add one optional local-token field without changing tokens
 
-**Reference:** `spec:AST-006/DEC-1`
-**Decider:** `cixzhang`, `2026-08-31`
+**引用：**`spec:AST-006/DEC-1`
 
-Use a purely additive optional `DefineThemeInput.localTokens` field. Supplying it
-explicitly enrolls a theme; an exact descendant may inherit that enrollment from an
-enrolled base. Keep `defineTheme` as the only authoring operation and preserve every
-existing `tokens` type, input, runtime, build, spread, precedence, inheritance, output,
-and resolution behavior. A theme with no `localTokens` and no enrolled exact base
-remains byte-equivalent regardless of custom-property spelling.
+**决策者：**`cixzhang`, `2026-08-31`
 
-Rejected: a `defineLocalTokens` helper, parallel API, implicit enrollment from a key's
-spelling, module augmentation of the portable token vocabulary, or stricter validation
-on existing token paths.
+使用一个纯粹增量的可选 `DefineThemeInput.localTokens` 字段。提供该字段即显式登记一个主题；精确子孙可以从已登记基线继承该登记状态。保持 `defineTheme` 为唯一的编写操作，并保留每项现有 `tokens` 类型、输入、运行时、构建、展开、优先级、继承、输出与解析行为。无 `localTokens` 且无已登记精确基线的主题，无论自定义属性拼写如何都保持字节等价。
+
+已否决：`defineLocalTokens` 辅助函数、并行 API、依据键拼写进行隐式登记、对可移植 token 词汇表做模块增强，或对现有 token 路径施加更严格校验。
 
 ### DEC-2 — Preserve one exact, prefix-independent name
 
-**Reference:** `spec:AST-006/DEC-2`
-**Decider:** `cixzhang`, `2026-08-31`; amended `2026-09-12`
+**引用：**`spec:AST-006/DEC-2`
 
-A `localTokens` declaration accepts any valid CSS custom-property key. The declaration
-key is the CSS variable, and references use that same byte-for-byte name. No prefix is
-required, reserved, rewritten, or interpreted, and the theme name does not determine
-the key. This decision defines no preferred replacement naming pattern.
+**决策者：**`cixzhang`, `2026-08-31`；修订于 `2026-09-12`
 
-Rejected: generated names, reference aliases, hidden normalization, and any naming rule
-that changes validity or ownership based on a prefix.
+`localTokens` 声明接受任何合法的 CSS 自定义属性键。声明键即该 CSS 变量，引用使用同一个按字节相同的名称。前缀不需要、不保留、不重写，也不被解释，主题名称也不决定该键。本决策不定义任何首选替代命名模式。
+
+已否决：生成的名称、引用别名、隐藏的归一化，以及任何依据前缀改变有效性或所有权的命名规则。
 
 ### DEC-3 — Bind replacement to exact extension lineage
 
-**Reference:** `spec:AST-006/DEC-3`
-**Decider:** `cixzhang`, `2026-08-31`; amended `2026-09-12`
+**引用：**`spec:AST-006/DEC-3`
 
-A descendant inherits enrollment only from an enrolled exact `extends` base and may
-replace an inherited exact name only when that name arrived through that lineage. A
-new declaration is owned by the declaring theme regardless of its spelling. Source and
-built themes retain equivalent enrollment and lineage metadata. Released enrolled
-theme or token renames require an explicit migration or alias.
+**决策者：**`cixzhang`, `2026-08-31`；修订于 `2026-09-12`
 
-Rejected: prefix-, suffix-, or value-based ownership or lineage inference, foreign
-owner claims, and silent key rewriting during extension.
+子孙主题只从已登记的精确 `extends` 基线继承登记状态，并且只有在该名称经由该世系到达时，才可以替换继承来的精确名称。新声明无论拼写如何都归声明它的主题所有。源主题与构建主题保留等价的登记与世系元数据。已登记的已发布主题或 token 重命名需要显式迁移或别名。
+
+已否决：基于前缀、后缀或值的所有权或世系推断、外来所有者主张，以及扩展期间静默重写键。
 
 ### DEC-4 — Validate the exact enrolled declaration graph
 
-**Reference:** `spec:AST-006/DEC-4`
-**Decider:** `cixzhang`, `2026-08-31`; amended `2026-09-12`
+**引用：**`spec:AST-006/DEC-4`
 
-Runtime and static build share one exact validator. After direct or inherited
-enrollment, it checks custom-property syntax, portable-token collisions, exact owner
-and lineage metadata, and cycles among exact declared references. A reference is local
-only when it exactly matches an effective enrolled declaration; every non-matching
-custom-property reference remains external. An unenrolled theme receives no new scan,
-rejection, or warning. Prefixes play no part in classification.
+**决策者：**`cixzhang`, `2026-08-31`；修订于 `2026-09-12`
 
-Rejected: prefix-based classification, a broad external-variable validator, or using
-the new field to close legacy runtime permissiveness.
+运行时与静态构建共用一个精确校验器。在直接或继承登记之后，它检查自定义属性语法、可移植 token 冲突、精确所有者与世系元数据，以及精确已声明引用之间的循环。仅当引用与某条生效的已登记声明完全匹配时，该引用才是本地的；其他所有不匹配的自定义属性引用仍为外部。未登记主题不会收到任何新的扫描、拒绝或警告。前缀在分类中不起作用。
+
+已否决：基于前缀的分类、宽泛的外部变量校验器，或利用新字段收紧遗留运行时的宽松性。
 
 ### DEC-5 — The owning theme spec defines a public theme-family contract
 
-**Reference:** `spec:AST-006/DEC-5`
-**Decider:** `cixzhang`, `2026-08-31`
+**引用：**`spec:AST-006/DEC-5`
 
-Theme-local token definitions belong in the owning package's colocated
-theme-level spec. Once shipped, the exact token name and semantic meaning are a
-public compatibility contract within that maintained theme family, even though
-the token is not portable across themes and is not intended for Core component
-source. Mere output from an unenrolled legacy path is not enough; explicit
-enrollment, shipment, and the theme spec establish the contract.
+**决策者：**`cixzhang`, `2026-08-31`
 
-A long generated name is acceptable when it accurately describes every context
-where the theme applies it. Adding any mapping is therefore a theme-spec
-compatibility review: the context must genuinely mean the documented role and
-must carry rendered evidence for its actual light/dark and relevant interaction
-states.
+主题本地 token 定义属于拥有它的包的同位主题级规格。一旦交付，精确 token 名称与语义含义即为该受维护主题族内部的公开兼容性契约，即便该 token 不可跨主题移植，也不打算用于 Core 组件源码。仅来自未登记遗留路径的纯输出还不够；显式登记、交付与主题规格共同确立该契约。
 
-Rejected: treating local names as either global portable tokens or disposable
-implementation details, defining them outside the owning theme spec, and reusing
-a name in contexts that only happen to share a value.
+当生成的长名称准确描述主题应用它的每个上下文时，该长名称是可接受的。因此，新增任何映射都是一次主题规格兼容性审查：上下文必须真正表示已记录角色，并且必须携带其实际浅色/深色与相关交互状态的渲染证据。
+
+已否决：把本地名称当作全局可移植 token 或一次性实现细节、在拥有它的主题规格之外定义它们，以及在仅仅恰好共享同一值的上下文中复用某个名称。
 
 ### DEC-6 — Reuse the complete existing `TokenValue` contract
 
-**Reference:** `spec:AST-006/DEC-6`
-**Decider:** `cixzhang`, `2026-08-31`
+**引用：**`spec:AST-006/DEC-6`
 
-`localTokens` accepts the complete existing `TokenValue` contract: a CSS string
-or `[light, dark]` tuple. Inside the new opt-in field, both runtime and static
-build apply the same value normalization semantics existing `tokens` use. This
-reuses one established light/dark authoring model without changing the existing
-`tokens` path or introducing another value shape.
+**决策者：**`cixzhang`, `2026-08-31`
 
-Rejected: limiting local values to CSS strings only or defining local-specific
-mode syntax and normalization.
+`localTokens` 接受完整的现有 `TokenValue` 契约：一个 CSS 字符串或 `[light, dark]` 元组。在这个新的可选加入字段内部，运行时与静态构建都适用现有 `tokens` 使用的同一套值归一化语义。这复用一个既有的浅色/深色编写模型，而不改变现有 `tokens` 路径，也不引入另一种值形状。
+
+已否决：把本地值限制为仅 CSS 字符串，或定义本地专有的模式语法与归一化。
 
 ## Open questions
 
-None at the cross-theme API level. Adopting theme specs may retain checkable
-rendered-evidence gates; their ownership, exact names, and semantic meanings are
-not re-opened by those gates.
+在跨主题 API 层面没有。采用方的主题规格可能保留可检查的渲染证据闸门；其所有权、精确名称与语义含义不会因这些闸门而重新开启。

@@ -22,203 +22,64 @@ affects_consumer_docs: [Markdown, RichTextEditor, RichTextView]
 
 ## Intent
 
-When core `Markdown` and the RichText surfaces, `RichTextEditor` and
-`RichTextView`, show the same Markdown document, a person sees one document:
-the same typography, block spacing, measure, structure, and direction on
-every surface. Where a product switches between reading and editing that
-document in place, the switch moves no block relative to the others and
-reflows no line; only editing affordances appear or disappear.
+当核心 `Markdown` 与 RichText 表面（`RichTextEditor` 和 `RichTextView`）显示同一份 Markdown 文档时，一个人看到的是一份文档：在每个表面上都是相同的排版、块间距、行宽、结构与方向。当产品就地在这份文档的阅读与编辑之间切换时，该切换不移动任何块相对于其他块的位置，也不重排任何一行；只有编辑可供性出现或消失。
 
 ## Non-goals
 
-- Byte-identical DOM. Each surface keeps its own markup when the rendered
-  result and its semantics match.
-- The Markdown dialect itself, and how RichText imports and exports Markdown
-  source. This record governs what a supported construct looks like and means
-  once rendered, not which source text produces it or how source round-trips.
-  The one exception is the character reference decoder that DEC-5 shares.
-- Collaboration, persistence, document hosting, and plugin adapters between
-  Markdown plugins and the editor.
-- Which editor engine a product chooses for editing whole documents, and the
-  value that product stores. This record governs how the surfaces render the
-  same document; RichText's own role and value are DEC-7.
-- RichText's release channel. Package release-channel metadata decides it
-  (spec:AST-033 FR4), and promotion follows spec:AST-017 FR23; this record
-  does not.
-- Equivalent internal implementations remain valid when they satisfy this
-  contract, except the character reference decoder, which DEC-5 makes one
-  shared public function.
+- 字节完全一致的 DOM。当渲染结果及其语义一致时，每个表面保留自己的标记。
+- Markdown 方言本身，以及 RichText 如何导入和导出 Markdown 源文本。本记录规定受支持的构造在渲染之后长什么样、意味着什么，而不规定哪种源文本产生它或源文本如何往返。唯一的例外是 DEC-5 共享的字符引用解码器。
+- 协作、持久化、文档托管，以及 Markdown 插件与编辑器之间的插件适配器。
+- 产品选择哪种编辑器引擎来编辑整份文档，以及该产品存储的值。本记录规定各表面如何渲染同一份文档；RichText 自身的角色与值由 DEC-7 规定。
+- RichText 的发布通道。包的发布通道元数据决定它（spec:AST-033 FR4），晋级遵循 spec:AST-017 FR23；本记录不决定。
+- 等价的内部实现在满足本契约时仍然有效，例外是字符引用解码器，DEC-5 使它成为一个共享的公共函数。
 
 ## Requirements
 
-- **FR1 — One contract decides, not either renderer.** Where `Markdown` and a
-  RichText surface disagree for the same supported content, CommonMark
-  semantics decide meaning and the shared type-scale, spacing, and color
-  tokens decide presentation. Neither surface's current output is the
-  reference: a mismatch is fixed on the side the contract says is wrong, which
-  may be `Markdown`.
-- **FR2 — Same typography.** Body text uses `--text-body-size` and
-  `--text-body-leading`; heading level N uses `--text-heading-N-size`,
-  `--text-heading-N-weight`, and `--text-heading-N-leading` with the heading
-  font family, for levels 1–6. Strong text uses `--font-weight-semibold`.
-  Inline code uses the same chip size, family, and padding on every surface.
-- **FR3 — Same block spacing.** Blocks are separated by one spacing table per
-  density. Default density: headings 1–3 `--spacing-6` before and
-  `--spacing-3` after; headings 4–6 `--spacing-4` before and `--spacing-2`
-  after; paragraphs and lists `--spacing-3` on both edges; fenced code,
-  blockquotes, and tables `--spacing-4`; thematic breaks `--spacing-6`.
-  Compact density uses the compact column of the same table. The first
-  block's leading margin and the last block's trailing margin are zero.
-- **FR4 — Same measure.** Prose blocks cap at the same content width,
-  `680px` by default, and wide blocks (fenced code, tables) span the
-  available width on every surface. A RichText table whose column widths a
-  writer set keeps those widths in `RichTextEditor` and `RichTextView`
-  (`spec:AST-106/DEC-3`).
-- **FR5 — Same structure.** Paragraph soft line breaks join into one line of
-  flowing text; hard breaks break. A blockquote's lines continue one
-  paragraph. Ordered and unordered lists nest by CommonMark indentation, show
-  one marker per item with the marker style of its depth (DEC-6). Unordered
-  lists retain the same themed inset at each nesting step. Within each list,
-  sibling items that read in the same direction share one inline-start line;
-  an item that reads against its siblings starts on the opposite edge, as
-  FR6 requires. Lists nested beneath those items use their own item's line as
-  their anchor; numbered-list insets follow FR11.
-  Task-list items, fenced code, tables, and
-  thematic breaks render as those structures, never as their literal source.
-  Fenced code wraps long lines on every surface; a code line never scrolls or
-  clips sideways (DEC-9).
-- **FR6 — Direction follows the text that carries it.** A prose block — a
-  paragraph, heading, quote, or list item — lays out in the direction of its
-  own text on every surface, `Markdown`, `RichTextEditor` and `RichTextView`,
-  at any nesting depth. A block whose text has no strongly directional
-  character takes the direction of the surrounding Internationalization
-  provider, which covers an empty block, digits, punctuation, and an image.
+- **FR1 — 契约决定，而不是任一渲染器。** 当 `Markdown` 与某个 RichText 表面就同一受支持内容出现分歧时，CommonMark 语义决定含义，共享的字号阶梯、间距与颜色 token 决定呈现。任一表面的当前输出都不是基准：不一致要按契约判定为错误的那一侧来修复，而那一侧可能是 `Markdown`。
+- **FR2 — 排版一致。** 正文使用 `--text-body-size` 与 `--text-body-leading`；标题级别 N 在 1–6 级使用标题字体族，以及 `--text-heading-N-size`、`--text-heading-N-weight` 与 `--text-heading-N-leading`。粗体文本使用 `--font-weight-semibold`。内联代码在每个表面上使用相同的 chip 尺寸、字体族与内边距。
+- **FR3 — 块间距一致。** 块之间按每档密度一张间距表分隔。默认密度：标题 1–3 前为 `--spacing-6`、后为 `--spacing-3`；标题 4–6 前为 `--spacing-4`、后为 `--spacing-2`；段落与列表两侧均为 `--spacing-3`；围栏代码、引用块与表格为 `--spacing-4`；主题分隔线为 `--spacing-6`。紧凑密度使用同一张表的紧凑列。第一个块的前置外边距与最后一个块的后置外边距为零。
+- **FR4 — 行宽一致。** 行文块的内容宽度上限相同，默认 `680px`；宽块（围栏代码、表格）在每个表面上都占满可用宽度。作者设定过列宽的 RichText 表格在 `RichTextEditor` 与 `RichTextView` 中保留这些列宽（`spec:AST-106/DEC-3`）。
+- **FR5 — 结构一致。** 段落中的软换行合并为一行连续文本；硬换行则断开。引用块中的多行延续为一个段落。有序与无序列表按 CommonMark 的缩进嵌套，每个条目显示一个标记，标记样式由其深度决定（DEC-6）。无序列表在每一级嵌套保持相同的主题内缩。在每个列表中，同方向阅读的兄弟条目共享同一条行内起始线；与其兄弟方向相反的条目从对侧边缘开始，如 FR6 所要求。嵌套在这些条目之下的列表以其自身条目的行作为锚点；编号列表的内缩遵循 FR11。任务列表条目、围栏代码、表格与主题分隔线渲染为这些结构，绝不渲染为其字面源文本。围栏代码在每个表面上对长行换行；代码行绝不横向滚动或被裁切（DEC-9）。
+- **FR6 — 方向跟随承载它的文本。** 行文块——段落、标题、引用或列表条目——在每个表面上都按其自身文本的方向布局，包括 `Markdown`、`RichTextEditor` 与 `RichTextView`，且在任意嵌套深度。文本中没有强方向字符的块采用周围国际化提供方的方向，这覆盖空块、数字、标点与图片。
 
-  A prose block that holds several blocks — a quote, or a list item with
-  more than one paragraph — takes its direction from the first strongly
-  directional character of all the text under it, and each block inside it
-  takes its own the same way.
+  容纳多个块的行文块——一个引用，或一个含多个段落的列表条目——其方向取自其下所有文本的第一个强方向字符，而它内部的每个块以同样方式取各自的方向。
 
-  A container is not prose and takes its parent's direction whatever it
-  holds: the provider's at the top level, its wrapper item's when nested. A
-  list orders its markers and insets that way, a table reads its columns that
-  way, and a fenced code block frames its lines that way, giving each line
-  its own direction from that line's first strong character.
+  容器不是行文，无论容纳什么都采用其父级的方向：顶层取提供方的，嵌套时取其包裹条目的。列表以此排列其标记与内缩，表格以此读取其列，围栏代码块以此框定其行，并让每一行从该行的第一个强字符取得自己的方向。
 
-  A table cell is a container and orders with its table, and the cell's text
-  reads in its own direction on every surface. Where a surface wraps that
-  text in a block the block carries the direction, and where it does not the
-  cell carries it, so the same cell reads the same way on all three.
+  表格单元格是容器，随其表格排列，而单元格的文本在每个表面上按其自身方向阅读。当某个表面把该文本包裹在块中时，由该块承载方向；当它不包裹时，由单元格承载，因此同一个单元格在三个表面上读起来都一样。
 
-  Direction decides a block's alignment, its logical insets, and the
-  direction its caret moves. A surface that takes those from the provider
-  while a block's text runs the other way puts the caret of a right-to-left
-  paragraph on the wrong edge and moves it opposite to the arrow key.
+  方向决定块的对齐、其逻辑内缩，以及其光标移动的方向。若某个表面从提供方取得这些，而块的文本方向相反，就会把从右到左段落的光标放在错误的一侧，并让它与方向键的移动相反。
 
-- **FR7 — Same semantics.** Strong, emphasis, strikethrough, inline code, and
-  links expose the same element semantics on every surface. A link's
-  destination never contains its title; a title is exposed as the link's
-  title. Named and numeric character references in text, such as `&copy;`
-  and `&#169;`, render as the characters they name on every surface; inside
-  inline code and fenced code they stay literal. Every surface decodes them
-  with the one decoder `Markdown` exports (DEC-5).
-- **FR8 — Same code block frame.** A fenced code block shows the same frame —
-  its header, or the corner cluster when it has none, with its language label
-  and copy action placed as `component:CodeBlock` FR3 and FR11 place them — at
-  the same height in read and edit mode, so the switch does not move the code.
-  In edit mode the frame — the header or the corner cluster — sits outside the
-  editable text: it is not part of the document and cannot be edited.
-- **FR9 — Reading and editing in place.** Edit mode may add a caret,
-  selection, placeholder, focus ring, field border and inset, and a toolbar.
-  Together these offset the whole document by one constant amount: after that
-  offset, every block's top and height match read mode within 2 px and every
-  paragraph keeps its line count. The toolbar either overlays content or holds
-  space that read mode reserves too, so the offset does not change while
-  editing.
-- **FR10 — Scroll position survives the switch.** The block at the top of
-  the view before a switch between reading and editing is still at the top of
-  the view after it, within the FR9 offset.
-- **FR11 — Numbered-list indentation is shared within the list.** A numbered
-  list MAY widen its marker space from the ordinary themed list inset to
-  accommodate that list's widest rendered counter. Sibling items that read in
-  the same direction start their text on the same inline-start line; an
-  individual counter MUST NOT shift its item's text or a list nested beneath
-  it. Counters remain
-  whole on one line without clipping, truncation, or overlap with item text.
-  Separate lists at the same depth MAY have different insets when their
-  widest counters differ; each nested list resolves its own inset from its
-  parent item's text start. This permission changes neither source
-  nesting nor DEC-6's numbering and marker styles. It does not exempt
-  renderer parity: for the same list, theme, density, and available measure,
-  Markdown and the RichText surfaces retain matching text starts and nested
-  insets, and FR9's reading/editing geometry and reflow requirements still hold.
+- **FR7 — 语义一致。** 粗体、强调、删除线、内联代码与链接在每个表面上暴露相同的元素语义。链接的目标绝不包含其标题；标题作为链接的标题暴露。文本中的命名与数字字符引用，例如 `&copy;` 与 `&#169;`，在每个表面上渲染为其所指的字符；在内联代码与围栏代码内则保持字面。每个表面都用 `Markdown` 导出的那一个解码器解码它们（DEC-5）。
+- **FR8 — 代码块外框一致。** 围栏代码块在阅读与编辑模式下以相同高度显示相同的外框——其头部，或没有头部时的角部集群，以及语言标签与复制操作，按 `component:CodeBlock` FR3 与 FR11 的位置放置，因此切换不会移动代码。在编辑模式下，外框——头部或角部集群——位于可编辑文本之外：它不是文档的一部分，不能被编辑。
+- **FR9 — 就地阅读与编辑。** 编辑模式可以添加光标、选区、占位符、焦点环、字段边框与内缩，以及一个工具栏。这些合起来把整份文档偏移一个固定量：在该偏移之后，每个块的顶部与高度在 2 px 以内与阅读模式一致，每个段落保持其行数。工具栏要么覆盖内容，要么占据阅读模式也预留的空间，因此编辑时该偏移不变。
+- **FR10 — 滚动位置在切换后保留。** 在阅读与编辑之间切换之前位于视口顶部的块，在切换之后仍位于视口顶部，处于 FR9 的偏移之内。
+- **FR11 — 编号列表的缩进在列表内共享。** 编号列表可以将标记空间从常规的主题列表内缩加宽，以容纳该列表中渲染最宽的计数器。同方向阅读的兄弟条目从同一条行内起始线开始其文本；单个计数器不得移动其条目的文本或嵌套在其下的列表。计数器在一行内保持完整，不被裁切、截断，也不与条目文本重叠。同一深度的不同列表在其最宽计数器不同时可以有不同内缩；每个嵌套列表从其父条目文本的起点解析自己的内缩。该许可既不改变源嵌套，也不改变 DEC-6 的编号与标记样式。它不免除渲染器一致性：对同一个列表、主题、密度与可用行宽，Markdown 与 RichText 表面保持一致的文本起点与嵌套内缩，且 FR9 的阅读/编辑几何与重排要求仍然成立。
 
 ### Platform support
 
-- Supported feature/engine floor: the repository's browser support matrix.
-- Unsupported behavior: a construct a surface cannot yet render as a
-  structure renders as its literal source text. It is never dropped.
-- Browser evidence: real-browser block geometry for the shared parity
-  fixture at phone and desktop widths, light and dark, left-to-right and
-  right-to-left, and a long document switched between reading and editing
-  halfway down.
+- 支持的功能/引擎下限：仓库的浏览器支持矩阵。
+- 不受支持的行为：某个表面尚不能渲染为结构的构造，渲染为其字面源文本。它绝不会被丢弃。
+- 浏览器证据：共享一致性测试夹具在手机与桌面宽度、浅色与深色、从左到右与从右到左下的真实浏览器块几何，以及一份在下半部分于阅读与编辑之间切换的长文档。
 
 ## Current-state impact
 
-`Markdown` already renders FR2–FR4, and FR5 apart from its opposite-edge
-clause, for its own output, except where FR7 names
-a link title and FR7 names character references. `RichTextEditor` and
-`RichTextView` are governed by FR2–FR11 for the
-constructs they render; their default editor theme follows FR2 and FR3.
-Implementation gap: `Markdown` and RichText lay every block out in the
-provider's direction (FR6, and FR5's opposite-edge clause); RichText's `direction: inherit` override in
-`editorTheme.ts` is part of that gap.
-Fenced code lines take the frame's direction on both surfaces, so neither
-meets FR6's per-line rule yet. `component:CodeBlock` keeps a code block's
-direction unchanged (FR9) and leaves the ordering inside a line to the
-platform text engine, so closing this gap changes that record as well as the
-surfaces.
-`@astryxdesign/core/Markdown/parser` and `@astryxdesign/core/Markdown` export
-`decodeMarkdownCharacterReferences`, the DEC-5 decoder the RichText surfaces
-import with.
-`Markdown` draws disc and decimal markers at every depth, and RichText draws
-the second bulleted level as a disc; both adopt the DEC-6 marker cycle.
-RichText adopts DEC-8: its package entry stops exporting `sharedEditorTheme`,
-`URL_MATCHER`, `EMAIL_MATCHER`, and `Transformer`; `RichTextEditorToolbar`
-gains `BaseProps` and a `ref` and renames `linkOpensInNewTab` to `hasNewTabLinks`; and its
-Lexical peer ranges move to the Lexical 0.52 minor.
-`Markdown` renders fenced code unwrapped, scrolling sideways, and adopts the
-FR5 wrap; RichText already wraps fenced code. A product that switches in
-place keeps the editor's text as wide as the reading surface by setting the
-field's inset and border outside it, as the RichTextEditor docs show; a
-standalone editor keeps its form width.
-`Markdown`, through `component:CodeBlock`, and the RichText surfaces float
-Copy over the code of a fence that names no language; both adopt the FR8
-corner cluster that `component:CodeBlock` FR11 places.
-RichText code blocks colour with `component:CodeBlock`'s tokenizer, and
-`RichTextEditor` and `RichTextView` take the same `codeLanguages` list of
-`component:CodeBlock` language modules (FR13) as `Markdown` (`component:Markdown`
-FR30), label a fence matched in it with the value's `name` (an identifier shown
-verbatim, `component:CodeBlock` FR13), as `Markdown`
-does, so read and edit paint and label the same languages, except a fence whose first word runs
-past letters, digits, and underscores, such as `c++`, `c#`, `objective-c`,
-`rust,ignore`, or `diff-ts`: `Markdown` reads a fence by its leading word
-characters (`component:Markdown` FR29), while RichText keeps the whole first word.
+`Markdown` 已经为其自身输出渲染 FR2–FR4，以及除其对侧边缘条款之外的 FR5，例外之处是 FR7 命名链接标题与 FR7 命名字符引用的地方。`RichTextEditor` 与 `RichTextView` 就其渲染的构造受 FR2–FR11 管辖；它们的默认编辑器主题遵循 FR2 与 FR3。实现差距：`Markdown` 与 RichText 都按提供方的方向布局每个块（FR6，以及 FR5 的对侧边缘条款）；RichText 在 `editorTheme.ts` 中的 `direction: inherit` 覆盖是该差距的一部分。围栏代码行在两个表面上都采用外框的方向，因此两者都尚未满足 FR6 的逐行规则。`component:CodeBlock` 保持代码块的方向不变（FR9），并把行内排序留给平台文本引擎，因此补上该差距会同时改变那条记录与这些表面。`@astryxdesign/core/Markdown/parser` 与 `@astryxdesign/core/Markdown` 导出 `decodeMarkdownCharacterReferences`，即 RichText 表面导入使用的 DEC-5 解码器。`Markdown` 在每一深度绘制实心圆点与十进制标记，RichText 把第二级项目符号绘制为实心圆点；两者都采用 DEC-6 的标记循环。RichText 采用 DEC-8：其包入口停止导出 `sharedEditorTheme`、`URL_MATCHER`、`EMAIL_MATCHER` 与 `Transformer`；`RichTextEditorToolbar` 获得 `BaseProps` 与 `ref`，并将 `linkOpensInNewTab` 改名为 `hasNewTabLinks`；其 Lexical 对等版本范围移至 Lexical 0.52 次版本。`Markdown` 不换行地渲染围栏代码并横向滚动，现采用 FR5 的换行；RichText 已经对围栏代码换行。就地切换的产品通过把字段的内缩与边框设在其外部，使编辑器的文本与阅读表面一样宽，如 RichTextEditor 文档所示；独立编辑器保持其表单宽度。`Markdown` 通过 `component:CodeBlock`，与 RichText 表面一样，把 Copy 悬浮在未命名语言的围栏代码之上；两者都采用 `component:CodeBlock` FR11 所放置的 FR8 角部集群。RichText 代码块使用 `component:CodeBlock` 的 tokenizer 着色，`RichTextEditor` 与 `RichTextView` 接受与 `Markdown`（`component:Markdown` FR30）相同的 `codeLanguages` 列表，即 `component:CodeBlock` 的语言模块（FR13），并用其中匹配项的 `name`（一个逐字显示的标识符，`component:CodeBlock` FR13）为围栏加标签，如同 `Markdown` 所做的那样，因此阅读与编辑为相同的语言着色并加标签，但首个词超出字母、数字与下划线之外的围栏除外，例如 `c++`、`c#`、`objective-c`、`rust,ignore` 或 `diff-ts`：`Markdown` 按围栏的前导词字符读取（`component:Markdown` FR29），而 RichText 保留整个首个词。
 
 ## Verification
 
-| Contract   | Verification                                                                                                | Representative states                                                                                                                                                                                                                                                                      | Mutation or failure expectation                                                                                                                                                                                     |
-| ---------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR2–FR4    | Real-browser computed style and block geometry of the parity fixture on `Markdown` and RichText             | 390px and 1440px; light and dark; default density                                                                                                                                                                                                                                          | Restoring a hard-coded heading size or a different block margin moves a block past 2 px and fails                                                                                                                   |
-| FR5        | Real-browser structure and line counts of the parity fixture                                                | Nested lists at 2- and 3-space indentation; soft breaks; blockquote continuation                                                                                                                                                                                                           | Flattening a nested list or turning a soft break into a line break fails                                                                                                                                            |
-| FR6        | Real-browser computed direction, alignment, and caret movement per block                                    | Right-to-left provider with left-to-right text and the reverse; a mixed document; a block holding only digits, punctuation, or an image; a nested list whose items read both ways; a quote and a list item holding paragraphs that read different ways; a table whose cells read both ways | A prose block or table cell whose computed direction disagrees with its own text, a neutral block that does not follow the provider, or a list, table, or fence that takes a direction from its contents, fails     |
-| FR7        | Semantic DOM of inline marks, links, and character references on every surface                              | Titled link, bare link, strong, emphasis, strikethrough; `&amp;`, `&copy;`, `&#169;` in text and in code                                                                                                                                                                                   | A title inside a destination, a styled span in place of a semantic element, or an undecoded reference in text fails                                                                                                 |
-| FR7, DEC-5 | Shared conformance cases through `Markdown` rendering and RichText import                                   | Named, decimal, and hexadecimal references; an unknown name; a missing semicolon; an invalid code point                                                                                                                                                                                    | A second reference table, or a decoder that changes an unknown name or an unterminated reference, fails                                                                                                             |
-| FR5, DEC-9 | Real-browser line boxes and horizontal overflow of a long-line code fixture on both surfaces, read and edit | 390px and 1440px; light and dark; left-to-right and right-to-left                                                                                                                                                                                                                          | A code block whose scroll width exceeds its client width, or a long line that is taller in one mode than the other, fails                                                                                           |
-| FR5, DEC-6 | Real-browser marker style per depth on both surfaces                                                        | Bulleted and numbered lists nested 0–8 deep and of mixed types; starts of 0, −1, 26, 27, 3999, and 4000 at alpha and roman depths; right-to-left; light and dark                                                                                                                           | A level that draws another level's marker, or one surface differing from the other, fails                                                                                                                           |
-| FR5, FR11  | Real-browser counter line boxes, sibling text starts, and nested-list insets on Markdown and RichText       | Short and wide-counter lists at the same depth; decimal 9–10 and 99–100; alpha z–aa; roman vi–viii; adjacent parents whose child lists have different widest counters; phone/desktop; LTR/RTL; light/dark; read/edit                                                                       | A split, clipped, or overlapping counter, a text shift between items that read the same way, a nested-list anchor displaced from its own item's text-start line, or a cross-renderer/read-edit inset mismatch fails |
-| FR8        | Real-browser code block header geometry in both modes                                                       | Fenced code with an info string; a one-line fence with a language; a long fence with no language                                                                                                                                                                                           | A header or corner cluster present in only one mode, a control over the code in either mode, or a line that wraps differently between modes fails                                                                   |
-| FR9–FR10   | Real-browser read/edit switch of the parity fixture and a long document                                     | Short document at the top; long document halfway down                                                                                                                                                                                                                                      | A per-block shift beyond the constant offset, or an anchor block leaving the top of the view, fails                                                                                                                 |
+| 契约       | 验证                                                                        | 代表性状态                                                                                                                                                     | 变异或失败预期                                                                                                                         |
+| ---------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| FR2–FR4    | `Markdown` 与 RichText 上一致性测试夹具的真实浏览器计算样式与块几何         | 390px 与 1440px；浅色与深色；默认密度                                                                                                                          | 恢复硬编码的标题尺寸或不同的块外边距会使某个块移动超过 2 px 而失败                                                                     |
+| FR5        | 一致性测试夹具的真实浏览器结构与行数                                        | 2 空格与 3 空格缩进的嵌套列表；软换行；引用块延续                                                                                                              | 展平嵌套列表或把软换行变成换行会失败                                                                                                   |
+| FR6        | 每个块的真实浏览器计算方向、对齐与光标移动                                  | 从右到左提供方配从左到右文本及其反向；一份混合文档；只含数字、标点或图片的块；条目双向阅读的嵌套列表；含方向不同段落的引用与列表条目；单元格双向阅读的表格     | 行文块或表格单元格的计算方向与其自身文本不一致、中性块不跟随提供方，或列表、表格或围栏从内容取方向，均失败                             |
+| FR7        | 每个表面上内联标记、链接与字符引用的语义 DOM                                | 带标题的链接、裸链接、粗体、强调、删除线；文本中与代码中的 `&amp;`、`&copy;`、`&#169;`                                                                         | 目标内出现标题、用带样式的 span 替代语义元素，或文本中未解码的引用，均失败                                                             |
+| FR7, DEC-5 | 经 `Markdown` 渲染与 RichText 导入的共享一致性用例                          | 命名、十进制与十六进制引用；未知名称；缺少分号；无效码点                                                                                                       | 出现第二张引用表，或解码器改变了未知名称或未终止的引用，均失败                                                                         |
+| FR5, DEC-9 | 两个表面上长行代码夹具在阅读与编辑下的真实浏览器行盒与水平溢出              | 390px 与 1440px；浅色与深色；从左到右与从右到左                                                                                                                | 代码块的滚动宽度超过其客户端宽度，或长行在一种模式下比另一种更高，均失败                                                               |
+| FR5, DEC-6 | 两个表面上每个深度的真实浏览器标记样式                                      | 嵌套 0–8 层且类型混合的项目符号与编号列表；在 alpha 与 roman 深度处起始值为 0、−1、26、27、3999 与 4000；从右到左；浅色与深色                                  | 某一层级绘制了另一层级的标记，或一个表面与另一个不同，均失败                                                                           |
+| FR5, FR11  | `Markdown` 与 RichText 上计数器的真实浏览器行盒、兄弟文本起点与嵌套列表内缩 | 同一深度的短计数器与宽计数器列表；十进制 9–10 与 99–100；alpha z–aa；roman vi–viii；相邻父级其子列表的最宽计数器不同；手机/桌面；LTR/RTL；浅色/深色；阅读/编辑 | 计数器被拆分、裁切或重叠，同方向阅读的条目之间文本位移，嵌套列表锚点偏离其自身条目的文本起始线，或跨渲染器/阅读-编辑内缩不一致，均失败 |
+| FR8        | 两种模式下代码块头部的真实浏览器几何                                        | 带 info string 的围栏代码；带语言的一行围栏；无语言的长围栏                                                                                                    | 头部或角部集群只出现在一种模式、任一模式下有控件覆盖代码，或某行在两种模式间换行方式不同，均失败                                       |
+| FR9–FR10   | 一致性测试夹具与长文档的真实浏览器阅读/编辑切换                             | 位于开头的短文档；位于下半部分的长文档                                                                                                                         | 逐块位移超出固定偏移，或锚定块离开视口顶部，均失败                                                                                     |
 
 ## Decision log
 
@@ -227,137 +88,64 @@ characters (`component:Markdown` FR29), while RichText keeps the whole first wor
 **Reference:** `spec:AST-061/DEC-1`
 **Decider:** cixzhang, 2026-10-06
 
-Readers move between the read and edit surfaces of the same document, so the
-document has to look and mean the same on both. The contract is CommonMark
-semantics plus the shared tokens, because those are what a reader's
-expectations come from. When `Markdown` is the side that departs from them,
-`Markdown` changes.
-Rejected: treating current `Markdown` output as the reference, because it
-would copy its defects into every editor surface.
+读者在同一份文档的阅读与编辑表面之间移动，因此文档在两边必须看起来一致、含义一致。契约是 CommonMark 语义加上共享 token，因为读者的预期正来自这些。当 `Markdown` 是偏离它们的那一侧时，`Markdown` 改变。已否决：把当前 `Markdown` 的输出当作基准，因为那会把它的缺陷复制到每一个编辑器表面。
 
 ### DEC-2 — Editing affordances offset the document but never reflow it
 
 **Reference:** `spec:AST-061/DEC-2`
 **Decider:** cixzhang, 2026-10-06
 
-An editor needs a caret, a toolbar, and a field frame, so edit mode cannot be
-pixel-identical to read mode. A constant offset keeps the reader's place:
-every line stays where it was relative to the others, and the scroll anchor
-stays at the top of the view. 2 px absorbs subpixel rounding between
-renderers; it does not admit a different spacing value.
+编辑器需要光标、工具栏与字段外框，因此编辑模式不可能与阅读模式逐像素相同。固定偏移保住了读者的位置：每一行相对其他行的位置不变，滚动锚点仍在视口顶部。2 px 吸收渲染器之间的亚像素舍入；它并不允许不同的间距取值。
 
 ### DEC-3 — Character references render decoded
 
 **Reference:** `spec:AST-061/DEC-3`
 **Decider:** cixzhang, 2026-10-06
 
-A reader who sees `&copy;` on one surface and `©` on the other is looking at
-two documents. CommonMark renders references as the characters they name, so
-both surfaces do; code shows exactly what was typed.
+在一个表面上看到 `&copy;`、在另一个表面上看到 `©` 的读者，看到的是两份文档。CommonMark 把引用渲染为其所指的字符，因此两个表面都如此；代码则精确显示所输入的内容。
 
 ### DEC-4 — Read and edit share the code block header
 
 **Reference:** `spec:AST-061/DEC-4`
 **Decider:** cixzhang, 2026-10-06
 
-The language label tells a reader what the code is in both modes, and a
-header present in only one mode moves every line of code on the switch. The
-header is a frame around the document, not document content, so editing never
-reaches it.
+语言标签在两种模式下都告诉读者代码是什么，而只存在于一种模式的头部会在切换时移动每一行代码。头部是围绕文档的外框，而不是文档内容，因此编辑永远触及不到它。
 
 ### DEC-5 — One decoder for character references
 
 **Reference:** `spec:AST-061/DEC-5`
 **Decider:** cixzhang, 2026-10-06
 
-`decodeMarkdownCharacterReferences(text)`, exported from the server-safe
-`@astryxdesign/core/Markdown/parser` subpath and from
-`@astryxdesign/core/Markdown`, returns `text` with every valid named or
-numeric character reference replaced by the characters it names, and a
-numeric reference to NUL, a surrogate, or a code point past U+10FFFF replaced
-by U+FFFD, as CommonMark specifies; an unknown name, a reference without its
-semicolon, and all other text stay as written.
-It works on plain text and knows nothing of Markdown: each caller decides
-where it applies, so backslash escapes and code stay literal. It is the
-decoder `Markdown` itself renders with: one implementation and one named
-reference table, private to `Markdown`, so the surfaces cannot drift apart.
-This is the narrow exception to this record's non-goals on import mechanism
-and equivalent internals; every other internal stays free, and no general
-HTML entity utility is exported.
+`decodeMarkdownCharacterReferences(text)`，从服务器安全的 `@astryxdesign/core/Markdown/parser` 子路径以及 `@astryxdesign/core/Markdown` 导出，返回把每个有效的命名或数字字符引用替换为其所指字符后的 `text`，并按 CommonMark 的规定，把指向 NUL、代理项或超出 U+10FFFF 的码点的数字引用替换为 U+FFFD；未知名称、缺少分号的引用以及所有其他文本保持原样。它作用于纯文本，对 Markdown 一无所知：每个调用方决定它在哪里应用，因此反斜杠转义与代码保持字面。它就是 `Markdown` 自身渲染所用的解码器：一个实现与一张命名的引用表，为 `Markdown` 私有，因此各表面无法彼此漂移。这是本记录关于导入机制与等价内部实现的非目标的一处狭窄例外；其他所有内部实现仍然自由，且不导出任何通用 HTML 实体工具。
 
 ### DEC-6 — List markers cycle by depth
 
 **Reference:** `spec:AST-061/DEC-6`
 **Decider:** cixzhang, 2026-10-06
 
-A list's depth is the number of lists, bulleted or numbered, that enclose it;
-a top-level list has depth 0. A bulleted list draws disc, circle, or square
-markers when its depth modulo 3 is 0, 1, or 2; a numbered list writes its
-numbers as decimal, lower-alpha, or lower-roman the same way. The cycle
-repeats without end, so each level differs from the levels beside it and a
-reader can tell depth apart on every surface. Numbering keeps the list's
-start value and counts the same items; only how each number is written
-changes. Letters past `z` continue as `aa`, `ab`, and so on. A number outside
-its style's range — zero or a negative number under lower-alpha or
-lower-roman, as a start of 0 or below gives, or a number past 3999 under
-lower-roman — is written in decimal, as the CSS counter styles fall back; the
-start value and the items stay as written. Task list items show checkboxes
-instead of markers. Markers are presentation: the
-list keeps its list semantics, and the source does not change.
+列表的深度是包裹它的列表（项目符号或编号）的层数；顶层列表深度为 0。项目符号列表在其深度对 3 取余为 0、1 或 2 时分别绘制实心圆点、空心圆或方形标记；编号列表以同样方式把其数字写为十进制、小写字母或小写罗马数字。该循环无休止地重复，因此每一级都与其相邻层级不同，读者在每个表面上都能分辨深度。编号保留列表的起始值并计数相同的条目；改变的只是每个数字的书写方式。`z` 之后的字母继续为 `aa`、`ab` 等等。超出其样式范围的数字——小写字母或小写罗马数字样式下的零或负数（起始值为 0 或更低时即如此），或小写罗马数字下超过 3999 的数字——以十进制书写，正如 CSS 计数器样式的回退；起始值与条目保持原样。任务列表条目显示复选框而不是标记。标记是呈现：列表保留其列表语义，源不改变。
 
 ### DEC-7 — RichText is a form-field editor whose value is Lexical editor state
 
 **Reference:** `spec:AST-061/DEC-7`
 **Decider:** cixzhang, 2026-10-14
 
-`RichTextEditor` is a public form-field editor: a labelled field in which a
-person writes formatted text. Its value is serialized Lexical `EditorState`
-JSON: `defaultValue` takes it, `onChange` reports the editor state that
-serializes to it, and `RichTextView` renders it. Markdown is an import and
-export format, not the value: `markdownToEditorStateJSON` and
-`editorStateJSONToMarkdown` convert between the two, and `spec:AST-062` owns
-what that conversion returns. RichText is not a document host:
-collaboration, persistence, and document hosting stay with the product, which
-brings them around the editor or through `plugins`. RichText offers the opt-in
-document affordances that `spec:AST-106` admits, each as a plugin through
-`plugins`; with none turned on, it is the
-form field this decision describes. This record stays the one visual contract
-that RichText and `Markdown` share.
+`RichTextEditor` 是一个公共表单字段编辑器：一个带标签的字段，人在其中撰写带格式的文本。其值是序列化的 Lexical `EditorState` JSON：`defaultValue` 接受它，`onChange` 报告序列化为它的编辑器状态，而 `RichTextView` 渲染它。Markdown 是一种导入与导出格式，而不是该值：`markdownToEditorStateJSON` 与 `editorStateJSONToMarkdown` 在两者之间转换，该转换返回什么由 `spec:AST-062` 拥有。RichText 不是文档宿主：协作、持久化与文档托管留在产品侧，产品把它们围绕编辑器带来，或通过 `plugins` 带来。RichText 提供 `spec:AST-106` 允许的选入式文档可供性，每一项都通过 `plugins` 作为插件；在全部关闭的情况下，它就是本决策所描述的表单字段。本记录仍然是 RichText 与 `Markdown` 共享的那一份视觉契约。
 
 ### DEC-8 — RichText's public surface is Lexical's, kept small
 
 **Reference:** `spec:AST-061/DEC-8`
 **Decider:** cixzhang, 2026-10-14
 
-RichText is built on Lexical and says so: `nodes` and `transformers` take
-Lexical types, `plugins` takes Lexical React plugins, and `onChange(editorState,
-editor)` and the editor ref's `getEditorState()` report Lexical types, so a
-caller extends the editor with Lexical directly.
-The package supports one Lexical minor and declares it in its Lexical peer
-ranges; `spec:AST-017` classifies a change to that minor. The package exports
-only what a caller builds with: the generated editor theme classes, the
-autolink regular expressions, and a re-export of Lexical's `Transformer` type
-are internal, and `Transformer` comes from `@lexical/markdown`.
-`RichTextEditorToolbar` takes `BaseProps` and a `ref` and passes them to the
-core `Toolbar` it renders, which places them as it places its own: the `ref`
-and styling on its root, and other base props on its `role="toolbar"`
-element. Its option for links that open in a new tab is `hasNewTabLinks`. `RichTextEditorAutoLinkPlugin` renders no element of
-its own, so it takes no `BaseProps`.
-Rejected: Astryx document, node, and plugin types over Lexical's, because they
-would duplicate Lexical's extension model with no gain for a caller.
+RichText 构建在 Lexical 之上并如实说明：`nodes` 与 `transformers` 接受 Lexical 类型，`plugins` 接受 Lexical React 插件，`onChange(editorState, editor)` 与编辑器 ref 的 `getEditorState()` 报告 Lexical 类型，因此调用方直接用 Lexical 扩展编辑器。该包支持一个 Lexical 次版本，并在其 Lexical 对等版本范围中声明它；`spec:AST-017` 对该次版本的变更进行分类。该包只导出调用方构建所需的内容：生成的编辑器主题类、自动链接正则表达式，以及 Lexical `Transformer` 类型的再导出都是内部的，而 `Transformer` 来自 `@lexical/markdown`。`RichTextEditorToolbar` 接受 `BaseProps` 与 `ref`，并把它们传给其渲染的核心 `Toolbar`，后者按放置自己属性的方式放置它们：`ref` 与样式放在其根上，其他基础 props 放在其 `role="toolbar"` 元素上。它关于在新标签页打开的链接的选项是 `hasNewTabLinks`。`RichTextEditorAutoLinkPlugin` 不渲染自己的任何元素，因此不接受 `BaseProps`。已否决：用 Astryx 的文档、节点与插件类型替代 Lexical 的，因为它们会重复 Lexical 的扩展模型，而对调用方没有收益。
 
 ### DEC-9 — Fenced code wraps
 
 **Reference:** `spec:AST-061/DEC-9`
 **Decider:** cixzhang, 2026-10-14
 
-A reader on a narrow screen sees a whole code line without scrolling it
-sideways, and a long line takes the same height in read and edit mode, so the
-switch does not move the blocks below it (FR9). Wrapping is presentation: the
-code's text, its line numbers, and what copy returns do not change.
-Rejected: both surfaces scrolling sideways, because editing inside a
-sideways-scrolling region hides the caret's context.
+窄屏上的读者无需横向滚动就能看到一个完整的代码行，长行在阅读与编辑模式下占据相同高度，因此切换不会移动其下方的块（FR9）。换行是呈现：代码的文本、其行号，以及复制所返回的内容都不改变。已否决：两个表面都横向滚动，因为在横向滚动的区域内编辑会隐藏光标的上下文。
 
 ## Open questions
 
-- None.
+- 无。

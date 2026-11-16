@@ -39,162 +39,139 @@ system_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                     |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `TopNavMenu` with `label`, `items` (`{title, description?, icon?, href?, onClick?}`), `delay` (150), and `hideDelay` (200); target `top-nav-menu`.                                           |
-| Behavior                | In the bar, a button that opens a menu of rich items on hover or click, with APG menu keyboard support. In the drawer, a disclosure that expands its items inline. Hidden in the mobile bar. |
-| End-user impact         | Mouse users preview destinations on hover; keyboard users move through items with arrows and typeahead; drawer users expand the group in place.                                              |
-| Builder impact          | None.                                                                                                                                                                                        |
-| Compatibility/readiness | Records shipped behavior; no public change. Two current-state gaps (see Current-state impact).                                                                                               |
-| Review checks           | Reject wrapping the popup in a modal dialog, more than one tab stop among items, a collapsed drawer group that stays reachable, or caller trigger handlers that replace the built-in ones.   |
-| Governing rules         | `architecture:public-component-api` INV5 and INV7; `architecture:interaction-modality`; `component:TopNav` render modes.                                                                     |
+| Area                    | Contract                                                                                                                                             |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public contract         | `TopNavMenu`，接受 `label`、`items`（`{title, description?, icon?, href?, onClick?}`）、`delay`（150）与 `hideDelay`（200）；目标为 `top-nav-menu`。 |
+| Behavior                | 在栏中，是一个在悬停或点击时打开富条目菜单的按钮，支持 APG 菜单键盘操作。在抽屉中，是一个就地展开其条目的展开控件。在移动端栏中隐藏。                |
+| End-user impact         | 鼠标用户在悬停时预览目标；键盘用户用方向键与输入即定位在条目间移动；抽屉用户就地展开分组。                                                           |
+| Builder impact          | 无。                                                                                                                                                 |
+| Compatibility/readiness | 记录已发布行为；无公共变更。存在两处当前状态缺口（见 Current-state impact）。                                                                        |
+| Review checks           | 拒绝把弹出层包进模态对话框、条目中存在多个 tab 停靠点、折叠的抽屉分组仍可访问，或调用方的触发器处理器替换内置处理器。                                |
+| Governing rules         | `architecture:public-component-api` INV5 与 INV7；`architecture:interaction-modality`；`component:TopNav` 渲染模式。                                 |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；以下正文才具有权威性。
 
 ## Intent
 
-TopNavMenu is a TopNav entry that groups several destinations under one label.
-It owns the trigger, the hover or click menu popover in the bar, and the
-expandable group in the mobile drawer. Consumer usage lives in
-`TopNavMenu.doc.mjs`.
+TopNavMenu 是一个 TopNav 入口，把一个标签下的多个目标分组。它拥有触发器、栏中悬停或点击打开的菜单弹出层，以及移动端抽屉中的可展开分组。使用方用法见 `TopNavMenu.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public change
-- Controlled/uncontrolled behavior: open and expanded states are internal
-- Migration decision: none
+- 保留的已发布默认值：`yes`
+- 兼容性类别：记录已发布行为；无公共变更
+- 受控/非受控行为：打开与展开状态是内部状态
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明应放在使用方文档与发行说明中。
 
 ## Current-state impact
 
-- **Motion under reduced motion.** The drawer group's height, the bar and
-  drawer chevrons' rotation, the trigger's background and text color, and each
-  bar item's background color still animate when reduced motion is requested;
-  `design:reduced-motion` DR1–DR3 allow no animated property for a fine pointer
-  and only a short opacity change for touch.
-- **The drawer trigger drops the ref.** In `drawer` mode the disclosure button
-  receives the caller's other DOM props but not `ref`.
-  `architecture:public-component-api` INV8 has the ref reach the element the
-  contract promises.
+- **减弱动效时的动画。** 在请求减弱动效时，抽屉分组的高度、栏与抽屉箭头的旋转、触发器的背景与文字颜色、以及每个栏条目的背景色仍会播放动画；`design:reduced-motion` DR1–DR3 对精细指针不允许任何动画属性，对触摸只允许短暂的透明度变化。
+- **抽屉触发器丢失 ref。** 在 `drawer` 模式下，展开按钮会接收调用方的其他 DOM props，但不接收 `ref`。`architecture:public-component-api` INV8 要求 ref 到达契约所承诺的元素。
 
 ## Ownership boundary
 
 **Owns**
 
-- The trigger button, the menu popover and its items, keyboard handling, and the
-  drawer group (FR1–FR10).
+- 触发器按钮、菜单弹出层及其条目、键盘处理，以及抽屉分组（FR1–FR10）。
 
 **Does not own / non-goals**
 
-- Destination acceptance and blocking for every `href` this component renders —
-  owned by `family:navigation-destinations`.
-- Render mode and slot — owned by `component:TopNav`.
-- Popover positioning, native light dismiss, and layer hosting — owned by the
-  shared popover and layer runtime.
-- Rich panel layouts — owned by `component:TopNavMegaMenu`.
+- 本组件渲染的每个 `href` 的目标接受与拦截——由 `family:navigation-destinations` 拥有。
+- 渲染模式与插槽——由 `component:TopNav` 拥有。
+- 弹出层定位、原生轻触关闭与层托管——由共享的 popover 与 layer 运行时拥有。
+- 富面板布局——由 `component:TopNavMegaMenu` 拥有。
 
 ## Public concepts
 
-| Concept   | Closed values or states                                    | Meaning                    | Availability by variant/orientation/state | Default | Owner                  | Stability | Invalid-value behavior               |
-| --------- | ---------------------------------------------------------- | -------------------------- | ----------------------------------------- | ------- | ---------------------- | --------- | ------------------------------------ |
-| Menu item | `title`, optional `description`, `icon`, `href`, `onClick` | One destination or action. | Bar and drawer.                           | —       | `component:TopNavMenu` | Stable    | A rejected `href` renders no `href`. |
+| Concept  | Closed values or states                                  | Meaning          | Availability by variant/orientation/state | Default | Owner                  | Stability | Invalid-value behavior          |
+| -------- | -------------------------------------------------------- | ---------------- | ----------------------------------------- | ------- | ---------------------- | --------- | ------------------------------- |
+| 菜单条目 | `title`、可选的 `description`、`icon`、`href`、`onClick` | 一个目标或动作。 | 栏与抽屉。                                | —       | `component:TopNavMenu` | 稳定      | 被拒绝的 `href` 不渲染 `href`。 |
 
 ## Behavioral and layout contract
 
-| ID   | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Basis                    |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| FR1  | In `default` mode the trigger is a `<button>` showing `label` and a chevron that turns when open; it carries `top-nav-menu`, the forwarded `ref`, and other DOM props, and announces a menu popup with its expanded state.                                                                                                                                                                                                                                                                                                                                                                                                                                    | Current source and tests |
-| FR2  | On a hover-capable pointer, hovering the trigger opens the menu after `delay` ms and leaving the trigger and the menu closes it after `hideDelay` ms; a hover-open does not move focus. A click opens the menu and moves focus to the first item; a click within 500 ms of a hover-open keeps it open.                                                                                                                                                                                                                                                                                                                                                        | Current source and tests |
-| FR3  | The popup is a non-modal popover below the trigger, aligned to the trigger's TopNav slot (start, center, or end). It contains one `role="menu"` named by `label`, followed by a close button named by `@astryx.popover.close` that stays visually hidden until it holds focus.                                                                                                                                                                                                                                                                                                                                                                                | Current source and tests |
-| FR4  | Each item is a `role="menuitem"`: an `<a>` when `href` is set (rendering its `href` only when the URL is accepted), else a `div`. Bar items render a native `<a>`, not the `LinkProvider` link. It shows an icon box, the title, and the description, and runs the item's `onClick` on activation.                                                                                                                                                                                                                                                                                                                                                            | Current source and tests |
-| FR5  | Items use a roving tab index with exactly one tab stop. ArrowDown and ArrowUp move focus and wrap at both ends; typing a character moves to the matching item; Enter or Space activates the focused item; Escape closes the menu and returns focus to the trigger.                                                                                                                                                                                                                                                                                                                                                                                            | APG menu pattern; tests  |
-| FR6  | Caller `onClick`, `onMouseEnter`, and `onMouseLeave` on the trigger run before the built-in open behavior and compose with it instead of replacing it; a caller handler that calls `preventDefault()` cancels the built-in open or toggle for that event. Caller attributes never override the popup wiring.                                                                                                                                                                                                                                                                                                                                                  | Current source and tests |
-| FR7  | In `drawer` mode the trigger is a full-width disclosure button with `aria-expanded` and `aria-controls`; activating it toggles the group. Collapsed items are `inert` and `aria-hidden`, and the group clips while collapsed and while it expands, and stops clipping once fully expanded. Without a reduced-motion preference, expansion animates the group's height.                                                                                                                                                                                                                                                                                        | Current source and tests |
-| FR8  | Drawer items render through the `LinkProvider` link component, and an item with `onClick` and no `href` renders a `<button type="button">`; activating one runs the item's `onClick` and then closes the AppShell drawer, except that a Ctrl-, Cmd-, Shift- or Alt-click on a link runs `onClick` and leaves it open for the next one, unless `onClick` cancels the click.                                                                                                                                                                                                                                                                                    | Current source           |
-| FR9  | In `mobile-bar` mode TopNavMenu renders nothing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Current source           |
-| FR10 | The trigger, each bar item, and each drawer control paint the shared focus outline.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Current source and tests |
-| FR11 | In the open menu, a press (finger, pen or mouse) that lands on an enabled item and slides across the items acts on the one it lifts on, once, through that item's own activation, with the highlight following the pointer; a lift outside acts on nothing, and a mouse released outside closes the menu. The menu adopts `module:DropdownMenu/useMenuPress` for this (`family:action-groups` FR1–FR5; `module:DropdownMenu/useMenuPress` DEC-7). Link items are undraggable, so a mouse slide is not a drag; a Ctrl-, Cmd- or Shift-click or a middle click on a link item stays the browser's; and keyboard and assistive-technology behavior is unchanged. | Current source and tests |
+| ID   | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Basis                    |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| FR1  | 在 `default` 模式下，触发器是一个 `<button>`，显示 `label` 与一个在打开时转向的箭头；它带有 `top-nav-menu`、转发的 `ref` 与其他 DOM props，并播报一个弹出菜单及其展开状态。                                                                                                                                                                                                                                                                                                 | Current source and tests |
+| FR2  | 在支持悬停的指针上，悬停触发器会在 `delay` 毫秒后打开菜单，离开触发器与菜单会在 `hideDelay` 毫秒后关闭它；悬停打开不会移动焦点。点击会打开菜单并把焦点移到第一个条目；在悬停打开后 500 毫秒内的点击会保持其打开。                                                                                                                                                                                                                                                           | Current source and tests |
+| FR3  | 弹出层是触发器下方的非模态 popover，与触发器的 TopNav 插槽对齐（start、center 或 end）。它包含一个由 `label` 命名的 `role="menu"`，之后是一个由 `@astryx.popover.close` 命名的关闭按钮，该按钮在获得焦点前保持视觉隐藏。                                                                                                                                                                                                                                                    | Current source and tests |
+| FR4  | 每个条目是一个 `role="menuitem"`：设置了 `href` 时为 `<a>`（仅当 URL 被接受时才渲染其 `href`），否则为 `div`。栏条目渲染原生 `<a>`，而不是 `LinkProvider` 链接。它显示图标框、标题与描述，并在激活时运行条目的 `onClick`。                                                                                                                                                                                                                                                  | Current source and tests |
+| FR5  | 条目使用漫游 tab index，只有一个 tab 停靠点。ArrowDown 与 ArrowUp 移动焦点并在两端回绕；输入字符会移动到匹配的条目；Enter 或 Space 激活当前焦点条目；Escape 关闭菜单并把焦点返回触发器。                                                                                                                                                                                                                                                                                    | APG menu pattern; tests  |
+| FR6  | 触发器上调用方的 `onClick`、`onMouseEnter` 与 `onMouseLeave` 先于内置打开行为运行，并与它组合而不是替换它；调用方处理器若调用 `preventDefault()`，会取消该事件的内置打开或切换。调用方属性绝不覆盖弹出层的接线。                                                                                                                                                                                                                                                            | Current source and tests |
+| FR7  | 在 `drawer` 模式下，触发器是一个全宽的展开按钮，带有 `aria-expanded` 与 `aria-controls`；激活它会切换分组。折叠的条目为 `inert` 与 `aria-hidden`，分组在折叠时与展开过程中都会裁剪，完全展开后停止裁剪。在无减弱动效偏好时，展开会对分组高度播放动画。                                                                                                                                                                                                                      | Current source and tests |
+| FR8  | 抽屉条目通过 `LinkProvider` 链接组件渲染，带有 `onClick` 且无 `href` 的条目渲染 `<button type="button">`；激活其中一个会运行条目的 `onClick`，然后关闭 AppShell 抽屉，但对链接的 Ctrl、Cmd、Shift 或 Alt 点击会运行 `onClick` 并为下一次操作保持其打开，除非 `onClick` 取消该点击。                                                                                                                                                                                         | Current source           |
+| FR9  | 在 `mobile-bar` 模式下 TopNavMenu 不渲染任何内容。                                                                                                                                                                                                                                                                                                                                                                                                                          | Current source           |
+| FR10 | 触发器、每个栏条目与每个抽屉控件都会绘制共享的焦点轮廓。                                                                                                                                                                                                                                                                                                                                                                                                                    | Current source and tests |
+| FR11 | 在打开的菜单中，一次落在某个可用条目上并滑过各条目的按压（手指、笔或鼠标）会通过该条目自身的激活方式作用于它抬起时所处的那个条目，只作用一次，高亮跟随指针；在外部抬起则不作任何操作，鼠标在外部释放会关闭菜单。菜单为此采用 `module:DropdownMenu/useMenuPress`（`family:action-groups` FR1–FR5；`module:DropdownMenu/useMenuPress` DEC-7）。链接条目不可拖动，因此鼠标滑动不是拖拽；对链接条目的 Ctrl、Cmd 或 Shift 点击或中键点击仍归浏览器处理；键盘与辅助技术行为不变。 | Current source and tests |
 
 ### Allowed variation
 
-- **AV1 — Timing.** `delay` and `hideDelay` vary per caller.
+- **AV1 — 时序。** `delay` 与 `hideDelay` 因调用方而异。
 
 ### Representative states
 
-| State            | Required invariant                                                                                      | Allowed variation |
-| ---------------- | ------------------------------------------------------------------------------------------------------- | ----------------- |
-| Closed           | Trigger with collapsed state.                                                                           | Theme styling.    |
-| Hover-open       | Menu open; focus does not move.                                                                         | Delay.            |
-| Click-open       | Menu open; focus on the first item.                                                                     | —                 |
-| Drawer collapsed | Items inert and hidden from assistive technology.                                                       | —                 |
-| Drawer expanded  | Items reachable; activation closes the drawer, except a modified click on a link, which leaves it open. | Animation.        |
+| State            | Required invariant                                                     | Allowed variation |
+| ---------------- | ---------------------------------------------------------------------- | ----------------- |
+| Closed           | 触发器处于折叠状态。                                                   | 主题样式。        |
+| Hover-open       | 菜单打开；焦点不移动。                                                 | 延迟。            |
+| Click-open       | 菜单打开；焦点在第一个条目上。                                         | —                 |
+| Drawer collapsed | 条目为 inert 并对辅助技术隐藏。                                        | —                 |
+| Drawer expanded  | 条目可访问；激活会关闭抽屉，但带修饰键点击链接除外，该点击保持其打开。 | 动画。            |
 
 ### Transformation and precedence order
 
-- **ORD1 — Trigger handlers.** Caller handler first, then the built-in handler
-  (FR6).
+- **ORD1 — 触发器处理器。** 先调用调用方处理器，再调用内置处理器（FR6）。
 
 ### Performance and resources
 
-- **PR1 — Timers.** Hover timers clear on close and on unmount.
+- **PR1 — 定时器。** 悬停定时器在关闭时与卸载时清除。
 
 ## Accessibility contract
 
-- **AR1 — Menu semantics.** The popup is not a modal dialog; the trigger
-  announces a menu popup; items are `menuitem`s inside one named `menu`.
-- **AR2 — Keyboard.** FR5's keys follow the APG menu pattern.
-- **AR3 — Drawer disclosure.** The drawer trigger exposes its expanded state and
-  controls the group; collapsed items are unreachable.
+- **AR1 — 菜单语义。** 弹出层不是模态对话框；触发器播报一个弹出菜单；条目是一个具名 `menu` 内的 `menuitem`。
+- **AR2 — 键盘。** FR5 的按键遵循 APG 菜单模式。
+- **AR3 — 抽屉展开控件。** 抽屉触发器暴露其展开状态并控制该分组；折叠的条目不可访问。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                  | Representation authority       | Hierarchy role | Component contract |
-| ---------------- | ----------------------------------- | ------------------------------ | -------------- | ------------------ |
-| Trigger          | Bar-item styling with a chevron.    | Current source and public docs | Prominent      | FR1                |
-| Menu item        | Icon box, title, description.       | Current source and public docs | Supporting     | FR4                |
-| Drawer group     | Disclosure row with indented items. | Current source                 | Supporting     | FR7                |
+| Anatomy or state | Design requirement   | Representation authority | Hierarchy role | Component contract |
+| ---------------- | -------------------- | ------------------------ | -------------- | ------------------ |
+| Trigger          | 带箭头的栏条目样式。 | 当前源码与公开文档       | 突出           | FR1                |
+| Menu item        | 图标框、标题、描述。 | 当前源码与公开文档       | 辅助           | FR4                |
+| Drawer group     | 带缩进条目的展开行。 | 当前源码                 | 辅助           | FR7                |
 
-`TopNavMenu.doc.mjs` declares no anatomy of its own, so no anatomy-theming map is
-recorded.
+`TopNavMenu.doc.mjs` 未声明自己的 anatomy，因此不记录 anatomy 与主题的映射。
 
 ## Family and system relationships
 
-- `family:overlay-dismissal` owns Escape and close-request ordering for this
-  component's popover.
-- `family:navigation-destinations` owns the accept/block decision for each
-  destination this component renders.
-- `component:TopNav` supplies the render mode and slot.
-- `architecture:public-component-api` INV5 and INV7 govern forwarding and
-  handler composition.
-- `architecture:interaction-modality` provides the shared focus indicator.
+- `family:overlay-dismissal` 拥有本组件弹出层的 Escape 与关闭请求排序。
+- `family:navigation-destinations` 拥有本组件渲染的每个目标的接受/拦截决策。
+- `component:TopNav` 提供渲染模式与插槽。
+- `architecture:public-component-api` INV5 与 INV7 管辖转发与处理器组合。
+- `architecture:interaction-modality` 提供共享的焦点指示器。
 
 ## Verification map
 
-| Contract            | Verification                                                                                                  | Representative states                                       | Mutation or failure expectation                                               | Audit section                    |
-| ------------------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------- |
-| FR1, FR3, AR1       | `TopNavMenu.test.tsx` trigger and semantics tests                                                             | Closed and open                                             | A dialog wrapper or wrong popup type fails.                                   | `audit:TopNavMenu/accessibility` |
-| FR4, FR5, AR2       | `TopNavMenu.test.tsx` keyboard tests                                                                          | Arrows, wrap, typeahead, Enter, Escape                      | Extra tab stops or lost activation fails.                                     | `audit:TopNavMenu/accessibility` |
-| FR6                 | `TopNavMenu.test.tsx` pass-through and owned-handler tests                                                    | Bar and drawer triggers                                     | A replaced built-in handler or lost prop fails.                               | `audit:TopNavMenu/behavior`      |
-| FR7, FR8, FR10, AR3 | `TopNavMenu.test.tsx` drawer tests, including the `onClick`-only item's native button                         | Collapsed and expanded; an `onClick`-only drawer item       | Reachable collapsed items or a missing ring fails.                            | `audit:TopNavMenu/behavior`      |
-| Shared menu focus   | `useMenuHover.test.tsx`                                                                                       | Hover-open, click-open, Escape, Enter and Space             | Focus moved on hover, not moved in on click, or not returned on Escape fails. | `audit:TopNavMenu/accessibility` |
-| FR11                | `TopNavMenu.test.tsx` action-group suite (touch and mouse slides)                                             | Touch and mouse slides across items; undraggable link items | Removing the adoption fails the slide tests.                                  | —                                |
-| RTL relation        | RTL audit curated D4 target (`apps/storybook/rtl-audit/targets.json`) on `TopNavMenu / Default` (menu opened) | An open start-aligned menu panel; LTR and RTL               | A panel that does not move to the mirrored side of the page in RTL fails D4.  | `audit:TopNavMenu/i18n-rtl`      |
+| Contract            | Verification                                                                                                | Representative states                      | Mutation or failure expectation                                  | Audit section                    |
+| ------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- | -------------------------------- |
+| FR1, FR3, AR1       | `TopNavMenu.test.tsx` 触发器与语义测试                                                                      | 关闭与打开                                 | 包一层 dialog 或弹出层类型错误会失败。                           | `audit:TopNavMenu/accessibility` |
+| FR4, FR5, AR2       | `TopNavMenu.test.tsx` 键盘测试                                                                              | 方向键、回绕、输入即定位、Enter、Escape    | 多出 tab 停靠点或丢失激活会失败。                                | `audit:TopNavMenu/accessibility` |
+| FR6                 | `TopNavMenu.test.tsx` 透传与自有处理器测试                                                                  | 栏与抽屉触发器                             | 内置处理器被替换或 prop 丢失会失败。                             | `audit:TopNavMenu/behavior`      |
+| FR7, FR8, FR10, AR3 | `TopNavMenu.test.tsx` 抽屉测试，包括仅有 `onClick` 的条目的原生按钮                                         | 折叠与展开；一个仅有 `onClick` 的抽屉条目  | 折叠条目可访问或缺少焦点环会失败。                               | `audit:TopNavMenu/behavior`      |
+| Shared menu focus   | `useMenuHover.test.tsx`                                                                                     | 悬停打开、点击打开、Escape、Enter 与 Space | 悬停时移动焦点、点击时未移入焦点，或 Escape 时未返回焦点会失败。 | `audit:TopNavMenu/accessibility` |
+| FR11                | `TopNavMenu.test.tsx` 动作分组测试套件（触摸与鼠标滑动）                                                    | 跨条目触摸与鼠标滑动；不可拖动的链接条目   | 移除该采用会导致滑动测试失败。                                   | —                                |
+| RTL relation        | 在 `TopNavMenu / Default`（菜单已打开）上的 RTL 审查精选 D4 目标（`apps/storybook/rtl-audit/targets.json`） | 一个打开的起始对齐菜单面板；LTR 与 RTL     | 面板在 RTL 下未移到页面镜像侧会失败 D4。                         | `audit:TopNavMenu/i18n-rtl`      |
 
-Read from source, with no focused test yet: the visually hidden close button after the menu (FR3); the native `<a>` for bar items, the icon box, and the description (FR4); the forwarded `ref`, the `top-nav-menu` target, and the bar and drawer chevrons' turn (FR1, FR7); the drawer group's clipping while it expands and its height animation (FR7); the caller `preventDefault()` cancellation (FR6); hover opening and closing with `delay` and `hideDelay` (FR2); slot alignment (FR3); FR9; and the bar trigger and item parts of FR10.
+从源码读取、尚无聚焦测试：菜单之后的视觉隐藏关闭按钮（FR3）；栏条目的原生 `<a>`、图标框与描述（FR4）；转发的 `ref`、`top-nav-menu` 目标，以及栏与抽屉箭头的转向（FR1、FR7）；抽屉分组在展开过程中的裁剪与其高度动画（FR7）；调用方 `preventDefault()` 的取消（FR6）；带 `delay` 与 `hideDelay` 的悬停打开与关闭（FR2）；插槽对齐（FR3）；FR9；以及 FR10 中栏触发器与条目的部分。
 
 ## Decision log
 
-No component-local decision is recorded.
+未记录组件本地决策。
 
 ## Open questions
 
-- **OQ1 — Should bar menu items render through the `LinkProvider` link, as the
-  drawer items do?** (`human-api`) Today bar items render a native `<a>` and
-  drawer items the `LinkProvider` link (FR4, FR8).
+- **OQ1 — 栏菜单条目是否应像抽屉条目那样通过 `LinkProvider` 链接渲染？**（`human-api`）目前栏条目渲染原生 `<a>`，抽屉条目渲染 `LinkProvider` 链接（FR4、FR8）。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables, examples, or popover
-mechanics. It links to their owners.
+本文件不重复使用方 prop 表、示例或 popover 机制。它链接到它们的拥有者。

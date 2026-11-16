@@ -41,93 +41,45 @@ affects_consumer_docs: [styling-overview, getting-started, migration-setup]
 
 ## Intent
 
-A product that uses Astryx loads prebuilt stylesheets: `@astryxdesign/core/astryx.css`,
-the stylesheet of each other Astryx package it uses, and a theme stylesheet.
-Those files are the whole of Astryx's component CSS, and loading them is the
-default setup. A product can instead compile Astryx package source with
-`@astryxdesign/build`, for every module of a package or only the ones it ships;
-that build produces the rules the prebuilt stylesheets hold, in the same layer.
-A Next.js product does this with `withAstryx()` under webpack or Turbopack, for
-every styled Astryx package it uses, and its own CSS still wins over every
-Astryx rule.
+使用 Astryx 的产品会加载预构建样式表：`@astryxdesign/core/astryx.css`、它用到的其他每个 Astryx 包的样式表，以及一个主题样式表。这些文件就是 Astryx 组件 CSS 的全部内容，加载它们即默认设置。产品也可以改用 `@astryxdesign/build` 编译 Astryx 包源码，既可针对一个包的全部模块，也可只针对它交付的模块；该构建在同一层中产出预构建样式表所承载的规则。Next.js 产品在 webpack 或 Turbopack 下通过 `withAstryx()` 对它用到的每个带样式的 Astryx 包这样做，而它自己的 CSS 仍然胜过每一条 Astryx 规则。
 
-Every package stylesheet places its rules in the same cascade layer under the
-same layer order. A theme override therefore wins over the base styles of every
-package, whichever package styled the element and whichever stylesheet loads
-first.
+每个包样式表都将其规则放在同一个级联层下，并遵循同一层级顺序。因此，无论元素由哪个包设置样式、无论哪个样式表先加载，主题覆盖都会胜过每个包的基础样式。
 
 ## Non-goals
 
-- What a theme stylesheet contains, owned by `architecture:theme-compilation`,
-  `spec:AST-034`, and `spec:AST-050`.
-- Which StyleX variable groups a package stylesheet contains, owned by
-  `spec:AST-066` FR3.
-- How a product compiles its own code, including any StyleX settings it uses for
-  its own styles or for components it ejects with `astryx swizzle`, except where
-  a swizzled copy's rules land under `@astryxdesign/build` (FR5, FR7).
-- How `@astryxdesign/build` plugs into a bundler other than through
-  `withAstryx()` (FR9), and how a source build chooses a subset of a package's
-  modules to compile.
-- Minifying or compressing stylesheets.
-- Equivalent internal implementations remain valid when they satisfy this
-  contract.
+- 主题样式表包含什么，由 `architecture:theme-compilation`、`spec:AST-034` 和 `spec:AST-050` 拥有。
+- 包样式表包含哪些 StyleX 变量组，由 `spec:AST-066` FR3 拥有。
+- 产品如何编译自己的代码，包括它为自身样式或为通过 `astryx swizzle` 弹出的组件所使用的任何 StyleX 设置，但被 swizzle 的副本的规则在 `@astryxdesign/build` 下落在何处除外（FR5、FR7）。
+- `@astryxdesign/build` 除通过 `withAstryx()` 之外如何接入打包器（FR9），以及源码构建如何选择要编译的包模块子集。
+- 样式表的压缩或精简。
+- 只要满足本契约，等价的内部实现仍然有效。
 
 ## Requirements
 
-- **FR1 — Every published package ships one prebuilt stylesheet.** Each
-  published `@astryxdesign/*` package whose modules carry styles MUST export one
-  precompiled stylesheet from a `.css` subpath of the package. The stylesheet
-  holds every rule its modules use. A package ships its stylesheet with its
-  first published release that carries styles. The package stylesheets are:
+- **FR1 — 每个已发布的包都交付一个预构建样式表。** 每个模块带有样式的已发布 `@astryxdesign/*` 包，都必须从该包的 `.css` 子路径导出预编译样式表。该样式表包含其模块用到的每条规则。包在其首个带样式的已发布版本中一并交付其样式表。包样式表如下：
 
-  | Package                  | Stylesheet                                                          |
-  | ------------------------ | ------------------------------------------------------------------- |
-  | `@astryxdesign/core`     | `@astryxdesign/core/astryx.css`                                     |
-  | `@astryxdesign/lab`      | `@astryxdesign/lab/lab.css`                                         |
-  | `@astryxdesign/richtext` | `@astryxdesign/richtext/richtext.css`                               |
-  | `@astryxdesign/charts`   | `@astryxdesign/charts/charts.css`, from its first published release |
+  | 包                       | 样式表                                                |
+  | ------------------------ | ----------------------------------------------------- |
+  | `@astryxdesign/core`     | `@astryxdesign/core/astryx.css`                       |
+  | `@astryxdesign/lab`      | `@astryxdesign/lab/lab.css`                           |
+  | `@astryxdesign/richtext` | `@astryxdesign/richtext/richtext.css`                 |
+  | `@astryxdesign/charts`   | `@astryxdesign/charts/charts.css`，自其首次发布版本起 |
 
-  Theme packages are outside this requirement; their stylesheets follow the theme
-  records named in Non-goals.
+  主题包不在本要求范围内；它们的样式表遵循 Non-goals 中列明的主题记录。
 
-- **FR2 — Prebuilt stylesheets are complete without a compiler.** Loading a
-  package's stylesheet with `astryx.css` and a theme stylesheet MUST style every
-  element the package renders, in every state, color scheme, and text direction
-  the package supports, with no StyleX compiler in the product's build. A non-Core
-  stylesheet relies on `astryx.css` for the Core definitions it declares, such
-  as variable groups and keyframes, and does not repeat a definition
-  `astryx.css` declares. A Core group that `astryx.css` omits under
-  `spec:AST-066` FR3 is carried by the package stylesheet whose modules read it.
+- **FR2 — 预构建样式表无需编译器即完整。** 用 `astryx.css` 和一个主题样式表加载包的样式表时，必须为包渲染的每个元素设置样式，覆盖包支持的每种状态、配色方案和文本方向，且产品构建中不含 StyleX 编译器。非 Core 样式表依赖 `astryx.css` 提供它所声明的 Core 定义，例如变量组和关键帧，并且不重复 `astryx.css` 已声明的定义。`astryx.css` 在 `spec:AST-066` FR3 下省略的某个 Core 组，由读取它的模块所在的包样式表承载。
 
-- **FR3 — One layer and one layer order in every package stylesheet.** Every rule
-  in every package stylesheet, and in Core's `reset.css`, MUST sit inside its one
-  Astryx layer: `astryx-base` for package stylesheets and `reset` for
-  `reset.css`. None of these files emits an unlayered rule or another layer. Each
-  begins with the same order registration that theme output carries under
-  `spec:AST-066` FR7:
+- **FR3 — 每个包样式表只有一个层和一个层级顺序。** 每个包样式表中的每条规则，以及 Core 的 `reset.css` 中的每条规则，都必须位于其唯一的 Astryx 层内：包样式表位于 `astryx-base`，`reset.css` 位于 `reset`。这些文件都不输出未分层规则或其他层。每个文件都以主题输出在 `spec:AST-066` FR7 下携带的同一顺序注册开头：
 
   ```css
   @layer reset, astryx-base, astryx-theme;
   ```
 
-  So `reset < astryx-base < astryx-theme` holds whatever Astryx stylesheet loads
-  first, and an authored theme override wins over the base rule of every package.
-  A product's unlayered CSS stays above every Astryx layer.
+  因此，无论哪个 Astryx 样式表先加载，`reset < astryx-base < astryx-theme` 都成立，且作者编写的主题覆盖会胜过每个包的基础规则。产品的未分层 CSS 始终位于每个 Astryx 层之上。
 
-- **FR4 — The stylesheet survives bundling.** Each package's `exports` MUST
-  resolve its stylesheet subpath in the packed package, and its `sideEffects`
-  declaration MUST cover that file, so a bundler keeps the product's
-  `import '@astryxdesign/<package>/<name>.css'`.
+- **FR4 — 样式表在打包后仍然可用。** 每个包的 `exports` 必须在打包后的包中解析其样式表子路径，且其 `sideEffects` 声明必须覆盖该文件，从而使打包器保留产品的 `import '@astryxdesign/<package>/<name>.css'`。
 
-- **FR5 — Documented setups load prebuilt stylesheets by default.** Each
-  default consumer setup path in the documentation (plain CSS, Tailwind, and a
-  product that compiles its own StyleX, including ejected components) MUST load
-  the prebuilt stylesheet of every Astryx package the product uses, except a
-  package compiled from source under FR9, whose rules come from the product's
-  compiled output and whose prebuilt stylesheet the build neither imports nor
-  bundles, plus a theme stylesheet, and the documentation MUST present those
-  paths as the default. A
-  default setup looks like:
+- **FR5 — 文档中的设置默认加载预构建样式表。** 文档中的每条默认使用方设置路径（纯 CSS、Tailwind，以及编译自身 StyleX 的产品，包括已弹出的组件）都必须加载产品所用每个 Astryx 包的预构建样式表——FR9 下从源码编译的包除外，其规则来自产品的编译输出，构建既不导入也不打包其预构建样式表——再加上一个主题样式表，且文档必须把这些路径呈现为默认。默认设置如下所示：
 
   ```css
   @layer reset, astryx-base, astryx-theme;
@@ -138,275 +90,123 @@ first.
   @import '@astryxdesign/theme-neutral/theme.css';
   ```
 
-  Under `@astryxdesign/build`, a swizzled copy whose folder holds an
-  `astryx-swizzle.json` marker builds through the library pass, so its rules
-  land in `astryx-base` below `astryx-theme` (`spec:AST-110` FR5); the stock
-  StyleX plugins have no library pass.
+  在 `@astryxdesign/build` 下，若某个被 swizzle 的副本所在文件夹带有 `astryx-swizzle.json` 标记，该副本通过库通道构建，因此其规则落在 `astryx-theme` 之下的 `astryx-base` 中（`spec:AST-110` FR5）；原版 StyleX 插件没有库通道。
 
-  The documentation MAY also present a source build as an alternative to a default
-  setup: the source of one or more packages compiled through `@astryxdesign/build`
-  under FR7 (and FR9 for `withAstryx()`), each in place of that package's
-  prebuilt stylesheet, while the
-  product keeps loading Core's `reset.css`, a theme stylesheet, and the prebuilt
-  stylesheet of every package it does not source-build. No documented setup loads
-  a package's prebuilt stylesheet and also compiles that package's source, or
-  compiles Astryx source any other way, such as adding Astryx package source to
-  the product's own StyleX compiler inputs.
+  文档也可以把源码构建作为默认设置的替代方案来呈现：一个或多个包的源码经 `@astryxdesign/build` 在 FR7 下编译（`withAstryx()` 则按 FR9），各自替代该包的预构建样式表，同时产品继续加载 Core 的 `reset.css`、一个主题样式表，以及它未从源码构建的每个包的预构建样式表。任何文档化的设置都不得既加载某个包的预构建样式表，又编译该包的源码，也不得以任何其他方式编译 Astryx 源码，例如把 Astryx 包源码加入产品自身 StyleX 编译器的输入。
 
-- **FR6 — Every package documents its import.** Each package's README and the
-  styling overview MUST name the package's stylesheet and show the import beside
-  `astryx.css`.
+- **FR6 — 每个包都记录其导入方式。** 每个包的 README 和样式概览都必须写明该包的样式表，并在 `astryx.css` 旁边展示该导入。
 
-- **FR7 — A source build produces what the prebuilt stylesheet holds.** A source
-  build of a package MUST produce, for the modules it compiles, the same rules
-  with the same selectors in the same order as that package's prebuilt stylesheet,
-  every one inside one `@layer astryx-base` with no nested layer. Each package
-  block a source build emits begins with the FR3 order registration, so the order
-  holds whichever Astryx file or chunk loads first and never depends on a line
-  the product writes. Compiling every module of a package
-  reproduces its prebuilt stylesheet's rules; compiling a subset produces the
-  rules those modules use. A source build of Core always includes the Core
-  definitions other packages' prebuilt stylesheets rely on under FR2, such as
-  variable groups and keyframes. Product rules stay outside `astryx-base`,
-  except a swizzled copy's: modules under a folder holding an
-  `astryx-swizzle.json` marker compile in the library pass into `astryx-base`
-  (`spec:AST-110` FR5). A source build needs no data beyond the package's own source, and holds in
-  development builds as in production builds.
+- **FR7 — 源码构建产出预构建样式表所承载的内容。** 对包的源码构建必须针对它编译的模块，产出与该包预构建样式表相同的规则、相同的选择器、相同的顺序，且每一条都位于单个 `@layer astryx-base` 内，不含嵌套层。源码构建输出的每个包块都以 FR3 的顺序注册开头，因此无论哪个 Astryx 文件或 chunk 先加载，该顺序都成立，绝不依赖产品写入的某一行。编译一个包的全部模块会重现其预构建样式表的规则；编译子集则产出这些模块用到的规则。Core 的源码构建始终包含其他包的预构建样式表在 FR2 下所依赖的 Core 定义，例如变量组和关键帧。产品规则留在 `astryx-base` 之外，被 swizzle 的副本除外：位于带有 `astryx-swizzle.json` 标记的文件夹下的模块会在库通道中编入 `astryx-base`（`spec:AST-110` FR5）。源码构建除包自身的源码外不需要任何数据，并且在开发构建与生产构建中同样成立。
 
-- **FR8 — Stylesheet growth is reported and budgeted per component.** Every
-  product that loads a package's prebuilt stylesheet loads all of it (FR1), so
-  CSS a component adds reaches each of those products, including products that
-  never render it. Every pull
-  request that changes a package's styled modules MUST report, base against
-  head, the gzip size of each package stylesheet it changes and the gzip CSS
-  delta of each component that changed. A feature that runs only on a coarse
-  pointer and adds more than 1 KB gzip of CSS to one component is flagged, and
-  its pull request justifies that cost; the CSS stays in the package
-  stylesheet (FR1, FR2). Sizes are gzip at the default compression level, and
-  1 KB is 1,024 bytes. A component's CSS delta is the gzip size of the rules its
-  modules contribute to the package stylesheet at head minus the same at base.
-  The matching JavaScript report and budget, and the
-  rule that a shared value table ships only the rows a component uses, are
-  `architecture:component-style-authoring` INV6.
+- **FR8 — 样式表增长按组件报告并设预算。** 每个加载包预构建样式表的产品都会加载它的全部内容（FR1），因此组件新增的 CSS 会到达每个这样的产品，包括从不渲染该组件的产品。每个改动包中带样式模块的拉取请求都必须报告它改动的每个包样式表的 gzip 体积，以及每个发生变化的组件的 gzip CSS 增量，均以 base 对 head 对比。仅在粗指针上运行、且给单个组件增加超过 1 KB gzip CSS 的特性会被标记，其拉取请求需说明该代价的正当性；该 CSS 仍留在包样式表中（FR1、FR2）。体积为默认压缩级别下的 gzip，1 KB 即 1,024 字节。组件的 CSS 增量是其模块在 head 时贡献给包样式表的规则的 gzip 体积，减去同一组模块在 base 时的体积。对应的 JavaScript 报告与预算，以及共享值表只交付组件所用行的规则，见 `architecture:component-style-authoring` INV6。
 
-- **FR9 — `withAstryx()` compiles every styled package from source, in order.**
-  `withAstryx()` from `@astryxdesign/build/next` MUST build from source, under
-  webpack and under Turbopack, every published Astryx package with styled
-  modules that the product uses: the FR1 packages, Core, Rich Text, Lab, and
-  Charts (from its first published release). Theme packages keep their prebuilt
-  theme stylesheets.
-  - **Real source.** Each source-built package's rules come from compiling that
-    package's own source in the product's build, with the settings its prebuilt
-    stylesheet is compiled with (FR7); the product's own StyleX settings never
-    apply to Astryx source. The build neither imports nor bundles the prebuilt
-    stylesheet of a package it compiles from source, and it fails rather than
-    take a rule from that stylesheet.
-  - **Ordering.** Every Astryx rule sits inside
-    `@layer reset, astryx-base, astryx-theme`: Core's `reset.css` in `reset`,
-    each package's compiled block in `astryx-base`, and the theme in
-    `astryx-theme`. Each compiled block begins with the FR3 order registration
-    (FR7). Product CSS, including the product's own StyleX output other than
-    a marked swizzled copy's (FR7), stays unlayered and wins over every Astryx
-    rule in any chunk or load order. A
-    non-Core block relies on Core's variables and keyframes as under FR2.
-  - **Stylesheet entry (Turbopack).** The product lists the PostCSS plugin
-    `@astryxdesign/build/next/postcss` in its PostCSS config and puts one
-    `@astryx;` rule in its global stylesheet. Under Turbopack, the plugin MUST
-    replace that rule with every source-built package's block, in package
-    order.
-  - **Fast path (Turbopack goal, known gap).** The goal is that Astryx modules
-    compile inside Turbopack's native pipeline: no `turbopack.rules`
-    JavaScript loader, no Babel, and no PostCSS step compiles an Astryx module,
-    and Astryx rules reach the page through Turbopack's own CSS handling. No
-    maintained StyleX compiler runs inside that pipeline, so until one exists the
-    Turbopack build MAY compile Astryx modules through a `turbopack.rules`
-    JavaScript loader that runs Babel with the StyleX Babel plugin. Every other
-    FR9 rule holds on that route.
-  - **Speed budget (Turbopack).** Against the same app built without source
-    compilation (loading the prebuilt stylesheets), median of five runs:
-    `next dev` cold start at most +15%, a hot update at most +10%, and
-    `next build` at most +20%. The figures are measured and reported on every
-    change to the build package. The budget does not block while the loader
-    route is in use; it becomes a requirement once a native route exists.
-  - **Webpack.** The webpack source build meets the real-source and ordering
-    rules; the fast-path goal and the speed budget apply to Turbopack only.
+- **FR9 — `withAstryx()` 按顺序从源码编译每个带样式的包。** 来自 `@astryxdesign/build/next` 的 `withAstryx()` 必须在 webpack 和 Turbopack 下，从源码构建产品所用、且模块带样式的每个已发布 Astryx 包：FR1 中的包、Core、Rich Text、Lab 和 Charts（自其首次发布版本起）。主题包保留其预构建主题样式表。
+  - **真正的源码。** 每个从源码构建的包的规则，都来自在产品构建中编译该包自身的源码，所用设置与其预构建样式表的编译设置一致（FR7）；产品自身的 StyleX 设置绝不适用于 Astryx 源码。构建既不导入也不打包它从源码编译的包的预构建样式表，并且会直接失败，而不是从该样式表取一条规则。
+  - **顺序。** 每条 Astryx 规则都位于 `@layer reset, astryx-base, astryx-theme` 内：Core 的 `reset.css` 在 `reset`，每个包的编译块在 `astryx-base`，主题在 `astryx-theme`。每个编译块都以 FR3 的顺序注册开头（FR7）。产品 CSS——包括产品自己的 StyleX 输出，带有标记的被 swizzle 副本除外（FR7）——保持未分层，并在任何 chunk 或加载顺序下胜过每条 Astryx 规则。非 Core 块像 FR2 那样依赖 Core 的变量和关键帧。
+  - **样式表入口（Turbopack）。** 产品在其 PostCSS 配置中列出 PostCSS 插件 `@astryxdesign/build/next/postcss`，并在其全局样式表中放入一条 `@astryx;` 规则。在 Turbopack 下，该插件必须按包顺序，用每个从源码构建的包的块替换该规则。
+  - **快速路径（Turbopack 目标，已知缺口）。** 目标是 Astryx 模块在 Turbopack 的原生管道内编译：没有 `turbopack.rules` JavaScript loader、没有 Babel、也没有 PostCSS 步骤编译 Astryx 模块，Astryx 规则通过 Turbopack 自身的 CSS 处理到达页面。该管道内没有维护中的 StyleX 编译器运行，因此在这样的编译器存在之前，Turbopack 构建可以通过一个 `turbopack.rules` JavaScript loader 编译 Astryx 模块，该 loader 运行带 StyleX Babel 插件的 Babel。FR9 的其他每条规则在该路线上都成立。
+  - **速度预算（Turbopack）。** 与不做源码编译（加载预构建样式表）构建的同一应用相比，五次运行的中位数：`next dev` 冷启动最多 +15%，一次热更新最多 +10%，`next build` 最多 +20%。每次改动构建包时都会测量并报告这些数字。在 loader 路线使用期间该预算不构成阻塞；一旦存在原生路线，它就成为要求。
+  - **Webpack。** webpack 源码构建满足真正源码和顺序规则；快速路径目标与速度预算仅适用于 Turbopack。
 
 ### Platform support
 
-- Supported feature/engine floor: unchanged; cascade layers are already required
-  by the theme and reset stylesheets.
-- Unsupported behavior: none added.
-- Browser evidence: real-browser computed styles for FR2, FR3, FR7, and FR9.
-  FR1, FR4,
-  FR5, and FR6 are proven at the package, bundler, and documentation layer. FR8
-  is proven by the pull-request size report.
+- 支持的特性/引擎下限：不变；主题样式表和 reset 样式表已经要求级联层。
+- 不支持的行为：未新增。
+- 浏览器证据：FR2、FR3、FR7 和 FR9 的真实浏览器计算样式。FR1、FR4、FR5 和 FR6 在包、打包器和文档层面得到证明。FR8 由拉取请求体积报告证明。
 
 ## Current-state impact
 
-- Core, Lab, Rich Text, and Charts already export one stylesheet each with every
-  rule inside `@layer astryx-base`. Non-Core stylesheets omit the Core variable
-  groups `astryx.css` declares. Core's prebuilt stylesheet carries the canonical
-  data-token group; Lab relies on that stylesheet and adds no copy, under
-  `spec:AST-066` FR3.
-- `reset.css` and every package stylesheet (`astryx.css`, `lab.css`,
-  `richtext.css`, `charts.css`) begin with the FR3 order registration, so the
-  prebuilt files hold the order in any load order.
-- Core, Lab, Rich Text, and Charts each declare `sideEffects` covering
-  `**/*.css` (FR4).
-- The styling overview documents only the prebuilt path. A source build through
-  `@astryxdesign/build` is not yet documented there (FR5).
-- `@astryxdesign/build` conflicts with FR7: it processes Astryx rules into nested
-  priority layers inside `astryx-base`; it compiles Astryx modules with an
-  `astryx` class-name prefix where the prebuilt stylesheets use StyleX's default
-  `x`; its Vite build's Lightning CSS pass and its PostCSS helper's Autoprefixer
-  pass add `-webkit-` declarations the prebuilt stylesheets lack; its Vite plugin
-  injects its own layer-order registration, with a `product` layer, into each
-  page; and nothing makes a Core source build carry the Core definitions that
-  prebuilt `lab.css` relies on. Conforming changes the class names and layers it
-  emits for its current users.
-- Under Turbopack, `withAstryx()` source-builds Core, Lab, Rich Text, and
-  Charts; each compiled block begins with the FR3 order registration (FR7), and
-  the build fails when the product imports the prebuilt stylesheet of a package
-  it compiles. `@astryxdesign/build/next/postcss` replaces the app
-  stylesheet's `@astryx;` marker with those blocks, compiling each package's
-  modules a second time with Babel and the StyleX plugin, as the loader does.
-  A Next.js fixture checks FR9 under Turbopack, and a script in
-  `@astryxdesign/build` measures the speed figures.
-- Under webpack, `withAstryx()` does not yet meet FR9 (implementation gaps): it
-  source-builds Core and Lab with the `@astryxdesign/build` setup above, while
-  Rich Text and Charts stay on their prebuilt stylesheets, and that source build
-  emits no order registration in its own output (FR7), relying on `reset.css`,
-  the theme, or the product's line. Closing these gaps changes existing webpack
-  output.
-- The FR7 exception for a swizzled copy holds in the Babel, PostCSS, and Vite
-  integrations. `withAstryx()` under Turbopack does not read the
-  `astryx-swizzle.json` marker that `astryx swizzle` writes (FR5, FR7). Under webpack,
-  `withAstryx()` makes each app module depend on the marker paths above it, so
-  a cached build recompiles a copy when its marker appears or disappears (FR7).
-- Under Turbopack no maintained StyleX compiler runs in the native pipeline, so
-  the FR9 fast path is a goal with a known gap: the Turbopack route compiles
-  Astryx modules through a JavaScript loader running Babel and the StyleX Babel
-  plugin, and the speed budget is reported rather than enforced.
+- Core、Lab、Rich Text 和 Charts 已经各自导出一个样式表，其中每条规则都位于 `@layer astryx-base` 内。非 Core 样式表省略了 `astryx.css` 声明的 Core 变量组。Core 的预构建样式表承载规范的数据 token 组；Lab 依赖该样式表，不再添加副本，依据 `spec:AST-066` FR3。
+- `reset.css` 和每个包样式表（`astryx.css`、`lab.css`、`richtext.css`、`charts.css`）都以 FR3 的顺序注册开头，因此预构建文件在任何加载顺序下都保持该顺序。
+- Core、Lab、Rich Text 和 Charts 各自声明了覆盖 `**/*.css` 的 `sideEffects`（FR4）。
+- 样式概览只记录了预构建路径。通过 `@astryxdesign/build` 的源码构建尚未在那里记录（FR5）。
+- `@astryxdesign/build` 与 FR7 冲突：它把 Astryx 规则处理成 `astryx-base` 内的嵌套优先级层；它编译 Astryx 模块时使用 `astryx` 类名前缀，而预构建样式表使用 StyleX 默认的 `x`；其 Vite 构建的 Lightning CSS 处理与其 PostCSS 辅助工具的 Autoprefixer 处理会添加预构建样式表所没有的 `-webkit-` 声明；其 Vite 插件向每个页面注入它自己的层顺序注册，并带有一个 `product` 层；而且没有任何机制让 Core 的源码构建承载预构建 `lab.css` 所依赖的 Core 定义。要符合规范，就会改变它为当前用户输出的类名和层。
+- 在 Turbopack 下，`withAstryx()` 从源码构建 Core、Lab、Rich Text 和 Charts；每个编译块都以 FR3 的顺序注册开头（FR7），当产品导入它所编译包的预构建样式表时，构建失败。`@astryxdesign/build/next/postcss` 用这些块替换应用样式表中的 `@astryx;` 标记，并像 loader 那样用 Babel 和 StyleX 插件再次编译每个包的模块。一个 Next.js 测试夹具在 Turbopack 下检查 FR9，`@astryxdesign/build` 中的一个脚本测量速度数字。
+- 在 webpack 下，`withAstryx()` 尚未满足 FR9（实现缺口）：它用上述 `@astryxdesign/build` 设置从源码构建 Core 和 Lab，而 Rich Text 和 Charts 仍使用其预构建样式表，且该源码构建不在自身输出中输出顺序注册（FR7），而是依赖 `reset.css`、主题或产品自己写的那一行。弥补这些缺口会改变现有的 webpack 输出。
+- FR7 对被 swizzle 副本的例外在 Babel、PostCSS 和 Vite 集成中成立。Turbopack 下的 `withAstryx()` 不读取 `astryx swizzle` 写入的 `astryx-swizzle.json` 标记（FR5、FR7）。在 webpack 下，`withAstryx()` 让每个应用模块依赖其上方的标记路径，因此当标记出现或消失时，缓存构建会重新编译该副本（FR7）。
+- 在 Turbopack 下，原生管道中没有维护中的 StyleX 编译器运行，因此 FR9 的快速路径是一个存在已知缺口的目标：Turbopack 路线通过运行 Babel 和 StyleX Babel 插件的 JavaScript loader 编译 Astryx 模块，速度预算为报告而非强制执行。
 
-- Lab, Rich Text, and Charts document their stylesheet only in their READMEs;
-  the styling overview's import table lists only Core (FR6).
-- The pull-request size report measures no stylesheet, so no CSS size or
-  delta is reported, and no touch-only CSS is flagged (FR8). Its JavaScript
-  figure is a component's re-export file rather than what its import pulls in,
-  its before and delta columns are always empty, and nothing flags touch-only
-  JavaScript (`architecture:component-style-authoring` INV6).
-- The `styling-overview`, `getting-started`, and `migration-setup` consumer docs
-  change. Package stylesheet rules and class names are otherwise unchanged.
+- Lab、Rich Text 和 Charts 只在其 README 中记录样式表；样式概览的导入表只列出 Core（FR6）。
+- 拉取请求体积报告不测量任何样式表，因此不报告任何 CSS 体积或增量，也不标记任何仅触摸 CSS（FR8）。其 JavaScript 数字是一个组件的再导出文件，而不是其导入所引入的内容，其 before 与 delta 列始终为空，也没有任何机制标记仅触摸 JavaScript（`architecture:component-style-authoring` INV6）。
+- `styling-overview`、`getting-started` 和 `migration-setup` 使用方文档会发生变化。包样式表规则和类名在其他方面不变。
 
 ## Verification
 
-| Contract | Verification                                                                                           | Representative states                                                                                                                                                                                                                                                                                                                                                                                                             | Mutation or failure expectation                                                                                                                                                                                                                                                                                                                                                    |
-| -------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1      | package manifest and stylesheet build tests                                                            | every published package with styled modules; a module's rules in its package stylesheet                                                                                                                                                                                                                                                                                                                                           | a styled published package has no `.css` export; a rule a module uses is missing                                                                                                                                                                                                                                                                                                   |
-| FR2      | real-browser computed styles with no StyleX compiler                                                   | a representative component from each package; default, hover, focus, disabled, dark, and right-to-left                                                                                                                                                                                                                                                                                                                            | removing the package stylesheet changes a computed style; a non-Core stylesheet repeats a group `astryx.css` declares                                                                                                                                                                                                                                                              |
-| FR3      | stylesheet structure tests and real-browser cascade                                                    | each package stylesheet and `reset.css`; theme first and last; package stylesheets in either order; `reset.css` last; a theme override                                                                                                                                                                                                                                                                                            | an unlayered rule or another layer; a missing or reordered registration; the theme override loses in any load order                                                                                                                                                                                                                                                                |
-| FR4      | packed-package and bundler fixtures                                                                    | each package's stylesheet import in a production bundle                                                                                                                                                                                                                                                                                                                                                                           | the subpath does not resolve from the packed package; the bundle drops the stylesheet                                                                                                                                                                                                                                                                                              |
-| FR5–FR6  | consumer-doc checks                                                                                    | every setup snippet in the styling overview, getting started, and migration setup; each package README                                                                                                                                                                                                                                                                                                                            | a default setup omits `astryx.css` or a used package stylesheet; a setup loads a prebuilt stylesheet and compiles the same package's source; a package import is missing                                                                                                                                                                                                           |
-| FR7      | build-package compile tests and real-browser cascade                                                   | every Core module compiled through the build package; a subset of modules; a development build; Core source-built beside a prebuilt Lab stylesheet; a source-built component under a theme override                                                                                                                                                                                                                               | the every-module compile differs from the prebuilt rules or order; an Astryx rule sits in a nested or other layer; the theme override loses                                                                                                                                                                                                                                        |
-| FR8      | pull-request size report against base                                                                  | a component whose styles change; a touch-only feature adding 0.9 KB and 1.1 KB gzip CSS to one component; a pull request with no styled change                                                                                                                                                                                                                                                                                    | a changed package stylesheet or component with no base-against-head gzip figure; a touch-only feature over 1 KB gzip CSS per component that is not flagged                                                                                                                                                                                                                         |
-| FR9      | Next.js fixture app under Turbopack and webpack, real-browser computed styles, build trace and timings | a fixture app importing Core, Rich Text, Lab, and Charts, built with `next dev` and `next build` under each bundler; per package, a product class and a product StyleX rule over a base rule, and a theme over a base rule; chunk order reversed and the product's order line removed; every prebuilt package stylesheet deleted from the installed packages before the build; speed against the same app on prebuilt stylesheets | a product override or a theme loses; a deleted prebuilt stylesheet breaks the build or changes a computed style; the emitted selectors differ from the source compile; a package's compiled block lacks the order registration; speed figures are missing (exceeding the budget fails only once a native Turbopack route exists, and the loader count on Astryx files is reported) |
+| 契约    | 验证                                                                                     | 代表性状态                                                                                                                                                                                                                                                                                                            | 变异或失败预期                                                                                                                                                                                                                    |
+| ------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1     | 包清单与样式表构建测试                                                                   | 每个带样式的已发布包；某个模块的规则出现在其包样式表中                                                                                                                                                                                                                                                                | 某个带样式的已发布包没有 `.css` 导出；某个模块用到的规则缺失                                                                                                                                                                      |
+| FR2     | 无 StyleX 编译器时的真实浏览器计算样式                                                   | 每个包的一个代表性组件；默认、hover、focus、disabled、深色和从右到左                                                                                                                                                                                                                                                  | 移除包样式表会改变某个计算样式；非 Core 样式表重复了 `astryx.css` 已声明的组                                                                                                                                                      |
+| FR3     | 样式表结构测试与真实浏览器级联                                                           | 每个包样式表和 `reset.css`；主题最先和最后；包样式表按任意顺序；`reset.css` 最后；一个主题覆盖                                                                                                                                                                                                                        | 出现未分层规则或其他层；顺序注册缺失或被重排；主题覆盖在任意加载顺序下落败                                                                                                                                                        |
+| FR4     | 打包后包与打包器测试夹具                                                                 | 生产打包中每个包的样式表导入                                                                                                                                                                                                                                                                                          | 该子路径无法从打包后的包解析；打包产物丢弃了样式表                                                                                                                                                                                |
+| FR5–FR6 | 使用方文档检查                                                                           | 样式概览、入门和迁移设置中的每个设置片段；每个包的 README                                                                                                                                                                                                                                                             | 默认设置遗漏了 `astryx.css` 或某个已用包的样式表；某个设置既加载预构建样式表又编译同一包的源码；缺少某个包的导入                                                                                                                  |
+| FR7     | 构建包编译测试与真实浏览器级联                                                           | 通过构建包编译的每个 Core 模块；模块子集；开发构建；Core 从源码构建而 Lab 使用预构建样式表；主题覆盖下的源码构建组件                                                                                                                                                                                                  | 全模块编译与预构建规则或顺序不一致；某条 Astryx 规则位于嵌套层或其他层；主题覆盖落败                                                                                                                                              |
+| FR8     | 针对 base 的拉取请求体积报告                                                             | 样式发生变化的组件；一个仅触摸特性给单个组件增加 0.9 KB 和 1.1 KB gzip CSS；没有样式改动的拉取请求                                                                                                                                                                                                                    | 发生变化的包样式表或组件缺少 base 对 head 的 gzip 数字；某仅触摸特性每组件超过 1 KB gzip CSS 却未被标记                                                                                                                           |
+| FR9     | 在 Turbopack 和 webpack 下的 Next.js 测试夹具应用，真实浏览器计算样式，构建 trace 与耗时 | 一个导入 Core、Rich Text、Lab 和 Charts 的测试夹具应用，在每种打包器下用 `next dev` 和 `next build` 构建；对每个包，一个产品类和一个产品 StyleX 规则覆盖某条基础规则，以及一个主题覆盖某条基础规则；反转 chunk 顺序并移除产品的顺序行；构建前从已安装包中删除每个预构建包样式表；与同一应用在预构建样式表上的速度对比 | 产品覆盖或主题落败；删除的预构建样式表破坏构建或改变某个计算样式；输出的选择器与源码编译不同；某个包的编译块缺少顺序注册；速度数字缺失（只有在存在原生 Turbopack 路线后才以超出预算判为失败，并报告 Astryx 文件上的 loader 数量） |
 
-The real-browser cascade check uses a component whose theme changes its base
-colors, such as a theme that restyles the destructive Button, and asserts the
-theme's colors in every load order.
+真实浏览器级联检查使用一个主题会改变其基础颜色的组件，例如一个重新设计 destructive Button 样式的主题，并在每种加载顺序下断言该主题的颜色。
 
 ## Decision log
 
 ### DEC-1 — Prebuilt stylesheets are the default; a source build compiles the same way
 
 **Reference:** `spec:AST-080/DEC-1`
+
 **Decider:** `cixzhang`, `2026-10-15`
 
-Most products need no compiler for Astryx, so the prebuilt stylesheets stay the
-default and every default setup works without one. A product that wants
-only the CSS of the modules it ships can compile Astryx source through
-`@astryxdesign/build`. A second compile breaks theme overrides when it adds a
-second copy of the rules beside the prebuilt stylesheet, or compiles them with
-other settings or into another layer. A source build replaces the package's
-stylesheet and compiles it the way the prebuilt stylesheet is compiled, into the
-same single layer, so the cascade the package ships and tests holds.
+大多数产品不需要为 Astryx 使用编译器，因此预构建样式表仍是默认，每个默认设置都无需编译器即可工作。只想要它所交付模块的 CSS 的产品，可以通过 `@astryxdesign/build` 编译 Astryx 源码。第二次编译若在预构建样式表旁再加一份规则副本，或用其他设置、编译到另一层，就会破坏主题覆盖。源码构建替换包的样式表，并按预构建样式表的编译方式编译到同一个单一层中，因此包交付并测试的级联保持成立。
 
-Rejected: forbidding a source build, which leaves a product no way to load only
-the CSS it uses; and removing rules from a prebuilt stylesheet with data shipped
-beside it, which adds a format to maintain and a second way to build the same
-rules.
+已否决：禁止源码构建，这会让产品无法只加载它用到的 CSS；以及用随包交付的数据从预构建样式表中移除规则，这会增加一种要维护的格式和第二种构建同样规则的方式。
 
 ### DEC-2 — Every package shares one layer and one order registration
 
 **Reference:** `spec:AST-080/DEC-2`
+
 **Decider:** `cixzhang`, `2026-10-15`
 
-A theme override targets a component, not the package that ships it, so every
-package's base rules sit in `astryx-base`. Each stylesheet registers the order
-itself so it never depends on the product's first line.
+主题覆盖针对的是组件，而不是交付它的包，因此每个包的基础规则都位于 `astryx-base`。每个样式表自行注册顺序，因此它绝不依赖产品的第一行。
 
-Rejected: a layer per package, because theme layer order would then depend on
-which packages a product loads.
+已否决：每个包一个层，因为那样主题层顺序将取决于产品加载哪些包。
 
 ### DEC-3 — Each package ships one whole stylesheet
 
 **Reference:** `spec:AST-080/DEC-3`
+
 **Decider:** `cixzhang`, `2026-10-15`
 
-One file per package keeps setup to one import per package and works in every
-framework.
+每个包一个文件让设置保持为每个包一次导入，并在每个框架中都能工作。
 
-Rejected: stylesheets imported by component modules, because some frameworks do
-not load stylesheets that dependency modules import.
+已否决：由组件模块导入样式表，因为某些框架不会加载依赖模块导入的样式表。
 
 ### DEC-4 — Component size is reported on every change and budgeted for touch-only work
 
 **Reference:** `spec:AST-080/DEC-4`
+
 **Decider:** `cixzhang`, `2026-10-24`
 
-Because each package's prebuilt stylesheet ships whole (DEC-3) and is the
-default setup (DEC-1), CSS for a feature only touch devices use still costs
-every desktop product on that setup, and nobody sees the
-cost unless each change reports it. A per-component report on every pull
-request makes growth visible, for the JavaScript a component's import pulls in
-as for its CSS. Touch-only work is flagged at 2 KB gzip of JavaScript or 1 KB
-gzip of CSS per component: JavaScript can load lazily, only when a coarse
-pointer needs it, or be justified, and CSS, which stays in the stylesheet, is
-justified. A shared JavaScript value table ships to a component only the rows it
-uses, so one component's tuning does not ride along with every other import.
+由于每个包的预构建样式表整体交付（DEC-3）且是默认设置（DEC-1），仅为触摸设备使用的特性所写的 CSS 仍会让该设置下的每个桌面产品付出代价，而除非每次改动都报告，没人看得到这份代价。对每个拉取请求给出按组件的报告，让增长可见，无论是一个组件的导入所引入的 JavaScript 还是其 CSS。仅触摸的工作在每组件 2 KB gzip JavaScript 或 1 KB gzip CSS 时被标记：JavaScript 可以惰性加载、只在粗指针需要时加载，或者被证明合理；而留在样式表中的 CSS 则需证明合理。共享的 JavaScript 值表只向组件交付它用到的行，因此一个组件的调参不会随每次导入一起带上。
 
-Rejected: splitting touch-only CSS into a separate stylesheet, because it
-breaks the one-import setup DEC-3 keeps.
+已否决：把仅触摸 CSS 拆成单独样式表，因为这会破坏 DEC-3 保持的一次导入设置。
 
 ### DEC-5 — Touch JavaScript comes from the shared internal touch modules
 
 **Reference:** `spec:AST-080/DEC-5`
+
 **Decider:** `cixzhang`, `2026-10-26`
 
-Touch primitives over the budget come from the shared internal touch modules
-components import (`architecture:react-component-runtime` INV13), which a
-page carries once, or the cost is justified; a component does not lazy-load
-its own. There is no install step: the modules are always present. This
-supersedes DEC-4's lazy-load remedy; its reporting and budget stand.
+超出预算的触摸基元来自组件导入的共享内部触摸模块（`architecture:react-component-runtime` INV13），页面只携带它一次，否则需证明代价合理；组件不会惰性加载自己的模块。没有安装步骤：这些模块始终存在。这取代了 DEC-4 的惰性加载补救措施；其报告与预算仍然有效。
 
-Rejected: lazy loading inside each component, and an app-installed module.
+已否决：在每个组件内部惰性加载，以及由应用安装的模块。
 
 ### DEC-6 — Source builds cover Turbopack and every styled package; the fast path is the goal
 
 **Reference:** `spec:AST-080/DEC-6`
+
 **Decider:** `cixzhang`, `2026-11-01`
 
-Next.js builds with Turbopack by default, so `withAstryx()` supports it as well
-as webpack, for every styled package including Rich Text and Charts. Support
-means a real compile of package source with Astryx ordering guaranteed against
-product styles, not a wrapper around the prebuilt stylesheets. Ideally the
-Turbopack build stays on Turbopack's native pipeline; no maintained StyleX
-compiler runs there, so a loader route is accepted with that gap recorded and
-the speed budget reported until a native route exists.
+Next.js 默认使用 Turbopack 构建，因此 `withAstryx()` 同时支持 Turbopack 和 webpack，覆盖包括 Rich Text 和 Charts 在内的每个带样式包。支持意味着真正编译包源码，并保证 Astryx 顺序相对于产品样式成立，而不是在预构建样式表外做包装。理想情况下 Turbopack 构建停留在 Turbopack 原生管道中；那里没有维护中的 StyleX 编译器，因此接受 loader 路线，记录该缺口，并在原生路线存在前报告速度预算。
 
-Rejected: keeping Turbopack unsupported, which leaves products on the default
-bundler without a source build.
+已否决：让 Turbopack 保持不受支持，这会让使用默认打包器的产品无法进行源码构建。
 
 ## Open questions
 
-None.
+无。

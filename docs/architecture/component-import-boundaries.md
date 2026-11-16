@@ -27,178 +27,51 @@ deciding_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                                                                                                                                         |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Governing contract      | None. No prop, type, or behavior a person sees changes; each surface's own record keeps what it shows and when.                                                                                                                                                                                                                                  |
-| System behavior         | A public import carries what renders without interaction. Surfaces revealed by interaction load on first intent, except tooltip and hover-card surfaces, which load after the page's first paint (INV1–INV6, DEC-4). Opt-in capabilities are reachable only through their own import (INV7). A failing check holds both per entry (INV9, DEC-3). |
-| End-user impact         | People load less JavaScript on every page. A page with one Heading carries no tooltip code; a Table that never windows carries no windowing code. The first open of a surface can wait for its module; the trigger, its name, and focus are there before it loads.                                                                               |
-| Builder impact          | A component author puts surface rendering behind the shared module loader and capability code behind its own import. The check names the import chain that breaks a boundary.                                                                                                                                                                    |
-| Compatibility/readiness | Additive and internal: no public API changes. Current-state impact lists today's crossings; the allowlist records each one until it is fixed.                                                                                                                                                                                                    |
-| Review checks           | Reject a static import of a surface module or a capability module from a public import outside the allowlist; an `import()` of a touch module; a surface whose trigger loses its ARIA wiring, focus, or an early intent across the load; a layout shift on load.                                                                                 |
-| Governing rules         | DEC-1, DEC-2, DEC-3, DEC-4; `architecture:react-component-runtime` INV13; `architecture:component-style-authoring` INV6; `spec:AST-080` DEC-5; `spec:AST-013` FR9.                                                                                                                                                                               |
+| 区域          | 契约                                                                                                                                                                                                                                    |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 管辖契约      | 无。人们看到的任何 prop、类型或行为都不变；每个表面自己的记录保留它显示什么以及何时显示。                                                                                                                                               |
+| 系统行为      | 公共导入携带无需交互即可渲染的内容。由交互揭示的表面在首次意图时加载，工具提示和悬停卡表面除外，它们在页面首次绘制后加载（INV1–INV6、DEC-4）。选择加入的能力只能通过其自己的导入访问（INV7）。失败的检查按条目守住两者（INV9、DEC-3）。 |
+| 终端用户影响  | 人们在每个页面上加载更少的 JavaScript。只有一个 Heading 的页面不携带工具提示代码；从不窗口化的 Table 不携带窗口化代码。表面的首次打开可能需要等待其模块；触发器、其名称和焦点在加载之前就已存在。                                       |
+| 构建者影响    | 组件作者将表面渲染放在共享模块加载器之后，将能力代码放在其自己的导入之后。检查会指出破坏边界的导入链。                                                                                                                                  |
+| 兼容性/就绪度 | 增量和内部变更：无公共 API 更改。当前状态影响列出今天的穿越情况；允许清单记录每一次，直到被修复。                                                                                                                                       |
+| 评审检查      | 拒绝从允许清单之外的公共导入静态导入表面模块或能力模块；拒绝 touch 模块的 `import()`；拒绝触发器在加载期间失去 ARIA 接线、焦点或早期意图的表面；拒绝加载时的布局偏移。                                                                  |
+| 管辖规则      | DEC-1、DEC-2、DEC-3、DEC-4；`architecture:react-component-runtime` INV13；`architecture:component-style-authoring` INV6；`spec:AST-080` DEC-5；`spec:AST-013` FR9。                                                                     |
 
-This table is a review projection; the body below is authoritative.
+此表是评审投射；以下正文具有权威性。
 
 ## Purpose
 
-A public import of a component costs every page that uses it, whether or not a
-person interacts with it. This record says which modules a public import may
-reach eagerly. It keeps code for a surface nobody has opened, and for a
-capability nobody turned on, out of the import.
+组件的公共导入会让每个使用它的页面付出代价，无论人们是否与之交互。本记录规定公共导入可以急切到达哪些模块。它把无人打开的表面和无人开启的能力的代码排除在导入之外。
 
 ## System model
 
-Three kinds of code meet in a component's import:
+组件导入中有三类代码相遇：
 
-- **Base code** renders what a person sees without interacting: the text, the
-  button, the rows, plus the trigger contract of any surface the component
-  offers.
-- **A surface revealed by interaction** renders only after a person hovers,
-  focuses, presses, or opens something: Tooltip, the truncation tooltip of
-  Text and Heading, HoverCard, Popover and its sheet, DropdownMenu and
-  ContextMenu menus, and any other layer a trigger opens. Its **surface
-  module** holds the code only it needs: its layer, positioning, dismissal,
-  content, and its own gesture glue.
-- **An opt-in capability** is behavior a caller turns on by importing and
-  passing something: Table row virtualization and the shared windowing
-  module (`architecture:list-windowing`), other Table plugins, `createSwipe`,
-  `useSnapPaging`, and the Markdown remark adapter. Its **capability module**
-  holds the code only it needs.
+- **基础代码**渲染人们无需交互就能看到的内容：文本、按钮、行，以及组件提供的任何表面的触发器契约。
+- **由交互揭示的表面**仅在人们悬停、聚焦、按下或打开某物后渲染：Tooltip、Text 和 Heading 的截断工具提示、HoverCard、Popover 及其 sheet、DropdownMenu 和 ContextMenu 菜单，以及触发器打开的任何其他图层。其**表面模块**保存只有它需要的代码：其图层、定位、关闭、内容及其自己的手势粘合代码。
+- **选择加入的能力**是调用方通过导入并传递某物而开启的行为：Table 行虚拟化和共享窗口化模块（`architecture:list-windowing`）、其他 Table 插件、`createSwipe`、`useSnapPaging` 以及 Markdown remark 适配器。其**能力模块**保存只有它需要的代码。
 
-An **entry** is one public import, built with the esbuild options of the
-pull-request size report (`.github/scripts/lib/component-size.js`): minified
-ESM for the browser, code splitting on, production mode, and CSS left out.
-The build makes React, React DOM, and StyleX external, which the size report
-does not, so an entry's size counts only the code Astryx ships. The entry
-chunk and every chunk it imports statically are eager. `import()` targets are
-lazy. Sizes are gzip at the default level, and 1 KB is 1,024 bytes
-(`architecture:component-style-authoring` INV6).
+**条目（entry）** 是一个公共导入，使用 PR 大小报告（`.github/scripts/lib/component-size.js`）的 esbuild 选项构建：面向浏览器的压缩 ESM、开启代码拆分、生产模式，且不包含 CSS。该构建将 React、React DOM 和 StyleX 设为外部依赖，而大小报告不会这样做，因此条目的体积只计算 Astryx 发布的代码。条目 chunk 及其静态导入的每个 chunk 都是急切的。`import()` 目标是惰性的。大小为默认级别的 gzip，1 KB 为 1,024 字节（`architecture:component-style-authoring` INV6）。
 
-A **crossing** is the first static import, on a path through an entry's eager
-graph, from a module of base code into a surface module or a capability
-module. A static import of a touch module from a base module that defers a
-surface is a crossing too (INV8). The walk stops at a crossing, so imports
-inside a surface's or a capability's own graph are not crossings. Each pair
-of a base module and the module it first crosses into is one crossing and
-one allowlist row. A module that an `import()` targets is a surface module.
+**跨越（crossing）** 是在条目的急切图路径上，从基础代码模块进入表面模块或能力模块的第一个静态导入。从延迟某个表面的基础模块静态导入 touch 模块也是一次跨越（INV8）。遍历在跨越处停止，因此表面或能力自身图中的导入不是跨越。每一对基础模块和它首次跨越进入的模块构成一次跨越和一行允许清单。被 `import()` 作为目标的模块是表面模块。
 
-Some modules in a surface or capability folder are base code: the trigger
-contract a surface folder keeps for base imports
-(`Tooltip/tooltipPresentInterest`, `Layer/layerScopedContext`), and a
-capability's own import (a Table plugin's folder index and the modules it
-re-exports, and `SnapPaging/SnapPaging`). INV7's wiring lives in base code:
-the component's own modules or the capability's own import. A wiring module
-such as the Table's `useTableRowsVirtualization` stays base code while it
-imports no engine code; its first static import of engine code is a
-crossing.
+表面或能力文件夹中的某些模块是基础代码：表面文件夹为基础导入保留的触发器契约（`Tooltip/tooltipPresentInterest`、`Layer/layerScopedContext`），以及能力自己的导入（Table 插件的文件夹索引及其重新导出的模块，以及 `SnapPaging/SnapPaging`）。INV7 的接线位于基础代码中：组件自己的模块或能力自己的导入。诸如 Table 的 `useTableRowsVirtualization` 之类的接线模块在导入任何引擎代码之前仍是基础代码；它首次静态导入引擎代码时即构成一次跨越。
 
-The shared module loader (`utils/moduleLoader.ts`, `createModuleLoader`) holds
-one pending load per module, caches a success, and resets after a failure.
+共享模块加载器（`utils/moduleLoader.ts`、`createModuleLoader`）为每个模块持有一个待定加载，缓存成功结果，并在失败后重置。
 
 ## Boundaries and invariants
 
-- **INV1 — Surfaces revealed by interaction load on first intent, tooltips and hover cards after first paint.** A public
-  import reaches a surface module only through `import()` behind the shared
-  module loader, never statically. This holds for the surface's own public
-  component too: the `Tooltip`, `HoverCard`, `Popover`, `DropdownMenu`, and
-  `ContextMenu` imports carry their trigger contract, and their surface loads
-  as INV2 says, the `Tooltip` and `HoverCard` surfaces by its after-paint
-  rule. The eager part of an entry holds only the trigger contract:
-  the ARIA attributes and ids INV3 requires, the intent listeners, and the
-  loader call. A module inside a lazily loaded graph imports Core modules
-  directly, never through a barrel (`scripts/core-single-bundle.test.mjs`).
-- **INV2 — Intent starts the load, except for tooltips and hover cards.** The load starts at the trigger's first
-  `pointerenter` from a mouse or pen, `focus`, `pointerdown` from any pointer,
-  or open request (a controlled open, a keyboard shortcut, a context-menu
-  invocation). The listeners use native events only; they recognize no
-  gesture. A component's own record may start the load earlier at a named
-  moment after the page's first render. The `Tooltip` and `HoverCard`
-  surfaces do not wait for intent: their load starts after the page's first
-  paint, on every page that renders one of their triggers, and no input starts
-  it sooner or hurries it (DEC-4). A load never starts during server render or
-  the render that hydrates server markup (`spec:AST-013` FR9).
-- **INV3 — The trigger contract is complete before load.** The trigger's
-  role, accessible name, and tab stop, and the ARIA its own record gives its
-  closed state, are in server and hydrating markup and do not change when the
-  module loads. That ARIA differs per trigger: `component:Timestamp` AR3
-  gives its `time` no `aria-haspopup` or `aria-expanded` and sets
-  `aria-controls` only while the card is open, as
-  `component:DropdownMenuSubMenu` FR1 does for its surface. Every ARIA
-  reference names an element in the document. A
-  description a surface supplies (a tooltip on an icon-only button) is in the
-  base markup as hidden text before load, or the trigger carries no reference
-  to it. Focus stays where it is across the load, and the load remounts no
-  content (`architecture:layer-runtime`, layer content boundary;
-  `component:Timestamp` FR6).
-- **INV4 — An intent made before load is honored once.** The latest intent
-  made before the module loads is held and replayed once when it loads, by
-  the surface's own rules. A hover waits the surface's delay, counted from the
-  pointer's entry. A tap or open request opens at once. A focus opens only if
-  focus is still on the trigger. A later intent replaces a held one
-  (`architecture:interaction-modality` INV8). Leaving, blurring, a scroll, or a
-  press elsewhere before load drops a held hover or focus. A replayed intent
-  arms the surface's dismissal as the same intent does on a loaded surface.
-  For a `Tooltip` or `HoverCard` surface, a hover made while it loads shows
-  the surface once the load has landed and the hover delay has passed, if the
-  pointer is still on the trigger; otherwise the next hover shows it.
-- **INV5 — The load moves nothing.** Loading changes no box in the page: the
-  trigger's size, position, and content are the same before and after. No
-  closed surface paints during the load. The surface paints in the top layer
-  or in a slot whose size is reserved before load. Nothing shows a false
-  state (`spec:AST-013` FR9).
-- **INV6 — A failed load leaves the page working.** When the import fails,
-  the trigger and the page stay mounted and operable, the held intent is
-  dropped, and any native behavior the trigger suppressed returns (the
-  browser's own context menu). Development builds warn once. A later intent
-  asks the loader again.
-- **INV7 — Opt-in capabilities are reachable only through their own
-  import.** A capability's code lives in modules that only its own public
-  import (its hook, constructor, or plugin factory) reaches. The component it
-  extends imports none of them, statically or with `import()`. The component
-  reaches the capability through the value the caller passes or through an
-  implementation the capability's import registers. An entry that does not
-  import the capability carries at most 0.3 KB gzip of its wiring: identity
-  checks and the branch that reads the registration. This is the route
-  `architecture:public-component-api` INV19 gives a large feature, as
-  `createSwipe` (`spec:AST-057` FR10) and `useSnapPaging`
-  (`component:Carousel` FR8) take it. `architecture:list-windowing` owns the
-  windowing module itself (INV1); this record owns which imports carry it.
-- **INV8 — A deferred surface takes touch code from the shared touch
-  modules.** A surface module that needs touch behavior imports the shared
-  internal touch modules statically (`architecture:react-component-runtime`
-  INV13). The bundler keeps one copy per page, whether a base import or a
-  loaded surface brings them. `import()` targets a surface module, never a
-  touch module. INV2's listeners recognize no gesture, so a base import that
-  defers its surface carries no touch code for it. Telling a tap from a
-  scroll belongs to the loaded surface, which reads the `click` that follows
-  a tap.
-- **INV9 — A check holds the boundaries per entry.** A CI check builds each
-  entry in the entry list (Text, Heading, Button, IconButton, Link, Table, and
-  each entry an owner adds) and walks its eager graph. It finds every
-  crossing the entry reaches and names the import chain that brings each one.
-  A crossing listed in the allowlist below passes, with its gzip cost
-  printed. A crossing not listed fails (DEC-3). A listed crossing that no
-  longer occurs fails until its row is removed. The check also prints each
-  entry's eager gzip size, base against head. Adding a row to the allowlist
-  needs the owner's approval in this record.
+- **INV1 — 由交互揭示的表面在首次意图时加载，工具提示和悬停卡在首次绘制后加载。** 公共导入只能通过共享模块加载器背后的 `import()` 到达表面模块，绝不能静态到达。这同样适用于表面自己的公共组件：`Tooltip`、`HoverCard`、`Popover`、`DropdownMenu` 和 `ContextMenu` 导入携带其触发器契约，其表面按照 INV2 所述加载，其中 `Tooltip` 和 `HoverCard` 表面遵循其绘制后规则。条目的急切部分只持有触发器契约：INV3 要求的 ARIA 属性和 id、意图监听器以及加载器调用。惰性加载图内的模块直接导入 Core 模块，绝不通过 barrel（`scripts/core-single-bundle.test.mjs`）。
+- **INV2 — 意图启动加载，工具提示和悬停卡除外。** 加载从触发器首次由鼠标或笔发出的 `pointerenter`、`focus`、任何指针的 `pointerdown` 或打开请求（受控打开、键盘快捷键、上下文菜单调用）开始。监听器只使用原生事件；它们不识别手势。组件自己的记录可以在页面首次渲染后的指定时刻更早启动加载。`Tooltip` 和 `HoverCard` 表面不等待意图：它们的加载在页面首次绘制后开始，出现在渲染其触发器的每个页面上，任何输入都不会让它更早开始或加速（DEC-4）。加载绝不在服务端渲染或注水服务端标记的渲染期间开始（`spec:AST-013` FR9）。
+- **INV3 — 触发器契约在加载前完整。** 触发器的角色、可访问名称和 Tab 停靠点，以及其自己记录为其关闭状态指定的 ARIA，都在服务端标记和注水标记中，并且不会在模块加载时改变。该 ARIA 因触发器而异：`component:Timestamp` AR3 为其 `time` 不提供 `aria-haspopup` 或 `aria-expanded`，并且仅在卡片打开时设置 `aria-controls`，正如 `component:DropdownMenuSubMenu` FR1 为其表面所做的那样。每个 ARIA 引用都指向文档中的一个元素。表面提供的描述（仅图标按钮上的工具提示）在加载前作为隐藏文本存在于基础标记中，否则触发器不携带对它的引用。焦点在加载前后保持原位，加载不会重新挂载任何内容（`architecture:layer-runtime`，图层内容边界；`component:Timestamp` FR6）。
+- **INV4 — 加载前产生的意图只被兑现一次。** 模块加载前产生的最新意图会被保留，并在加载时按表面自己的规则重放一次。悬停等待表面的延迟，从指针进入开始计时。轻点或打开请求立即打开。焦点仅在焦点仍在触发器上时打开。较晚的意图会替换被保留的意图（`architecture:interaction-modality` INV8）。在加载前离开、失焦、滚动或在别处按下会丢弃保留的悬停或焦点。重放的意图会像在已加载表面上一样启用表面的关闭。对于 `Tooltip` 或 `HoverCard` 表面，在其加载期间进行的悬停会在加载完成且悬停延迟过去后显示表面，前提是指针仍在触发器上；否则下一次悬停会显示它。
+- **INV5 — 加载不移动任何东西。** 加载不会改变页面中的任何盒子：触发器的大小、位置和内容在加载前后相同。加载期间不会绘制任何关闭的表面。表面绘制在顶层，或绘制在加载前已预留大小的槽位中。不显示任何错误状态（`spec:AST-013` FR9）。
+- **INV6 — 加载失败后页面仍可工作。** 当导入失败时，触发器和页面保持挂载且可操作，保留的意图被丢弃，触发器抑制的任何原生行为会恢复（浏览器自己的上下文菜单）。开发构建只警告一次。后续意图会再次请求加载器。
+- **INV7 — 选择加入的能力只能通过其自己的导入访问。** 能力的代码位于只有其自己的公共导入（其 hook、构造函数或插件工厂）才能到达的模块中。它所扩展的组件不导入其中任何一个，无论是静态导入还是通过 `import()`。组件通过调用方传递的值，或通过能力导入注册的实现来访问该能力。不导入该能力的条目最多携带其 0.3 KB gzip 的接线：身份检查和读取注册的分支。这是 `architecture:public-component-api` INV19 为大型功能指定的路线，正如 `createSwipe`（`spec:AST-057` FR10）和 `useSnapPaging`（`component:Carousel` FR8）所采用的那样。`architecture:list-windowing` 拥有窗口化模块本身（INV1）；本记录拥有哪些导入携带它。
+- **INV8 — 延迟表面从共享 touch 模块获取触摸代码。** 需要触摸行为的表面模块静态导入共享的内部 touch 模块（`architecture:react-component-runtime` INV13）。无论基础导入还是已加载的表面引入它们，打包器都会在每个页面保留一份副本。`import()` 的目标是表面模块，绝不是 touch 模块。INV2 的监听器不识别手势，因此延迟其表面的基础导入不为其携带触摸代码。区分轻点和滚动属于已加载的表面，它读取轻点之后产生的 `click`。
+- **INV9 — 检查按条目守住边界。** CI 检查会构建条目列表中的每个条目（Text、Heading、Button、IconButton、Link、Table，以及所有者添加的每个条目）并遍历其急切图。它找出条目到达的每一次跨越，并指出带来每一次跨越的导入链。允许清单中列出的跨越通过，并打印其 gzip 成本。未列出的跨越失败（DEC-3）。已列出但不再发生的跨越失败，直到其行被移除。检查还会打印每个条目的急切 gzip 大小，base 与 head 对比。向允许清单添加一行需要所有者在本文档中批准。
 
-- **INV10 — An optional feature costs nothing where it is unused.** An
-  optional feature is behavior a caller turns on through a prop, an option or
-  a plugin, and that is off by default. It adds at most 0.3 KB gzip of
-  first-load JavaScript to a page that renders its component without it, the
-  same wiring allowance as INV7. A larger feature takes INV7's route (its own
-  import) or a deferred load (DEC-1, DEC-4). A pull request that adds or grows
-  an optional feature reports that page's first-load gzip delta. A pull
-  request that grows a shared module reports the first-load gzip delta, for
-  apps that do not use the new code, on the four reference pages. Each
-  reference page is a production app bundle of the built packages that
-  imports exactly these Core components: the docs page Text, Heading, Link,
-  Card, Divider and List; the form page Button, IconButton, TextInput,
-  CheckboxInput, Text, Heading and Card; the menu page DropdownMenu,
-  ContextMenu, Button and Text; and the table page Table, Text and Button. A
-  pull request whose shared module none of these pages reaches adds a page
-  that imports a component that reaches it. Default behavior, CSS (`spec:AST-080` DEC-4 governs it),
-  tests, stories, docs and generated files are outside this rule (DEC-5).
+- **INV10 — 可选功能在未使用处零成本。** 可选功能是调用方通过 prop、选项或插件开启且默认关闭的行为。对于渲染其组件但未使用该功能的页面，它最多增加 0.3 KB gzip 的首次加载 JavaScript，与 INV7 的接线额度相同。更大的功能采用 INV7 的路线（其自己的导入）或延迟加载（DEC-1、DEC-4）。添加或增大可选功能的拉取请求会报告该页面的首次加载 gzip 增量。增大共享模块的拉取请求会报告四个参考页面上不使用新代码的应用的首次加载 gzip 增量。每个参考页面都是所构建包的生产应用 bundle，恰好导入以下 Core 组件：文档页面 Text、Heading、Link、Card、Divider 和 List；表单页面 Button、IconButton、TextInput、CheckboxInput、Text、Heading 和 Card；菜单页面 DropdownMenu、ContextMenu、Button 和 Text；以及表格页面 Table、Text 和 Button。如果共享模块未被这些页面中的任何一个到达，拉取请求应添加一个导入可到达该模块的组件的页面。默认行为、CSS（由 `spec:AST-080` DEC-4 管辖）、测试、故事、文档和生成文件不在此规则范围内（DEC-5）。
 
 ### Allowlist
 
@@ -210,176 +83,112 @@ one pending load per module, caches a success, and resets after a failure.
 | `Table/tableContextMenu` → `ContextMenu`                          | Table                                          | 78.2 KB                | INV1       | cells without actions reach no menu module                               |
 | `Table/BaseTable` → `Table/plugins/virtualization/useTableWindow` | Table                                          | 3.0 KB                 | INV7       | a Table that never windows reaches neither the controller nor its engine |
 
-Costs are the check's own printout in CI: each crossing's removal from the
-entry with every other crossing kept, in the entry build above. A local run
-on another platform or Node version can print gzip sizes a few tenths of a KB
-apart. Rows share modules, so they do not add up. The truncation tooltip's touch code costs Button,
-IconButton, Link, and Table nothing on its own, because another of their
-crossings brings the same module. Table carries 123.5 KB eager.
+成本是检查在 CI 中的自身打印输出：在上述条目构建中，保留所有其他跨越的情况下从条目中移除每次跨越。在其他平台或 Node 版本上本地运行可能打印相差零点几 KB 的 gzip 大小。各行共享模块，因此不能相加。截断工具提示的触摸代码本身不会让 Button、IconButton、Link 和 Table 产生任何成本，因为它们中的另一个跨越带来了同一模块。Table 的急切负载为 123.5 KB。
 
 ## Current-state impact
 
-- INV1, INV8 gap: Text's and Heading's imports reach the touch tap recognizer
-  through the truncation tooltip, 4.6 KB gzip each, on pages whose text never
-  truncates. Button, IconButton, Link, and Table reach it the same way
-  through Text.
-- INV1 gap: the `Tooltip`, `HoverCard`, `Popover`, `DropdownMenu`, and
-  `ContextMenu` imports load their layer statically. `useTooltip`,
-  `useHoverCard`, `usePopover`, and `ContextMenu` import the layer hook from
-  `Layer/useLayer`, and `DropdownMenu` reaches it through `usePopover`. These
-  five are not in INV9's entry list, so the check does not hold them; it
-  holds only the listed entries.
-- INV1 gap: Button's and IconButton's imports reach the tooltip hook and the
-  layer runtime, 15.5 KB gzip, with or without a `tooltip` prop. Through
-  Button, Link, or their own code, 32 of Core's 95 component imports that are
-  not surfaces carry 17–24 KB of tooltip code, and 52 carry at least 1 KB.
-- INV1 gap: Link's import reaches the Tooltip component and the layer
-  runtime, 17.6 KB gzip, with or without a `tooltip` prop.
-- INV1 gap: Table's import reaches the cell context menu, 78.2 KB gzip, for
-  cells with no actions, while `component:TableCell` PR1 loads a menu only
-  when actions are given.
-- INV7 gap: Table's import reaches the window controller and the shared
-  windowing module, 3.0 KB gzip, for a Table that never windows.
-- INV3 gap: no record says how a tooltip's description reaches assistive
-  technology before its surface loads, for the triggers whose tooltip is
-  their description.
-- INV6 gap: a menu holding an essential action has no path to that action
-  when its module fails to load (`architecture:interaction-modality` INV7).
-- INV9 gap: the check does not measure INV7's wiring allowance. An entry's
-  wiring for a capability it does not import can exceed 0.3 KB gzip, and the
-  check does not fail.
-- INV9 gap: the check holds no capability boundary for swipe recognition,
-  which has no module of its own.
+- INV1、INV8 差距：Text 和 Heading 的导入通过截断工具提示到达 touch 轻点识别器，每个 4.6 KB gzip，即使页面文本从不截断。Button、IconButton、Link 和 Table 通过 Text 以同样方式到达它。
+- INV1 差距：`Tooltip`、`HoverCard`、`Popover`、`DropdownMenu` 和 `ContextMenu` 导入静态加载其图层。`useTooltip`、`useHoverCard`、`usePopover` 和 `ContextMenu` 从 `Layer/useLayer` 导入图层 hook，`DropdownMenu` 通过 `usePopover` 到达它。这五个不在 INV9 的条目列表中，因此检查不会守住它们；它只守住列出的条目。
+- INV1 差距：Button 和 IconButton 的导入到达工具提示 hook 和图层运行时，15.5 KB gzip，无论是否带有 `tooltip` prop。通过 Button、Link 或它们自己的代码，Core 的 95 个非表面组件导入中有 32 个携带 17–24 KB 的工具提示代码，52 个携带至少 1 KB。
+- INV1 差距：Link 的导入到达 Tooltip 组件和图层运行时，17.6 KB gzip，无论是否带有 `tooltip` prop。
+- INV1 差距：Table 的导入到达单元格上下文菜单，78.2 KB gzip，即使单元格没有操作，而 `component:TableCell` PR1 仅在提供操作时才加载菜单。
+- INV7 差距：Table 的导入到达窗口控制器和共享窗口化模块，3.0 KB gzip，即使 Table 从不窗口化。
+- INV3 差距：没有记录说明对于工具提示作为其描述的触发器，工具提示的描述如何在其表面加载前到达辅助技术。
+- INV6 差距：持有必要操作的菜单在其模块加载失败时无法到达该操作（`architecture:interaction-modality` INV7）。
+- INV9 差距：检查不测量 INV7 的接线额度。条目不导入的能力的接线可能超过 0.3 KB gzip，而检查不会失败。
+- INV9 差距：检查没有为轻扫识别守住任何能力边界，因为轻扫识别没有自己的模块。
 
 ## Change coupling
 
-Review against this record when a change:
+当变更出现以下情况时，应针对本记录进行评审：
 
-- adds or alters a static import from a public import's graph to a surface
-  module or a capability module;
-- adds an `import()`, a module loader, or an intent listener that starts one;
-- adds a surface revealed by interaction, or an opt-in capability; or
-- adds or removes an entry or an allowlist row.
+- 从公共导入的图向表面模块或能力模块添加或更改静态导入；
+- 添加 `import()`、模块加载器或启动它的意图监听器；
+- 添加由交互揭示的表面或选择加入的能力；或
+- 添加或移除条目或允许清单行。
 
 ## Owning code
 
-- `packages/core/src/utils/moduleLoader.ts` — the shared module loader.
-- `packages/core/src/Text/TruncationTooltip.tsx` — the truncation tooltip's
-  intent tracking and load.
-- `packages/core/src/Tooltip/`, `packages/core/src/HoverCard/`,
-  `packages/core/src/Popover/`, `packages/core/src/DropdownMenu/`,
-  `packages/core/src/ContextMenu/` — surfaces and their triggers.
-- `packages/core/src/Table/plugins/` — Table's opt-in capabilities.
-- `.github/scripts/lib/component-size.js` — the esbuild options and gzip
-  measure INV9's entry build shares with the size report.
+- `packages/core/src/utils/moduleLoader.ts` —— 共享模块加载器。
+- `packages/core/src/Text/TruncationTooltip.tsx` —— 截断工具提示的意图跟踪和加载。
+- `packages/core/src/Tooltip/`、`packages/core/src/HoverCard/`、`packages/core/src/Popover/`、`packages/core/src/DropdownMenu/`、`packages/core/src/ContextMenu/` —— 表面及其触发器。
+- `packages/core/src/Table/plugins/` —— Table 的选择加入能力。
+- `.github/scripts/lib/component-size.js` —— INV9 的条目构建与大小报告共享的 esbuild 选项和 gzip 度量。
 
 ## Deciding specs
 
 ### DEC-1 — Surfaces revealed by interaction load on first intent
 
-**Reference:** `architecture:component-import-boundaries/DEC-1`
-**Decider:** `cixzhang`, `2026-11-09`
+**参考：** `architecture:component-import-boundaries/DEC-1`
+**决策者：** `cixzhang`，`2026-11-09`
 
-> "any tooltips, hovercards, and layers that appear on interaction should be
-> lazy loaded"
+> “任何在交互时出现的工具提示、悬停卡和图层都应惰性加载”
 
-Most people never open most surfaces on a page, so their code loads when a
-person shows intent, and an intent made while it loads still counts (INV1–INV6).
-This defers a surface, not a touch primitive: touch code stays in the shared
-touch modules that `spec:AST-080` DEC-5 requires, imported statically by the
-surface that uses it (INV8).
+大多数人从不会打开页面上的大多数表面，因此它们的代码在人们表现出意图时加载，而加载期间产生的意图仍然有效（INV1–INV6）。这延迟的是表面，而不是触摸原语：触摸代码保留在 `spec:AST-080` DEC-5 要求的共享 touch 模块中，由使用它的表面静态导入（INV8）。
 
-Rejected: loading each surface with its trigger, because every page pays for
-surfaces people never open.
+已拒绝：让每个表面随其触发器一起加载，因为每个页面都要为人们从不打开的表面付出代价。
 
-Amended for tooltips and hover cards by DEC-4.
+由 DEC-4 针对工具提示和悬停卡修订。
 
 ### DEC-2 — Opt-in capabilities ship only through their own import
 
-**Reference:** `architecture:component-import-boundaries/DEC-2`
-**Decider:** `cixzhang`, `2026-11-09`
+**参考：** `architecture:component-import-boundaries/DEC-2`
+**决策者：** `cixzhang`，`2026-11-09`
 
-The window is an import of the virtualizer, so people pay for it only when
-they virtualize. A caller who does not import a capability carries none of it (INV7).
+窗口就是对虚拟化器的导入，因此人们只在进行虚拟化时才为它付出代价。不导入能力的调用方不会携带它的任何部分（INV7）。
 
-Rejected: loading a capability with `import()` from the component, because
-the capability then goes live only after the component paints and needs an
-exception to `architecture:react-component-runtime` INV13 (`spec:AST-057` DEC-8).
+已拒绝：从组件使用 `import()` 加载能力，因为这样能力只有在组件绘制后才生效，并且需要对 `architecture:react-component-runtime` INV13 的例外（`spec:AST-057` DEC-8）。
 
 ### DEC-3 — A failing check holds the boundaries, with an allowlist of today's crossings
 
-**Reference:** `architecture:component-import-boundaries/DEC-3`
-**Decider:** `cixzhang`, `2026-11-10`
+**参考：** `architecture:component-import-boundaries/DEC-3`
+**决策者：** `cixzhang`，`2026-11-10`
 
-> "a failing check now, with a recorded allowlist of today's crossings until
-> each is fixed" — Owner decision, 2026-11-10 (Cindy)
+> “现在就用一个会失败的检查，并记录当前跨越的允许清单，直到每个跨越都被修复”——所有者决定，2026-11-10（Cindy）
 
-The check fails on any crossing not in the allowlist. Each crossing that
-exists today is a row in the allowlist, and its row leaves when its fix
-lands; a row whose crossing no longer occurs fails (INV9). A new crossing
-cannot merge, and no change is blocked by a crossing already listed.
+检查会在任何不在允许清单中的跨越上失败。今天存在的每次跨越都是允许清单中的一行，其行在其修复落地时移除；跨越不再发生的行会失败（INV9）。新的跨越无法合并，而已列出的跨越不会阻塞任何变更。
 
-Rejected: a warn-only check that starts failing per entry once its rows are gone, because a new crossing can merge while its entry only warns.
-Rejected: rules held by review alone, because a crossing shows only in the built import graph, not in the changed lines.
+已拒绝：仅警告的检查，在其行消失后按条目开始失败，因为新的跨越可以在其条目仅警告时合并。
+已拒绝：仅由评审维护的规则，因为跨越只出现在构建后的导入图中，而不在更改的行中。
 
 ### DEC-4 — Tooltip and hover-card code loads after first paint on every page
 
-**Reference:** `architecture:component-import-boundaries/DEC-4`
-**Decider:** `cixzhang`, `2026-11-13`
+**参考：** `architecture:component-import-boundaries/DEC-4`
+**决策者：** `cixzhang`，`2026-11-13`
 
-> "After first paint, on every page" — Owner decision, 2026-11-13 (Cindy)
+> “在首次绘制之后，在每个页面上”——所有者决定，2026-11-13（Cindy）
 
-Tooltip and hover-card code loads in the background once the page has painted,
-so the page shows first and the first hover usually finds the code already
-loaded. This covers every Tooltip surface, including the truncation tooltip of
-Text and Heading and the `tooltip` of Button and Link, and the HoverCard
-surface. No input starts the load sooner or hurries it. A hover during the
-loading window still waits the surface's hover delay, counted from the
-pointer's entry, and shows when the load lands if the pointer is still on the
-trigger, or at the next hover (INV2, INV4). Other surfaces keep DEC-1.
+工具提示和悬停卡代码在页面绘制后于后台加载，因此页面先显示，首次悬停通常会发现代码已经加载。这覆盖每个 Tooltip 表面，包括 Text 和 Heading 的截断工具提示以及 Button 和 Link 的 `tooltip`，还覆盖 HoverCard 表面。任何输入都不会让加载更早开始或加速它。加载窗口期间的悬停仍等待表面的悬停延迟，从指针进入开始计时，并在加载落地时显示（如果指针仍在触发器上），或在下次悬停时显示（INV2、INV4）。其他表面保持 DEC-1。
 
-Rejected: loading on the first hover or focus, because the first hover then
-waits for the fetch.
-Rejected: loading with the page, because every page pays for code before
-anyone hovers.
+已拒绝：在首次悬停或聚焦时加载，因为首次悬停随后要等待获取完成。
+已拒绝：随页面一起加载，因为每个页面都要在任何人悬停之前为代码付出代价。
 
 ### DEC-5 — Unused optional features cost almost nothing
 
-**Reference:** `architecture:component-import-boundaries/DEC-5`
-**Decider:** `cixzhang`, `2026-11-13`
+**参考：** `architecture:component-import-boundaries/DEC-5`
+**决策者：** `cixzhang`，`2026-11-13`
 
-> "Both rules" — Owner decision, 2026-11-13 (Cindy), on the size rules for
-> unused features and shared behavior code
+> “两条规则”——所有者决定，2026-11-13（Cindy），关于未使用功能和共享行为代码的体积规则
 
-An app pays for an optional feature only when it uses it, and pays the least
-the feature can cost. A prop, option or plugin that is off by default adds no
-more than INV7's wiring allowance to a page that does not turn it on, and a
-growing shared module states what it costs the apps that do not use the new
-code (INV10).
+应用只在使用可选功能时才为它付出代价，并且付出该功能可能的最低成本。默认关闭的 prop、选项或插件，对未开启它的页面最多增加 INV7 的接线额度；不断增大的共享模块会说明它对不使用新代码的应用造成的成本（INV10）。
 
-Rejected: keeping public-component-api INV19's advice to weigh resource cost,
-without a budget or a report, because a feature's cost to other apps then
-stays invisible.
+已拒绝：保留 public-component-api INV19 中权衡资源成本的建议，却没有预算或报告，因为功能对其他应用的成本随之变得不可见。
 
 ## Open questions
 
-- **OQ1 — Is 0.3 KB the right wiring allowance for INV7?** Proposed from the
-  smallest residue measured for Table's windowing; the owner sets it.
-- **OQ2 — How does a surface open on first render load?** A controlled open
-  or default open surface has no intent before hydration. Proposed: it loads
-  with the first client render, and its closed frame is the state the server
-  markup already shows.
+- **OQ1 — 0.3 KB 是 INV7 的正确接线额度吗？** 该值基于为 Table 的窗口化测得的最小残留提出；由所有者设定。
+- **OQ2 — 首次渲染时打开的表面如何加载？** 受控打开或默认打开的表面在注水前没有意图。提议：它随首次客户端渲染加载，其关闭帧就是服务端标记已经显示的状态。
 
 ## Verification
 
-| Invariant  | Evidence                                                                                                                                                                                                                                                                               | Failure signal                                                                                                                                                                                                                                             |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| INV1, INV7 | The entry-boundary check (INV9) with a positive control per kind: a fixture entry that imports a surface statically, and one that imports a capability                                                                                                                                 | A listed entry reaches a surface or capability module statically outside the allowlist; a component reaches a capability module with `import()`; a positive control passes                                                                                 |
-| INV2       | Unit tests per surface: no load before intent; one load per intent kind (mouse or pen enter, focus, pointer down, open request); none during server render or hydration; Tooltip and HoverCard: a load after the first paint with no intent, and an early hover that does not start it | A load before intent, during server render, or during hydration; an intent that starts no load; a gesture recognizer in the pre-load listeners; a Tooltip or HoverCard load that waits for intent, starts before first paint, or starts sooner on an input |
-| INV3       | Server render then hydrate, plus real-browser tests (Chromium and WebKit) with axe before and after load                                                                                                                                                                               | Closed-state trigger ARIA differs between server, hydration, and after load; an ARIA reference names a missing element; focus moves or content remounts on load                                                                                            |
-| INV4       | Tests with a deferred loader: hover, tap, focus, and open request before load; leave, blur, and a later intent before load                                                                                                                                                             | A held intent lost or replayed twice; a hover delay restarted at load; a stale intent opening after a newer one; a replayed tap without outside dismissal                                                                                                  |
-| INV5       | Real-browser layout test: trigger box before and after load; no paint of a closed surface                                                                                                                                                                                              | Any trigger box change; a closed surface painted; a false state during load                                                                                                                                                                                |
-| INV6       | Tests with a rejecting loader                                                                                                                                                                                                                                                          | The page unmounts or the trigger stops working; a held intent survives; a suppressed native behavior does not return; a later intent does not retry                                                                                                        |
-| INV8       | `scripts/touch-support-bundle.test.mjs` extended over lazy chunks: two deferred surfaces and one base component on one page                                                                                                                                                            | A second copy of a touch module on one page; an `import()` whose target is a touch module; a touch module in an entry's eager graph only for a deferred surface                                                                                            |
-| INV9       | The check's own tests: a stale allowlist row, an unlisted crossing, and the printed import chain                                                                                                                                                                                       | A crossing passes unlisted; a stale row passes; a failure without its import chain                                                                                                                                                                         |
-| INV10      | The per-page first-load report on INV10's four reference pages (docs, form, menu, table, each defined by its component set), base against head, for a page that renders each changed component without its optional feature                                                            | An unused optional feature adds more than 0.3 KB gzip of first-load JavaScript, or a pull request that grows a shared module reports no per-page delta                                                                                                     |
+| 不变量     | 证据                                                                                                                                                                                                 | 失败信号                                                                                                                                                    |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| INV1、INV7 | 条目边界检查（INV9），每种类型都有一个阳性对照：一个静态导入表面的夹具条目，以及一个导入能力的夹具条目                                                                                               | 列出的条目在允许清单之外静态到达表面或能力模块；组件使用 `import()` 到达能力模块；阳性对照失败                                                              |
+| INV2       | 每个表面的单元测试：意图之前无加载；每种意图类型（鼠标或笔进入、聚焦、指针按下、打开请求）一次加载；服务端渲染或注水期间无加载；Tooltip 和 HoverCard：无意图时在首次绘制后加载，早期悬停不会启动加载 | 在意图之前、服务端渲染期间或注水期间加载；意图不启动加载；加载前监听器中有手势识别器；Tooltip 或 HoverCard 加载等待意图、在首次绘制前开始，或由输入更早开始 |
+| INV3       | 服务端渲染后注水，加上在加载前后使用 axe 的真实浏览器测试（Chromium 和 WebKit）                                                                                                                      | 关闭状态的触发器 ARIA 在服务端、注水和加载后不同；ARIA 引用指向缺失的元素；焦点移动或内容在加载时重新挂载                                                   |
+| INV4       | 使用延迟加载器的测试：加载前的悬停、轻点、聚焦和打开请求；加载前的离开、失焦和较晚意图                                                                                                               | 保留的意图丢失或被重放两次；悬停延迟在加载时重新开始；过时意图在较新意图之后打开；重放的轻点没有外部关闭                                                    |
+| INV5       | 真实浏览器布局测试：加载前后的触发器盒子；不绘制关闭的表面                                                                                                                                           | 任何触发器盒子变化；绘制了关闭的表面；加载期间出现错误状态                                                                                                  |
+| INV6       | 使用拒绝加载器的测试                                                                                                                                                                                 | 页面卸载或触发器停止工作；保留的意图存活；被抑制的原生行为未恢复；后续意图不重试                                                                            |
+| INV8       | `scripts/touch-support-bundle.test.mjs` 扩展到惰性 chunk：一个页面上两个延迟表面和一个基础组件                                                                                                       | 一个页面上出现第二个 touch 模块副本；`import()` 的目标是 touch 模块；entry 的急切图中仅为延迟表面而出现 touch 模块                                          |
+| INV9       | 检查自身的测试：过时的允许清单行、未列出的跨越，以及打印的导入链                                                                                                                                     | 跨越未列出却通过；过时行通过；失败时没有其导入链                                                                                                            |
+| INV10      | 在 INV10 的四个参考页面（docs、form、menu、table，每个由其组件集定义）上按页面生成首次加载报告，base 与 head 对比，针对渲染每个更改组件但不使用其可选功能的页面                                      | 未使用的可选功能增加超过 0.3 KB gzip 的首次加载 JavaScript，或增大共享模块的拉取请求未报告按页面增量                                                        |

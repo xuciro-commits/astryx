@@ -23,127 +23,117 @@ system_specs: [spec:AST-108]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                 |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `Theme` with a required `theme` (a defined theme), `mode` (`light`, `dark`, `system`; default `system`), and `children`.                                 |
-| Behavior                | Applies a theme and color mode to its subtree through a layout-neutral wrapper. The outermost Theme also writes the theme and a forced mode to `<html>`. |
-| End-user impact         | Everything inside renders in the chosen theme and in light, dark, or the system's mode; browser chrome follows the root Theme.                           |
-| Builder impact          | None.                                                                                                                                                    |
-| Compatibility/readiness | Records shipped behavior; no public change.                                                                                                              |
-| Review checks           | Reject a wrapper that affects layout, a nested Theme that changes `<html>`, or a `system` mode that writes a forced mode.                                |
-| Governing rules         | `architecture:theme-application` INV1–INV9; `architecture:theme-compilation`.                                                                            |
+| Area            | Contract                                                                                                             |
+| --------------- | -------------------------------------------------------------------------------------------------------------------- |
+| 公共契约        | `Theme`，包含必需的 `theme`（一个已定义的主题）、`mode`（`light`、`dark`、`system`；默认 `system`）以及 `children`。 |
+| 行为            | 通过一个不影响布局的包装器，把主题与颜色模式应用到其子树。最外层的 Theme 还会把主题与强制模式写入 `<html>`。         |
+| 终端用户影响    | 内部的一切都以所选主题、以及浅色、深色或系统模式渲染；浏览器界面外观跟随根 Theme。                                   |
+| 构建者影响      | 无。                                                                                                                 |
+| 兼容性/就绪状态 | 记录已发布的行为；无公共变更。                                                                                       |
+| 审查检查        | 拒绝影响布局的包装器、会改动 `<html>` 的嵌套 Theme，或写入强制模式的 `system` 模式。                                 |
+| 管辖规则        | `architecture:theme-application` INV1–INV9；`architecture:theme-compilation`。                                       |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；以下正文具有权威性。
 
 ## Intent
 
-Theme is the provider that applies one defined theme and a color mode to the
-part of the tree it wraps. How providers nest, share runtime styles, and sync
-the document is owned by `architecture:theme-application`; this record owns
-what the component itself renders. Consumer usage lives in `Theme.doc.mjs`.
+Theme 是一个提供方，它把一个已定义的主题和一种颜色模式应用到它所包装的那部分树。提供方如何嵌套、如何共享运行时样式以及如何同步文档，由 `architecture:theme-application` 负责；本记录负责组件自身渲染的内容。使用方的用法见 `Theme.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public change
-- Controlled/uncontrolled behavior: `theme` and `mode` are caller-owned
-- Migration decision: none
+- 保留已发布的默认值：`yes`
+- 兼容性类别：记录已发布的行为；无公共变更
+- 受控/非受控行为：`theme` 与 `mode` 由调用方拥有
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方的迁移说明应放在使用方文档与发布说明中。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The wrapper element, its theme and mode attributes, and its color scheme
-  (FR1, FR2).
-- Providing the theme and mode to descendants (FR3).
+- 包装器元素、其主题与模式属性，以及其配色方案（FR1、FR2）。
+- 向子代提供主题与模式（FR3）。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Provider nesting, root document sync, runtime style sharing and removal, and
-  `system` resolution — owned by `architecture:theme-application`.
-- The CSS a theme compiles to — owned by `architecture:theme-compilation`.
-- Theme authoring and tokens — owned by their architecture records.
+- 提供方嵌套、根文档同步、运行时样式的共享与移除，以及 `system` 解析——由 `architecture:theme-application` 负责。
+- 主题所编译出的 CSS——由 `architecture:theme-compilation` 负责。
+- 主题编写与令牌——由各自的架构记录负责。
 
 ## Public concepts
 
-| Concept | Closed values or states   | Meaning                                    | Availability by variant/orientation/state | Default  | Owner             | Stability | Invalid-value behavior                                                                                                      |
-| ------- | ------------------------- | ------------------------------------------ | ----------------------------------------- | -------- | ----------------- | --------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Mode    | `light`, `dark`, `system` | Forces a color mode or follows the system. | Every Theme.                              | `system` | `component:Theme` | Stable    | TypeScript rejects other values; at runtime any other value is treated as `system` (`architecture:theme-application` INV7). |
+| Concept | Closed values or states   | Meaning                          | Availability by variant/orientation/state | Default  | Owner             | Stability | Invalid-value behavior                                                                                    |
+| ------- | ------------------------- | -------------------------------- | ----------------------------------------- | -------- | ----------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| 模式    | `light`、`dark`、`system` | 强制使用某种颜色模式或跟随系统。 | 每个 Theme。                              | `system` | `component:Theme` | 稳定      | TypeScript 会拒绝其他值；在运行时，任何其他值都被当作 `system`（`architecture:theme-application` INV7）。 |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                         | Basis                    |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| FR1 | Theme renders one wrapper with `display: contents`, so it adds no layout box, carrying `data-astryx-theme` with the theme's name and the primary text color and body font.                                                                                                                                                                                        | Current source and tests |
-| FR2 | `mode="light"` or `"dark"` sets that `data-theme` and color scheme on the wrapper; `system` sets no `data-theme` and a `light dark` color scheme. A nested Theme sets its own wrapper's mode. A Theme given any other value still writes it unchanged to its own wrapper's `data-theme`, with the `light dark` color scheme, though nothing reads that attribute. | Current source and tests |
-| FR3 | Descendants read the theme and mode through Theme context; the nearest Theme wins (`architecture:theme-application` INV1).                                                                                                                                                                                                                                        | Current source and tests |
-| FR4 | The outermost Theme writes the theme name and any forced mode to `<html>` and removes them on unmount; a nested Theme never changes `<html>` (`architecture:theme-application` INV2, INV7).                                                                                                                                                                       | Current source and tests |
+| ID  | Invariant                                                                                                                                                                                                                                                                                              | Basis            |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------- |
+| FR1 | Theme 渲染一个带 `display: contents` 的包装器，因此不添加任何布局盒子，并携带 `data-astryx-theme`，其值为主题名称，同时设置主文本颜色与正文字体。                                                                                                                                                      | 当前源代码与测试 |
+| FR2 | `mode="light"` 或 `"dark"` 会在包装器上设置该 `data-theme` 与配色方案；`system` 不设置 `data-theme`，而设置 `light dark` 配色方案。嵌套的 Theme 会设置自己包装器的模式。被赋予其他任何值的 Theme 仍会把它原样写入自己包装器的 `data-theme`，并设置 `light dark` 配色方案，尽管没有任何代码读取该属性。 | 当前源代码与测试 |
+| FR3 | 子代通过 Theme context 读取主题与模式；最近的 Theme 生效（`architecture:theme-application` INV1）。                                                                                                                                                                                                    | 当前源代码与测试 |
+| FR4 | 最外层的 Theme 会把主题名称与任何强制模式写入 `<html>`，并在卸载时移除它们；嵌套的 Theme 永远不会改动 `<html>`（`architecture:theme-application` INV2、INV7）。                                                                                                                                        | 当前源代码与测试 |
 
 ### Allowed variation
 
-- **AV1 — Theme.** Any defined theme, built or runtime.
+- **AV1 — 主题。** 任何已定义的主题，内置或运行时。
 
 ### Representative states
 
-| State        | Required invariant                               | Allowed variation |
-| ------------ | ------------------------------------------------ | ----------------- |
-| Root, system | No `data-theme` on the wrapper or `<html>`.      | Theme.            |
-| Root, dark   | `data-theme="dark"` on the wrapper and `<html>`. | Theme.            |
-| Nested       | Own wrapper attributes; `<html>` unchanged.      | Theme, mode.      |
+| State    | Required invariant                             | Allowed variation |
+| -------- | ---------------------------------------------- | ----------------- |
+| 根，系统 | 包装器与 `<html>` 上均无 `data-theme`。        | Theme。           |
+| 根，深色 | 包装器与 `<html>` 上均为 `data-theme="dark"`。 | Theme。           |
+| 嵌套     | 拥有自己的包装器属性；`<html>` 不变。          | Theme、mode。     |
 
 ### Transformation and precedence order
 
-- **ORD1 — Nearest provider.** The nearest Theme supplies context; only the
-  outermost writes to `<html>`.
+- **ORD1 — 最近的提供方。** 最近的 Theme 提供上下文；只有最外层会写入 `<html>`。
 
 ### Performance and resources
 
-- Runtime style generation and sharing follow `architecture:theme-application`
-  INV4–INV5.
+- 运行时样式的生成与共享遵循 `architecture:theme-application` INV4–INV5。
 
 ## Accessibility contract
 
-- **AR1 — No semantics.** The wrapper adds no role, name, or focus target.
+- **AR1 — 无语义。** 包装器不添加角色、名称或焦点目标。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                    | Representation authority | Hierarchy role | Component contract |
-| ---------------- | ----------------------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Wrapper          | Carries theme identity and mode without a layout box. | Current source           | Supporting     | FR1, FR2           |
+| Anatomy or state | Design requirement                           | Representation authority | Hierarchy role | Component contract |
+| ---------------- | -------------------------------------------- | ------------------------ | -------------- | ------------------ |
+| 包装器           | 在不产生布局盒子的前提下携带主题标识与模式。 | 当前源代码               | 支撑           | FR1、FR2           |
 
-Theme renders no themable part of its own, so no anatomy-theming map applies.
+Theme 自身不渲染任何可主题化的部分，因此不适用解剖结构-主题化映射。
 
 ## Family and system relationships
 
-- `architecture:theme-application` owns provider scope, root sync, style
-  lifetime, and `system` resolution.
-- `architecture:theme-compilation` owns the CSS Theme mounts.
+- `architecture:theme-application` 拥有提供方作用域、根同步、样式生命周期以及 `system` 解析。
+- `architecture:theme-compilation` 拥有 Theme 挂载的 CSS。
 
 ## Verification map
 
-| Contract | Verification                                                                | Representative states                     | Mutation or failure expectation                                    | Audit section          |
-| -------- | --------------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------ | ---------------------- |
-| FR1      | `Theme.test.tsx` "sets data-astryx-theme on wrapper div"                    | any theme                                 | A missing theme attribute fails.                                   | `audit:Theme/behavior` |
-| FR2, FR4 | `Theme.test.tsx` root and nested `data-theme` and `data-astryx-theme` tests | root light, dark, system; nested; unmount | Wrong mode attributes, or a nested Theme changing `<html>`, fails. | `audit:Theme/behavior` |
+| Contract | Verification                                                                | Representative states              | Mutation or failure expectation                      | Audit section          |
+| -------- | --------------------------------------------------------------------------- | ---------------------------------- | ---------------------------------------------------- | ---------------------- |
+| FR1      | `Theme.test.tsx` "sets data-astryx-theme on wrapper div"                    | 任意主题                           | 缺少主题属性即失败。                                 | `audit:Theme/behavior` |
+| FR2, FR4 | `Theme.test.tsx` root and nested `data-theme` and `data-astryx-theme` tests | 根 light、dark、system；嵌套；卸载 | 模式属性错误，或嵌套 Theme 改动了 `<html>`，即失败。 | `audit:Theme/behavior` |
 
-Read from source, with no focused test yet:
+从源代码读取，尚无针对性测试：
 
-- FR1: `display: contents`, the text color, and the body font.
-- FR2: the color scheme for each mode, and the wrapper's `data-theme` for a
-  value outside the three.
-- FR3: descendants reading the nearest Theme's context.
+- FR1：`display: contents`、文本颜色与正文字体。
+- FR2：每种模式的配色方案，以及当取值超出这三种时包装器的 `data-theme`。
+- FR3：子代读取最近 Theme 的上下文。
 
 ## Decision log
 
-No component-local decision is recorded.
+未记录组件本地的决策。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables or examples, theme
-authoring, token definitions, or compiler output. It links to their owners.
+本文件不重复使用方的属性表或示例、主题编写、令牌定义或编译器输出。它链接到它们的负责方。

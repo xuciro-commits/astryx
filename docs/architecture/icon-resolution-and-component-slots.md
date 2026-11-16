@@ -55,69 +55,46 @@ deciding_specs:
 }
 ```
 
-This record defines how shared icons and component-owned icon roles fit together.
-It is the approved target architecture. Existing extension keys continue to work
-until a separate compatibility decision changes them.
+本记录定义了共享图标与组件拥有的图标角色如何配合。它是已批准的目标架构。现有扩展键继续有效，直到单独的兼容性决定更改它们。
 
 ## Purpose
 
-A theme author should be able to change an icon used for one component role
-without changing every use of the same shared icon.
+主题作者应当能够更改某个组件角色使用的图标，而不改变同一共享图标的每一处使用。
 
-The system needs two separate choices:
+系统需要两个独立的选择：
 
-1. which shared icon name a component role uses; and
-2. which artwork the active theme uses for that shared icon name.
+1. 某个组件角色使用哪个共享图标名称；以及
+2. 当前主题为该共享图标名称使用哪种图稿。
 
-Keeping those choices separate avoids turning every component detail into a new
-global icon name.
+将这些选择保持分离，可避免把每个组件细节都变成新的全局图标名称。
 
 ## Current baseline
 
-Current `main` has a shared `IconName` registry and also supports namespaced
-extension keys. Some component-owned artwork uses those extension keys directly.
-This record does not invalidate or require migration of that shipped behavior.
+当前的 `main` 有一个共享的 `IconName` 注册表，也支持带命名空间的扩展键。某些组件拥有的图稿直接使用这些扩展键。本记录不会使该已发布行为失效，也不要求迁移它。
 
-The target model adds one rule for future component roles: new semantic component
-slots use `componentIcons`. Each Core slot is recorded in its owning component's
-contract or in the system spec that adds it (`spec:AST-032` FR2 for
-`chat-send-button-send`). Selector's selected-option
-mark is drawn by the `check` indicator, so it is not a component icon slot. Shipped extension keys remain supported until a
-separate compatibility decision changes them. This record does not decide the
-outcome for any existing component.
+目标模型为未来的组件角色增加一条规则：新的语义组件槽位使用 `componentIcons`。每个 Core 槽位记录在拥有它的组件契约中，或记录在添加它的系统规范中（`spec:AST-032` FR2 针对 `chat-send-button-send`）。Selector 的选中选项标记由 `check` 指示器绘制，因此它不是组件图标槽位。已发布的扩展键保持受支持，直到单独的兼容性决定更改它们。本记录不决定任何现有组件的结果。
 
 ## System model
 
 ### Shared icon resolution
 
-`IconName` is the closed set of shared semantic icon names, such as `check`,
-`close`, and `chevronDown`. Existing extension keys coexist with that set.
+`IconName` 是共享语义图标名称的封闭集合，例如 `check`、`close` 和 `chevronDown`。现有扩展键与该集合共存。
 
-The general resolver chooses artwork in this order:
+通用解析器按以下顺序选择图稿：
 
-1. the active theme's `icons[name]` entry;
-2. a process-wide `registerIcons()` entry; and
-3. a matching entry in `defaultIcons`.
+1. 当前主题的 `icons[name]` 条目；
+2. 进程范围的 `registerIcons()` 条目；以及
+3. `defaultIcons` 中的匹配条目。
 
-An entry is a React node or a pure synchronous function of `{size, variant}`.
-A nullish static entry falls through to the next source. Once a function entry
-is selected, its result is final for that resolution: a nullish result renders
-no glyph and never falls through, so artwork never mixes two sources. `component:Icon`
-supplies the resolved size and a variant the active theme lists, or `undefined`;
-a theme-supplied entry, including an inherited one, receives a variant only when
-the theme that defined it also lists it.
+条目是 React 节点或 `{size, variant}` 的纯同步函数。空值静态条目会落到下一个来源。一旦选择了函数条目，其结果对该次解析就是最终的：空值结果不渲染任何字形，也绝不会落到下一个来源，因此图稿绝不会混合两个来源。`component:Icon` 提供解析后的尺寸，以及当前主题列出的变体或 `undefined`；主题提供的条目（包括继承的条目）仅当定义它的主题也列出该变体时才会收到变体。
 
-This record does not change which shared or extension keys the general resolver
-accepts. Theme application owns how the active theme is selected. Theme
-authoring owns how `icons` is normalized and inherited. The Icon component
-contract owns its public source modes, rendering, size, color, and accessibility.
+本记录不改变通用解析器接受哪些共享键或扩展键。主题应用拥有如何选择当前主题。主题编写拥有 `icons` 如何规范化和继承。Icon 组件契约拥有其公共来源模式、渲染、尺寸、颜色和无障碍。
 
 ### Typed component-owned slots
 
-A component icon slot names a stable purpose inside one component. It does not
-name artwork.
+组件图标槽位命名一个组件内部的稳定用途。它不命名图稿。
 
-The public `@astryxdesign/core/Icon` subpath owns an augmentable map:
+公共 `@astryxdesign/core/Icon` 子路径拥有一个可扩充的映射：
 
 ```ts
 // Public @astryxdesign/core/Icon module
@@ -144,17 +121,11 @@ export type ComponentIconMap = {
 };
 ```
 
-A slot's map value is `true` for a stateless slot or an object type that lists
-the slot's readonly state fields. The type shapes above are conceptual; the
-public names and the precise mapped type belong to the implementation.
+对于无状态槽位，槽位的映射值是 `true`，或者是一个列出该槽位只读状态字段的对象类型。上面的类型形状是概念性的；公共名称和精确的映射类型属于实现。
 
-The interface must be declared in the public module that consumers augment. An
-interface declared only in an implementation file and re-exported from the
-public subpath will not widen the type used by consumers. Runtime resolver code
-imports the map from its public owner.
+接口必须声明在消费者扩充的公共模块中。仅在实现文件中声明并从公共子路径重新导出的接口不会拓宽消费者使用的类型。运行时解析器代码从公共所有者导入该映射。
 
-External component packages add their slots by augmenting the same public
-`@astryxdesign/core/Icon` module:
+外部组件包通过扩充同一个公共 `@astryxdesign/core/Icon` 模块来添加其槽位：
 
 ```ts
 declare module '@astryxdesign/core/Icon' {
@@ -165,14 +136,9 @@ declare module '@astryxdesign/core/Icon' {
 }
 ```
 
-Core slots are declared the same way in the public module. A slot uses
-`<component-kebab>-<semantic-role>`. The role describes why the icon exists, not
-its current shape or direction.
+Core 槽位以相同方式在公共模块中声明。槽位使用 `<component-kebab>-<semantic-role>`。角色描述图标存在的原因，而不是其当前形状或方向。
 
-`defineTheme({componentIcons})` maps a component slot to a shared `IconName`,
-to `null`, to a static partial request, or, for a stateful slot, to a pure
-synchronous function of the slot's state that returns a partial request. It is
-separate from `defineTheme({icons})`:
+`defineTheme({componentIcons})` 将组件槽位映射到共享的 `IconName`、`null`、静态部分请求，或者对于有状态槽位，映射到该槽位状态的纯同步函数，该函数返回部分请求。它与 `defineTheme({icons})` 分开：
 
 ```tsx
 defineTheme({
@@ -190,202 +156,121 @@ defineTheme({
 });
 ```
 
-The slot map says which shared meaning, variant, and size a component role uses.
-The icon map says which artwork draws that shared meaning.
+槽位映射说明某个组件角色使用哪种共享含义、变体和尺寸。图标映射说明用哪种图稿绘制该共享含义。
 
 ### Component slot precedence
 
-A component resolves an icon-bearing role in this order:
+组件按以下顺序解析承载图标的角色：
 
-1. a consumer-provided instance prop, when the component exposes one;
-2. the nearest active theme's `componentIcons[slot]` entry; and
-3. the component's declared fallback `IconName | null`.
+1. 消费者提供的实例 prop，当组件暴露该 prop 时；
+2. 最近的当前主题的 `componentIcons[slot]` 条目；以及
+3. 组件声明的回退 `IconName | null`。
 
-`undefined` means “use the next fallback.” `null` means “render no icon.” A
-mapped `IconName` continues through shared icon resolution.
+`undefined` 表示“使用下一个回退”。`null` 表示“不渲染图标”。映射得到的 `IconName` 继续经过共享图标解析。
 
-A request applies field by field. A request `icon` replaces the fallback name,
-and `icon: null` or a `null` result renders no icon. A missing `icon` keeps the
-fallback name, a missing `variant` keeps the variant the component would
-otherwise request (or none), and a missing `size` keeps the component's size.
-An `undefined` result changes nothing. Request `variant` and `size` apply to
-whichever name renders. An unknown `icon`, a variant the theme does not list, or
-an unsupported `size` is treated as missing, with one development-only warning.
+请求逐字段应用。请求的 `icon` 替换回退名称，而 `icon: null` 或 `null` 结果不渲染图标。缺少 `icon` 则保留回退名称，缺少 `variant` 则保留组件原本会请求的变体（或不变体），缺少 `size` 则保留组件自身的尺寸。`undefined` 结果不改变任何内容。请求的 `variant` 和 `size` 应用于最终渲染的名称。未知的 `icon`、主题未列出的变体或不受支持的 `size` 被视为缺失，并给出一次仅开发环境的警告。
 
-Shared resolver modules apply this order consistently:
+共享解析器模块一致地应用此顺序：
 
-- one function resolves a slot, its state, and its fallback to a request of
-  shared `IconName | null`, variant, and size;
-- one function resolves that request to artwork through shared icon resolution;
-  and
-- the client hook resolves the same slot, state, and fallback from the active
-  theme.
+- 一个函数将槽位、其状态和其回退解析为共享 `IconName | null`、变体和尺寸的请求；
+- 一个函数通过共享图标解析将该请求解析为图稿；以及
+- 客户端 hook 从当前主题解析相同的槽位、状态和回退。
 
-Components, including packages that augment `ComponentIconSlotMap`, pass their
-slot state to these resolvers instead of reading `componentIcons` directly. The
-resolvers are the only callers of a theme's slot functions. The resolver does not
-own a component's slot name, state meaning, fallback, or rendering rules.
+组件（包括扩充 `ComponentIconSlotMap` 的包）将其槽位状态传递给这些解析器，而不是直接读取 `componentIcons`。解析器是主题槽位函数的唯一调用者。解析器不拥有组件的槽位名称、状态含义、回退或渲染规则。
 
 ### Indicators stay separate
 
-A stateful control mark that a component draws through an indicator, such as the
-selection check, the radio, or the checkbox box, is not a component icon slot.
-The indicator receives its family's state, and a theme replaces it by name
-through `defineTheme({indicators})`. One visual is never both an indicator and a
-`componentIcons` slot.
+组件通过指示器绘制的有状态控件标记（例如选择勾选、单选按钮或复选框方框）不是组件图标槽位。指示器接收其 family 的状态，主题通过 `defineTheme({indicators})` 按名称替换它。同一个视觉永远不能既是指示器又是 `componentIcons` 槽位。
 
-This record defines the meaning of an active theme's `componentIcons` map. The
-theme-authoring architecture owns `DefineThemeInput`, normalization, and
-`extends`. Theme compilation owns preserving the normalized map in built output.
+本记录定义当前主题 `componentIcons` 映射的含义。主题编写架构拥有 `DefineThemeInput`、规范化和 `extends`。主题编译拥有在构建输出中保留规范化映射。
 
 ## Known deviations
 
-- **NumberInput stepper icon.** Current `NumberInput` resolves its stepper through
-  a general extension key instead of `componentIcons`. This shipped behavior
-  remains supported and is not precedent for new component slots.
-- **Owner:** `component:NumberInput` once that component contract exists.
-- **Exit condition:** a separately reviewed migration uses the component-slot
-  model while preserving released callers and theme overrides, or follows an
-  explicitly approved breaking-change path.
+- **NumberInput 步进器图标。** 当前的 `NumberInput` 通过通用扩展键而不是 `componentIcons` 解析其步进器。该已发布行为保持受支持，并且不构成新组件槽位的先例。
+- **所有者：** 一旦该组件契约存在，即由 `component:NumberInput` 拥有。
+- **退出条件：** 单独审查的迁移在保留已发布调用方和主题覆盖的前提下使用组件槽位模型，或遵循明确批准的破坏性变更路径。
 
-This record does not choose the migration design or timeline.
+本记录不选择迁移设计或时间线。
 
 ## Boundaries and invariants
 
-- **INV1 — Shared names and component roles are separate.** `IconName` owns
-  shared semantic meanings. `ComponentIconSlotName` owns component-specific
-  purposes.
-- **INV2 — Slots are typed and owner-declared.** Every Core slot is listed in
-  `ComponentIconSlotMap`. External packages extend that map instead of adding
-  unowned Core strings.
-- **INV3 — Slots map to shared meanings.** A `componentIcons` value is an
-  `IconName`, `null`, a static partial request of `icon`, `variant`, and `size`,
-  or, for a stateful slot, a pure synchronous function of the slot's declared
-  state that returns such a request. It is never concrete artwork.
-- **INV4 — Null suppresses a slot.** `componentIcons[slot] = null` intentionally
-  renders no icon. An absent mapping uses the component fallback.
-- **INV5 — Every slot declares a fallback.** The owning component declares one
-  `IconName | null`; themes do not need to repeat defaults.
-- **INV6 — Resolution order is stable.** Instance content wins over theme slot
-  mapping. Slot mapping chooses a shared name before the shared registry chooses
-  artwork.
-- **INV7 — Component slots do not grow the shared name set.** Adding a slot does
-  not widen `IconName`.
-- **INV8 — Component behavior stays with the component.** State meaning,
-  transforms, placement, color, accessibility, and control geometry remain owned
-  by the component that renders the slot. A theme slot request may choose the
-  slot's Icon size and variant; the component's own size and variant are the
-  fallback. A slot size never changes the control's height, touch target, or
-  outer dimensions.
-- **INV9 — Theme lifecycle stays single-owned.** This record defines what a
-  `componentIcons` entry means. Theme authoring owns its normalization and
-  inheritance; theme application owns active-theme selection.
-- **INV10 — Existing keys coexist.** Shipped slots and extension keys remain
-  supported until a separate compatibility decision changes them. New Core slots
-  use `ComponentIconSlotMap` and `componentIcons`.
-- **INV11 — A selected function answers the request.** Once a function entry or slot
-  function is selected, its result is final for that resolution. Public theme
-  reads never call or return a slot function.
-- **INV12 — Indicators and slots do not overlap.** A visual drawn by an indicator
-  is replaced through `indicators`; it is not also a `componentIcons` slot.
+- **INV1 — 共享名称和组件角色是分离的。** `IconName` 拥有共享语义含义。`ComponentIconSlotName` 拥有组件特定的用途。
+- **INV2 — 槽位是类型化且由所有者声明的。** 每个 Core 槽位都列在 `ComponentIconSlotMap` 中。外部包扩充该映射，而不是添加无主的 Core 字符串。
+- **INV3 — 槽位映射到共享含义。** `componentIcons` 值是 `IconName`、`null`、`icon`、`variant` 和 `size` 的静态部分请求，或者对于有状态槽位，是该槽位声明状态的纯同步函数，该函数返回此类请求。它绝不是具体图稿。
+- **INV4 — Null 抑制槽位。** `componentIcons[slot] = null` 有意不渲染图标。缺失的映射使用组件回退。
+- **INV5 — 每个槽位都声明回退。** 拥有它的组件声明一个 `IconName | null`；主题无需重复默认值。
+- **INV6 — 解析顺序是稳定的。** 实例内容优先于主题槽位映射。槽位映射在共享注册表选择图稿之前选择共享名称。
+- **INV7 — 组件槽位不扩大共享名称集合。** 添加槽位不会拓宽 `IconName`。
+- **INV8 — 组件行为留在组件中。** 状态含义、变换、放置、颜色、无障碍和控件几何仍由渲染该槽位的组件拥有。主题槽位请求可以选择该槽位的 Icon 尺寸和变体；组件自身的尺寸和变体是回退。槽位尺寸绝不改变控件的高度、触摸目标或外部尺寸。
+- **INV9 — 主题生命周期保持单一所有权。** 本记录定义 `componentIcons` 条目的含义。主题编写拥有其规范化和继承；主题应用拥有当前主题的选择。
+- **INV10 — 现有键共存。** 已发布的槽位和扩展键保持受支持，直到单独的兼容性决定更改它们。新的 Core 槽位使用 `ComponentIconSlotMap` 和 `componentIcons`。
+- **INV11 — 选定的函数负责应答。** 一旦选择了函数条目或槽位函数，其结果对该次解析就是最终的。公共主题读取永远不会调用或返回槽位函数。
+- **INV12 — 指示器和槽位不重叠。** 由指示器绘制的视觉通过 `indicators` 替换；它不会同时是 `componentIcons` 槽位。
 
-This record does not own:
+本记录不拥有：
 
-- `DefineThemeInput`, theme normalization, or `extends`; those belong to the
-  theme-authoring architecture;
-- active-theme selection; that belongs to the theme-application architecture;
-- Icon's public source modes, rendering, visual anatomy, size, color, or
-  accessible-name API; those belong to the Icon component contract;
-- consumer-authored icon content passed through public component props;
-- CSS theming targets for an icon's paint or state;
-- stateful indicator renderer replacement; or
-- the visual design of a component's chosen glyph.
+- `DefineThemeInput`、主题规范化或 `extends`；这些属于主题编写架构；
+- 当前主题的选择；这属于主题应用架构；
+- Icon 的公共来源模式、渲染、视觉解剖、尺寸、颜色或可访问名称 API；这些属于 Icon 组件契约；
+- 通过公共组件 prop 传递的消费者编写的图标内容；
+- 图标绘制或状态的 CSS 主题化目标；
+- 有状态指示器渲染器的替换；或
+- 组件所选字形的视觉设计。
 
 ## Component-local documentation
 
-The architecture record owns the shared rules. The component owner documents
-each slot locally.
+架构记录拥有共享规则。组件所有者记录每个槽位的局部文档。
 
-A component `.doc.mjs` theming entry records:
+组件的 `.doc.mjs` 主题化条目记录：
 
-- the slot name;
-- its fallback `IconName | null`;
-- its state fields, for a stateful slot; and
-- a short description of the role and whether `null` may hide it.
+- 槽位名称；
+- 其回退 `IconName | null`；
+- 对于有状态槽位，其状态字段；以及
+- 对角色以及 `null` 是否可以隐藏它的简短描述。
 
-A component spec records behavior that a theme author must understand, such as
-state-dependent rendering, placement, accessibility ownership, and compatibility
-requirements. It does not copy the general resolution algorithm.
+组件规范记录主题作者必须理解的行为，例如依赖状态的渲染、放置、无障碍所有权和兼容性要求。它不复制通用解析算法。
 
-Consumer icon props remain documented as component API. They are not listed as
-`componentIcons` slots unless the component also promises a separate stable
-theme-level role.
+消费者图标 prop 仍作为组件 API 记录。除非组件还承诺一个独立的稳定主题级角色，否则它们不会列为 `componentIcons` 槽位。
 
 ## Change coupling
 
-- Adding a Core slot updates `ComponentIconSlotMap` in the public
-  `@astryxdesign/core/Icon` module, its owning component source, local docs,
-  resolver tests, and component tests.
-- Adding a package-owned slot augments the public `@astryxdesign/core/Icon`
-  module from that package and adds the same owner-local docs and tests.
-- Changing a slot fallback or precedence is a compatibility change because a
-  theme may omit the slot and rely on the old result.
-- Adding, renaming, removing, or reinterpreting a released slot state field is a
-  compatibility change because theme resolvers read it.
-- Renaming, removing, or reinterpreting a shipped slot or extension key requires
-  an explicit compatibility plan and an allowed breaking-change path when one
-  cannot preserve existing behavior.
-- Changing the `componentIcons` authoring shape, normalization, or inheritance
-  updates the theme-authoring record and its tests. Changing built output updates
-  the theme-compilation record and parity tests.
-- Changing active-theme selection updates the theme-application record and its
-  tests.
-- Changing Icon's public source modes or rendering updates the Icon component
-  contract and its tests.
-- Adding a component-specific key directly to the general Icon API requires
-  architecture review; it is not the default way to add a component slot.
+- 添加 Core 槽位会更新公共 `@astryxdesign/core/Icon` 模块中的 `ComponentIconSlotMap`、其拥有的组件源代码、局部文档、解析器测试和组件测试。
+- 添加包拥有的槽位会从该包扩充公共 `@astryxdesign/core/Icon` 模块，并添加相同的所有者局部文档和测试。
+- 更改槽位回退或优先级是兼容性变更，因为主题可能省略该槽位并依赖旧结果。
+- 添加、重命名、移除或重新解释已发布的槽位状态字段是兼容性变更，因为主题解析器会读取它。
+- 重命名、移除或重新解释已发布的槽位或扩展键时，需要明确的兼容性计划；当无法保留现有行为时，还需要允许的破坏性变更路径。
+- 更改 `componentIcons` 编写形状、规范化或继承会更新主题编写记录及其测试。更改构建输出会更新主题编译记录及其一致性测试。
+- 更改当前主题选择会更新主题应用记录及其测试。
+- 更改 Icon 的公共来源模式或渲染会更新 Icon 组件契约及其测试。
+- 直接向通用 Icon API 添加组件特定键需要架构审查；这不是添加组件槽位的默认方式。
 
 ## Owning code
 
-- The public `@astryxdesign/core/Icon` subpath owns `ComponentIconSlotMap` and
-  the public slot types that consumers augment.
-- `packages/core/src/Icon/globalIconRegistry.tsx` owns shared icon resolution and
-  component slot resolution, including the only calls to theme slot functions.
-- `packages/core/src/Icon/useIcon.ts` owns active-theme client resolution for
-  shared names and component slots.
-- The Icon component and its component contract own public source modes,
-  rendering, size, color, and accessibility. Components resolve their semantic
-  slots before passing the result to Icon.
-- `architecture:theme-authoring-contract` owns `DefineThemeInput`, normalized
-  theme data, and `extends`, including integration of the separate
-  `componentIcons` map.
-- `architecture:theme-application` owns active-theme selection and lookup.
-- `architecture:theme-compilation` owns preserving normalized theme data in built
-  output.
-- Each component owns its slot meaning, fallback, state-dependent rendering,
-  accessibility, and consumer override behavior.
-- CLI and docsite tooling expose owner-declared slot metadata without inventing
-  new slot semantics.
+- 公共 `@astryxdesign/core/Icon` 子路径拥有 `ComponentIconSlotMap` 以及消费者扩充的公共槽位类型。
+- `packages/core/src/Icon/globalIconRegistry.tsx` 拥有共享图标解析和组件槽位解析，包括对主题槽位函数的唯一调用。
+- `packages/core/src/Icon/useIcon.ts` 拥有共享名称和组件槽位的当前主题客户端解析。
+- Icon 组件及其组件契约拥有公共来源模式、渲染、尺寸、颜色和无障碍。组件在将结果传递给 Icon 之前解析其语义槽位。
+- `architecture:theme-authoring-contract` 拥有 `DefineThemeInput`、规范化主题数据和 `extends`，包括独立 `componentIcons` 映射的集成。
+- `architecture:theme-application` 拥有当前主题的选择和查找。
+- `architecture:theme-compilation` 拥有在构建输出中保留规范化主题数据。
+- 每个组件拥有其槽位含义、回退、依赖状态的渲染、无障碍和消费者覆盖行为。
+- CLI 和 docsite 工具公开所有者声明的槽位元数据，而不发明新的槽位语义。
 
 ## Deciding specs
 
-This record consolidates the existing shared registry behavior and the approved
-typed component-slot model. `spec:AST-087` decisions 2, 4, 5, 6, and 10 add
-function entries, static and state-resolver slot requests, the indicator
-boundary, final function results, and slot functions that only slot resolution
-calls.
+本记录整合了现有的共享注册表行为和已批准的类型化组件槽位模型。`spec:AST-087` 的决定 2、4、5、6 和 10 添加了函数条目、静态和状态解析器槽位请求、指示器边界、最终函数结果，以及仅由槽位解析调用的槽位函数。
 
 ## Verification
 
-| Invariant        | Evidence                                                        | Failure signal                                                                          |
-| ---------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| INV1, INV3, INV6 | Registry resolver tests and one rendered component fixture      | A component slot resolves concrete artwork directly or skips shared icon resolution     |
-| INV2, INV5       | Type tests plus component `.doc.mjs` metadata checks            | A Core slot is an untyped string or has no owner/fallback                               |
-| INV4             | Resolver and component tests with `componentIcons[slot] = null` | A null mapping falls through and still renders an icon                                  |
-| INV7             | Shared-name type and registry snapshot tests                    | Adding a component slot widens `IconName`                                               |
-| INV8             | Representative component-owner tests with state and slot sizes  | A theme must know component rendering details, or a slot size moves control geometry    |
-| INV9             | Theme-authoring, application, and compilation owner tests       | This record invents a second normalization or active-theme path                         |
-| INV10            | Shipped-key compatibility fixtures and new-slot negative tests  | A shipped key stops working without a separate compatibility decision                   |
-| INV11            | Resolver tests for function entries, slot functions, and reads  | A nullish function result falls through to another source, or a read returns a function |
-| INV12            | Slot and indicator inventory check                              | One visual is reachable as both an indicator and a `componentIcons` slot                |
-| Documentation    | Component metadata and generated CLI/docsite fixtures           | A themeable slot cannot be discovered with its owner, fallback, and purpose             |
+| 不变量           | 证据                                                  | 失败信号                                               |
+| ---------------- | ----------------------------------------------------- | ------------------------------------------------------ |
+| INV1, INV3, INV6 | 注册表解析器测试和一个已渲染组件夹具                  | 组件槽位直接解析到具体图稿或跳过共享图标解析           |
+| INV2, INV5       | 类型测试加上组件 `.doc.mjs` 元数据检查                | Core 槽位是无类型字符串或没有所有者/回退               |
+| INV4             | 使用 `componentIcons[slot] = null` 的解析器和组件测试 | Null 映射落空并仍然渲染图标                            |
+| INV7             | 共享名称类型和注册表快照测试                          | 添加组件槽位会拓宽 `IconName`                          |
+| INV8             | 具有状态和槽位尺寸的代表性组件所有者测试              | 主题必须了解组件渲染细节，或槽位尺寸移动了控件几何     |
+| INV9             | 主题编写、应用和编译所有者测试                        | 本记录发明了第二条规范化或当前主题路径                 |
+| INV10            | 已发布键兼容性夹具和新槽位负向测试                    | 已发布的键在未有单独兼容性决定的情况下停止工作         |
+| INV11            | 针对函数条目、槽位函数和读取的解析器测试              | 空值函数结果落到另一个来源，或读取返回函数             |
+| INV12            | 槽位和指示器清单检查                                  | 同一个视觉既可作为指示器又可作为 `componentIcons` 槽位 |
+| 文档             | 组件元数据和生成的 CLI/docsite 夹具                   | 可主题化的槽位无法连同其所有者、回退和用途被发现       |

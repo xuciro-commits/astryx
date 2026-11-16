@@ -38,341 +38,143 @@ review_triggers: [motion, tokens, layering, behavior, accessibility]
 
 ## Intent
 
-A surface that animates in can animate out, so a person sees where it went and
-what it uncovered. In a pointer presentation, whether a kind of surface plays
-its exit is a theme decision: with no theme setting, the surface closes at once,
-as a surface without an exit does. A touch presentation plays the exit of its
-native counterpart instead (`spec:AST-094` FR7), and the switches here do not
-reach it.
+会播放入场动画的表面也能播放退出动画，这样人就能看到它去了哪里、露出了什么。在指针呈现中，某一类表面是否播放其退出动画，是一项主题决策：若主题没有设置，该表面会立即关闭，与没有退出动画的表面一样。触控呈现则改为播放其原生对应物的退出动画（`spec:AST-094` FR7），此处的开关不会影响它。
 
-A **touch presentation** is a presentation under a coarse primary pointer,
-after hydration, as `spec:AST-094` FR13 defines it. Every other presentation,
-including a server render and the hydrating render, is a **pointer
-presentation**.
+**触控呈现**是指在水合（hydration）之后、主指针为粗指针的呈现，如 `spec:AST-094` FR13 所定义。其他所有呈现都是**指针呈现**，包括服务端渲染和正在水合的渲染。
 
-This record owns the exit vocabulary, the switch that turns exits on for each
-kind of surface in a pointer presentation, how a pointer-presented surface
-behaves while it leaves, and the browsers in which its layer exits play. Two
-kinds of surface gain an exit:
+本记录负责退出词汇、在指针呈现中为每一类表面开启退出动画的开关、以指针呈现的表面在离场期间的行为，以及其层退出动画在哪些浏览器中播放。有两类表面获得退出动画：
 
-- A **dialog surface** is a `Dialog`, including the dialogs that `AlertDialog`,
-  `CommandPalette`, `useImperativeDialog`, and `useImperativeAlertDialog`
-  render.
-- A **layer surface** is an anchored layer that plays the shared layer
-  entrance. The current members are `Popover`, `Tooltip`, `HoverCard`,
-  `DropdownMenu` and its sub-menus, `ContextMenu`, `Selector`,
-  `ComplexSelector`, `PowerSearch`, and the menu of a `BreadcrumbItem`. This
-  list is a snapshot, not a closed set.
+- **对话框表面**是一个 `Dialog`，包括 `AlertDialog`、`CommandPalette`、`useImperativeDialog` 和 `useImperativeAlertDialog` 所渲染的对话框。
+- **层表面**是播放共享层入场动画的锚定层。当前成员有 `Popover`、`Tooltip`、`HoverCard`、`DropdownMenu` 及其子菜单、`ContextMenu`、`Selector`、`ComplexSelector`、`PowerSearch`，以及 `BreadcrumbItem` 的菜单。这份清单是一份快照，并非封闭集合。
 
-`design:motion` owns motion intent and leaves tokens and component behavior to
-other records. `architecture:theme-tokens` owns the token vocabulary, not which
-components read a token or what they do while they close. A switch that a dozen
-components read through two shared primitives is a system fact.
+`design:motion` 负责动效意图，把令牌和组件行为留给其他记录。`architecture:theme-tokens` 负责令牌词汇，而不负责哪些组件读取某个令牌、或它们在关闭期间做什么。一个由十几个组件通过两个共享原语读取的开关，是一项系统事实。
 
 ## Non-goals
 
-- Exits of touch presentations, which each component's record gives under
-  `spec:AST-094` FR7 and FR8 (FR14). The exit switches here do not reach touch
-  exits; in a component whose main interaction is a tap, a touch exit that a
-  tap, a key or the program starts plays `--duration-exit` and `--ease-exit`; in
-  a gesture component, such as a sheet or the Lightbox, every exit plays its
-  spring, and a gesture-driven exit starts from the release velocity (FR14).
-- Surfaces that already animate out (`Drawer`, `BottomSheet`, `MobileNav`,
-  `Toast`, and the `TopNavMegaMenu` panel) keep their durations and curves in a
-  pointer presentation, and for an exit a gesture drives, a swipe or a drag with
-  velocity, which keeps its measured spring. In a touch presentation, an exit
-  that a tap, a key or the program starts plays `--duration-exit` and
-  `--ease-exit` in a tap component, and the component's spring in a gesture
-  component, `BottomSheet`'s close included (FR14). `BottomSheet`'s close in a
-  pointer presentation reads `--ease-exit` at the curve it uses (FR12); moving
-  the others' pointer-presentation exits onto the exit vocabulary is a visual
-  change for a separate decision.
-- Layers with no entrance (`Typeahead` suggestions, `MultiSelector`,
-  `Tokenizer`, the date and time pickers, the `TabList` overflow menu, the
-  `TopNav` and `SideNav` menus, and Chat trigger menus) gain no exit here.
-- Elements in page flow that animate in, such as `FieldStatus` and
-  `useEntryAnimation`, gain no exit here (OQ2).
-- Entrances do not change: their durations and curves, the entrance of a layer
-  that a hover opens, and the `Dialog` backdrop's entrance.
-- The rest of a semantic motion vocabulary (entry, movement, and state curves;
-  entrance, overlay, and reveal durations) is not settled here. The exit names
-  follow the `--ease-<job>` and `--duration-<job>` pattern so that vocabulary
-  can join them without a rename.
-- Equivalent internal implementations remain valid when they satisfy this
-  contract. How a dialog stays open while it leaves, how a leaving layer stays
-  drawn where it was, and how the end of an exit is detected are
-  implementation.
+- 触控呈现的退出动画，由每个组件的记录依据 `spec:AST-094` FR7 和 FR8 给出（FR14）。此处的退出开关不会影响触控退出动画；在主要交互为点按的组件中，由点按、按键或程序发起的触控退出动画会播放 `--duration-exit` 和 `--ease-exit`；在手势组件（例如 sheet 或 Lightbox）中，每次退出都播放其弹簧动画，而手势驱动的退出从释放速度开始（FR14）。
+- 已经带退出动画的表面（`Drawer`、`BottomSheet`、`MobileNav`、`Toast`，以及 `TopNavMegaMenu` 面板）在指针呈现中保留各自的时长和曲线；对于由手势驱动的退出，即带速度的滑动或拖拽，则保留其实测弹簧。在触控呈现中，由点按、按键或程序发起的退出动画，在点按组件里播放 `--duration-exit` 和 `--ease-exit`，在手势组件里播放该组件的弹簧，`BottomSheet` 的关闭也包括在内（FR14）。`BottomSheet` 在指针呈现中的关闭按其使用的曲线读取 `--ease-exit`（FR12）；把其余表面在指针呈现中的退出动画迁移到退出词汇上，属于视觉变更，需另行决策。
+- 没有入场动画的层（`Typeahead` 建议、`MultiSelector`、`Tokenizer`、日期和时间选择器、`TabList` 溢出菜单、`TopNav` 和 `SideNav` 菜单，以及 Chat 触发菜单）在此不获得退出动画。
+- 页面流中带入场动画的元素，例如 `FieldStatus` 和 `useEntryAnimation`，在此不获得退出动画（OQ2）。
+- 入场动画不变：它们的时长与曲线、由悬停打开的层的入场，以及 `Dialog` 背景遮罩的入场。
+- 语义动效词汇的其余部分（entry、movement 和 state 曲线；entrance、overlay 和 reveal 时长）不在此确定。退出相关的名称遵循 `--ease-<job>` 和 `--duration-<job>` 模式，以便那套词汇无需重命名即可与之合并。
+- 只要能满足本契约，等价的内部实现都有效。对话框在离场期间如何保持打开、离场的层如何仍绘制在原处、以及如何检测退出的结束，都属于实现细节。
 
 ## Requirements
 
-FR1–FR13 govern dialog and layer surfaces in a pointer presentation. FR14
-governs them in a touch presentation.
+FR1–FR13 管辖指针呈现中的对话框表面和层表面。FR14 管辖触控呈现中的它们。
 
-- **FR1 — Exits are off by default.** `--duration-exit-dialog` and
-  `--duration-exit-layer` default to `0ms`. An exit duration a theme sets as a
-  reference to a tempo-scaled token, such as FR12's `var(--duration-exit)`,
-  follows the theme's tempo; one set as a literal plays as written
-  (`spec:AST-108` FR5). A surface whose kind's exit
-  duration is zero closes at once: it is hidden in the update that closes it,
-  and focus, callbacks, and dismissal behave as they do for a surface with no
-  exit.
-- **FR2 — A theme turns on each kind.** A surface plays its exit when its
-  kind's exit duration, resolved on the surface, is greater than zero. The two
-  kinds are independent. The durations resolve like any token, so a theme or a
-  nested `Theme` turns a kind on or off for the surfaces it themes.
-- **FR3 — An exit retraces its entrance.** A leaving surface travels back along
-  its entrance path and fades out, on `--ease-exit`, over its kind's exit
-  duration. A dialog shrinks back toward the element that opened it, or
-  downward when none did; a fullscreen dialog only fades; a layer shrinks back
-  toward its anchor, mirrored in right-to-left layouts as its entrance is. A
-  dialog's backdrop fades out over the same duration. `--ease-exit` applies to
-  CSS-timed exits; a spring-driven exit plays its own exit role, and a CSS part
-  beside it takes the spring's settle time (`spec:AST-108` FR3, FR4a).
-- **FR4 — A leaving surface takes no input.** From the moment its close begins,
-  no pointer press or key activates anything in a leaving surface's own content.
-  Toasts that a leaving dialog hosts are not its content (FR13).
-- **FR5 — A leaving surface keeps its dismissal role, apart from a closing
-  pinned layer.** Until it is hidden, a leaving surface keeps the dismissal role
-  it had while open (`spec:AST-003` FR1), except a closing pinned `Tooltip`,
-  below. A leaving active or blocking owner stays present on the shared
-  dismissal stack (`family:overlay-dismissal` FR2), so an Escape press or
-  platform close request during its exit does not reach an owner beneath it,
-  except a closing pinned `Tooltip`, which leaves the stack when its exit
-  starts. A
-  leaving passive dependent, such as an unpinned `Tooltip`, stays passive and
-  shields nothing (`spec:AST-003` FR4). A pinned `Tooltip` that
-  is closing plays its exit and stops taking Escape once the exit starts: it is
-  no longer the stack's owner, so the member beneath it takes the next Escape
-  (`spec:AST-003` FR4, DEC-6).
-- **FR6 — Focus leaves with the close.** A layer surface hands focus back when
-  its close begins, as it does with the exit off, and from then on its exit is
-  hidden from assistive technology: a screen reader neither reads nor announces
-  it. A dialog surface returns focus
-  to the element that opened it when the dialog is hidden; until then the page
-  behind the modal dialog cannot take focus.
-- **FR7 — Callbacks report the request.** `onOpenChange(false)`, `onHide`, and
-  a layer's `isOpen` change when the close is requested, as with the exit off. A
-  dialog's native `close` event fires when the dialog is hidden.
-- **FR8 — Interruptions resolve without a flash.** Reopening a leaving surface
-  keeps it on screen and returns it to its open state; it is never hidden and
-  shown again. Unmounting a leaving surface, or hiding its subtree with React
-  `Activity`, removes it at once.
-- **FR9 — A leaving surface is never stranded.** A leaving surface is hidden no
-  later than 100ms after its exit duration elapses, whether or not the browser
-  reports the end of its exit. That includes a page that disables animations and
-  transitions, and a surface that opens and closes in the same update.
-- **FR10 — Reduced motion closes at once.** Under
-  `prefers-reduced-motion: reduce`, a dialog or layer surface in a pointer
-  presentation closes at once, whatever its kind's exit duration
-  (`design:reduced-motion` DR3, DR4).
-- **FR11 — Content stays while it leaves.** A leaving surface keeps showing the
-  content it showed when its close began until it is hidden: a hover card's
-  content, a menu's open sub-menu, and a selector's search query stay on screen
-  until the surface is hidden.
-- **FR12 — The exit vocabulary.** `--ease-exit` defaults to
-  `cubic-bezier(0.3, 0, 0.6, 0.6)`, a curve that moves off slowly and leaves
-  fast. Dialog and layer exits use it, and so does `BottomSheet`'s close in a
-  pointer presentation.
-  `--duration-exit` defaults to `var(--duration-fast)` and is the standard
-  dismissal duration. A theme turns a kind on by setting its exit duration to
-  `var(--duration-exit)` or to any other duration.
-- **FR13 — Toasts stay operable above a leaving dialog.** A leaving dialog is
-  still a native modal, so it keeps supplying its modal outlet
-  (`spec:AST-003` FR18) until it is hidden. Toasts stay visible and operable
-  above it for the whole exit (`spec:AST-003` FR16). When it is hidden, they
-  move to the latest remaining outlet with their entries and timers intact
-  (`spec:AST-003` FR18, FR19).
-- **FR14 — Touch exits are never removed; a tap component's tap-started exits
-  play the theme's exit timing.** A dialog or layer surface in a touch presentation plays the
-  exit its component's record gives it under `spec:AST-094` FR7 and FR8. In a
-  component whose main interaction is a tap, a touch presentation's exit that a
-  tap, key or program starts plays the theme's exit duration and easing,
-  `--duration-exit` and `--ease-exit`; in a gesture component, such as a sheet
-  or the Lightbox, that exit plays the component's spring from rest, and a
-  gesture-driven exit keeps its velocity spring (`spec:AST-094` FR7, FR45). The
-  exit switches do not change that exit: a theme that leaves a kind off does not
-  remove it, and a theme that turns a kind on does not replace it.
+- **FR1 — 退出默认关闭。** `--duration-exit-dialog` 和 `--duration-exit-layer` 默认为 `0ms`。主题把退出时长设为对节奏缩放令牌（tempo-scaled token）的引用时，例如 FR12 的 `var(--duration-exit)`，该时长跟随主题的节奏；设为字面值时则按字面播放（`spec:AST-108` FR5）。某类表面的退出时长为零时，该表面立即关闭：它在关闭它的那次更新中即被隐藏，焦点、回调和关闭行为都与没有退出动画的表面相同。
+- **FR2 — 主题逐类开启。** 当某类表面的退出时长在该表面上解析后大于零时，该表面播放其退出动画。两类彼此独立。这些时长像任何令牌一样解析，因此主题或嵌套的 `Theme` 对其主题化的表面开启或关闭某一类。
+- **FR3 — 退出沿其入场路径回溯。** 离场的表面沿其入场路径返回并在 `--ease-exit` 上淡出，历时其类别的退出时长。对话框向打开它的元素收缩回去，若没有打开它的元素则向下收缩；全屏对话框只淡出；层向其锚点收缩回去，在从右到左布局中像其入场一样镜像。对话框的背景遮罩在同一时长内淡出。`--ease-exit` 适用于由 CSS 计时的退出；弹簧驱动的退出播放其自身的退出角色，与之相邻的 CSS 部分取弹簧的稳定时间（`spec:AST-108` FR3、FR4a）。
+- **FR4 — 离场的表面不接受输入。** 从关闭开始的那一刻起，任何指针按压或按键都不会激活离场表面自身内容中的任何东西。离场对话框所承载的 Toast 不属于其内容（FR13）。
+- **FR5 — 离场的表面保留其关闭角色，正在关闭的固定层除外。** 在被隐藏之前，离场的表面保留其打开时具有的关闭角色（`spec:AST-003` FR1），下文所述的正在关闭的固定 `Tooltip` 除外。离场中处于活跃或阻断状态的所有者仍留在共享的关闭栈上（`family:overlay-dismissal` FR2），因此在其退出期间的 Escape 按压或平台关闭请求不会到达其下方的所有者，例外是正在关闭的固定 `Tooltip`，它在退出开始时离开该栈。离场的被动从属者，例如未固定的 `Tooltip`，保持被动且不遮蔽任何东西（`spec:AST-003` FR4）。正在关闭的固定 `Tooltip` 播放其退出，并在退出开始后不再接受 Escape：它不再是该栈的所有者，因此其下方的成员接受下一次 Escape（`spec:AST-003` FR4、DEC-6）。
+- **FR6 — 焦点随关闭一同离开。** 层表面在关闭开始时交还焦点，与退出关闭时一样，从那时起其退出对辅助技术隐藏：屏幕阅读器既不朗读也不播报它。对话框表面在对话框被隐藏时把焦点返还给打开它的元素；在那之前，模态对话框后方的页面无法获得焦点。
+- **FR7 — 回调报告请求。** `onOpenChange(false)`、`onHide` 以及层的 `isOpen` 在请求关闭时改变，与退出关闭时相同。对话框的原生 `close` 事件在对话框被隐藏时触发。
+- **FR8 — 中断的解决不会闪烁。** 重新打开一个正在离场的表面会让它留在屏幕上并回到其打开状态；它绝不会被隐藏后再显示。卸载正在离场的表面，或用 React `Activity` 隐藏其子树，会立即移除它。
+- **FR9 — 离场的表面绝不会滞留。** 无论浏览器是否报告其退出的结束，离场的表面都会在其退出时长结束后不晚于 100ms 被隐藏。这包括禁用动画和过渡的页面，以及在同一更新中打开又关闭的表面。
+- **FR10 — 减少动态效果时立即关闭。** 在 `prefers-reduced-motion: reduce` 下，指针呈现中的对话框或层表面立即关闭，无论其类别的退出时长是多少（`design:reduced-motion` DR3、DR4）。
+- **FR11 — 内容在离场期间保留。** 离场的表面在隐藏之前持续显示其关闭开始时显示的内容：悬停卡片的内容、菜单已打开的子菜单、选择器的搜索查询都留在屏幕上，直到该表面被隐藏。
+- **FR12 — 退出词汇。** `--ease-exit` 默认为 `cubic-bezier(0.3, 0, 0.6, 0.6)`，这是一条缓慢起步、快速离开的曲线。对话框和层的退出都使用它，`BottomSheet` 在指针呈现中的关闭也使用它。`--duration-exit` 默认为 `var(--duration-fast)`，是标准的关闭时长。主题通过把某类表面的退出时长设为 `var(--duration-exit)` 或任何其他时长来开启该类。
+- **FR13 — Toast 在离场对话框之上保持可操作。** 离场的对话框仍是原生模态，因此在被隐藏之前持续提供其模态出口（`spec:AST-003` FR18）。Toast 在整个退出期间保持可见且可操作（`spec:AST-003` FR16）。当它被隐藏时，Toast 连同其条目和计时器原封不动地迁移到最新的剩余出口（`spec:AST-003` FR18、FR19）。
+- **FR14 — 触控退出绝不会被移除；点按组件中由点按发起的退出播放主题的退出时序。** 触控呈现中的对话框或层表面播放其组件记录依据 `spec:AST-094` FR7 和 FR8 给出的退出。在主要交互为点按的组件中，由点按、按键或程序发起的触控呈现退出会播放主题的退出时长和缓动，即 `--duration-exit` 和 `--ease-exit`；在手势组件（例如 sheet 或 Lightbox）中，该退出播放组件从静止开始的弹簧，而手势驱动的退出保留其速度弹簧（`spec:AST-094` FR7、FR45）。退出开关不改变该退出：未开启某类表面的主题不会移除它，开启某类表面的主题也不会替换它。
 
 ### Platform support
 
-- Supported feature and engine floor: the tiers in the `browser-support`
-  consumer doc.
-- This section covers pointer presentations; a touch exit follows
-  `spec:AST-094`.
-- Dialog and layer exits play in every Tier 1 and Tier 2 browser.
-- A layer whose exit cannot be drawn in the top layer, such as where the
-  Popover API is missing, closes at once whatever its exit duration: the same
-  result as the exit off.
-- Browser evidence: real-browser sampling of frames during a dialog exit and a
-  layer exit, in Chromium and WebKit, and a layer close where the Popover API
-  is missing.
+- 支持的功能与引擎下限：`browser-support` 使用方文档中的分级。
+- 本节覆盖指针呈现；触控退出遵循 `spec:AST-094`。
+- 对话框和层的退出在所有 Tier 1 和 Tier 2 浏览器中播放。
+- 若某个层的退出无法绘制在顶层（top layer）中，例如缺少 Popover API 的情况，则无论其退出时长是多少都立即关闭：结果与退出关闭时相同。
+- 浏览器证据：在 Chromium 和 WebKit 中，对对话框退出和层退出期间的帧进行真实浏览器采样，以及 Popover API 缺失时的层关闭。
 
 ## Current-state impact
 
-- `architecture:theme-tokens`: `--ease-exit`, `--duration-exit`,
-  `--duration-exit-dialog`, and `--duration-exit-layer` join the canonical
-  vocabulary, with their theme template and generated token documentation
-  projections (INV1, INV7).
-- `architecture:layer-runtime`: a layer closes when its close is requested, as
-  it does with the exit off, and its exit plays after that on the runtime's
-  shared exit copy (INV14), drawn in the top layer where the layer was. Native
-  close reconciliation stays single-fired (INV6). A leaving active or blocking
-  owner keeps its place on the dismissal stack until its exit ends, except a
-  closing pinned Tooltip, which leaves it when its exit starts
-  (FR5). A
-  leaving Dialog keeps supplying its modal outlet until it is hidden (FR13);
-  BottomSheet's outlet behavior does not change.
-- `architecture:component-style-authoring`: no claim changes. A layer's exit
-  is the one transient exit copy INV7 allows, made by the shared mechanism and
-  removed when the exit ends (FR9).
-- `family:overlay-dismissal`: no claim changes. A leaving member stays present
-  for FR2 until it is hidden, except a closing pinned Tooltip,
-  which leaves the stack when its exit starts (FR5), and animation stays
-  member-owned (AV6).
-- `spec:AST-003`: no claim changes. A leaving surface keeps its interaction role
-  (FR1), a leaving passive dependent such as an unpinned `Tooltip` still never
-  shields an owner (FR4, DEC-1), and a closing pinned `Tooltip`
-  gives up Escape when its exit starts (FR4, DEC-6). A leaving dialog is still the current native modal, so
-  it keeps its outlet and toasts stay operable above it (FR16, FR18).
-- `spec:AST-094`: a touch presentation keeps the exit FR7 and FR8 give it
-  (FR14). One that a tap, a key or the program starts plays `--duration-exit`
-  and `--ease-exit` in a tap component and the component's spring in a gesture
-  component, and one a gesture drives keeps its velocity spring (`spec:AST-094`
-  FR7, FR45, DEC-26).
-- `spec:AST-108`: no claim changes. Its FR2 admits `--ease-exit` at the same
-  curve at every `character`; a spring-driven exit plays its own exit role and
-  a CSS part beside it takes the spring's settle time (FR3, FR4a); and an exit
-  duration set as a reference to a tempo-scaled token follows `tempo` (FR5).
-- `design:reduced-motion`: no claim changes. Under reduced motion a pointer
-  presentation's exit completes at once (DR3, FR10), and a touch presentation's
-  exit cross-fades through `spec:AST-094` FR8 (DR2).
-- `design:motion` (draft): exits apply DR1, DR2, and DR5. This record holds the
-  exit tokens and behavior that its content boundary leaves to other records.
-- `component:Dialog`: its `visibility` concept (open, closed) gains a leaving
-  phase. With dialog exits on, a Dialog whose caller has closed it stays
-  presented, with the page behind it inert and toasts still operable above it,
-  until its exit ends (FR6, FR9, FR13). AR2 keeps its focus-return claim; FR6
-  states when the return happens.
-- `component:Popover`: AR4 keeps its focus-return claim; FR6 states when the
-  return happens for a layer.
-- `component:BottomSheet`: its close in a pointer presentation reads
-  `--ease-exit`. BottomSheet is a gesture component: in a touch presentation, a
-  close that a tap, a key or the program starts plays the sheet's spring from
-  rest, and a swipe or a drag that closes it keeps its measured spring from the
-  release (`spec:AST-094` FR7, FR45). Implementation gap: a coarse-pointer close
-  started by a tap or key plays `--duration-medium` today.
-- Consumer docs: `motion` describes both curves, that exits are off by default
-  in a pointer presentation, how a theme turns each kind on, that a touch exit
-  is never removed, that a tap component's tap-started one plays the theme's
-  exit timing, and that a sheet's and the Lightbox's touch close springs (FR14),
-  and that callers keep content rendered while a surface closes. The token
-  tables and the theme template list the new tokens, and each member component's
-  docs describe its exit.
+- `architecture:theme-tokens`：`--ease-exit`、`--duration-exit`、`--duration-exit-dialog` 和 `--duration-exit-layer` 加入规范词汇，并带有其主题模板与生成的令牌文档投影（INV1、INV7）。
+- `architecture:layer-runtime`：层在被请求关闭时关闭，与退出关闭时一样，随后其退出在运行时的共享退出副本上播放（INV14），并绘制在该层原先所在的顶层中。原生关闭的对账保持单次触发（INV6）。离场中活跃或阻断的所有者在其退出结束前保留其在关闭栈上的位置，例外是正在关闭的固定 Tooltip，它在退出开始时离开该栈（FR5）。离场的 Dialog 在被隐藏前持续提供其模态出口（FR13）；BottomSheet 的出口行为不变。
+- `architecture:component-style-authoring`：无声明变化。层的退出是 INV7 允许的唯一一份瞬时退出副本，由共享机制生成，并在退出结束时移除（FR9）。
+- `family:overlay-dismissal`：无声明变化。离场的成员按 FR2 在被隐藏前保持存在，例外是正在关闭的固定 Tooltip，它在退出开始时离开该栈（FR5）；动画仍归成员所有（AV6）。
+- `spec:AST-003`：无声明变化。离场的表面保留其交互角色（FR1），离场的被动从属者（例如未固定的 `Tooltip`）仍然绝不遮蔽所有者（FR4、DEC-1），正在关闭的固定 `Tooltip` 在退出开始时放弃 Escape（FR4、DEC-6）。离场的对话框仍是当前的原生模态，因此它保留其出口，Toast 在其上方保持可操作（FR16、FR18）。
+- `spec:AST-094`：触控呈现保留 FR7 和 FR8 给它的退出（FR14）。由点按、按键或程序发起的那种退出，在点按组件中播放 `--duration-exit` 和 `--ease-exit`，在手势组件中播放该组件的弹簧；手势驱动的那种则保留其速度弹簧（`spec:AST-094` FR7、FR45、DEC-26）。
+- `spec:AST-108`：无声明变化。其 FR2 在每个 `character` 下都以同一曲线接纳 `--ease-exit`；弹簧驱动的退出播放其自身的退出角色，与之相邻的 CSS 部分取弹簧的稳定时间（FR3、FR4a）；作为对节奏缩放令牌的引用而设置的退出时长跟随 `tempo`（FR5）。
+- `design:reduced-motion`：无声明变化。在减少动态效果下，指针呈现的退出立即完成（DR3、FR10），触控呈现的退出则按 `spec:AST-094` FR8 交叉淡出（DR2）。
+- `design:motion`（草稿）：退出适用 DR1、DR2 和 DR5。本记录持有其内容边界留给其他记录的退出令牌和行为。
+- `component:Dialog`：其 `visibility` 概念（打开、关闭）新增一个离场阶段。开启对话框退出后，调用方已关闭的 Dialog 仍保持呈现，其后方页面不可交互，Toast 在其上方仍可操作，直到其退出结束（FR6、FR9、FR13）。AR2 保留其焦点返还声明；FR6 说明返还在何时发生。
+- `component:Popover`：AR4 保留其焦点返还声明；FR6 说明对于层，返还在何时发生。
+- `component:BottomSheet`：其在指针呈现中的关闭读取 `--ease-exit`。BottomSheet 是手势组件：在触控呈现中，由点按、按键或程序发起的关闭播放该 sheet 从静止开始的弹簧，而关闭它的滑动或拖拽则从释放处保留其实测弹簧（`spec:AST-094` FR7、FR45）。实现缺口：目前由点按或按键发起的粗指针关闭播放 `--duration-medium`。
+- 使用方文档：`motion` 描述两条曲线、指针呈现中退出默认关闭、主题如何开启每一类、触控退出绝不会被移除、点按组件中由点按发起的退出播放主题的退出时序，以及 sheet 和 Lightbox 的触控关闭弹簧（FR14），还描述调用方在表面关闭期间保持内容渲染。令牌表和主题模板列出新令牌，每个成员组件的文档描述其退出。
 
 ## Verification
 
-| Contract | Verification                                                                                                | Representative states                                                                                                                                                             | Mutation or failure expectation                                                                                                                                                          |
-| -------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1      | Component unit suites run unchanged with default tokens                                                     | Every dialog and layer member in a pointer presentation, opened and closed                                                                                                        | A surface stays rendered after its close with default tokens                                                                                                                             |
-| FR2      | Real-browser test under a theme that sets one kind, fine primary pointer                                    | Dialogs on with layers off; layers on with dialogs off; a nested `Theme`                                                                                                          | The unset kind animates, or the set kind closes at once                                                                                                                                  |
-| FR3      | Real-browser frame sampling during an exit                                                                  | A dialog with and without an opener, a fullscreen dialog, a layer in each placement, right-to-left                                                                                | The surface leaves its entrance path, or keeps the entrance curve                                                                                                                        |
-| FR4      | Real-browser test                                                                                           | A press and an Enter key on a control inside a leaving surface                                                                                                                    | The control activates                                                                                                                                                                    |
-| FR5      | Dismissal invariant tests                                                                                   | Escape during a leaving Dialog or Popover with an owner beneath; Escape during a leaving unpinned Tooltip over a Dialog; Escape during the exit of a pinned Tooltip over a Dialog | The owner beneath a leaving owner closes, a leaving unpinned Tooltip absorbs the press, or a closing pinned Tooltip takes an Escape after its exit starts                                |
-| FR6      | Unit and real-browser focus and accessibility-tree tests                                                    | Dialog and layer closes, by keyboard and by pointer; the accessibility tree during a layer exit                                                                                   | Dialog focus returns before the dialog is hidden or lands on the body; layer focus waits for the exit; a leaving layer's exit is in the accessibility tree                               |
-| FR7      | Unit tests                                                                                                  | Controlled and uncontrolled closes                                                                                                                                                | A callback or `isOpen` waits for the exit                                                                                                                                                |
-| FR8      | Unit and real-browser tests                                                                                 | Reopen during an exit, unmount during an exit, `Activity` hidden during an exit                                                                                                   | The surface disappears and reappears, or stays after unmount                                                                                                                             |
-| FR9      | Unit test with a suppressed end event; real-browser test with animations and transitions disabled page-wide | Open and close in one update; page-wide `transition: none`; no end event                                                                                                          | The surface is present more than 100ms after its exit duration                                                                                                                           |
-| FR10     | Real-browser test with reduced motion emulated, fine primary pointer                                        | Each kind turned on                                                                                                                                                               | An exit plays                                                                                                                                                                            |
-| FR11     | Real-browser frame sampling during an exit                                                                  | A hover card, a menu with an open sub-menu, a selector with a search query                                                                                                        | The leaving surface shows other content, or none, before it is hidden                                                                                                                    |
-| FR12     | Token default tests, theme template inventory test, token documentation check                               | Defaults; the `BottomSheet` closing curve                                                                                                                                         | A default drifts, or `BottomSheet` restates the curve                                                                                                                                    |
-| FR13     | Real-browser test                                                                                           | A toast action pressed, and a toast dismissed, during a dialog exit; the same toast after the dialog is hidden                                                                    | The toast ignores input or fades with the dialog during the exit, or loses its entries or timers when the dialog is hidden                                                               |
-| FR14     | Real-browser test with a coarse primary pointer, after hydration                                            | A Dialog, a Popover, and a menu opened and closed by a finger, with each kind switched off and on; the same surfaces under reduced motion                                         | A switch changes the touch exit, a touch exit that a tap starts plays off `--duration-exit` and `--ease-exit`, or the surface closes without the exit `spec:AST-094` FR7 and FR8 give it |
-| Platform | Real-browser tests in Chromium and WebKit                                                                   | A dialog exit and a layer exit with each kind on; a layer close where the Popover API is missing                                                                                  | A layer exit paints outside the top layer or does not play, or a close without the Popover API is delayed                                                                                |
+| Contract | Verification                                                 | Representative states                                                                                                                          | Mutation or failure expectation                                                                                                             |
+| -------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1      | 组件单元测试套件在默认令牌下保持不变地运行                   | 指针呈现中的每个对话框和层成员，打开后再关闭                                                                                                   | 使用默认令牌时，表面在关闭后仍保持渲染                                                                                                      |
+| FR2      | 在设置了一类的主题下、细主指针环境中的真实浏览器测试         | 开启对话框而关闭层；开启层而关闭对话框；嵌套的 `Theme`                                                                                         | 未设置的类有动画，或已设置的类立即关闭                                                                                                      |
+| FR3      | 退出期间的真实浏览器帧采样                                   | 有打开者和没有打开者的对话框、全屏对话框、每种放置位置的层、从右到左布局                                                                       | 表面偏离其入场路径，或沿用入场曲线                                                                                                          |
+| FR4      | 真实浏览器测试                                               | 在离场表面内的控件上做一次按压和一次 Enter 键                                                                                                  | 控件被激活                                                                                                                                  |
+| FR5      | 关闭不变式测试                                               | 下方有所有者的离场 Dialog 或 Popover 期间按 Escape；Dialog 上方离场的未固定 Tooltip 期间按 Escape；Dialog 上方固定 Tooltip 的退出期间按 Escape | 离场所有者下方的所有者被关闭、离场的未固定 Tooltip 吸收了按压，或正在关闭的固定 Tooltip 在退出开始后仍接受 Escape                           |
+| FR6      | 单元测试以及真实浏览器中的焦点和无障碍树测试                 | 通过键盘和指针关闭对话框与层；层退出期间的无障碍树                                                                                             | 对话框焦点在对话框隐藏之前返回，或落到 body 上；层焦点等待退出；离场层的退出出现在无障碍树中                                                |
+| FR7      | 单元测试                                                     | 受控和非受控关闭                                                                                                                               | 回调或 `isOpen` 等待退出                                                                                                                    |
+| FR8      | 单元测试和真实浏览器测试                                     | 退出期间重新打开、退出期间卸载、退出期间隐藏 `Activity`                                                                                        | 表面消失后再出现，或在卸载后仍然存在                                                                                                        |
+| FR9      | 抑制结束事件的单元测试；在整页禁用动画和过渡的真实浏览器测试 | 在同一次更新中打开和关闭；整页 `transition: none`；没有结束事件                                                                                | 表面在其退出时长结束 100ms 后仍然存在                                                                                                       |
+| FR10     | 在模拟减少动态效果、细主指针环境中的真实浏览器测试           | 每一类都开启                                                                                                                                   | 有退出动画播放                                                                                                                              |
+| FR11     | 退出期间的真实浏览器帧采样                                   | 悬停卡片、已打开子菜单的菜单、带搜索查询的选择器                                                                                               | 离场表面在隐藏之前显示其他内容或什么都不显示                                                                                                |
+| FR12     | 令牌默认值测试、主题模板清单测试、令牌文档检查               | 默认值；`BottomSheet` 的关闭曲线                                                                                                               | 某个默认值发生偏移，或 `BottomSheet` 重复声明该曲线                                                                                         |
+| FR13     | 真实浏览器测试                                               | 对话框退出期间按下一个 toast 操作、关闭一个 toast；对话框隐藏后的同一 toast                                                                    | 退出期间 toast 忽略输入或随对话框一起淡出，或在对话框隐藏时丢失其条目或计时器                                                               |
+| FR14     | 在水合之后、主指针为粗指针的环境中的真实浏览器测试           | 用手指打开和关闭的 Dialog、Popover 和菜单，两类开关分别关闭和开启；在减少动态效果下的相同表面                                                  | 开关改变了触控退出、由点按发起的触控退出未按 `--duration-exit` 和 `--ease-exit` 播放，或表面关闭时没有 `spec:AST-094` FR7 和 FR8 给它的退出 |
+| Platform | 在 Chromium 和 WebKit 中的真实浏览器测试                     | 每一类都开启时的对话框退出和层退出；Popover API 缺失时的层关闭                                                                                 | 层退出绘制在顶层之外或未播放，或缺少 Popover API 时的关闭被延迟                                                                             |
 
 ## Decision log
 
 ### DEC-1 — Exits ship off, and a theme turns them on
 
-**Reference:** `spec:AST-090/DEC-1`
-**Decider:** `cixzhang`, `2026-10-28`
+**参考：** `spec:AST-090/DEC-1`
 
-Turning exits on changes how every pointer-presented dialog and layer closes in
-every product at once, so the capability ships switched off and a theme opts
-in: the same place that tunes motion through its motion scale. The switches are
-tokens because an exit's timing is an implementation value, not a per-call
-concept (`spec:AST-002` FR3), and because a prop cannot reach the layers that
-other components compose, such as every `tooltip` prop.
+**决策者：** `cixzhang`，`2026-10-28`
 
-Rejected: an exit prop on each component, which restates timing at every call site and misses composed layers; exits on by default, which changes every overlay in one release.
+开启退出会同时改变每个产品中所有以指针呈现的对话框和层的关闭方式，因此该能力以关闭状态发布，由主题选择启用：启用之处正是通过其动效比例调节动效的同一位置。这些开关是令牌，因为退出时序是实现值，不是每次调用的概念（`spec:AST-002` FR3），也因为 prop 无法触及其他组件所组合的层，例如每一个 `tooltip` prop。
+
+已否决：在每个组件上提供退出 prop，它会在每个调用点重复声明时序，并漏掉被组合的层；默认开启退出，它会在一个版本中改变每一个覆盖层。
 
 ### DEC-2 — One switch per kind of surface
 
-**Reference:** `spec:AST-090/DEC-2`
-**Decider:** `cixzhang`, `2026-10-28`
+**参考：** `spec:AST-090/DEC-2`
 
-A person closes a dialog deliberately, and its exit shows what it uncovered. A
-layer is dismissed as attention moves on, often many times a minute
-(`design:motion` DR2). A theme that wants dialogs to animate out does not have
-to animate every tooltip and menu to get it.
+**决策者：** `cixzhang`，`2026-10-28`
 
-Rejected: one switch for every surface.
+人会刻意关闭对话框，其退出展示了它露出了什么。层则随着注意力转移而被关闭，常常一分钟内发生多次（`design:motion` DR2）。希望对话框带退出动画的主题，不必为此让每个 tooltip 和菜单都带动画。
+
+已否决：所有表面共用一个开关。
 
 ### DEC-3 — An exit retraces its entrance on an accelerating curve
 
-**Reference:** `spec:AST-090/DEC-3`
-**Decider:** `cixzhang`, `2026-10-28`
+**参考：** `spec:AST-090/DEC-3`
 
-An animated exit follows its entrance's path back, as the motion docs ask. It
-runs on its own curve: a decelerating curve spends its travel in the first
-moments of the close, before the eye can follow it, while an accelerating curve
-moves off from rest and leaves fast. `BottomSheet` closes on this curve, and
-`--ease-exit` names it.
+**决策者：** `cixzhang`，`2026-10-28`
 
-Rejected: the entrance played backwards on `--ease-standard`.
+带动画的退出沿其入场路径返回，正如动效文档所要求。它运行在自己的曲线上：减速曲线把行程花在关闭的最初时刻，眼睛还来不及跟随；而加速曲线从静止起步，快速离开。`BottomSheet` 在此曲线上关闭，`--ease-exit` 即为它的命名。
+
+已否决：在 `--ease-standard` 上倒放入场动画。
 
 ### DEC-4 — A layer's exit plays where the layer was drawn
 
-**Reference:** `spec:AST-090/DEC-4`
-**Decider:** `cixzhang`, `2026-10-28`
+**参考：** `spec:AST-090/DEC-4`
 
-The browser hides a light-dismissed layer before Core hears of it, so a layer's
-exit cannot hold the live layer open. The exit plays on what the layer showed
-when its close began, drawn in the top layer where the layer was, because a
-layer that keeps painting outside the top layer paints in the wrong place.
-The layer runtime's one shared exit copy draws it there
-(`architecture:layer-runtime` INV14, `architecture:component-style-authoring`
-INV7) in every browser with the Popover API, so layer exits play in every Tier
-1 and Tier 2 browser; where it cannot be drawn, the layer closes at once, which
-is also the default.
+**决策者：** `cixzhang`，`2026-10-28`
 
-Rejected: holding the live layer in the top layer with an `overlay` transition, which plays only in browsers that support that transition.
+浏览器在 Core 得知之前就隐藏了被轻触关闭（light-dismissed）的层，因此层的退出无法让活动层保持打开。退出在层关闭开始时显示的内容上播放，绘制在该层原先所在的顶层中，因为继续在顶层之外绘制的层会画错位置。层运行时的唯一一份共享退出副本在其中绘制它（`architecture:layer-runtime` INV14、`architecture:component-style-authoring` INV7），在所有支持 Popover API 的浏览器中都是如此，因此层退出在每个 Tier 1 和 Tier 2 浏览器中播放；在无法绘制的地方，层立即关闭，这也是默认行为。
+
+已否决：用 `overlay` 过渡把活动层保持在顶层，因为该过渡只在支持它的浏览器中播放。
 
 ### DEC-5 — Touch exits are never removed; a tap component's tap-started exits play the theme's exit timing
 
-**Reference:** `spec:AST-090/DEC-5`
-**Decider:** `cixzhang`, `2026-10-28`
+**参考：** `spec:AST-090/DEC-5`
 
-On a touch device a surface keeps the look of its native counterpart, by default
-and with no opt-in (`spec:AST-094`). That record springs the motion of a
-component whose main interaction is a gesture and gives a tap component's
-tap-started motion, under every pointer, the theme's tokens (`spec:AST-094`
-FR45). The switches here govern whether a pointer presentation's exit plays, and
-a touch presentation keeps its exit whatever they resolve to. In a tap
-component, a touch exit that a tap, a key or the program starts plays the
-theme's exit duration and easing, `--duration-exit` and `--ease-exit`; in a
-gesture component it plays the component's spring, and a gesture-driven exit
-keeps its velocity spring (`spec:AST-094` FR45, DEC-26).
+**决策者：** `cixzhang`，`2026-10-28`
 
-Rejected: letting the exit switches turn touch exits off, which removes the exit `spec:AST-094` FR7 requires.
+在触控设备上，表面保持其原生对应物的外观，这是默认行为，无需选择启用（`spec:AST-094`）。该记录为主要交互为手势的组件提供弹簧动效，并为点按组件中由点按发起的动效在每种指针下提供主题的令牌（`spec:AST-094` FR45）。此处的开关决定指针呈现的退出是否播放，而触控呈现无论它们解析为何值都保留其退出。在点按组件中，由点按、按键或程序发起的触控退出播放主题的退出时长和缓动，即 `--duration-exit` 和 `--ease-exit`；在手势组件中它播放该组件的弹簧，而手势驱动的退出保留其速度弹簧（`spec:AST-094` FR45、DEC-26）。
+
+已否决：让退出开关关闭触控退出，因为那会移除 `spec:AST-094` FR7 所要求的退出。
 
 ## Open questions
 
-- **OQ1 — Whether a pointer-presented dialog's exit ships on, and at which
-  duration** (`human-design`). Options: keep it off; default
-  `--duration-exit-dialog` to `var(--duration-exit)`; or default it to a
-  duration from the entrance band, because a person who closes a dialog
-  deliberately watches it go.
-- **OQ2 — Whether elements in page flow gain an exit kind** (`human-design`).
-  `FieldStatus` and `useEntryAnimation` animate in and vanish when removed. An
-  exit would keep a validation message in the layout while it leaves, which
-  `design:motion` DR4 weighs against.
+- **OQ1 — 以指针呈现的对话框退出是否默认开启，以及以多长的时长**（`human-design`）。可选方案：保持关闭；把 `--duration-exit-dialog` 默认设为 `var(--duration-exit)`；或将其默认设为入场区段中的某个时长，因为刻意关闭对话框的人会看着它离去。
+- **OQ2 — 页面流中的元素是否获得一种退出类别**（`human-design`）。`FieldStatus` 和 `useEntryAnimation` 带入场动画，并在被移除时消失。退出会让验证消息在离场期间留在布局中，`design:motion` DR4 对此有所权衡。

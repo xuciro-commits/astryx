@@ -1,61 +1,41 @@
-# Design specifications
+# 设计规范
 
-Design specs record human-owned visual and interaction intent: hierarchy,
-anatomy, state representation, allowed variation, and representative examples.
-They may describe one component or a cross-component pattern.
+设计规范记录由人负责的视觉与交互意图：层级、结构、状态表示、允许的变化以及代表性示例。它们可以描述单个组件，也可以描述跨组件的模式。
 
-## State taxonomy
+## 状态分类
 
-State records are split by who drives the change. These are the only three
-state-taxonomy records:
+状态记录按变更的驱动方划分。以下是仅有的三条状态分类记录：
 
-| Record                              | Owns                                                                                                         |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| [User states](user-states.md)       | Person-driven rest, hover, press, focus, selection, and manipulation states                                  |
-| [System states](system-states.md)   | System-driven disabled, loading, processing, status, and transient feedback states                           |
-| [Agentic states](agentic-states.md) | Agent-driven thinking, streaming, tool execution, waiting, synchronization, inspection, and rendering states |
+| 记录                            | 拥有                                                             |
+| ------------------------------- | ---------------------------------------------------------------- |
+| [用户状态](user-states.md)      | 人驱动的静止、悬停、按压、聚焦、选择和操作状态                   |
+| [系统状态](system-states.md)    | 系统驱动的禁用、加载、处理、状态和瞬态反馈状态                   |
+| [智能体状态](agentic-states.md) | 智能体驱动的思考、流式传输、工具执行、等待、同步、检查和渲染状态 |
 
-## Other records
+## 其他记录
 
-| Record                                                            | Owns                                                                                 |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| [Spatial hierarchy](spatial-hierarchy.md)                         | Perceptual grouping through proximity, spacing tiers, and alignment                  |
-| [Control rhythm](control-rhythm.md)                               | Alignment and density relationships among mixed controls                             |
-| [Shape relationships](shape-relationships.md)                     | Role-based and concentric geometry for nested surfaces                               |
-| [Elevation hierarchy](elevation-hierarchy.md)                     | Agreement between perceived depth and actual layer order                             |
-| [Typography hierarchy](typography-hierarchy.md)                   | Legible, distinguishable text roles across themes and layouts                        |
-| [Iconography](iconography.md)                                     | Icon meaning, size, artwork, color, composition, and accessibility                   |
-| [Color emphasis](color-emphasis.md)                               | Semantic color roles, contrast intent, and local emphasis                            |
-| [Motion](motion.md)                                               | Meaningful movement, timing hierarchy, and easing intent                             |
-| [Reduced motion](reduced-motion.md)                               | Cross-fade on touch and immediate change otherwise under reduced motion              |
-| [Ordered collection reordering](ordered-collection-reordering.md) | Drag preview, candidate insertion, commit, and settle intent for ordered collections |
-| [Template composition](template-composition.md)                   | Page- and block-level layout, hierarchy, spacing, component fidelity, and theming    |
+| 记录                                             | 拥有                                             |
+| ------------------------------------------------ | ------------------------------------------------ |
+| [空间层级](spatial-hierarchy.md)                 | 通过邻近性、间距层级和对齐实现感知分组           |
+| [控件节奏](control-rhythm.md)                    | 混合控件之间的对齐和密度关系                     |
+| [形状关系](shape-relationships.md)               | 嵌套表面基于角色和同心关系的几何形状             |
+| [高度层级](elevation-hierarchy.md)               | 感知深度与实际图层顺序之间的一致性               |
+| [排版层级](typography-hierarchy.md)              | 在各主题和布局中清晰、可区分的文本角色           |
+| [图标体系](iconography.md)                       | 图标的含义、尺寸、图形、颜色、构成和无障碍       |
+| [颜色强调](color-emphasis.md)                    | 语义颜色角色、对比度意图和局部强调               |
+| [动效](motion.md)                                | 有意义的运动、时序层级和缓动意图                 |
+| [减少动效](reduced-motion.md)                    | 在减少动效下，触摸时交叉淡化，其他情况立即变更   |
+| [有序集合重排](ordered-collection-reordering.md) | 有序集合的拖拽预览、候选插入、提交和稳定意图     |
+| [模板组合](template-composition.md)              | 页面级和块级布局、层级、间距、组件保真度和主题化 |
 
-Create a separate record when a subject has a different owner, approval
-lifecycle, requirement set, evidence set, or reason to change independently.
-Keep implementation mechanics, public API syntax, audit results, and consumer
-usage outside these records and link to their canonical owners instead.
+当某个主题具有不同的所有者、审批生命周期、需求集、证据集或需要独立变更的理由时，应创建单独记录。将实现机制、公共 API 语法、审计结果和使用方用法排除在这些记录之外，并改为链接到其规范所有者。
 
-Design specs do not own implementation mechanics, public prop syntax, current
-audit results, or consumer usage guidance. Component and family contracts link
-to stable design requirement IDs instead of copying their rationale.
+设计规范不拥有实现机制、公共 prop 语法、当前审计结果或使用方用法指南。组件契约和族契约链接到稳定的设计需求 ID，而不是复制其理由。
 
-Public-safe normative screenshots, diagrams, and visual state references live
-under `docs/design/assets/<design-id>/`. Each referenced asset records alt text,
-state, theme/mode, viewport when relevant, and what decision it demonstrates.
-Generated audit screenshots remain audit evidence rather than design authority.
-Private design sources stay private and are never named or linked here.
+可公开的规范性截图、图表和视觉状态参考位于 `docs/design/assets/<design-id>/` 下。每个被引用的素材记录替代文本、状态、主题/模式、相关时的视口，以及它所展示的决策。生成的审计截图仍是审计证据，而不是设计权威。私有设计源保持私有，绝不在此处命名或链接。
 
-New design specs start as `draft`. Initial promotion to `current`, later changes,
-and normative asset updates require approval of their content from any current
-member of `.github/ENGOWNERS` or `.github/DESIGNOWNERS`
-(`architecture:knowledge-contracts` DEC-14). A mixed PR still needs an
-ENGOWNER for non-design current records. The design record names its content
-owners separately from this repository gate.
+新建设计规范以 `draft` 开始。首次提升为 `current`、后续变更以及规范性素材更新，都需要 `.github/ENGOWNERS` 或 `.github/DESIGNOWNERS` 的任一现任成员批准其内容（`architecture:knowledge-contracts` DEC-14）。混合 PR 仍需要一名 ENGOWNER 负责非设计的 current 记录。设计记录会在此仓库门禁之外单独标明其内容所有者。
 
-A DESIGNOWNER approves with a review or `/approve-spec <sha>`, like every other
-owner; in a mixed PR every other applicable code or spec-owner
-group remains required. The gate decides approval only; it never enables
-auto-merge.
+DESIGNOWNER 通过审查或 `/approve-spec <sha>` 来批准，与其他所有所有者一样；在混合 PR 中，仍然需要每个其他适用的代码或规范所有者组的批准。该门禁只决定批准与否，绝不启用自动合并。
 
-Use `docs/templates/knowledge/design-spec.md`.
+使用 `docs/templates/knowledge/design-spec.md`。

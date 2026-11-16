@@ -26,346 +26,205 @@ deciding_specs: []
 
 ## User intent
 
-Icons are simple graphic interface elements that represent common actions,
-concepts, and states. They should help people understand a surface, complete a
-task, and find their way without adding visual noise or forcing them to decode
-inconsistent symbols.
+图标是简单的图形界面元素，用于表示常见的操作、概念和状态。它们应当帮助人们理解界面、完成任务并找到方向，同时不增加视觉噪音，也不迫使人们去解读不一致的符号。
 
 ## Design principles
 
-- **DR1 — Clear.** Icons MUST use simple, recognizable forms that communicate
-  their intended meaning and aid comprehension.
-- **DR2 — Intentional.** Every icon MUST have a purposeful role in its local
-  context. Designers SHOULD evaluate the whole container and page before adding
-  another icon so decoration does not increase cognitive load.
-- **DR3 — Consistent.** Repeated concepts, actions, geometry, size roles, and
-  artwork styles SHOULD remain coherent across the product. Components SHOULD
-  reuse system semantic icons instead of introducing bespoke symbols for an
-  existing meaning.
-- **DR4 — Size follows semantic role.** A glyph MUST be sized for what it does,
-  not merely for the nearest available space or the intrinsic proportions of its
-  artwork.
-- **DR5 — Outlined artwork is the default.** When an icon family offers outlined
-  and filled versions of the same symbol, components SHOULD start with the
-  outlined version unless a permitted filled use applies.
-- **DR6 — Color supports meaning.** Icon color MUST follow an approved foreground,
-  semantic, or constrained non-semantic role. Color alone MUST NOT communicate a
-  concept or state.
-- **DR7 — Glyph and target are separate.** Icon artwork MUST NOT be used as a
-  substitute for an interactive container, operable hit target, focus treatment,
-  or accessible name.
+- **DR1 — 清晰。** 图标必须使用简单、可识别的形式，传达其预期含义并帮助理解。
+- **DR2 — 有意为之。** 每个图标都必须在其局部上下文中具有明确用途的角色。设计师在添加另一个图标之前应评估整个容器和页面，以免装饰增加认知负担。
+- **DR3 — 一致。** 重复出现的概念、操作、几何形状、尺寸角色和图形风格应在整个产品中保持协调一致。组件应复用系统语义图标，而不是为已有含义引入专属符号。
+- **DR4 — 尺寸跟随语义角色。** 字形必须按其作用来确定尺寸，而不仅仅按最近的可用空间或其图形本身的固有比例来确定。
+- **DR5 — 描边图形是默认选择。** 当一套图标族为同一符号提供描边和填充版本时，组件应优先使用描边版本，除非存在获准的填充用法。
+- **DR6 — 颜色支持含义。** 图标颜色必须遵循获准的前景、语义或受限的非语义角色。颜色本身不得传达概念或状态。
+- **DR7 — 字形与目标相互分离。** 图标图形不得用作交互容器、可操作点击目标、焦点处理或可访问名称的替代品。
 
 ## Anatomy and hierarchy
 
 ### Meaning roles
 
-| Role                | Purpose                                                    | Required relationship                                                                                      |
-| ------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| informative icon    | Adds information or meaning beyond an adjacent label       | May stand alone only with an accessible name and enough explanation to understand it                       |
-| decorative icon     | Reinforces nearby text without adding independent meaning  | MUST accompany content that already communicates the meaning; normally uses outlined artwork               |
-| interactive icon    | Represents an action inside an interactive control         | The containing Button, IconButton, link, or other control owns interaction, state, focus, name, and target |
-| semantic icon       | Reinforces information, success, warning, or error meaning | Uses the matching semantic icon and color together; the meaning remains available independently of color   |
-| object or logo icon | Identifies a specific object, product, or brand            | Used only when recognition of that object is relevant; not as generic decoration for a category or section |
+| 角色           | 用途                           | 必需关系                                                                    |
+| -------------- | ------------------------------ | --------------------------------------------------------------------------- |
+| 信息性图标     | 在相邻标签之外增加信息或含义   | 仅在具有可访问名称且有足够解释以便理解时，才可以独立存在                    |
+| 装饰性图标     | 强化附近文本，不增加独立含义   | 必须伴随已经传达该含义的内容；通常使用描边图形                              |
+| 交互性图标     | 表示交互控件内的操作           | 包含它的 Button、IconButton、链接或其他控件拥有交互、状态、焦点、名称和目标 |
+| 语义图标       | 强化信息、成功、警告或错误含义 | 同时使用匹配的语义图标和颜色；含义仍可独立于颜色而获得                      |
+| 对象或徽标图标 | 标识特定对象、产品或品牌       | 仅当识别该对象具有相关性时使用；不作为类别或部分的通用装饰                  |
 
 ### Size roles
 
-Astryx exposes four Icon sizes. Values are px-equivalents at a 16px root; Icon
-continues to scale with the document's root font size.
+Astryx 提供四种 Icon 尺寸。数值是 16px 根字号下的 px 等价值；Icon 仍随文档的根字号缩放。
 
-| Role              | Current Icon size | Purpose and current relationship                                                  |
-| ----------------- | ----------------- | --------------------------------------------------------------------------------- |
-| compact indicator | 12px (`xsm`)      | Supporting indicators, metadata, and dense affordances                            |
-| standard control  | 16px (`sm`)       | Most controls and disclosure affordances; current Button `sm` and `md` icon boxes |
-| prominent control | 20px (`md`)       | Large controls and visually important icon-only actions; current Button `lg` box  |
-| display or object | 24px (`lg`)       | Large standalone symbols, object identity, or exceptional display-scale treatment |
+| 角色       | 当前 Icon 尺寸 | 用途与当前关系                                            |
+| ---------- | -------------- | --------------------------------------------------------- |
+| 紧凑指示符 | 12px（`xsm`）  | 辅助指示符、元数据和密集的可供性                          |
+| 标准控件   | 16px（`sm`）   | 大多数控件和展开可供性；当前 Button `sm` 和 `md` 的图标盒 |
+| 突出控件   | 20px（`md`）   | 大型控件和视觉上重要的纯图标操作；当前 Button `lg` 盒     |
+| 展示或对象 | 24px（`lg`）   | 大型独立符号、对象标识或例外性的展示尺度处理              |
 
-These roles describe visual intent, not new public Icon size names. Component
-contracts own their role assignment. Bare Icon currently defaults to `md` (20px),
-while many composing controls explicitly constrain their icon slot to 16px or
-20px. An open contextual-sizing change may make an omitted Icon size inherit from
-its owning control; this record does not depend on that implementation landing.
+这些角色描述的是视觉意图，而不是新的公共 Icon 尺寸名称。组件契约拥有各自的角色分配。裸 Icon 目前默认为 `md`（20px），而许多组合控件会显式将其图标槽位限制为 16px 或 20px。一项尚在开放中的上下文尺寸调整可能会让省略的 Icon 尺寸从其所属控件继承；本记录不依赖该实现落地。
 
 ### Outlined and filled artwork
 
-Outlined artwork is the starting point. Filled artwork MAY be used when one or
-more of these conditions applies:
+描边图形是起点。当一个或多个下列条件适用时，可以使用填充图形：
 
-1. The icon also conveys an active or on state, such as a toggle or selected
-   navigation item.
-2. The icon is 12px-equivalent or smaller and fill demonstrably improves
-   recognition.
-3. An informational icon carries a persistent semantic color, such as information,
-   success, warning, or error status.
-4. The icon intentionally needs higher emphasis, such as a primary action or
-   object identity.
-5. The icon appears on media or another visually busy background and fill improves
-   contrast or recognition.
-6. The icon is a logo or brand mark whose canonical artwork is filled.
+1. 图标同时传达活动或开启状态，例如开关或已选中的导航项。
+2. 图标为 12px 等价值或更小，且填充能明显改善识别。
+3. 信息性图标带有持久语义颜色，例如信息、成功、警告或错误状态。
+4. 图标有意需要更高强调，例如主要操作或对象标识。
+5. 图标出现在媒体或其他视觉繁忙的背景上，且填充能改善对比度或识别。
+6. 图标是徽标或品牌标记，其规范图形本身即为填充。
 
-The shape of a symbol or a secondary foreground color is not enough by itself to
-require fill. Astryx's current fallback chevrons, close mark, search icon, and sort
-arrows are outlined at every size, while status icons are filled and intrinsically
-solid marks such as more and stop remain solid. Peer controls SHOULD use a cohesive
-artwork language, but cohesion does not override their semantic roles.
+符号的形状或次级前景色本身不足以要求使用填充。Astryx 当前的后备 chevron、关闭标记、搜索图标和排序箭头在所有尺寸下都是描边的，而状态图标是填充的，更多和停止等本质上实心的标记则保持实心。同类控件应使用协调一致的图形语言，但协调性不会推翻其语义角色。
 
-A filled exception MUST remain purposeful and local. It does not make filled
-artwork the global default. Intrinsically solid primitives with no meaningful
-outlined counterpart are not treated as filled variants merely because they
-contain a solid shape.
+填充例外必须保持有目的且局部化。它不会使填充图形成为全局默认。没有有意义描边对应物的本质实心基元，不会仅因包含实心形状就被视为填充变体。
 
 ## State representation
 
-| State or context         | Required representation                                                                    | Allowed variation                                                                       |
-| ------------------------ | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| rest                     | Uses the role's normal size, color, and outlined artwork unless a filled exception applies | Theme artwork and optical adjustment may vary                                           |
-| active or on             | May change from outlined to filled while preserving one recognizable symbol                | Another established non-fill state treatment may reinforce the state                    |
-| compact indicator        | Remains subordinate and recognizable; fill is allowed at 12px or smaller when it helps     | Size-specific artwork may improve legibility                                            |
-| semantic status          | Pairs the status icon with its matching semantic color and accessible meaning              | Filled artwork may provide persistent emphasis                                          |
-| disabled                 | Uses the approved disabled foreground without losing recognition                           | Artwork stays consistent with the role                                                  |
-| on media or busy surface | Retains contrast and recognition against variable content                                  | Filled artwork and an inherited high-contrast foreground may be used                    |
-| alternate theme          | Meaning, role hierarchy, and outlined/filled intent remain recognizable                    | Icon library and exact artwork may differ; role-specific sizing needs an exposed target |
+| 状态或上下文     | 必需呈现                                                     | 允许的变化                                         |
+| ---------------- | ------------------------------------------------------------ | -------------------------------------------------- |
+| 静止             | 使用该角色的正常尺寸、颜色和描边图形，除非适用填充例外       | 主题图形和视觉调整可以变化                         |
+| 活动或开启       | 可以在保留一个可识别符号的前提下从描边改为填充               | 另一种既定的非填充状态处理可以强化该状态           |
+| 紧凑指示符       | 保持从属且可识别；在 12px 或更小时，如果有助于识别，允许填充 | 针对尺寸的图形可以改善可读性                       |
+| 语义状态         | 将状态图标与其匹配的语义颜色和可访问含义配对                 | 填充图形可以提供持久强调                           |
+| 禁用             | 使用获准的禁用前景色，且不失去识别性                         | 图形保持与该角色一致                               |
+| 在媒体或繁忙表面 | 在可变内容上保持对比度和识别性                               | 可以使用填充图形和继承的高对比度前景色             |
+| 替代主题         | 含义、角色层级和描边/填充意图保持可识别                      | 图标库和具体图形可以不同；角色特定尺寸需要暴露目标 |
 
-An outlined-to-filled change MUST NOT be the only cue for a state whose
-distinction must remain perceivable. Programmatic state, accessible naming,
-position, color, or another established treatment must continue to carry it.
+从描边到填充的变化不得成为某个状态的唯一线索，如果该状态的区别必须保持可感知。程序化状态、可访问命名、位置、颜色或其他既定处理必须继续承载该状态。
 
 ## Color roles
 
-Astryx Icon currently exposes `primary`, `secondary`, `tertiary`, `disabled`,
-`accent`, `success`, `warning`, `error`, and `inherit`, plus named palette colors.
-The design intent is:
+Astryx Icon 目前提供 `primary`、`secondary`、`tertiary`、`disabled`、`accent`、`success`、`warning`、`error` 和 `inherit`，以及具名调色板颜色。设计意图是：
 
-- **Primary** carries ordinary high-emphasis icon content.
-- **Secondary and tertiary** carry supporting icon content. Their current token
-  mapping may coincide, but the semantic role remains distinct.
-- **Disabled** communicates unavailable icon content without implying status.
-- **Accent** communicates selected emphasis or information when the owning
-  component assigns that meaning.
-- **Success, warning, and error** are reserved for matching semantic outcomes.
-- **Inherit** lets the owning control or surface provide the correct foreground,
-  including media and other busy surfaces.
-- **Named palette colors** do not acquire semantic meaning from Icon. Use them only
-  when an owning component or product defines and consistently applies a
-  non-semantic category mapping.
+- **Primary** 承载普通的高强调图标内容。
+- **Secondary 和 tertiary** 承载辅助图标内容。它们当前的 token 映射可能重合，但语义角色仍然不同。
+- **Disabled** 传达不可用的图标内容，而不暗示状态。
+- **Accent** 在所属组件赋予该含义时，传达选中强调或信息。
+- **Success、warning 和 error** 保留给匹配的语义结果。
+- **Inherit** 让所属控件或表面提供正确的前景色，包括媒体和其他繁忙表面。
+- **具名调色板颜色** 不会从 Icon 获得语义含义。仅当所属组件或产品定义了非语义类别映射并一致应用时，才使用它们。
 
-`placeholder` and `onMedia` are not current Icon color values. A component may
-create those visual roles through inheritance or a qualified theme target, but
-this design record does not invent new Icon API values.
+`placeholder` 和 `onMedia` 不是当前 Icon 的颜色值。组件可以通过继承或限定的主题目标创建这些视觉角色，但本设计记录不会发明新的 Icon API 值。
 
 ## Responsive and input behavior
 
-- **DR8 — Density does not erase meaning.** A dense layout MAY choose the compact
-  role for supporting indicators, but primary controls MUST remain recognizable
-  as controls.
-- **DR9 — Input adaptation belongs to the target.** Touch or coarse-pointer modes
-  MAY increase the containing target or spacing without changing the glyph when
-  its semantic role is unchanged.
-- **DR10 — Role changes are explicit.** Responsive composition MUST NOT silently
-  move an icon among compact, standard-control, prominent-control, and display
-  roles solely to make it fit; the component or family contract must establish
-  that variation.
-- **DR11 — Compact artwork preserves recognition.** At 12px-equivalent or smaller,
-  a theme MAY choose filled or otherwise optically simplified artwork when an
-  outlined asset loses clarity. A 16px icon does not become filled merely because
-  it is small; one of the filled-use criteria must still apply. The symbol's
-  meaning and surrounding layout must remain unchanged.
+- **DR8 — 密度不会抹除含义。** 密集布局可以为辅助指示符选择紧凑角色，但主要控件必须仍然可识别为控件。
+- **DR9 — 输入适配属于目标。** 触摸或粗指针模式可以在语义角色不变时增大包含目标或间距，而不改变字形。
+- **DR10 — 角色变化是显式的。** 响应式组合不得仅为了让图标适配，就静默地在紧凑、标准控件、突出控件和展示角色之间移动图标；组件或族契约必须确立该变化。
+- **DR11 — 紧凑图形保持识别性。** 在 12px 等价值或更小时，如果描边资源失去清晰度，主题可以选择填充或其他光学简化的图形。16px 图标不会仅因尺寸小就变为填充；仍须适用某条填充用法标准。符号的含义和周围布局必须保持不变。
 
 ## Composition guidance
 
 ### Icons in controls
 
-- An interactive icon MUST be placed in an IconButton, Button, link, or another
-  control that supplies interaction states, focus, an accessible name, and an
-  adequate target.
-- A bare Icon MUST NOT become interactive by attaching a click handler without an
-  owning control.
+- 交互性图标必须放置在 IconButton、Button、链接或其他提供交互状态、焦点、可访问名称和足够目标的控件中。
+- 裸 Icon 不得通过附加点击处理程序而变为可交互，除非有所属控件。
 
 ### Icons in tabs
 
-- A leading tab icon MAY identify a destination or reinforce the visible label.
-  Decorative icons SHOULD be omitted when they add distraction or width without
-  useful recognition.
-- A selected icon MAY change to reinforce the selected state when the label and
-  tab semantics continue to carry that state.
-- Status icons, badges, and status dots belong in the tab's end-content or status
-  position rather than replacing the tab label.
+- 前置标签页图标可以标识目的地或强化可见标签。当装饰性图标增加干扰或宽度而没有有用的识别价值时，应省略。
+- 已选中的图标可以变化以强化选中状态，前提是标签和标签页语义继续承载该状态。
+- 状态图标、徽章和状态点应位于标签页的尾内容或状态位置，而不是替代标签页标签。
 
 ### Icons in tokens and badges
 
-- Informational status treatment pairs the semantic icon and color so the
-  combination communicates status without arbitrarily recoloring the container.
-- A token or badge MAY coordinate its surface and icon through a component-owned
-  semantic variant; a nested icon alone does not redefine the container's meaning.
+- 信息性状态处理将语义图标和颜色配对，使该组合传达状态，而不必任意重新着色容器。
+- Token 或徽章可以通过组件拥有的语义变体协调其表面和图标；仅嵌套图标本身不会重新定义容器的含义。
 
 ### Icons in links
 
-- Links SHOULD primarily use text. An icon MAY supplement that text when it adds
-  a useful visual cue.
-- An icon-only link MAY be used when the destination is recognizable in context
-  and the Link receives a non-empty accessible `label`. Prefer Button with `href`
-  when the interaction should read as a control rather than inline navigation.
+- 链接应主要使用文本。当图标增加有用的视觉提示时，可以补充该文本。
+- 当目的地在上下文中可识别，且 Link 获得非空的可访问 `label` 时，可以使用纯图标链接。当交互应表现为控件而非内联导航时，优先使用带 `href` 的 Button。
 
 ### Icons in lists
 
-- Non-selectable description and menu lists SHOULD normally use outlined icons at
-  the standard 16px-equivalent size and a supported foreground role.
-- Filled artwork, compact sizing, or named palette color MAY be used when another
-  rule in this record applies; decoration alone is not sufficient justification
-  for added emphasis.
+- 不可选择的说明列表和菜单列表通常应使用标准 16px 等价值尺寸的描边图标以及受支持的前景角色。
+- 当本记录中的另一条规则适用时，可以使用填充图形、紧凑尺寸或具名调色板颜色；仅装饰本身不足以成为增加强调的理由。
 
 ### Icons in headers
 
-- A header MAY include object media when the heading identifies a specific object
-  and the icon materially aids recognition.
-- Most category and section headings SHOULD NOT include an icon; generic media
-  adds noise without clarifying the section.
+- 当标题标识特定对象且图标确实有助于识别时，页眉可以包含对象媒体。
+- 大多数类别和部分标题不应包含图标；通用媒体会增加噪音而不澄清该部分。
 
 ### Icons in navigation
 
-- Navigation icons MUST be chosen intentionally: use a clear, simple symbol that
-  represents the destination rather than a generic decorative mark.
-- Selected navigation MAY use a component-owned outlined-to-filled pair when text,
-  `aria-current`, or another established treatment continues to identify selection.
+- 导航图标必须有意图地选择：使用清晰、简单的符号表示目的地，而不是通用装饰标记。
+- 当文本、`aria-current` 或其他既定处理继续标识选中状态时，已选中的导航可以使用组件拥有的描边到填充配对。
 
 ## Accessibility intent
 
-- Informative icons need an accessible image name when the information is not
-  already available in text. Explanatory text or a tooltip should be available
-  when the symbol alone may be ambiguous.
-- Decorative icons expose no duplicate name and remain paired with visible text
-  that communicates the meaning.
-- Icon artwork MUST remain recognizable at its rendered size. Astryx does not
-  require every icon at 16px or below to be filled: current fallbacks are mostly
-  outlined, with filled status icons and intrinsically solid marks. Prefer
-  size-specific or optically adjusted artwork when available; use fill only when
-  a filled-use criterion above applies.
-- Icon foregrounds MUST maintain applicable contrast against their backgrounds.
-- Interactive icons need adequate surrounding space for recognition and an
-  operable target owned by their control.
+- 当信息尚未以文本形式提供时，信息性图标需要可访问的图像名称。当符号本身可能含糊时，应提供说明文本或工具提示。
+- 装饰性图标不暴露重复名称，并保持与传达含义的可见文本配对。
+- 图标图形必须在其渲染尺寸下保持可识别。Astryx 不要求 16px 或以下的每个图标都使用填充：当前的后备图标大多为描边，只有填充状态图标和本质实心标记例外。优先使用已有的特定尺寸或经视觉调整的图形；仅当上述填充用法标准适用时才使用填充。
+- 图标前景色必须与其背景保持适用的对比度。
+- 交互性图标需要足够的周围空间以便识别，以及由其控件拥有的可操作目标。
 
 ## Representative examples
 
-- A grouped-row disclosure chevron is an interactive control for an entire
-  section, so its intended standard role is 16px-equivalent rather than a 12px
-  supporting indicator. Astryx's current fallback chevron remains outlined.
-- A table sort-direction arrow is a compact indicator associated with a column
-  heading, so it uses the 12px-equivalent role while the button and `aria-sort`
-  carry interaction and state. It does not require filled artwork.
-- A persistent semantic information cue may use filled artwork and the accent
-  color when nearby content or an accessible name explains it.
-- An on/off control may pair outlined artwork for off with the corresponding
-  filled artwork for on while its semantic state remains available independently.
-- A large icon-only Button uses a 20px-equivalent prominent-control glyph when the
-  containing target and spacing support it; icon-only does not automatically mean
-  prominent.
-- A 24px-equivalent icon is reserved for display-scale or object treatment rather
-  than the default icon-button glyph.
-- A non-selectable list item normally uses a standard-size outlined icon in a
-  primary or secondary foreground.
+- 分组行展开 chevron 是整个部分的交互控件，因此其预期的标准角色是 16px 等价值，而不是 12px 辅助指示符。Astryx 当前的默认 chevron 保持描边。
+- 表格排序方向箭头是与列标题关联的紧凑指示符，因此使用 12px 等价值角色，而按钮和 `aria-sort` 承载交互和状态。它不需要填充图形。
+- 持久语义信息提示可以使用填充图形和强调色，前提是附近内容或可访问名称对其作出解释。
+- 开/关控件可以将关闭状态配以描边图形、开启状态配以对应的填充图形，同时其语义状态仍可独立获得。
+- 大型纯图标 Button 在包含目标和间距支持时使用 20px 等价值的突出控件字形；纯图标并不自动意味着突出。
+- 24px 等价值图标保留给展示尺度或对象处理，而不是默认的图标按钮字形。
+- 不可选择的列表项通常使用标准尺寸的描边图标，置于 primary 或 secondary 前景色中。
 
 ## Visual references
 
-No normative assets are included. Public-safe examples of meaning roles, the
-12/16/20/24 size ladder, outlined/filled exceptions, color roles, and
-representative compositions should be added under
-`docs/design/assets/iconography/` before promotion.
+未包含规范性资源。含义角色、12/16/20/24 尺寸阶梯、描边/填充例外、颜色角色和代表性组合的公共安全示例应在提升为正式内容之前添加到 `docs/design/assets/iconography/` 下。
 
 ## Component contract links
 
-- `component:Icon` owns the shared 12/16/20/24 size vocabulary, bare-Icon
-  `md` default, scaling behavior, target, color API, and rendering semantics; this
-  record assigns design intent to role, color, and artwork selection.
-- Interactive components own their target, state, focus, accessible name, and icon
-  slot geometry; Icon remains the glyph inside that owner.
-- `component:Table` owns which generated Table affordances are compact indicators
-  or standard controls. Grouped-row disclosure is the first candidate for an
-  explicit standard-control link after this record becomes current.
-- `architecture:icon-resolution-and-component-slots` owns semantic-name and
-  artwork resolution. A component selects placement, size, color, and state before
-  the registry supplies artwork; the registry is not the owner of those roles.
-- `architecture:component-theming-surface` owns theming guarantees. The shared
-  Icon target reflects `size` and `color`, so themes may coherently style existing
-  values. A local component-role override still requires a qualified owning target
-  with the relevant property guarantee; this record does not create one.
+- `component:Icon` 拥有共享的 12/16/20/24 尺寸词汇、裸 Icon 的 `md` 默认值、缩放行为、目标、颜色 API 和渲染语义；本记录将设计意图赋予角色、颜色和图形选择。
+- 交互组件拥有其目标、状态、焦点、可访问名称和图标槽位几何；Icon 仍是该所有者内部的字形。
+- `component:Table` 拥有哪些生成的 Table 可供性是紧凑指示符或标准控件。分组行展开是本记录生效后，显式标准控件链接的第一个候选。
+- `architecture:icon-resolution-and-component-slots` 拥有语义名称和图形解析。组件在注册表提供图形之前选择放置、尺寸、颜色和状态；注册表不是这些角色的所有者。
+- `architecture:component-theming-surface` 拥有主题化保证。共享的 Icon 目标反映 `size` 和 `color`，因此主题可以一致地设置现有值的样式。局部组件角色覆盖仍需要具备相关属性保证的限定所属目标；本记录不创建这样的目标。
 
 ## Decision log
 
 ### DEC-1 — Outlined artwork is the default with deliberate filled exceptions
 
-**Reference:** `design:iconography/DEC-1`
-**Decider:** pending design-owner approval
+**参考：** `design:iconography/DEC-1`
+**决策者：** 待设计负责人批准
 
-Start with outlined artwork when a meaningful pair exists. Use the filled
-counterpart only for active state, verified compact recognition at 12px or smaller,
-persistent semantic status, deliberate emphasis, busy backgrounds, or canonical
-logos. Maintain cohesion among peer controls without treating a symbol's shape or
-secondary color as automatic permission to fill it.
+当存在有意义的配对时，从描边图形开始。仅在以下情况使用填充对应物：活动状态、经证实的 12px 或更小尺寸下的紧凑识别性、持久语义状态、有意的强调、繁忙背景或规范徽标。保持同类控件之间的协调性，但不要将符号的形状或次级颜色视为自动允许填充。
 
-Rejected: using filled artwork as the universal default, filling every icon at
-16px or below, filling chevrons and close marks categorically, using fill as the
-sole state cue, or selecting fill simply because the asset exists.
+拒绝：将填充图形用作通用默认、对 16px 或以下的每个图标都填充、按类别填充 chevron 和关闭标记、将填充用作唯一状态线索，或仅因资源存在就选择填充。
 
 ### DEC-2 — Astryx uses a 12 / 16 / 20 / 24 role ladder
 
-**Reference:** `design:iconography/DEC-2`
-**Decider:** pending design-owner approval
+**参考：** `design:iconography/DEC-2`
+**决策者：** 待设计负责人批准
 
-Use 12px-equivalent for compact supporting indicators, 16px-equivalent for
-standard controls and disclosures, 20px-equivalent for prominent controls such as
-large icon buttons, and 24px-equivalent for display-scale or object treatment.
-Bare Icon currently defaults to 20px-equivalent `md`; composing components may
-constrain their icon slots independently.
+对紧凑辅助指示符使用 12px 等价值，对标准控件和展开控件使用 16px 等价值，对大型图标按钮等突出控件使用 20px 等价值，对展示尺度或对象处理使用 24px 等价值。裸 Icon 目前默认为 20px 等价值的 `md`；组合组件可以独立约束其图标槽位。
 
-Rejected: importing the older three-size 12/16/24 profile unchanged, calling 16px
-the primitive Icon default, using one size for every icon, or selecting size from
-available space without regard to meaning.
+拒绝：原样照搬旧的三尺寸 12/16/24 配置、将 16px 称为基元 Icon 默认值、所有图标都使用一个尺寸，或不顾含义仅从可用空间选择尺寸。
 
 ### DEC-3 — Informative and decorative icons have different content obligations
 
-**Reference:** `design:iconography/DEC-3`
-**Decider:** pending design-owner approval
+**参考：** `design:iconography/DEC-3`
+**决策者：** 待设计负责人批准
 
-An informative icon may carry meaning beyond its label and therefore needs an
-accessible name and enough explanation when used independently. A decorative icon
-adds no independent meaning, stays paired with text, and is hidden from assistive
-technology to avoid duplicate announcements.
+信息性图标可以承载超出其标签的含义，因此在独立使用时需要可访问名称和足够的解释。装饰性图标不增加独立含义，保持与文本配对，并对辅助技术隐藏，以避免重复播报。
 
-Rejected: treating every icon as informative, or allowing a decorative icon to
-stand alone without a label.
+拒绝：将每个图标都视为信息性，或允许装饰性图标在没有标签的情况下独立存在。
 
 ### DEC-4 — Themes tune shared and component roles at their owning surface
 
-**Reference:** `design:iconography/DEC-4`
-**Decider:** pending design-owner approval
+**参考：** `design:iconography/DEC-4`
+**决策者：** 待设计负责人批准
 
-A theme may replace artwork for a shared semantic icon name and may coherently
-tune an existing `Icon.size` value through the shared Icon target. A local role
-such as one component's disclosure control should instead use a qualified
-component-owned target when that target exists and guarantees the relevant
-property. Components continue to own placement, state, and accessible semantics;
-this record creates no new target or guarantee.
+主题可以为共享语义图标名称替换图形，并可以通过共享 Icon 目标一致地调整现有 `Icon.size` 值。诸如某个组件的展开控件这样的局部角色，则应在存在相应目标且该目标保证相关属性时，使用限定的组件所属目标。组件继续拥有放置、状态和可访问语义；本记录不创建新的目标或保证。
 
-Rejected: adding ad hoc size names, changing a shared size solely to affect one
-component, using the artwork registry as the owner of component behavior or state,
-or assuming every icon-bearing role is independently themeable today.
+拒绝：添加临时的尺寸名称、仅为影响某个组件而改变共享尺寸、将图形注册表用作组件行为或状态的所有者，或假设如今每个承载图标的角色都可以独立主题化。
 
 ## Open questions
 
-- **OQ1 — Theme-target rollout.** Which existing component roles need dedicated
-  qualified targets for theme authors to tune size, color, or artwork
-  independently?
-- **OQ2 — Current conformance.** Which shipped callsites differ from the current
-  12/16/20/24 role ladder, outlined default, or composition guidance and need an
-  explicit component-owned exception?
-- **OQ3 — Normative evidence.** Which public-safe examples best demonstrate the
-  meaning roles, size and artwork rules, colors, and composition across the
-  reference system theme and a deliberately different theme personality?
+- **OQ1 — 主题目标推出。** 哪些现有组件角色需要专门的限定目标，以便主题作者独立调整尺寸、颜色或图形？
+- **OQ2 — 当前一致性。** 哪些已发布的调用点与当前的 12/16/20/24 角色阶梯、描边默认或组合指导不同，并需要明确的组件所属例外？
+- **OQ3 — 规范性证据。** 哪些公共安全示例最能展示含义角色、尺寸和图形规则、颜色，以及在参考系统主题和有意不同的主题风格下的组合？
 
 ## Content boundary
 
-This file defines public visual, composition, and accessibility intent for
-iconography. It does not prescribe a particular icon library, asset-management
-workflow, request process, implementation framework, prop syntax, target selector,
-registry descriptor, or migration tooling. It does not change Icon's released
-size vocabulary or default, define hit-target thresholds, choose individual SVG
-geometry, or implement theme overrides.
+本文件定义图标体系的公共视觉、组合和无障碍意图。它不规定特定的图标库、资源管理工作流、请求流程、实现框架、prop 语法、目标选择器、注册表描述符或迁移工具。它不改变 Icon 已发布的尺寸词汇或默认值，不定义点击目标阈值，不选择单个 SVG 几何，也不实现主题覆盖。

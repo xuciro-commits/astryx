@@ -1,21 +1,16 @@
-# Swift library specs
+# Swift 库规范
 
-Rules that every Astryx Swift component or Swift build step shares, one
-concern per file. A component spec (`<Name>.swift.spec.md` beside the core
-component's spec, such as `docs/specs/components/Button/Button.swift.spec.md`,
-from `../../TEMPLATE.md`) follows these and records only where a component differs.
+每个 Astryx Swift 组件或 Swift 构建步骤共同遵循的规则，一个文件对应一个关注点。组件规范（`<Name>.swift.spec.md`，位于核心组件规范旁边，例如 `docs/specs/components/Button/Button.swift.spec.md`，由 `../../TEMPLATE.md` 生成）遵循这些规则，只记录组件不同之处。
 
-These specs apply AST-082 (native-first surfaces) and AST-093 (native component
-guidelines). Where one of them and an approved record disagree, the record
-wins.
+这些规范适用 AST-082（native-first surfaces）和 AST-093（native component guidelines）。如果其中某一项与已批准的记录不一致，以记录为准。
 
-| File                      | Concern                                                                               |
-| ------------------------- | ------------------------------------------------------------------------------------- |
-| `accessibility.md`        | How core's accessibility semantics reach VoiceOver and Apple's accessibility settings |
-| `augmentable-variants.md` | How a theme's own variants reach Swift as open types                                  |
-| `component-api.md`        | How a SwiftUI view is named and takes its generated contract                          |
-| `slots.md`                | How each slot kind (text, icon, content) appears in SwiftUI                           |
-| `styles.md`               | How Astryx's look ships as SwiftUI styles                                             |
-| `tooltip.spec.md`         | How core's tooltips reach pointer, keyboard, touch, and VoiceOver (internal)          |
-| `theme-environment.md`    | How the theme rides on SwiftUI's environment in both directions                       |
-| `theme-generator.md`      | How any Astryx theme becomes a Swift `Theme`                                          |
+| 文件                      | 关注点                                                     |
+| ------------------------- | ---------------------------------------------------------- |
+| `accessibility.md`        | 核心的无障碍语义如何传达至 VoiceOver 和 Apple 的无障碍设置 |
+| `augmentable-variants.md` | 主题自有的变体如何以开放类型的形式到达 Swift               |
+| `component-api.md`        | SwiftUI 视图如何命名并接受其生成的契约                     |
+| `slots.md`                | 每种插槽类型（文本、图标、内容）如何在 SwiftUI 中呈现      |
+| `styles.md`               | Astryx 的外观如何以 SwiftUI 样式交付                       |
+| `tooltip.spec.md`         | 核心的提示框如何触达指针、键盘、触摸和 VoiceOver（内部）   |
+| `theme-environment.md`    | 主题如何双向搭载于 SwiftUI 的环境                          |
+| `theme-generator.md`      | 任意 Astryx 主题如何变成 Swift `Theme`                     |

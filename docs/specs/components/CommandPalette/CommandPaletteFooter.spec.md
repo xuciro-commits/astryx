@@ -28,123 +28,117 @@ system_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                  |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `CommandPaletteFooter` with optional `children`, `ref`, `xstyle`, `className`, `style`, and root DOM props.                               |
-| Behavior                | A footer row of keyboard guidance: by default, the navigate, select, and close shortcuts with translated labels; `children` replace them. |
-| End-user impact         | People see which keys move through, run, and close the palette.                                                                           |
-| Builder impact          | None.                                                                                                                                     |
-| Compatibility/readiness | Records shipped behavior; no public change.                                                                                               |
-| Review checks           | Reject a footer that takes a role or name of its own, a lost default shortcut, or guidance that cannot wrap.                              |
-| Governing rules         | `component:Kbd`; `architecture:public-component-api`; `architecture:component-theming-surface`.                                           |
+| Area          | Contract                                                                                                 |
+| ------------- | -------------------------------------------------------------------------------------------------------- |
+| 公共契约      | `CommandPaletteFooter`，接受可选的 `children`、`ref`、`xstyle`、`className`、`style` 与 root DOM props。 |
+| 行为          | 一行键盘指引 footer：默认显示导航、选择与关闭快捷键，并配有已翻译的标签；`children` 会替换它们。         |
+| 最终用户影响  | 用户能看到哪些键可以在面板中移动、执行与关闭。                                                           |
+| 构建者影响    | 无。                                                                                                     |
+| 兼容性/就绪度 | 记录已发布的行为；无公共变更。                                                                           |
+| 审查检查      | 拒绝自身带有 role 或 name 的 footer、丢失的默认快捷键，或无法换行的指引。                                |
+| 治理规则      | `component:Kbd`；`architecture:public-component-api`；`architecture:component-theming-surface`。         |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；下文正文具有权威性。
 
 ## Intent
 
-CommandPaletteFooter is the guidance row at the bottom of a CommandPalette.
-Consumer usage lives in `CommandPaletteFooter.doc.mjs`.
+CommandPaletteFooter 是 CommandPalette 底部的指引行。使用方的用法见 `CommandPaletteFooter.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public change
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 已发布的默认值保留：`yes`
+- 兼容性类别：记录已发布的行为；无公共变更
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The footer root, its layout, supporting text style, and the
-  `command-palette-footer` target (FR1, FR3).
-- The default guidance and its replacement by `children` (FR2).
-- Root ref, DOM props, and styling (FR4).
+- footer 的 root、其布局、辅助文本样式，以及 `command-palette-footer` 目标（FR1、FR3）。
+- 默认提示及其被 `children` 替换的行为（FR2）。
+- Root ref、DOM props 与样式（FR4）。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Painting each shortcut — owned by `component:Kbd`.
-- The keyboard behavior the guidance describes — owned by
-  `component:CommandPalette`.
+- 绘制每个快捷键——由 `component:Kbd` 拥有。
+- 提示所描述的键盘行为——由 `component:CommandPalette` 拥有。
 
 ## Public concepts
 
-No component-local concept beyond the consumer props.
+除使用方 props 外，没有组件本地概念。
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                               | Basis                    |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| FR1 | The root is a wrapping row of supporting text in the secondary color, with no role or name of its own.                                                                                                  | Current source and tests |
-| FR2 | Without `children`, the root shows three hints in order: Up and Down with the translated navigate label, Enter with select, and Escape with close, each shortcut a `Kbd`. `children` replace all three. | Current source and tests |
-| FR3 | The root carries the `command-palette-footer` target.                                                                                                                                                   | Current source and tests |
-| FR4 | `ref`, DOM props, `className`, `style`, and `xstyle` reach the root, with the caller's class after the generated ones.                                                                                  | Current source and tests |
+| ID  | Invariant                                                                                                                                                      | Basis          |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| FR1 | root 是一行可换行的辅助文本，采用次要颜色，自身没有 role 或 name。                                                                                             | 当前源码与测试 |
+| FR2 | 未提供 `children` 时，root 按顺序显示三条提示：Up 与 Down 配已翻译的导航标签、Enter 配选择、Escape 配关闭，每个快捷键都是一个 `Kbd`。`children` 替换全部三条。 | 当前源码与测试 |
+| FR3 | root 携带 `command-palette-footer` 目标。                                                                                                                      | 当前源码与测试 |
+| FR4 | `ref`、DOM props、`className`、`style` 与 `xstyle` 都会到达 root，调用方的 class 排在生成的 class 之后。                                                       | 当前源码与测试 |
 
 ### Allowed variation
 
-- **AV1 — Guidance.** Callers may replace the default hints.
-- **AV2 — Translation.** Label text follows the active locale.
+- **AV1 — 指引。** 调用方可以替换默认提示。
+- **AV2 — 翻译。** 标签文本跟随当前生效的语言区域。
 
 ### Representative states
 
-| State          | Required invariant                          | Allowed variation |
-| -------------- | ------------------------------------------- | ----------------- |
-| Default        | Navigate, select, and close hints in order. | Locale.           |
-| Custom         | `children` replace the defaults.            | Content.          |
-| Narrow surface | Hints wrap onto more lines.                 | Line count.       |
+| State  | Required invariant               | Allowed variation |
+| ------ | -------------------------------- | ----------------- |
+| 默认   | 按顺序显示导航、选择与关闭提示。 | 语言区域。        |
+| 自定义 | `children` 替换默认提示。        | 内容。            |
+| 窄界面 | 提示换行到更多行。               | 行数。            |
 
 ### Transformation and precedence order
 
-- **ORD1 — Content.** `children` when given, otherwise the default hints.
+- **ORD1 — 内容。** 提供 `children` 时使用它，否则使用默认提示。
 
 ### Performance and resources
 
-- No resource rule.
+- 无资源规则。
 
 ## Accessibility contract
 
-- **AR1 — No owned semantics.** The footer adds no role, name, or focus
-  target; each shortcut's semantics are Kbd's.
+- **AR1 — 不拥有语义。** footer 不添加 role、name 或焦点目标；每个快捷键的语义归 Kbd 所有。
 
 ## Design relationships
 
-| Anatomy or state  | Design requirement                     | Representation authority | Hierarchy role | Component contract |
-| ----------------- | -------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Footer            | A wrapping row of supporting guidance. | Current source           | Supporting     | FR1, FR3           |
-| Keyboard shortcut | Shows one shortcut.                    | `component:Kbd`          | Supporting     | FR2                |
+| Anatomy or state | Design requirement       | Representation authority | Hierarchy role | Component contract |
+| ---------------- | ------------------------ | ------------------------ | -------------- | ------------------ |
+| footer           | 一行可换行的辅助性指引。 | 当前源码                 | 辅助           | FR1、FR3           |
+| 键盘快捷键       | 显示一个快捷键。         | `component:Kbd`          | 辅助           | FR2                |
 
-The aggregate CommandPalette anatomy map, owned by `component:CommandPalette`,
-maps the Footer and Keyboard shortcut parts.
+由 `component:CommandPalette` 拥有的 CommandPalette 聚合解剖图，映射 footer 与键盘快捷键部分。
 
 ## Family and system relationships
 
-- `component:Kbd` owns shortcut painting and semantics.
-- `component:CommandPalette` owns the keyboard behavior the guidance names.
+- `component:Kbd` 拥有快捷键的绘制与语义。
+- `component:CommandPalette` 拥有提示所指的键盘行为。
 
 ## Verification map
 
-| Contract | Verification                                                                            | Representative states | Mutation or failure expectation                    | Audit section                           |
-| -------- | --------------------------------------------------------------------------------------- | --------------------- | -------------------------------------------------- | --------------------------------------- |
-| FR1, AR1 | `CommandPaletteFooter.test.tsx` wrap test; `CommandPaletteFooter.a11y.chromium.spec.ts` | narrow; LTR and RTL   | A role or name on the root, or no wrapping, fails. | `audit:CommandPaletteFooter/layout`     |
-| FR2      | `CommandPaletteFooter.test.tsx` default-labels and custom-children tests                | default; custom       | A lost hint or ignored children fails.             | `audit:CommandPaletteFooter/behavior`   |
-| FR3      | `CommandPaletteFooter.test.tsx` "carries the stable theme target on its single root"    | any                   | A missing target fails.                            | `audit:CommandPaletteFooter/theming`    |
-| FR4      | `CommandPaletteFooter.test.tsx` className, xstyle, style, ref, and DOM-prop tests       | root inputs           | A dropped input fails.                             | `audit:CommandPaletteFooter/public-api` |
+| Contract | Verification                                                                             | Representative states | Mutation or failure expectation                | Audit section                           |
+| -------- | ---------------------------------------------------------------------------------------- | --------------------- | ---------------------------------------------- | --------------------------------------- |
+| FR1、AR1 | `CommandPaletteFooter.test.tsx` 的换行测试；`CommandPaletteFooter.a11y.chromium.spec.ts` | 窄界面；LTR 与 RTL    | root 上出现 role 或 name，或没有换行，即失败。 | `audit:CommandPaletteFooter/layout`     |
+| FR2      | `CommandPaletteFooter.test.tsx` 的默认标签与自定义 children 测试                         | 默认；自定义          | 丢失提示或忽略 children 即失败。               | `audit:CommandPaletteFooter/behavior`   |
+| FR3      | `CommandPaletteFooter.test.tsx` 的 "carries the stable theme target on its single root"  | 任意                  | 缺失目标即失败。                               | `audit:CommandPaletteFooter/theming`    |
+| FR4      | `CommandPaletteFooter.test.tsx` 的 className、xstyle、style、ref 与 DOM prop 测试        | root 输入             | 丢弃输入即失败。                               | `audit:CommandPaletteFooter/public-api` |
 
-Read from source, with no focused test yet:
+从源码读取，尚无聚焦测试：
 
-- FR1: the supporting type and secondary color.
+- FR1：辅助文本字号与次要颜色。
 
 ## Decision log
 
-No component-local decision is recorded.
+未记录组件本地决策。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables or examples, or
-CommandPalette's search and keyboard behavior. It links to their owners.
+本文件不重复使用方 props 表或示例，也不重复 CommandPalette 的搜索与键盘行为。它链接到它们的所有者。

@@ -35,131 +35,106 @@ system_specs: [spec:AST-087]
 
 ## Intent
 
-Icon presents one visual symbol with consistent size, color, and accessibility
-semantics. Consumer usage remains documented in `Icon.doc.mjs`.
+Icon 呈示一个视觉符号，具有一致的尺寸、颜色和无障碍语义。使用方用法仍记录在 `Icon.doc.mjs` 中。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes` for explicit sizes and standalone Icons
-- Compatibility class: component-owned Icon slots may supply a contextual default;
-  explicit Icon sizes and the standalone `md` fallback remain unchanged
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: no consumer migration; omit `size` when the owning Astryx
-  component should select the contextual default
+- 保留的已发布默认值：对显式尺寸和独立 Icon 为 `yes`
+- 兼容类别：组件自有的 Icon 插槽可以提供上下文默认值；显式 Icon 尺寸和独立的 `md` 回退保持不变
+- 受控/非受控行为：不适用
+- 迁移决策：使用方无需迁移；当所属 Astryx 组件应选择上下文默认值时，省略 `size`
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明应归属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- Accepting a semantic icon key or a supplied icon component as the glyph source.
-- Passing the resolved size and a variant the entry can receive to a registry entry.
-- Resolving explicit, component-owned contextual, and standalone size defaults.
-- Applying Icon's size, color, theming target, and accessibility semantics to
-  the rendered glyph.
+- 接受语义图标键或提供的图标组件作为字形来源。
+- 将解析后的尺寸以及条目可接收的变体传递给注册表条目。
+- 解析显式、组件自有的上下文以及独立的尺寸默认值。
+- 将 Icon 的尺寸、颜色、主题目标与无障碍语义应用到所渲染的字形。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- The shared registry's key-resolution and fallback order — owned by the shared
-  icon system.
-- Which contextual default an owning Astryx component selects for its icon slot —
-  owned by that component or family contract.
-- The meaning of a glyph in product context or whether nearby text makes it
-  decorative — owned by the product callsite.
-- Interaction, focus, or control naming — owned by the interactive parent.
-- The artwork supplied by a consumer or registered through a theme.
-- A public Icon size-provider API; contextual transport is implementation detail.
+- 共享注册表的键解析与回退顺序——由共享图标系统拥有。
+- 所属 Astryx 组件为其图标插槽选择哪个上下文默认值——由该组件或 family 契约拥有。
+- 字形在产品语境中的含义，或邻近文本是否使其成为装饰性——由产品调用点拥有。
+- 交互、焦点或控件命名——由交互父级拥有。
+- 使用方提供的或通过主题注册的图稿。
+- 公开的 Icon 尺寸提供方 API；上下文传递属于实现细节。
 
 ## Public concepts
 
-| Concept       | Closed values or states                                   | Meaning                                                    | Availability by variant/orientation/state        | Default                                         | Owner            | Stability | Invalid-value behavior                                                            |
-| ------------- | --------------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------- | ---------------- | --------- | --------------------------------------------------------------------------------- |
-| Glyph source  | semantic key, namespaced extension key, or icon component | Selects the visual symbol.                                 | Every render                                     | Required                                        | `component:Icon` | Stable    | TypeScript rejects unsupported built-in string values.                            |
-| Size          | `xsm`, `sm`, `md`, `lg`                                   | Selects the icon box size.                                 | Every rendered glyph                             | nearest component-owned default; otherwise `md` | `component:Icon` | Stable    | TypeScript rejects unsupported values.                                            |
-| Color         | documented semantic and palette values                    | Selects the glyph color or inherits it from context.       | Every rendered glyph                             | `inherit`                                       | `component:Icon` | Stable    | TypeScript rejects unsupported values.                                            |
-| Accessibility | decorative or meaningfully labelled                       | Controls whether assistive technology receives the glyph.  | Every rendered glyph                             | Decorative                                      | `component:Icon` | Stable    | Empty labels use the decorative behavior.                                         |
-| Variant       | names in `IconVariantMap`; the active theme lists its own | Requests a theme's alternate artwork for a registry glyph. | Registry glyphs only; never a supplied component | None                                            | `component:Icon` | Stable    | TypeScript rejects unknown names; an unlisted variant renders the normal artwork. |
+| 概念     | 封闭取值或状态                                    | 含义                             | 按变体/方向/状态的可获得性         | 默认值                            | 所有者           | 稳定性 | 无效值行为                                          |
+| -------- | ------------------------------------------------- | -------------------------------- | ---------------------------------- | --------------------------------- | ---------------- | ------ | --------------------------------------------------- |
+| 字形来源 | 语义键、带命名空间的扩展键或图标组件              | 选择视觉符号。                   | 每次渲染                           | 必需                              | `component:Icon` | 稳定   | TypeScript 拒绝不受支持的内置字符串取值。           |
+| 尺寸     | `xsm`、`sm`、`md`、`lg`                           | 选择图标盒子的尺寸。             | 每个已渲染的字形                   | 最近的组件自有默认值；否则为 `md` | `component:Icon` | 稳定   | TypeScript 拒绝不受支持的取值。                     |
+| 颜色     | 已文档化的语义取值与调色板取值                    | 选择字形颜色，或从上下文继承它。 | 每个已渲染的字形                   | `inherit`                         | `component:Icon` | 稳定   | TypeScript 拒绝不受支持的取值。                     |
+| 无障碍   | 装饰性或带意义标签                                | 控制辅助技术是否接收该字形。     | 每个已渲染的字形                   | 装饰性                            | `component:Icon` | 稳定   | 空标签使用装饰性行为。                              |
+| 变体     | `IconVariantMap` 中的名称；当前主题列出自己的名称 | 为注册表字形请求主题的替代图稿。 | 仅注册表字形；绝不适用于提供的组件 | 无                                | `component:Icon` | 稳定   | TypeScript 拒绝未知名称；未列出的变体渲染普通图稿。 |
 
-A namespaced key that does not resolve currently renders nothing. This is
-existing behavior, not an intentional fallback promise.
+当前，无法解析的带命名空间键不渲染任何内容。这是既有行为，并非有意承诺的回退。
 
 ## Behavioral and layout contract
 
-Requirements identify their basis so observed code is not mistaken for an
-intentional decision.
+各项需求标明其依据，以免把观察到的代码误当作有意的决策。
 
-| ID  | Candidate invariant                                                                                                                                                                                                                                                                                                                                                                                                                           | Basis                                                                        | Draft review state                                      |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------- |
-| FR1 | Icon MUST present at most one glyph from the supplied semantic key, namespaced key, or icon component.                                                                                                                                                                                                                                                                                                                                        | Documented promise and current tests.                                        | Settled intent.                                         |
-| FR2 | Every rendered glyph MUST carry the `icon` theming target with its resolved size and selected color reflected as target data.                                                                                                                                                                                                                                                                                                                 | Current source, docs, and theming tests.                                     | Settled intent.                                         |
-| FR3 | Icon MUST apply the resolved size as width and height for every glyph, plus font size where needed for 1em-based icon sources. This sizing contract MUST NOT promise an HTML or SVG element type.                                                                                                                                                                                                                                             | Human decision, current source, and tests.                                   | Settled intent.                                         |
-| FR4 | Supported SVG and styling escape hatches MUST retain their established merge and override behavior.                                                                                                                                                                                                                                                                                                                                           | Current source and regression tests.                                         | Current compatibility behavior; verify before changing. |
-| FR5 | An explicit Icon `size` MUST win. Without one, Icon MUST use the nearest default supplied by an owning Astryx component for its documented icon slot; without such a default, Icon MUST use `md`.                                                                                                                                                                                                                                             | Component-size precedence and Button sizing decision.                        | Settled intent.                                         |
-| FR6 | In registry mode, Icon MUST pass `{size, variant}` to the selected entry, where `size` is the size resolved by ORD1 and `variant` is the requested variant when the active theme lists it and, for a theme-supplied entry, the theme that defined the entry lists it too, otherwise `undefined`. A supplied icon component MUST NOT receive `variant`, Icon MUST NOT forward `variant` to the DOM, and the `icon` target MUST NOT reflect it. | `spec:AST-087` FR1–FR5 and FR9.                                              | Settled intent.                                         |
-| FR7 | The `icon` target MUST guarantee `width` and `height` on its `size:*` selectors as reviewed target-specific additions, so a theme sets each size's dimension. Without theme styles, sizes are 12, 16, 20, and 24px at a 16px root and scale with the root font size.                                                                                                                                                                          | `spec:AST-087` FR10.                                                         | Settled intent.                                         |
-| FR8 | `ref` reaches the svg the resolved glyph renders, for every name; when the glyph renders no svg, `ref` is `null`. A glyph that later replaces its own svg is not followed.                                                                                                                                                                                                                                                                    | Consistency with Icon's public `ref` type, `Ref<SVGSVGElement>`; defect fix. | Settled intent.                                         |
+| ID  | 候选不变式                                                                                                                                                                                                                                                                                                                | 依据                                                                | 草稿审查状态                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------- |
+| FR1 | Icon 必须最多从所提供的语义键、带命名空间的键或图标组件呈示一个字形。                                                                                                                                                                                                                                                     | 已记录的承诺与当前测试。                                            | 已确定的意图。               |
+| FR2 | 每个已渲染的字形都必须携带带其解析后尺寸与所选颜色的 `icon` 主题目标，并把这些信息反映为目标数据。                                                                                                                                                                                                                        | 当前源码、文档与主题测试。                                          | 已确定的意图。               |
+| FR3 | Icon 必须将解析后的尺寸作为每个字形的宽度与高度应用，并在基于 1em 的图标来源需要时应用字号。该尺寸契约不得承诺 HTML 或 SVG 元素类型。                                                                                                                                                                                     | 人为决策、当前源码与测试。                                          | 已确定的意图。               |
+| FR4 | 受支持的 SVG 与样式逃生舱口必须保留其既有的合并与覆盖行为。                                                                                                                                                                                                                                                               | 当前源码与回归测试。                                                | 当前兼容行为；变更前须验证。 |
+| FR5 | 显式的 Icon `size` 必须优先。没有显式尺寸时，Icon 必须使用所属 Astryx 组件为其已文档化的图标插槽所提供的最近默认值；没有此类默认值时，Icon 必须使用 `md`。                                                                                                                                                                | 组件尺寸优先级与 Button 尺寸决策。                                  | 已确定的意图。               |
+| FR6 | 在注册表模式下，Icon 必须将 `{size, variant}` 传递给选中的条目，其中 `size` 是 ORD1 解析出的尺寸，而 `variant` 是所请求的变体——前提是当前主题列出它，并且对于主题提供的条目，定义该条目的主题也列出它；否则为 `undefined`。提供的图标组件不得接收 `variant`，Icon 不得将 `variant` 转发给 DOM，且 `icon` 目标不得反映它。 | `spec:AST-087` FR1–FR5 与 FR9。                                     | 已确定的意图。               |
+| FR7 | `icon` 目标必须在其 `size:*` 选择器上保证 `width` 与 `height`，作为经审查的目标专用附加项，使主题可以设置每个尺寸的维度。在没有主题样式的情况下，尺寸在 16px 根字号下为 12、16、20 和 24px，并随根字号缩放。                                                                                                              | `spec:AST-087` FR10。                                               | 已确定的意图。               |
+| FR8 | `ref` 对每个名称都指向解析后字形所渲染的 svg；当字形不渲染 svg 时，`ref` 为 `null`。若字形之后替换了自己的 svg，则不会跟随。                                                                                                                                                                                              | 与 Icon 的公开 `ref` 类型 `Ref<SVGSVGElement>` 保持一致；缺陷修复。 | 已确定的意图。               |
 
 ### Allowed variation
 
-- **AV1 — Artwork.** The path, view box, and internal structure may vary by icon
-  source or theme without changing Icon's one-part consumer anatomy.
-- **AV2 — Rendering strategy.** Icon may render a supplied icon component directly or
-  use an internal wrapper for a resolved key; neither element shape is public
-  anatomy.
-- **AV3 — Theme and consumer styling.** Existing theme and styling escape hatches
-  may change visual CSS properties without changing glyph ownership.
-- **AV4 — Contextual mapping.** An owning Astryx component may map its own public
-  size or variant to an Icon default. That mapping belongs to the owner and MUST
-  preserve explicit Icon sizes and the standalone fallback.
+- **AV1 — 图稿。** 路径、视图框与内部结构可以随图标来源或主题而变化，而不改变 Icon 由单一部件构成的使用方解剖结构。
+- **AV2 — 渲染策略。** Icon 可以直接渲染提供的图标组件，或对已解析的键使用内部包装；两种元素形态都不属于公共解剖结构。
+- **AV3 — 主题与使用方样式。** 既有的主题与样式逃生舱口可以更改视觉 CSS 属性，而不改变字形所有权。
+- **AV4 — 上下文映射。** 所属 Astryx 组件可以将其自己的公开尺寸或变体映射为某个 Icon 默认值。该映射属于拥有者，并且必须保留显式 Icon 尺寸与独立回退。
 
 ### Representative states
 
-| State                            | Required invariant                                                                 | Allowed variation                              |
-| -------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------- |
-| Semantic key                     | One resolved glyph carries the `icon` target.                                      | Theme, registry, or built-in artwork.          |
-| Namespaced extension key         | A resolved extension glyph carries the `icon` target.                              | Consumer- or library-owned artwork.            |
-| Supplied icon component          | The supplied glyph carries the `icon` target.                                      | Component implementation and SVG internals.    |
-| Standalone Icon without `size`   | The resolved size is `md`.                                                         | Glyph source and color.                        |
-| Owned icon slot without `size`   | The nearest documented component default is used.                                  | The owning component's declared size mapping.  |
-| Explicit Icon size in owned slot | The explicit Icon size wins over the contextual default.                           | Any supported Icon size.                       |
-| Unresolved namespaced key        | No glyph is currently rendered.                                                    | No fallback behavior is established by intent. |
-| Listed variant                   | The entry receives the size and the variant when its defining theme also lists it. | The theme's artwork for that request.          |
-| Unlisted or omitted variant      | The entry receives `variant: undefined`.                                           | The theme's normal artwork.                    |
-| Variant on a supplied component  | The component renders as given without `variant`.                                  | Component implementation.                      |
+| 状态                       | 必需不变式                                         | 允许的变化                 |
+| -------------------------- | -------------------------------------------------- | -------------------------- |
+| 语义键                     | 一个已解析的字形携带 `icon` 目标。                 | 主题、注册表或内置图稿。   |
+| 带命名空间的扩展键         | 已解析的扩展字形携带 `icon` 目标。                 | 使用方或库自有的图稿。     |
+| 提供的图标组件             | 提供的字形携带 `icon` 目标。                       | 组件实现与 SVG 内部结构。  |
+| 不带 `size` 的独立 Icon    | 解析后的尺寸为 `md`。                              | 字形来源与颜色。           |
+| 不带 `size` 的自有图标插槽 | 使用最近的已文档化组件默认值。                     | 所属组件所声明的尺寸映射。 |
+| 自有插槽中的显式 Icon 尺寸 | 显式 Icon 尺寸优先于上下文默认值。                 | 任何受支持的 Icon 尺寸。   |
+| 未解析的带命名空间键       | 当前不渲染任何字形。                               | 意图未确立任何回退行为。   |
+| 已列出的变体               | 当其定义主题也列出该变体时，条目会收到尺寸与变体。 | 该主题针对该请求的图稿。   |
+| 未列出或省略的变体         | 条目收到 `variant: undefined`。                    | 主题的普通图稿。           |
+| 提供的组件上的变体         | 组件按给定内容渲染，不带 `variant`。               | 组件实现。                 |
 
 ### Transformation and precedence order
 
-- **ORD1 — Size resolution.** Resolve explicit Icon `size` → nearest
-  component-owned contextual default → standalone `md` fallback.
-- **ORD2 — Presentation.** Apply the target, resolved size, and component color
-  styles, then merge consumer `xstyle`, `className`, inline `style`, and supported
-  pass-through props in their established order.
+- **ORD1 — 尺寸解析。** 解析显式的 Icon `size` → 最近的组件自有上下文默认值 → 独立的 `md` 回退。
+- **ORD2 — 呈现。** 应用目标、解析后的尺寸与组件颜色样式，然后按既有顺序合并使用方 `xstyle`、`className`、内联 `style` 与受支持的透传 props。
 
 ### Performance and resources
 
-- **PR1 — Render work.** Icon owns no listeners, observers, or layout
-  measurement; semantic and size resolution are synchronous during render.
+- **PR1 — 渲染工作。** Icon 不拥有任何监听器、观察器或布局测量；语义与尺寸解析在渲染期间同步完成。
 
 ## Accessibility contract
 
-- **AR1 — Decorative default.** Without a non-empty `label`, Icon MUST hide its
-  glyph from assistive technology by default.
-- **AR2 — Meaningful glyph.** A non-empty `label` MUST expose the glyph as an
-  image with that accessible name.
-- **AR3 — Parent-owned interaction.** Icon MUST NOT add interactive semantics or
-  focus behavior; an interactive parent owns the control and its name.
+- **AR1 — 装饰性默认。** 没有非空 `label` 时，Icon 必须默认向辅助技术隐藏其字形。
+- **AR2 — 有意义的字形。** 非空 `label` 必须将该字形作为具有该可访问名称的图像暴露。
+- **AR3 — 父级拥有的交互。** Icon 不得添加交互语义或焦点行为；交互父级拥有控件及其名称。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                                 | Representation authority                                      | Hierarchy role    | Component contract |
-| ---------------- | ------------------------------------------------------------------ | ------------------------------------------------------------- | ----------------- | ------------------ |
-| Glyph            | Carries the resolved visual symbol at the resolved size and color. | Consumer or registry selects artwork; Icon owns presentation. | Context-dependent | FR1, FR2, FR3, FR5 |
+| 解剖结构或状态 | 设计要求                                   | 呈现权威                                | 层级角色     | 组件契约           |
+| -------------- | ------------------------------------------ | --------------------------------------- | ------------ | ------------------ |
+| 字形           | 以解析后的尺寸与颜色承载解析后的视觉符号。 | 使用方或注册表选择图稿；Icon 拥有呈现。 | 依上下文而定 | FR1、FR2、FR3、FR5 |
 
-`Glyph` is the single conceptual consumer part in both source modes. Current
-implementation may render a supplied icon component directly or place a
-registry-resolved icon in an internal wrapper; this contract intentionally does
-not promise a `span`, `svg`, or other element type.
+`Glyph` 在两种来源模式下都是唯一的概念性使用方部件。当前实现可以直接渲染提供的图标组件，或将注册表解析出的图标放入内部包装中；本契约有意不承诺 `span`、`svg` 或其他元素类型。
 
 ### Theming anatomy
 
@@ -173,73 +148,53 @@ not promise a `span`, `svg`, or other element type.
 
 ## Family and system relationships
 
-- `architecture:component-size-cascade` owns the shared explicit → nearest
-  provider → component fallback pattern and requires provider ownership to be
-  declared. Icon retains its own `xsm | sm | md | lg` axis outside the standard
-  element-size cascade and adopts that precedence for component-owned defaults.
-- `architecture:component-theming-surface` owns the qualification and validation
-  rules for the `icon` target.
-- `architecture:icon-resolution-and-component-slots` owns semantic-key and
-  component-slot resolution before Icon renders the selected source.
-- `spec:AST-087` decides the `variant` request, theme-listed variant names, and
-  theme-set size dimensions.
-- `architecture:public-component-api` owns admission and compatibility rules for
-  Icon's public props and observable defaults.
-- The owning component or family specifies each contextual Icon-size mapping.
-  The Button family currently maps `sm` and `md` controls to `sm` Icons and `lg`
-  controls to `md` Icons.
-- Icon has no current family contract.
+- `architecture:component-size-cascade` 拥有共享的显式 → 最近提供方 → 组件回退模式，并要求声明提供方所有权。Icon 在标准元素尺寸级联之外保留自己的 `xsm | sm | md | lg` 轴，并为组件自有默认值采用该优先级。
+- `architecture:component-theming-surface` 拥有 `icon` 目标的限定与校验规则。
+- `architecture:icon-resolution-and-component-slots` 拥有在 Icon 渲染所选来源之前的语义键与组件插槽解析。
+- `spec:AST-087` 决定 `variant` 请求、主题所列举的变体名称与主题设置的尺寸维度。
+- `architecture:public-component-api` 拥有 Icon 公开 props 与可观察默认值的准入与兼容性规则。
+- 所属组件或 family 规定每个上下文 Icon 尺寸映射。Button 族目前将 `sm` 与 `md` 控件映射为 `sm` Icon，将 `lg` 控件映射为 `md` Icon。
+- Icon 当前没有 family 契约。
 
 ## Verification map
 
-| Contract            | Verification                                                                                              | Representative states                                                                                                                                   | Mutation or failure expectation                                                                                                                                                                                                            | Audit section              |
-| ------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- |
-| FR1, FR3, FR5       | `Icon.test.tsx` sizing suites and `IconButton.test.tsx` contextual-size suites                            | standalone default; Button sizes; explicit override; both modes                                                                                         | Breaking source rendering, standalone fallback, contextual mapping, explicit precedence, or cross-mode sizing fails assertions.                                                                                                            | `audit:Icon/behavior`      |
-| FR2, FR4            | `Icon.test.tsx` theming-target reflection and styling-prop suites                                         | both source modes; every color and size; omitted color; `className`, `style`, and `xstyle`                                                              | Removing the target, dropping `data-color` or `data-size` in either mode, or breaking override composition fails assertions.                                                                                                               | `audit:Icon/theming`       |
-| FR2, FR3 (rendered) | `IconAudit.a11y.chromium.spec.ts` sensor receipts                                                         | semantic key and icon component; every size and color; Neutral and Butter in light and dark; right-to-left; 320px                                       | A glyph without its target data, a color that does not paint its token, sizes that do not step 12, 16, 20, and 24px at the Neutral theme, registry artwork that does not fill its box, or a transformed glyph fails a receipt.             | `audit:Icon/theming`       |
-| AR1, AR2, AR3       | `Icon.test.tsx` accessible-name suites and the `IconAudit.a11y.chromium.spec.ts` accessible-name receipts | decorative, labelled, explicit ARIA override; labelled icon component that writes its own `aria-hidden`                                                 | Changing default or labelled semantics, or leaving a component's own `aria-hidden` on a labelled glyph, fails accessibility assertions.                                                                                                    | `audit:Icon/accessibility` |
-| FR6                 | `Icon.test.tsx` variant suite                                                                             | listed, unlisted, and omitted variant; no active list; inherited entry under a replaced list; supplied component                                        | An unlisted variant, or one the entry's defining theme does not list, reaches an entry, or `variant` reaches a supplied component or the DOM.                                                                                              | `audit:Icon/behavior`      |
-| FR7                 | `Icon.test.tsx` theme size dimension suite                                                                | each size with and without theme styles, both source modes                                                                                              | A themed size does not change the glyph dimension, or an unstyled size changes.                                                                                                                                                            | `audit:Icon/theming`       |
-| FR8                 | `Icon.test.tsx` "ref reaches the rendered svg for every name" suite                                       | icon component; semantic name; namespaced key; text glyph; glyph change (component to component, svg to text); function entry across rerenders; unmount | A ref that stays empty, or holds anything but the rendered `<svg>`, for any name kind fails; so do a non-null ref for a text glyph, a ref left on a replaced glyph, a ref re-attached on every rerender, and a ref left set after unmount. | `audit:Icon/ref`           |
-| Theming anatomy map | `scripts/check-knowledge.mjs`                                                                             | Canonical consumer anatomy and current target                                                                                                           | Missing, extra, prefixed, or stale mappings fail repository validation.                                                                                                                                                                    | `audit:Icon/theming`       |
+| 契约               | 验证                                                                              | 代表性状态                                                                                                 | 变异或失败预期                                                                                                                                                                                  | 审计小节                   |
+| ------------------ | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| FR1、FR3、FR5      | `Icon.test.tsx` 尺寸套件与 `IconButton.test.tsx` 上下文尺寸套件                   | 独立默认值；Button 尺寸；显式覆盖；两种模式                                                                | 破坏来源渲染、独立回退、上下文映射、显式优先级或跨模式尺寸会使断言失败。                                                                                                                        | `audit:Icon/behavior`      |
+| FR2、FR4           | `Icon.test.tsx` 主题目标反映与样式 prop 套件                                      | 两种来源模式；每种颜色与尺寸；省略颜色；`className`、`style` 与 `xstyle`                                   | 移除目标、在任一模式下丢弃 `data-color` 或 `data-size`，或破坏覆盖组合会使断言失败。                                                                                                            | `audit:Icon/theming`       |
+| FR2、FR3（已渲染） | `IconAudit.a11y.chromium.spec.ts` 传感器回执                                      | 语义键与图标组件；每种尺寸与颜色；浅色与深色下的 Neutral 与 Butter；从右到左；320px                        | 字形缺少其目标数据、颜色未绘制其 token、在 Neutral 主题下尺寸不按 12、16、20 与 24px 递增、注册表图稿未填满其盒子，或字形被变换，都会使回执失败。                                               | `audit:Icon/theming`       |
+| AR1、AR2、AR3      | `Icon.test.tsx` 可访问名称套件与 `IconAudit.a11y.chromium.spec.ts` 可访问名称回执 | 装饰性、带标签、显式 ARIA 覆盖；写出自己 `aria-hidden` 的带标签图标组件                                    | 更改默认或带标签语义，或在带标签字形上保留组件自己的 `aria-hidden`，会使无障碍断言失败。                                                                                                        | `audit:Icon/accessibility` |
+| FR6                | `Icon.test.tsx` 变体套件                                                          | 已列出、未列出与省略的变体；无活动列表；替换列表下的继承条目；提供的组件                                   | 未列出的变体，或条目定义主题未列出的变体，到达某个条目，或 `variant` 到达提供的组件或 DOM。                                                                                                     | `audit:Icon/behavior`      |
+| FR7                | `Icon.test.tsx` 主题尺寸维度套件                                                  | 每个尺寸在有和没有主题样式下，两种来源模式                                                                 | 受主题控制的尺寸不改变字形维度，或未样式化的尺寸发生改变。                                                                                                                                      | `audit:Icon/theming`       |
+| FR8                | `Icon.test.tsx` 的 "ref reaches the rendered svg for every name" 套件             | 图标组件；语义名称；带命名空间的键；文本字形；字形变更（组件到组件、svg 到文本）；跨重渲染的函数条目；卸载 | 对任何名称种类，`ref` 保持为空或持有已渲染 `<svg>` 之外的任何内容都会失败；文本字形出现非空 `ref`、`ref` 滞留在被替换的字形上、`ref` 在每次重渲染时重新附加，以及卸载后仍设置 `ref`，也会失败。 | `audit:Icon/ref`           |
+| 主题解剖映射       | `scripts/check-knowledge.mjs`                                                     | 规范的使用方解剖结构与当前目标                                                                             | 缺失、多余、带前缀或过期的映射会使仓库校验失败。                                                                                                                                                | `audit:Icon/theming`       |
 
 ## Decision log
 
 ### DEC-1 — One conceptual Glyph across source modes
 
 **Reference:** `component:Icon/DEC-1`
+
 **Decider:** cixzhang, 2026-08-30
 
-Consumers theme and reason about one visual symbol regardless of whether it
-comes from a semantic key or a supplied component. `Glyph` therefore maps to the
-existing `icon` target without freezing either mode's current element shape.
-Icon applies width and height for every source and adds font size where a 1em-
-based source needs it. This preserves one consistent icon box without promising
-a `span`, `svg`, or other element.
+无论视觉符号来自语义键还是提供的组件，使用方都对同一个符号进行主题化与推理。因此 `Glyph` 映射到既有的 `icon` 目标，而不冻结任一模式当前的元素形态。Icon 为每种来源应用宽度与高度，并在基于 1em 的来源需要时添加字号。这在不为 `span`、`svg` 或其他元素作出承诺的前提下，保留了一个一致的图标盒子。
 
-Rejected: separate wrapper and SVG anatomy entries, because those describe
-implementation strategies rather than stable consumer concepts.
+已否决：单独的包装与 SVG 解剖条目，因为那些描述的是实现策略，而非稳定的使用方概念。
 
 ### DEC-2 — Owning components may provide contextual Icon defaults
 
 **Reference:** `component:Icon/DEC-2`
+
 **Decider:** cixzhang, 2026-09-23
 
-A person should see an icon that is proportionate to the Astryx component that
-owns its slot without every caller repeating a size. The owning component may
-therefore provide the default while an explicit Icon size remains authoritative
-and a standalone Icon remains `md`. Provider objects, hooks, and context shape
-remain private implementation details rather than public API.
+人们应当看到与其拥有该插槽的 Astryx 组件相称的图标，而无需每个调用方重复指定尺寸。因此所属组件可以提供默认值，同时显式 Icon 尺寸仍具权威性，独立 Icon 仍为 `md`。提供方对象、hooks 与上下文形态仍是私有实现细节，而非公共 API。
 
-Rejected: an unconditional `md` default inside every composition, forcing every
-caller to repeat the owner-derived size, and exposing the provider mechanism as
-public API.
+已否决：在每个组合内部无条件使用 `md` 默认值、迫使每个调用方重复由拥有者派生的尺寸，以及将提供方机制作为公共 API 暴露。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or system rules. It links to their owners.
+本文件不重复使用方 prop 表/示例、当前审计结果、实现步骤或系统规则。它链接到它们的拥有者。

@@ -1,24 +1,11 @@
-# System specs
+# 系统规格
 
-This directory contains records for consequential shared-system changes. Each
-spec lives under `docs/specs/<id>-<slug>/spec.md`; an optional sibling `plan.md`
-is used only for multi-step implementation.
+本目录存放针对影响广泛的共享系统变更的记录。每个规格位于 `docs/specs/<id>-<slug>/spec.md` 之下；可选的同级 `plan.md` 仅用于多步骤实现。
 
-Component and module contracts live under `docs/specs/components/`, one folder
-per component, holding the core record beside each platform's
-(`components/Avatar/Avatar.spec.md` and `components/Avatar/Avatar.swift.spec.md`).
-[`docs/README.md`](../README.md) has the layout.
+组件与模块的契约位于 `docs/specs/components/` 之下，每个组件一个文件夹，其中核心记录与各平台的记录并排放置（`components/Avatar/Avatar.spec.md` 与 `components/Avatar/Avatar.swift.spec.md`）。[`docs/README.md`](../README.md) 给出了目录布局。
 
-Templates live separately under `docs/templates/knowledge/`. Existing records
-are validated against `docs/schemas/knowledge/`; changing a template does not
-silently change accepted history.
+模板单独放在 `docs/templates/knowledge/` 之下。现有记录会依据 `docs/schemas/knowledge/` 进行校验；修改模板不会悄然改变已接受的历史。
 
-A system spec is appropriate when work changes more than one component, a
-shared primitive, architecture, public API policy, theming, accessibility
-policy, distribution, or lifecycle. Focused fixes that restore an existing
-contract do not need a new spec.
+当一项工作涉及不止一个组件、共享基础构件、架构、公共 API 策略、主题化、无障碍策略、分发或生命周期时，才适合编写系统规格。用于恢复既有契约的聚焦修复不需要新的规格。
 
-Only records with `authority: current` are authoritative. Draft records may
-carry unresolved evidence or owner decisions; they do not govern review.
-Archived records state why they no longer govern and link a replacement when
-one exists. Initial promotion to `current` requires explicit owner approval.
+只有带 `authority: current` 的记录才具有权威性。草稿记录可能带有尚未解决的证据或负责人决策；它们不约束评审。归档记录会说明其为何不再具有约束力，并在存在替代记录时给出链接。首次提升为 `current` 需要负责人明确批准。

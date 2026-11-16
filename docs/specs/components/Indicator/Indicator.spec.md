@@ -33,155 +33,132 @@ system_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                                                                   |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | None changes. `@astryxdesign/core/Indicator` exports the three built-in indicators (`CheckboxIndicator`, `CheckIndicator`, `RadioIndicator`), the shared indicator props and types, the default registry, and name-based resolution.                                       |
-| Behavior                | Hosts draw a decorative control visual by name (`check`, `checkbox`, `radio`). A theme's `indicators` entry for that name replaces it in every host that resolves indicators by name; otherwise the built-in renders. Every indicator is hidden from assistive technology. |
-| End-user impact         | People see one consistent mark for a chosen option, a checkbox, or a radio across the components that resolve indicators by name, and screen-reader users hear the host control's semantics, never a duplicate.                                                            |
-| Builder impact          | None.                                                                                                                                                                                                                                                                      |
-| Compatibility/readiness | Records shipped behavior; no API, default, or DOM change. Three hosts render the built-ins directly instead of resolving by name; listed under Current-state impact.                                                                                                       |
-| Review checks           | Reject an indicator that is exposed to assistive technology, a theme override that a host resolving by name ignores, a falsy `children` that suppresses the built-in mark, or a role or tab stop on an indicator.                                                          |
-| Governing rules         | `architecture:component-theming-surface`; `architecture:public-component-api` INV5; `architecture:theme-authoring-contract`.                                                                                                                                               |
+| 领域          | 契约                                                                                                                                                                                     |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共契约      | 无变化。`@astryxdesign/core/Indicator` 导出三个内置指示器（`CheckboxIndicator`、`CheckIndicator`、`RadioIndicator`）、共享的指示器 props 与类型、默认注册表，以及按名称解析。            |
+| 行为          | 宿主按名称（`check`、`checkbox`、`radio`）绘制装饰性控件视觉。主题中该名称对应的 `indicators` 条目会在每个按名称解析指示器的宿主中替换它；否则渲染内置实现。每个指示器都对辅助技术隐藏。 |
+| 终端用户影响  | 在按名称解析指示器的各组件中，人们看到的是针对所选选项、复选框或单选钮的一致标记；屏幕阅读器用户听到的是宿主控件的语义，绝不会听到重复的语义。                                           |
+| 构建方影响    | 无。                                                                                                                                                                                     |
+| 兼容性/就绪度 | 记录已发布行为；没有 API、默认值或 DOM 变化。有三个宿主直接渲染内置实现，而不是按名称解析；列在 Current-state impact 下。                                                                |
+| 审查检查      | 拒绝以下情况：指示器暴露给辅助技术；按名称解析的宿主忽略了主题覆盖；假值 `children` 抑制了内置标记；指示器上带有 role 或 Tab 停靠点。                                                    |
+| 管辖规则      | `architecture:component-theming-surface`；`architecture:public-component-api` INV5；`architecture:theme-authoring-contract`。                                                            |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；下方正文具有权威性。
 
 ## Intent
 
-Indicator is the shared, replaceable set of decorative control visuals: the
-mark on a chosen option, the box a checkbox draws, and the circle a radio
-draws. It owns the indicator names, theme replacement by name, the shared
-decorative prop contract, and RadioIndicator. Consumer usage lives in
-`Indicator.doc.mjs`.
+Indicator 是共享的、可替换的装饰性控件视觉集合：所选选项上的标记、复选框绘制的方框，以及单选钮绘制的圆圈。它拥有指示器名称、按名称进行的主题替换、共享的装饰性 prop 契约，以及 RadioIndicator。使用方用法见 `Indicator.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`; with no theme override, `check`,
-  `checkbox`, and `radio` resolve to the built-ins
-- Compatibility class: records shipped behavior; no public prop, default,
-  export, or DOM change
-- Controlled/uncontrolled behavior: not applicable; hosts supply `state`
-- Migration decision: none
+- 已发布默认值保留：`yes`；在没有主题覆盖时，`check`、`checkbox` 和 `radio` 解析为内置实现
+- 兼容性类别：记录已发布行为；没有公共 prop、默认值、导出或 DOM 变化
+- 受控/非受控行为：不适用；由宿主提供 `state`
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The core indicator names and the default registry that maps them to the
-  built-ins.
-- Theme replacement by name and the shared indicator prop contract.
-- RadioIndicator, documented as an inline component of `Indicator.doc.mjs`,
-  with the `radio-indicator` and `radio-indicator-dot` targets.
-- The `indicatorScope` marker hosts put on the element whose hover drives the
-  indicator's hover tint.
+- 核心指示器名称，以及将它们映射到内置实现的默认注册表。
+- 按名称进行的主题替换，以及共享的指示器 prop 契约。
+- RadioIndicator，作为 `Indicator.doc.mjs` 的内联组件记录，带有 `radio-indicator` 与 `radio-indicator-dot` 目标。
+- 宿主放在元素上的 `indicatorScope` 标记，该元素的悬停会驱动指示器的悬停着色。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- CheckboxIndicator — owned by `component:CheckboxIndicator`.
-- CheckIndicator — owned by `component:CheckIndicator`.
-- Role, name, state, focus, keyboard, and activation of the host control —
-  owned by each host (CheckboxInput, RadioList, Selector, menu rows).
-- `useIndicator` and `getIndicator` as API — a public hook and function without
-  their own module records; uncontracted beyond the resolution FR2 states.
+- CheckboxIndicator —— 由 `component:CheckboxIndicator` 拥有。
+- CheckIndicator —— 由 `component:CheckIndicator` 拥有。
+- 宿主控件的 role、名称、状态、焦点、键盘与激活 —— 由各宿主拥有（CheckboxInput、RadioList、Selector、菜单行）。
+- 作为 API 的 `useIndicator` 与 `getIndicator` —— 一个公共 hook 与函数，没有各自的模块记录；除解析相关的 FR2 所述内容外未纳入契约。
 
 ## Public concepts
 
-| Concept             | Closed values or states                                | Meaning                                           | Availability by variant/orientation/state | Default  | Owner                 | Stability | Invalid-value behavior                                              |
-| ------------------- | ------------------------------------------------------ | ------------------------------------------------- | ----------------------------------------- | -------- | --------------------- | --------- | ------------------------------------------------------------------- |
-| Indicator name      | `check`, `checkbox`, `radio`, plus augmented names     | Which visual a host draws.                        | Always.                                   | —        | `component:Indicator` | Stable    | An augmented name no theme supplies resolves to nothing.            |
-| State               | `unchecked`, `checked`, and `indeterminate` (checkbox) | The host's selection state.                       | Per indicator family.                     | required | `component:Indicator` | Stable    | TypeScript rejects values outside the family.                       |
-| Size                | `sm`, `md`                                             | Indicator box size.                               | Always.                                   | `md`     | `component:Indicator` | Stable    | TypeScript rejects other values.                                    |
-| Replacement content | renderable `children`                                  | Content drawn instead of the built-in state mark. | Always.                                   | none     | `component:Indicator` | Stable    | Nullish, boolean, and empty-string children keep the built-in mark. |
+| 概念       | 封闭取值或状态                                      | 含义                         | 按变体/方向/状态的可用性 | 默认值 | 所有者                | 稳定性 | 无效值行为                                        |
+| ---------- | --------------------------------------------------- | ---------------------------- | ------------------------ | ------ | --------------------- | ------ | ------------------------------------------------- |
+| 指示器名称 | `check`、`checkbox`、`radio`，以及增强名称          | 宿主绘制哪种视觉。           | 始终可用。               | —      | `component:Indicator` | 稳定   | 没有主题提供的增强名称解析为空。                  |
+| 状态       | `unchecked`、`checked` 与 `indeterminate`（复选框） | 宿主的选择状态。             | 按指示器族而定。         | 必填   | `component:Indicator` | 稳定   | TypeScript 拒绝该族之外的值。                     |
+| 尺寸       | `sm`、`md`                                          | 指示器方框尺寸。             | 始终可用。               | `md`   | `component:Indicator` | 稳定   | TypeScript 拒绝其他值。                           |
+| 替换内容   | 可渲染的 `children`                                 | 代替内置状态标记绘制的内容。 | 始终可用。               | 无     | `component:Indicator` | 稳定   | nullish、布尔值与空字符串 children 保留内置标记。 |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Basis                                                   |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| FR1 | The default registry maps exactly `check` → CheckIndicator, `checkbox` → CheckboxIndicator, and `radio` → RadioIndicator.                                                                                                                                                                                                                                                                                                                                                                | Current tests                                           |
-| FR2 | A host resolves an indicator by name from the nearest theme: the theme's `indicators` entry for that name wins, otherwise the built-in. One override reaches every host that resolves that name. The Tokenizer bottom sheet renders CheckboxIndicator and RadioIndicator directly, so a theme's `checkbox` or `radio` entry does not reach it. An augmented name resolves only when a theme supplies it.                                                                                 | `architecture:theme-authoring-contract`; current tests  |
-| FR3 | Every built-in indicator root sets `aria-hidden="true"` after caller props, so a caller cannot expose it; the public props type rejects `role` and `tabIndex`. Indicators receive `state`, `size`, `isDisabled`, and `children` and nothing that would give them semantics.                                                                                                                                                                                                              | `architecture:public-component-api` INV5; current tests |
-| FR4 | Renderable `children` replace the built-in state mark inside the indicator; nullish, boolean, and empty-string children keep it, and `0` counts as content.                                                                                                                                                                                                                                                                                                                              | Current tests                                           |
-| FR5 | RadioIndicator renders one circular span (20 or 24 CSS px) whose border and fill follow the state: an emphasized border on the surface when unchecked, an accent fill when checked with an on-accent dot (8 or 10 CSS px) inside. Disabled halves the opacity and mutes the border (and the fill when unchecked). Under a hover-capable pointer, hovering the host's `indicatorScope` tints it. The dot stays visible under forced colors. Transitions are instant under reduced motion. | Current source and tests                                |
-| FR6 | RadioIndicator's root carries `astryx-radio-indicator` with `data-size`, `data-checked`, and `data-disabled`; the dot carries `astryx-radio-indicator-dot` with `data-size`. No alias target is emitted. Caller props, `ref`, `className`, `style`, and `xstyle` reach the root.                                                                                                                                                                                                         | `architecture:component-theming-surface`; current tests |
+| ID  | 不变式                                                                                                                                                                                                                                                                                                                                              | 依据                                               |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| FR1 | 默认注册表恰好映射 `check` → CheckIndicator、`checkbox` → CheckboxIndicator、`radio` → RadioIndicator。                                                                                                                                                                                                                                             | 当前测试                                           |
+| FR2 | 宿主从最近的主题中按名称解析指示器：该名称对应的主题 `indicators` 条目优先，否则使用内置实现。一处覆盖会到达每个解析该名称的宿主。Tokenizer 底部面板直接渲染 CheckboxIndicator 与 RadioIndicator，因此主题的 `checkbox` 或 `radio` 条目不会到达它。增强名称只有在主题提供时才会解析。                                                               | `architecture:theme-authoring-contract`；当前测试  |
+| FR3 | 每个内置指示器的根元素都在调用方 props 之后设置 `aria-hidden="true"`，因此调用方无法将其暴露；公共 props 类型拒绝 `role` 与 `tabIndex`。指示器接收 `state`、`size`、`isDisabled` 与 `children`，不接收任何会赋予其语义的内容。                                                                                                                      | `architecture:public-component-api` INV5；当前测试 |
+| FR4 | 可渲染的 `children` 会在指示器内部替换内置状态标记；nullish、布尔值与空字符串 children 保留该标记，而 `0` 计为内容。                                                                                                                                                                                                                                | 当前测试                                           |
+| FR5 | RadioIndicator 渲染一个圆形 span（20 或 24 CSS px），其边框与填充随状态变化：未选中时在表面上呈现强调边框，选中时呈强调色填充，内部带一个位于强调色之上的圆点（8 或 10 CSS px）。禁用时透明度减半并弱化边框（未选中时也弱化填充）。在支持悬停的指针下，悬停宿主的 `indicatorScope` 会为其着色。圆点在强制颜色模式下保持可见。减少动效下过渡为即时。 | 当前源码与测试                                     |
+| FR6 | RadioIndicator 的根元素带有 `astryx-radio-indicator`，并带有 `data-size`、`data-checked` 与 `data-disabled`；圆点带有 `astryx-radio-indicator-dot` 与 `data-size`。不输出任何别名目标。调用方 props、`ref`、`className`、`style` 与 `xstyle` 到达根元素。                                                                                           | `architecture:component-theming-surface`；当前测试 |
 
 ### Allowed variation
 
-- **AV1 — Replacement.** A theme may replace any named indicator with a
-  component that honors FR3.
-- **AV2 — Theme paint.** Themes may restyle the built-ins through their
-  targets without replacing them.
+- **AV1 — 替换。** 主题可以用遵守 FR3 的组件替换任何具名指示器。
+- **AV2 — 主题绘制。** 主题可以通过其目标重新设定内置实现的样式，而不替换它们。
 
 ### Representative states
 
-| State             | Required invariant                                    | Allowed variation |
-| ----------------- | ----------------------------------------------------- | ----------------- |
-| No theme override | Built-ins render for each name.                       | —                 |
-| Theme override    | Every host that resolves the name draws the override. | Override design.  |
-| Radio checked     | Accent circle with dot; `data-checked`.               | Size.             |
-| Falsy children    | Built-in mark still renders.                          | —                 |
+| 状态          | 必需的不变式                         | 允许的变化 |
+| ------------- | ------------------------------------ | ---------- |
+| 无主题覆盖    | 每个名称都渲染内置实现。             | —          |
+| 主题覆盖      | 每个解析该名称的宿主都绘制覆盖实现。 | 覆盖设计。 |
+| 单选钮选中    | 带圆点的强调色圆圈；`data-checked`。 | 尺寸。     |
+| 假值 children | 内置标记仍然渲染。                   | —          |
 
 ### Transformation and precedence order
 
-- **ORD1 — Resolution.** Nearest theme's `indicators[name]`, then the built-in,
-  then nothing for an unsupplied augmented name.
-- **ORD2 — Attributes.** Caller props, then the indicator's own `aria-hidden`.
+- **ORD1 — 解析。** 最近的主题的 `indicators[name]`，然后是内置实现，对未提供的增强名称则为空。
+- **ORD2 — 属性。** 调用方 props，然后是指示器自身的 `aria-hidden`。
 
 ### Performance and resources
 
-- **PR1 — Pure render.** Indicators own no state, effect, listener, or
-  observer.
+- **PR1 — 纯渲染。** 指示器不拥有任何状态、effect、监听器或观察器。
 
 ## Accessibility contract
 
-- **AR1 — Decorative.** Indicators are hidden from assistive technology; the
-  host owns all semantics (FR3).
-- **AR2 — Forced colors.** The radio dot stays visible under forced colors.
+- **AR1 — 装饰性。** 指示器对辅助技术隐藏；所有语义由宿主拥有（FR3）。
+- **AR2 — 强制颜色。** 单选钮圆点在强制颜色模式下保持可见。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                | Representation authority | Hierarchy role | Component contract |
-| ---------------- | ------------------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Radio circle     | Emphasized border unchecked; accent fill checked. | Current source           | Supporting     | FR5, FR6           |
-| Radio dot        | On-accent dot when checked.                       | Current source           | Supporting     | FR5, FR6           |
+| 解剖结构或状态 | 设计要求                                 | 呈现权威 | 层级角色 | 组件契约 |
+| -------------- | ---------------------------------------- | -------- | -------- | -------- |
+| 单选钮圆圈     | 未选中时为强调边框；选中时为强调色填充。 | 当前源码 | 支撑     | FR5, FR6 |
+| 单选钮圆点     | 选中时为位于强调色之上的圆点。           | 当前源码 | 支撑     | FR5, FR6 |
 
-No design record governs Indicator. The checkbox and check visuals are owned by
-their own records.
+没有设计记录管辖 Indicator。复选框与勾选视觉由各自的记录拥有。
 
 ## Family and system relationships
 
-- `architecture:theme-authoring-contract` owns how a theme supplies
-  `indicators`.
-- `component:CheckboxIndicator` and `component:CheckIndicator` own the other two
-  built-ins.
-- CheckboxInput, RadioListItem, Selector, and menu selection rows host
-  indicators.
+- `architecture:theme-authoring-contract` 拥有主题如何提供 `indicators`。
+- `component:CheckboxIndicator` 与 `component:CheckIndicator` 拥有另外两个内置实现。
+- CheckboxInput、RadioListItem、Selector 与菜单选择行承载指示器。
 
 ## Verification map
 
-| Contract        | Verification                                                                                               | Representative states                                                                                      | Mutation or failure expectation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Audit section                   |
-| --------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------- |
-| FR1, FR2        | `indicatorRegistry.test.tsx`; `Indicator.test.tsx` useIndicator suite                                      | No theme; theme override; augmented names                                                                  | A wrong default, an ignored override, or a resolved unsupplied name fails.                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | `audit:Indicator/behavior`      |
-| FR3             | `Indicator.test.tsx` decorative-contract suite                                                             | Each built-in in the checked state; a caller `aria-hidden={false}`; `role` and `tabIndex` as literal props | An indicator a caller can expose, a dropped ordinary prop, or an accepted literal `role` or `tabIndex` fails. Evidence gap: no test checks `aria-hidden` on the unchecked states.                                                                                                                                                                                                                                                                                                                                                                | `audit:Indicator/accessibility` |
-| FR4             | `Indicator.test.tsx` falsy-children suite                                                                  | `null`, `false`, `''`, `0`, real children                                                                  | A falsy child (`false`, `null`, `undefined`, or `''`) that suppresses any built-in's mark fails, and CheckIndicator treating `0` as empty fails. Evidence gap: no test renders `0` as children of CheckboxIndicator or RadioIndicator.                                                                                                                                                                                                                                                                                                           | `audit:Indicator/behavior`      |
-| FR5, FR6, AR2   | `Indicator.test.tsx` radio-dot, disabled, and target-name cases                                            | Checked and unchecked; disabled; canonical targets                                                         | A dot when unchecked, no dot when checked, a missing checked `data-checked` or disabled `data-disabled`, or an alias target fails. Evidence gap: no test asserts the radio sizes, the state colors (emphasized border, accent fill, on-accent dot), the instant transitions under reduced motion, the disabled opacity and border, the hover tint, the forced-colors dot (the RadioList forced-colors case passes on any matching rule), radio `data-size` on the root and dot, `ref`, or caller `className`, `style`, and `xstyle` on the root. | `audit:Indicator/theming`       |
-| ORD1, ORD2, PR1 | Covered by the FR2 and FR3 rows. Evidence gap: no test asserts the absence of state, effects, or listeners | —                                                                                                          | —                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | `audit:Indicator/behavior`      |
+| 契约            | 验证                                                                    | 代表性状态                                                                                           | 变异或失败预期                                                                                                                                                                                                                                                                                                                                                                                                                        | 审计小节                        |
+| --------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| FR1, FR2        | `indicatorRegistry.test.tsx`；`Indicator.test.tsx` useIndicator 套件    | 无主题；主题覆盖；增强名称                                                                           | 错误的默认值、被忽略的覆盖，或被解析的未提供名称会失败。                                                                                                                                                                                                                                                                                                                                                                              | `audit:Indicator/behavior`      |
+| FR3             | `Indicator.test.tsx` 装饰性契约套件                                     | 每个处于选中状态的内置实现；调用方的 `aria-hidden={false}`；作为字面量 props 的 `role` 与 `tabIndex` | 调用方可以暴露的指示器、被丢弃的普通 prop，或被接受的 `role` 或 `tabIndex` 字面量会失败。证据缺口：没有测试检查未选中状态下的 `aria-hidden`。                                                                                                                                                                                                                                                                                         | `audit:Indicator/accessibility` |
+| FR4             | `Indicator.test.tsx` 假值 children 套件                                 | `null`、`false`、`''`、`0`、真实 children                                                            | 抑制任一内置实现标记的假值 child（`false`、`null`、`undefined` 或 `''`）会失败，CheckIndicator 把 `0` 当作空也会失败。证据缺口：没有测试把 `0` 作为 CheckboxIndicator 或 RadioIndicator 的 children 渲染。                                                                                                                                                                                                                            | `audit:Indicator/behavior`      |
+| FR5, FR6, AR2   | `Indicator.test.tsx` 的单选钮圆点、禁用与目标名称用例                   | 选中与未选中；禁用；规范目标                                                                         | 未选中时出现圆点、选中时没有圆点、选中时缺少 `data-checked`、禁用时缺少 `data-disabled`，或出现别名目标会失败。证据缺口：没有测试断言单选钮尺寸、状态颜色（强调边框、强调色填充、位于强调色之上的圆点）、减少动效下的即时过渡、禁用时的透明度与边框、悬停着色、强制颜色下的圆点（RadioList 的强制颜色用例在任何匹配规则下都会通过）、根元素与圆点上的单选钮 `data-size`、`ref`，或根元素上调用方的 `className`、`style` 与 `xstyle`。 | `audit:Indicator/theming`       |
+| ORD1, ORD2, PR1 | 由 FR2 与 FR3 行覆盖。证据缺口：没有测试断言状态、effect 或监听器不存在 | —                                                                                                    | —                                                                                                                                                                                                                                                                                                                                                                                                                                     | `audit:Indicator/behavior`      |
 
 ## Current-state impact
 
-- **Direct indicator imports (FR2).** The Tokenizer bottom sheet renders
-  CheckboxIndicator and RadioIndicator directly, so a theme's `checkbox` or
-  `radio` override does not reach it.
+- **直接导入的指示器（FR2）。** Tokenizer 底部面板直接渲染 CheckboxIndicator 与 RadioIndicator，因此主题的 `checkbox` 或 `radio` 覆盖不会到达它。
 
 ## Decision log
 
-No component-local decision.
+没有组件本地决策。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不重复使用方 prop 表/示例、当前审计结果、实现步骤或族/系统规则。它链接到它们的所有者。

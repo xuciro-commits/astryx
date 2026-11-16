@@ -39,48 +39,23 @@ affects_consumer_docs: [DateInput, DateTimeInput, TimeInput, NumberInput]
 
 ## Intent
 
-When an input that checks its own entries refuses an entry, the person learns
-it once, in words they hear and, in a standalone field, see, and keeps what
-they typed so they can correct it. An entry the person has not finished is
-never flagged, so a lone `-` never flashes an error. Apps change no code: the
-committed value, `onChange`, and what a form posts keep working as they do.
+当某个会校验自身输入的输入拒绝一条输入时，使用者只在一处得知这件事：以他们听得到的文字，以及在独立字段中看得见的文字；并且他们键入的内容会保留下来，以便改正。使用者尚未完成的输入永远不会被标记，因此单独一个 `-` 绝不会闪出错误。应用无需改动任何代码：已提交的值、`onChange` 以及表单提交的内容都保持现有行为。
 
 ## Members
 
-The rule applies to four members of `family:input-fields` that reject typed or
-reported entries themselves: `DateInput`, `DateTimeInput`, `TimeInput`, and
-`NumberInput`. `FileInput` also rejects entries, a file of the wrong type or
-size, and drops them from its value; those are picked files, not typed or
-reported entries, so it is outside this record. Members that reject nothing
-themselves, such as `TextInput`, `Selector`, and `DateRangeInput`, are outside
-it too.
+该规则适用于 `family:input-fields` 中四个会自行拒绝键入或上报的输入的成员：`DateInput`、`DateTimeInput`、`TimeInput` 与 `NumberInput`。`FileInput` 也会拒绝输入——类型或大小不符的文件——并把它们从值中丢弃；但那些是被选中的文件，而不是键入或上报的输入，因此它不在本记录范围内。自身不拒绝任何输入的成员，例如 `TextInput`、`Selector` 与 `DateRangeInput`，同样不在本记录范围内。
 
 ## Non-goals
 
-- A builder's choice to hold a member's rejections until commit for a form or a
-  field, which `spec:AST-117` owns as `entryErrorBehavior`.
-- Where a member inside an InputGroup shows status. `component:InputGroup` FR1,
-  `component:TextInput` FR1, and `component:TimeInput` FR10 own it; FR5 states
-  how a grouped rejection is announced.
-- Caller validation. A caller's `status`, `isRequired`, and form-library rules
-  keep their meaning; FR7 states which message shows when a caller status and a
-  rejection meet.
-- Native constraint validation in the browser, such as `required` and
-  `:invalid`.
-- Rejection wording. Each member's record and `spec:AST-111` AR3 own the
-  messages; `spec:AST-086` owns their delivery.
-- What a commit does with an entry the member accepts: commit, clamp, or clear
-  stays with each member's record.
-- The `onChange` timing of typed entry, which each member's record owns
-  (`spec:AST-111` FR12 for dates).
-- Equivalent internal implementations remain valid when they satisfy this
-  contract.
-- Internal modules, files, function names, algorithms, data structures, storage
-  layouts, manifests, journals, locks, transaction protocols, and CI job/workflow
-  topology belong in architecture or implementation unless callers or
-  interoperating systems intentionally depend on that exact mechanism as a public
-  protocol. In that case, state who depends on it and why an equivalent
-  implementation would not satisfy the contract.
+- 构建者为某个表单或字段选择把成员的拒绝保留到提交时，这一点由 `spec:AST-117` 以 `entryErrorBehavior` 拥有。
+- InputGroup 内部的成员在何处显示状态。`component:InputGroup` FR1、`component:TextInput` FR1 与 `component:TimeInput` FR10 拥有它；FR5 规定分组内的拒绝如何被播报。
+- 调用方校验。调用方的 `status`、`isRequired` 与表单库规则保持其含义；FR7 规定调用方状态与拒绝相遇时显示哪条消息。
+- 浏览器中的原生约束校验，例如 `required` 与 `:invalid`。
+- 拒绝的措辞。各成员的记录与 `spec:AST-111` AR3 拥有这些消息；`spec:AST-086` 拥有它们的送达。
+- 提交对成员接受的输入做什么：提交、钳制还是清除，仍由各成员的记录拥有。
+- 键入输入的 `onChange` 时机，由各成员的记录拥有（日期见 `spec:AST-111` FR12）。
+- 满足本合约的等价内部实现仍然有效。
+- 内部模块、文件、函数名、算法、数据结构、存储布局、清单、日志、锁、事务协议以及 CI 作业/工作流拓扑属于架构或实现，除非调用方或互操作系统有意把该确切机制作为公开协议依赖。在这种情况下，应说明谁依赖它，以及为什么等价实现无法满足该合约。
 
 ## Public contract
 
@@ -119,292 +94,83 @@ interface TimeInputEntryError {
 
 ### Terms
 
-- A **value rejection** refuses an entry that reads as a value the member does
-  not accept: a date the calendar does not have; a date, time, or date-time
-  outside `min`, `max`, or `dateConstraints`; a number outside `min` or `max`.
-- A **text rejection** refuses an entry that does not read as a value:
-  unreadable or incomplete date text, time text that does not parse, number
-  text that does not parse, and a fractional number in an integer-only field.
-- A **commit** is Enter in the field or blur, focus leaving the field.
-- An entry is **complete** when FR1 says so.
-- A **standalone field** is a member that is not inside an InputGroup.
+- **值拒绝**是指拒绝一条读出来是成员不接受的值的输入：日历中不存在的日期；超出 `min`、`max` 或 `dateConstraints` 的日期、时间或日期时间；超出 `min` 或 `max` 的数字。
+- **文本拒绝**是指拒绝一条读不出值的输入：无法识别或不完整的日期文本、无法解析的时间文本、无法解析的数字文本，以及仅限整数的字段中的小数。
+- **提交**是指在该字段中按 Enter，或 blur，即焦点离开该字段。
+- 当 FR1 如此规定时，一条输入是**完整**的。
+- **独立字段**是指不在 InputGroup 内部的成员。
 
 ### Behavior
 
-- **FR1 — Each kind of entry has its own point of completion.** Typed, pasted,
-  and dropped text are judged alike. Under `entryErrorBehavior="complete"`, a
-  member reveals its rejections at these points, and under `'blur-or-enter'` at
-  commit (`spec:AST-117` FR3, FR4).
-  1. A typed date is complete as `spec:AST-111` FR12 defines it: every field is
-     present, the year is complete or is an era year with its era, no separator
-     trails, and the last field cannot take another digit. Gregorian text that
-     only the fallback reader reads (`spec:AST-111` FR9) is complete only at
-     commit.
-  2. A typed time is complete when its hours, both minute digits, and, when the
-     field shows seconds, both second digits are present, and, in twelve-hour
-     text, its day period, unless the hour reads as 0 or 13 through 23.
-  3. A typed number has no fixed length, so it is complete only at commit.
-     While a person types, `NumberInput` marks, shows, and announces nothing,
-     whatever the draft. At commit it reveals the draft's rejection: text that
-     does not parse, a fraction in an integer-only field, or a number outside
-     the range when no number can commit (`min` above `max`); a number outside
-     an ordinary range clamps and commits (`component:NumberInput` FR3) and
-     reveals none. A number's rejection therefore appears at commit under
-     either `entryErrorBehavior` value.
-  4. A value that a native date control reports is complete only at commit:
-     while a person types its year, the control reports each partial year as a
-     date, such as `0002-05-10`.
-  5. A value that a native time control reports is complete when the control
-     reports it.
-- **FR2 — A value rejection appears once the entry is complete.** A member
-  reveals a value rejection as soon as the entry is complete, while focus stays
-  in the field. An entry that is committed before it is complete reveals its
-  rejection at commit.
-- **FR3 — A text rejection waits for commit.** Text that does not read as a
-  value is never complete. While a person types, the member neither marks it
-  invalid nor announces it; its rejection appears at commit.
-- **FR4 — Commit keeps rejected text, and never discards an entry silently.**
-  Enter or blur on typed text with a rejection keeps the text in the field and
-  shows the rejection. The committed value does not change, and `onChange` does
-  not fire. What a form posts does not change. After a blur that keeps a
-  rejected `NumberInput` or `TimeInput` draft, and after Enter or blur on
-  unreadable `DateInput` or `DateTimeInput` date text, a hidden input carries
-  the caller's `name` with the committed value's text, and the typed input
-  carries none: for `NumberInput`, the committed number as the field shows it on
-  the latest stable release, the plain number (`2.5`) while the field is not
-  focused and the plain locale-formatted number (`2,5` in `de-DE`) while it is
-  (`component:NumberInput` FR6); and the committed value as the field shows it
-  for `TimeInput`,
-  `DateInput`, and `DateTimeInput`'s date segment (`component:TimeInput` FR11,
-  `component:DateInput` FR25, `component:DateTimeInput` FR8). In every other
-  case the input that carries `name` on the latest stable release keeps it,
-  and a form posts what it posts there: the typed text of a
-  `NumberInput` without `formatValue` or a `TimeInput` draft that Enter submits
-  before blur, and incomplete date text or a date the calendar does not have or
-  that `min`, `max`, or `dateConstraints` rules out. A `NumberInput` with
-  `formatValue` posts the committed number from its hidden input in every case,
-  as it does there. The hidden input carries `name` until
-  the person edits the kept text, or a new `value` or a pick replaces it; the
-  typed input then carries `name` again. A `value` that the caller passes in
-  the same update as an Enter or blur that keeps rejected text, as a caller
-  that restores its own value at that commit does, does not replace the kept
-  text: the text, its rejection, and its message stay, and a later new
-  `value` replaces it (DEC-14). Unreadable date text that Enter or blur
-  kept is not pending typed text for `component:DateInput` FR16 and
-  `component:DateTimeInput` FR10: the next Enter with no edit submits a
-  surrounding form, and the hidden input posts the committed date. No member
-  reverts rejected text. A native date or time control restores the committed
-  value at blur, because its own value is what a form posts: a form that Enter
-  submits before blur posts the value the control holds. Its rejection stays
-  revealed, with every signal FR5 gives it, as FR6 states, so the restore is
-  never silent. An empty entry is not a rejection: a commit clears it or
-  restores the committed value, as each member's record states. `NumberInput`
-  clamps a number outside its range at commit (`component:NumberInput` FR3), so
-  that rejection ends at the commit.
-- **FR5 — A rejection is a visible message, and its signals move together.** In
-  a standalone field, a rejection that appears shows its message as the field's
-  error status, in the field's status placement and tied to the control by
-  `aria-describedby`, except where FR7 shows a caller status in its place; sets
-  `aria-invalid="true"` on the control; and is announced once (`spec:AST-086`
-  FR1, FR6, FR7). Any invalid styling of the entry's text appears with them.
-  None of these appears before the others, and none stays after the others
-  clear. Inside an InputGroup, a member shows no status of its own and the group
-  shows only its own `status`, as the InputGroup, TextInput, and TimeInput
-  records state; there the rejection sets `aria-invalid` and is announced once
-  through the field's alert. A shown status announces itself, and the field's
-  alert carries only a message that no shown status announces: inside an
-  InputGroup, and where FR7 shows a caller status in place of the field's
-  message. When both segments of a `DateTimeInput` hold a rejection, the field's
-  status shows the date segment's message, which comes first; the time segment's
-  rejection sets `aria-invalid` on its input and is announced once through the
-  field's alert.
-- **FR6 — A shown rejection clears as soon as the entry is valid.** An edit
-  that makes the entry a value the member accepts, or empties it, clears the
-  rejection at once, without a commit. An edit that leaves the entry rejected
-  or incomplete keeps the shown rejection and does not announce it again. The
-  next commit, or the next complete entry, replaces it with the entry's current
-  rejection: a changed message, as when one complete wrong entry is edited into
-  another, is announced once, and the same message is not announced again. A
-  new `value` from the caller, or a date or time the member accepts picked from
-  a Calendar, sheet, or native picker, replaces the entry and clears its
-  rejection, except a `value` that the caller passes in the same update as an
-  Enter or blur that keeps the entry or its rejection, which leaves the entry
-  and its rejection in place (FR4, DEC-14).
-- **FR7 — A caller status never hides a rejection behind a warning.** A
-  `warning` or `success` caller status never replaces a rejection's message, on
-  any member, with or without `onEntryErrorChange`, and a caller `error` status
-  without a message keeps the field's message. A caller `error` status with a
-  message shows in place of the field's message on `NumberInput`, `TimeInput`,
-  and `DateTimeInput`'s time segment, with or without the callback. On
-  `DateInput` and `DateTimeInput`'s date segment, it shows in place of the
-  field's message only with `onEntryErrorChange`; without the callback, the
-  field's message shows in place of any caller `status` while the rejected text
-  stays, as their records state. While a caller `error` status shows in place
-  of the field's message, `aria-invalid` stays set while the rejection stands.
-  Without the callback, the field's alert announces the rejection's own message
-  once; with it, the caller's message is the one announced, and a rejection
-  that starts under an unchanged caller error message changes no status, so the
-  field's alert announces that message once.
-- **FR8 — `NumberInput` and `TimeInput` report their rejections.** Each takes an
-  optional `onEntryErrorChange`, which receives a `NumberInputEntryError` or a
-  `TimeInputEntryError` each time the rejection the field reveals changes, and
-  `null` when it ends. `kind` is `unreadable` for text that is not a number or
-  a time, `fractional` for a fraction in an integer-only `NumberInput`, and
-  `outOfRange` for a time outside `min` or `max`, or a number when `min` is
-  above `max` (FR1); `text` is the typed text;
-  `value` is the number or ISO time the text names, for `fractional` and
-  `outOfRange`. Typing, Enter, blur, a new `value`, `min`, `max`, or
-  `isIntegerOnly`, and disabling, which hides the rejection, each report a
-  changed rejection; a `value` that the caller passes in the same update as
-  an Enter or blur that keeps a rejection changes no rejection, so it
-  reports nothing, not `null` (FR4, DEC-14); an unchanged rejection never
-  reports again; a field that
-  unmounts while a reported rejection stands reports `null`. `TimeInput`'s
-  native and sheet surfaces take no typed text, so they never report.
-- **FR9 — Enter commits every typed field.** Enter in the typed field of each
-  member is a commit, so it reveals a text rejection there. In `TimeInput` and
-  `DateTimeInput`'s time segment it is not prevented beyond that commit, so a
-  surrounding form submits as it does from any text field: a valid draft has
-  already committed while it was typed, and a rejected draft changes no value.
-  While the time segment's preset-time list is open, Enter picks the typed or
-  highlighted time from it and does not submit.
-- **FR10 — Disabled and busy fields reveal no rejection.** While a member is
-  disabled or busy, it reveals no rejection of its own, as its record states
-  (`spec:AST-085` FR2), and reports `null` (FR8). A member that keeps typed
-  text through a lock, as `DateInput` and `DateTimeInput`'s date segment do
-  (`component:DateInput` FR12), reveals and reports that text's rejection again
-  once it is editable. `NumberInput` and `TimeInput` drop a draft when they
-  become disabled (`component:NumberInput` FR9, `component:TimeInput` FR9), so
-  no rejection returns.
+- **FR1 — 每种输入都有自己的完成时点。** 键入、粘贴与拖放的文本受到同样的判定。在 `entryErrorBehavior="complete"` 之下，成员在这些时点揭示其拒绝，而在 `'blur-or-enter'` 之下则在提交时揭示（`spec:AST-117` FR3、FR4）。
+  1. 键入的日期按 `spec:AST-111` FR12 的定义是完整的：每个字段都存在，年份完整或是带纪元的纪元年份，没有分隔符拖尾，且最后一个字段无法再接受一位数字。只有回退读取器才读取的公历文本（`spec:AST-111` FR9）仅在提交时才完整。
+  2. 当键入的时间具有小时、两位分钟数字，以及（当字段显示秒时）两位秒数字，并且在十二小时制文本中还有其日时段时，它是完整的；但小时读作 0 或 13 至 23 时除外。
+  3. 键入的数字没有固定长度，因此仅在提交时才完整。当使用者键入时，`NumberInput` 无论草稿如何都不标记、不显示、不播报任何内容。提交时它揭示草稿的拒绝：无法解析的文本、仅限整数的字段中的小数，或在没有数字可以提交（`min` 大于 `max`）时超出范围的数字；超出普通范围的数字会被钳制并提交（`component:NumberInput` FR3），不会揭示任何内容。因此，无论 `entryErrorBehavior` 取哪个值，数字的拒绝都出现在提交时。
+  4. 原生日期控件上报的值仅在提交时才完整：当使用者键入其年份时，该控件会把每个部分年份作为日期上报，例如 `0002-05-10`。
+  5. 原生时间控件上报的值在该控件上报它时即为完整。
+- **FR2 — 输入一旦完整，值拒绝就会出现。** 一旦输入完整，成员就揭示值拒绝，此时焦点仍在字段内。在完整之前就被提交的输入，会在提交时揭示其拒绝。
+- **FR3 — 文本拒绝等到提交。** 读不出值的文本永远不算完整。当使用者键入时，成员既不把它标记为无效，也不播报它；其拒绝在提交时出现。
+- **FR4 — 提交保留被拒绝的文本，绝不悄悄丢弃输入。** 对带有拒绝的键入文本按 Enter 或 blur，会把该文本保留在字段中并显示拒绝。已提交的值不变，`onChange` 不触发。表单提交的内容不变。在保留被拒绝的 `NumberInput` 或 `TimeInput` 草稿的 blur 之后，以及在对无法识别的 `DateInput` 或 `DateTimeInput` 日期文本按 Enter 或 blur 之后，一个隐藏输入承载调用方的 `name` 与已提交值的文本，而键入输入不承载任何内容：对 `NumberInput` 而言，是字段在最新稳定版上显示已提交数字的方式——字段未聚焦时为纯数字（`2.5`），聚焦时为纯的按区域格式化的数字（在 `de-DE` 中为 `2,5`）（`component:NumberInput` FR6）；而对 `TimeInput`、`DateInput` 与 `DateTimeInput` 的日期段而言，是字段显示已提交值的方式（`component:TimeInput` FR11、`component:DateInput` FR25、`component:DateTimeInput` FR8）。在其他所有情况下，在最新稳定版上承载 `name` 的输入仍承载它，表单提交它在那里提交的内容：不带 `formatValue` 的 `NumberInput` 的键入文本，或在 blur 之前由 Enter 提交的 `TimeInput` 草稿的键入文本，以及不完整的日期文本，或日历中不存在、或被 `min`、`max` 或 `dateConstraints` 排除的日期。带 `formatValue` 的 `NumberInput` 在任何情况下都从其隐藏输入提交已提交的数字，与它在那里一样。隐藏输入承载 `name`，直到使用者编辑所保留的文本，或有新的 `value` 或一次选择替换它；此后键入输入再次承载 `name`。调用方在与保留被拒绝文本的 Enter 或 blur 同一次更新中传入的 `value`——正如在该提交时恢复自己值的调用方所做的那样——不会替换所保留的文本：文本、其拒绝与其消息都保留，而之后的新 `value` 会替换它（DEC-14）。Enter 或 blur 所保留的无法识别的日期文本，对 `component:DateInput` FR16 与 `component:DateTimeInput` FR10 而言不是待处理的键入文本：在没有编辑的情况下下一次按 Enter 会提交外围表单，而隐藏输入提交已提交的日期。没有任何成员会回退被拒绝的文本。原生日期或时间控件在 blur 时恢复已提交值，因为它自己的值就是表单提交的内容：一个在 blur 之前由 Enter 提交的表单，提交的是该控件所持有的值。它的拒绝保持揭示，连同 FR5 赋予它的每一项信号，正如 FR6 所述，因此该恢复绝不是无声的。空输入不是拒绝：提交会清除它或恢复已提交值，正如各成员的记录所述。`NumberInput` 在提交时钳制超出其范围的数字（`component:NumberInput` FR3），因此那种拒绝在提交时结束。
+- **FR5 — 拒绝是一条可见消息，其各项信号同步变化。** 在独立字段中，出现的拒绝把它的消息作为字段的错误状态显示，位于字段的状态位置，并通过 `aria-describedby` 与控制关联，除非 FR7 在该位置显示调用方状态；它把控制设为 `aria-invalid="true"`；并只播报一次（`spec:AST-086` FR1、FR6、FR7）。输入文本的任何无效样式也随之出现。这些之中没有任何一项先于其他项出现，也没有任何一项在其他项清除之后仍保留。在 InputGroup 内部，成员不显示自己的状态，分组只显示它自己的 `status`，正如 InputGroup、TextInput 与 TimeInput 的记录所述；在那里，拒绝会设置 `aria-invalid`，并通过字段的 alert 只播报一次。已显示的状态会自行播报，而字段的 alert 只承载没有任何已显示状态播报过的消息：在 InputGroup 内部，以及 FR7 以调用方状态代替字段消息之处。当 `DateTimeInput` 的两个段都持有拒绝时，字段的状态显示日期段的消息，因为它排在前；时间段的拒绝把 `aria-invalid` 设在它的输入上，并通过字段的 alert 只播报一次。
+- **FR6 — 已显示的拒绝在输入有效时立即清除。** 使输入成为成员接受的值的编辑，或清空它的编辑，会立即清除拒绝，无需提交。使输入仍被拒绝或不完整的编辑会保留已显示的拒绝，且不再播报它。下一次提交，或下一条完整的输入，会以输入当前的拒绝替换它：变化的消息，例如把一条完整但错误的输入编辑成另一条时，只播报一次，而同一条消息不会再次播报。调用方传入的新 `value`，或从 `Calendar`、sheet 面板或原生选择器中选中的成员接受的日期或时间，会替换该输入并清除其拒绝，但调用方在与保留该输入或其拒绝的 Enter 或 blur 同一次更新中传入的 `value` 除外，后者让该输入与其拒绝保持原样（FR4、DEC-14）。
+- **FR7 — 调用方状态绝不把拒绝藏在警告之后。** 在任何成员上，无论是否带 `onEntryErrorChange`，调用方的 `warning` 或 `success` 状态绝不替换拒绝的消息；而不带消息的调用方 `error` 状态保留字段的消息。在 `NumberInput`、`TimeInput` 与 `DateTimeInput` 的时间段上，带消息的调用方 `error` 状态显示在字段消息的位置，无论是否有回调。在 `DateInput` 与 `DateTimeInput` 的日期段上，只有在带 `onEntryErrorChange` 时它才显示在字段消息的位置；没有回调时，只要被拒绝的文本仍在，字段的消息就显示在调用方任何 `status` 的位置，正如它们的记录所述。当调用方 `error` 状态显示在字段消息的位置时，只要拒绝仍在，`aria-invalid` 就保持设置。没有回调时，字段的 alert 只播报拒绝自己的消息一次；有回调时，被播报的是调用方的消息，而在未变化的调用方 error 消息之下开始的拒绝不会改变任何状态，因此字段的 alert 只播报那条消息一次。
+- **FR8 — `NumberInput` 与 `TimeInput` 上报它们的拒绝。** 两者各自接受一个可选的 `onEntryErrorChange`，每当字段所揭示的拒绝发生变化时，它就会收到一个 `NumberInputEntryError` 或 `TimeInputEntryError`，而在拒绝结束时收到 `null`。对于不是数字或时间的文本，`kind` 是 `unreadable`；对于仅限整数的 `NumberInput` 中的小数，是 `fractional`；对于超出 `min` 或 `max` 的时间，或在 `min` 高于 `max` 时的数字（FR1），是 `outOfRange`；`text` 是键入的文本；对于 `fractional` 与 `outOfRange`，`value` 是文本所指的数字或 ISO 时间。键入、Enter、blur、新的 `value`、`min`、`max` 或 `isIntegerOnly`，以及会隐藏拒绝的禁用，各自都上报一次已变化的拒绝；调用方在与保留拒绝的 Enter 或 blur 同一次更新中传入的 `value` 不改变任何拒绝，因此它什么都不上报，也不上报 `null`（FR4、DEC-14）；未变化的拒绝绝不再上报；在已上报的拒绝仍存在时卸载的字段会上报 `null`。`TimeInput` 的原生与 sheet 面板表面不接受键入文本，因此它们从不上报。
+- **FR9 — Enter 提交每个键入字段。** 在每个成员的键入字段中按 Enter 都是一次提交，因此它在那里揭示文本拒绝。在 `TimeInput` 与 `DateTimeInput` 的时间段中，它在该提交之外不被阻止，因此外围表单与从任何文本字段提交一样地提交：有效草稿在键入时就已经提交，而被拒绝的草稿不改变任何值。当时间段的预设时间列表打开时，Enter 从中选取键入的或高亮的时间，且不提交。
+- **FR10 — 禁用与忙碌的字段不揭示拒绝。** 当成员被禁用或忙碌时，它不揭示自己的任何拒绝，正如其记录所述（`spec:AST-085` FR2），并上报 `null`（FR8）。在锁定期间保留键入文本的成员，例如 `DateInput` 与 `DateTimeInput` 的日期段（`component:DateInput` FR12），在它重新可编辑之后会再次揭示并上报该文本的拒绝。`NumberInput` 与 `TimeInput` 在被禁用时丢弃草稿（`component:NumberInput` FR9、`component:TimeInput` FR9），因此不会有拒绝重新出现。
 
 ### Accessibility contract
 
-- **AR1 — No false alarms.** An unfinished entry produces no announcement and no
-  invalid state (FR1–FR3).
-- **AR2 — One announcement per rejection.** Each rejection that appears is
-  announced once, at the urgency `spec:AST-086` FR5 gives an error (FR5, FR7).
-- **AR3 — Not by color alone.** In a standalone field, a rejection is a visible
-  message tied to the control by `aria-describedby`, never only a text color
-  (WCAG 2.2 1.4.1, 3.3.1). Where FR7 shows a caller `error` status in its
-  place, that status is the visible message, and the rejection is announced and
-  sets `aria-invalid`. Inside an InputGroup, the rejection is announced and sets
-  `aria-invalid`, and a visible message of the member's own is a gap the
-  InputGroup records own.
-- **AR4 — Nothing is discarded silently.** A commit keeps rejected text with its
-  message, and a native control that restores its committed value keeps the
-  rejection revealed (FR4), so a person always learns that an entry was not
-  accepted (WCAG 2.2 3.3.1).
+- **AR1 — 无误报。** 未完成的输入不产生任何播报，也不产生无效状态（FR1–FR3）。
+- **AR2 — 每个拒绝只播报一次。** 出现的每个拒绝只播报一次，紧急性按 `spec:AST-086` FR5 为错误规定的方式（FR5、FR7）。
+- **AR3 — 不只靠颜色。** 在独立字段中，拒绝是一条可见消息，通过 `aria-describedby` 与控制关联，绝不只是文本颜色（WCAG 2.2 1.4.1、3.3.1）。在 FR7 以其代替的位置显示调用方 `error` 状态之处，该状态就是可见消息，拒绝会被播报并设置 `aria-invalid`。在 InputGroup 内部，拒绝会被播报并设置 `aria-invalid`，而成员自己的可见消息是 InputGroup 记录所拥有的一处缺口。
+- **AR4 — 不会有任何内容被悄悄丢弃。** 提交会把被拒绝的文本连同其消息一并保留，而恢复其已提交值的原生控件会让拒绝保持揭示（FR4），因此使用者总能得知某条输入未被接受（WCAG 2.2 3.3.1）。
 
 ### Compatibility
 
-Every change in this record applies with no prop set, and together they are one
-accessibility behavior fix under `spec:AST-017` FR53: their purpose is to make
-`DateInput`, `DateTimeInput`, `TimeInput`, and `NumberInput` conform to WCAG 2.2
-1.4.1 (Use of Color) and 3.3.1 (Error Identification), both Level A.
-`spec:AST-017` FR3 sends a change to documented interaction or accessibility
-behavior made for accessibility conformance to FR53.
+本记录中的每项改动都在不设置任何 prop 的情况下生效，它们合起来是 `spec:AST-017` FR53 之下的一次无障碍行为修复：其目的是让 `DateInput`、`DateTimeInput`、`TimeInput` 与 `NumberInput` 符合 WCAG 2.2 1.4.1（Use of Color）与 3.3.1（Error Identification），两者均为 Level A。`spec:AST-017` FR3 把为无障碍符合性而对已记录交互或无障碍行为所做的改动送交给 FR53。
 
-- The fix ships as a patch `[fix]`, with a release-note line, and its Changeset
-  names the old and new behavior and the two success criteria.
-- It requires no app-layer code change. Existing props, types, exports, tokens,
-  and documented usage keep working; the committed value and `onChange` do not
-  change; what a form posts does not change, because a hidden input carries the
-  committed value's text wherever the latest stable release reverts rejected
-  text, and elsewhere the input that carries `name` on the release keeps it
-  (FR4); and `NumberInput`,
-  `TimeInput`, and `DateTimeInput`'s time segment keep a caller `error` status
-  with a message shown over their own message (FR7).
-- `onEntryErrorChange` and its `NumberInputEntryError` and `TimeInputEntryError`
-  types are optional public surface that FR53 admits under the rules for public
-  additions (`spec:AST-017` FR5). Nothing is removed, renamed, or narrowed.
-- Behavior it replaces, on the latest stable release:
-  - A rejected `NumberInput` or `TimeInput` draft shows only as secondary-color
-    text, its message reaches only an assertive visually hidden region, and
-    blur reverts it with no message. `component:NumberInput` AR2 relies on that
-    hidden alert for WCAG 3.3.1.
-  - Unreadable `DateInput` and `DateTimeInput` date text, and an out-of-range
-    edit in a native date or time control, do the same; the native control
-    restores its committed value at blur and drops the rejection.
-  - Each of them also marks and announces an unfinished entry, such as a lone
-    `-`, on each keystroke.
-- Behavior it ships, in all four members: in a standalone field, a visible
-  message tied to the field by `aria-describedby` (FR5, FR7); rejected text
-  kept in the field at commit and never reverted, and a native restore that
-  keeps its rejection revealed (FR4); and no invalid state or alert while an
-  entry is unfinished, with unreadable text revealed at commit (FR1–FR3).
-  `NumberInput` reveals every rejection at commit and nothing while the person
-  types.
-- Two submissions post rejected text, as they do on the latest stable release:
-  incomplete date text or a date the calendar does not have or that its bounds
-  rule out, which `DateInput` and `DateTimeInput` keep after blur, and a
-  `NumberInput` without `formatValue` or a `TimeInput` draft that Enter submits
-  before blur (FR4, DEC-13).
-- Two screens an app chose change, as part of the same fix:
-  - A `NumberInput`, `TimeInput`, or time segment with a caller `warning` or
-    `success` status shows the rejection's message in place of that status
-    while a rejection stands, because a field marked invalid must say why
-    (WCAG 2.2 3.3.1), as `DateInput` already does (FR7).
-  - Unreadable `DateInput` and `DateTimeInput` date text stays at commit, and
-    its message replaces a caller `status` while it stays, following the
-    shipped `DateInput` rule that the field's own message wins; on the latest
-    stable release the text reverts and the caller's status stays shown (FR4,
-    FR7).
+- 该修复以补丁 `[fix]` 形式发布，附一条发布说明行，其 Changeset 命名旧行为与新行为以及这两项成功标准。
+- 它不需要应用层代码改动。既有 prop、类型、导出、token 与已记录用法继续可用；已提交的值与 `onChange` 不变；表单提交的内容不变，因为凡是最新稳定版会回退被拒绝文本之处，都有隐藏输入承载已提交值的文本，而在其他位置，在发布版上承载 `name` 的输入仍承载它（FR4）；并且 `NumberInput`、`TimeInput` 与 `DateTimeInput` 的时间段仍会保留带消息的调用方 `error` 状态，显示在它们自己的消息之上（FR7）。
+- `onEntryErrorChange` 及其 `NumberInputEntryError` 与 `TimeInputEntryError` 类型是可选的公开表面，FR53 按公开新增的规则予以接纳（`spec:AST-017` FR5）。没有任何东西被移除、重命名或收窄。
+- 它在最新稳定版上取代的行为：
+  - 被拒绝的 `NumberInput` 或 `TimeInput` 草稿只以次要颜色文本显示，其消息只到达一个 assertive 的视觉隐藏区域，而 blur 会在没有消息的情况下把它回退。`component:NumberInput` AR2 为满足 WCAG 3.3.1 依赖那个隐藏的 alert。
+  - 无法识别的 `DateInput` 与 `DateTimeInput` 日期文本，以及原生日期或时间控件中超出范围的编辑，也做同样的事；原生控件在 blur 时恢复其已提交值并丢弃拒绝。
+  - 它们每一个还会在每次按键时标记并播报未完成的输入，例如单独一个 `-`。
+- 它在全部四个成员中发布的行为：在独立字段中，一条通过 `aria-describedby` 与字段关联的可见消息（FR5、FR7）；被拒绝的文本在提交时保留在字段中且永不回退，原生恢复会让其拒绝保持揭示（FR4）；并且输入未完成时不产生无效状态或 alert，无法识别的文本在提交时揭示（FR1–FR3）。`NumberInput` 在提交时揭示每一种拒绝，在使用者键入时什么都不揭示。
+- 有两处提交会提交被拒绝的文本，与它们在最新稳定版上一样：不完整的日期文本，或日历中不存在、或被其边界排除的日期，`DateInput` 与 `DateTimeInput` 在 blur 之后保留它们；以及不带 `formatValue` 的 `NumberInput`，或在 blur 之前就由 Enter 提交的 `TimeInput` 草稿（FR4、DEC-13）。
+- 作为同一修复的一部分，应用所选择的两处界面会改变：
+  - 带有调用方 `warning` 或 `success` 状态的 `NumberInput`、`TimeInput` 或时间段，在拒绝存在时显示拒绝的消息以代替该状态，因为被标记为无效的字段必须说明原因（WCAG 2.2 3.3.1），正如 `DateInput` 已经做的那样（FR7）。
+  - 无法识别的 `DateInput` 与 `DateTimeInput` 日期文本在提交时保留，其消息在它保留期间替换调用方的 `status`，遵循已发布的 `DateInput` 规则——字段自己的消息胜出；在最新稳定版上该文本会回退，调用方的状态保持显示（FR4、FR7）。
 
 ### Platform support
 
-- Supported feature/engine floor: every supported browser and renderer. Nothing
-  here is behind a capability check.
-- Unsupported behavior: none.
-- Browser evidence: DOM and accessibility-tree assertions for the error status,
-  `aria-invalid`, `aria-describedby`, and live-region text at each keystroke
-  and commit, standalone and inside an InputGroup, with and without a caller
-  `status`; a real-browser check of the partial years a native date control
-  reports while the year is typed, of the native restore at blur, and that blur
-  and Enter commit on the typed surfaces, Enter in `TimeInput` and the
-  `DateTimeInput` time segment still submitting its form.
+- 支持的功能/引擎下限：所有受支持的浏览器与渲染器。此处没有任何内容受能力检查限制。
+- 不支持的行为：无。
+- 浏览器证据：针对错误状态、`aria-invalid`、`aria-describedby` 与 live region 文本，在每次按键与提交时、独立与 InputGroup 内部、带与不带调用方 `status` 的情形下断言 DOM 与无障碍树；在真实浏览器中检查原生日期控件在键入年份时上报的部分年份、blur 时的原生恢复，以及 blur 与 Enter 在键入表面上提交、`TimeInput` 与 `DateTimeInput` 时间段中的 Enter 仍会提交其表单。
 
 ## Current-state impact
 
-- `family:input-fields` adds FR15, a projection of this record.
-- `component:DateInput` FR25, `component:DateTimeInput` FR16,
-  `component:TimeInput` FR14 and FR15, and `component:NumberInput` FR15 and FR16
-  project FR1–FR10, and the rows that describe a revert, a keystroke alert, or a
-  rejection shown only by color point to them. `component:NumberInput` FR6,
-  `component:TimeInput` FR11, `component:DateInput` FR25, and
-  `component:DateTimeInput` FR8 post the committed value's text from a hidden
-  input after blur keeps a rejected draft, or Enter or blur keeps unreadable
-  date text. `component:DateTimeInput` FR16 shows the date segment's
-  message when both segments hold a rejection. `component:NumberInput` and
-  `component:TimeInput` add `onEntryErrorChange` and their entry-error types.
-  The `spec:AST-117` projections, `component:NumberInput` FR14,
-  `component:TimeInput` FR13, `component:DateInput` FR24, and
-  `component:DateTimeInput` FR15, reveal rejections under `'complete'` when
-  these projections state, and keep rejected text under `'blur-or-enter'`.
-- The `.doc.mjs` files of the four components describe when a rejection shows,
-  that rejected text stays at commit, and which message wins over a caller
-  `status`; the `NumberInput` and `TimeInput` docs describe
-  `onEntryErrorChange`.
+- `family:input-fields` 增加 FR15，它是本记录的一个投射。
+- `component:DateInput` FR25、`component:DateTimeInput` FR16、`component:TimeInput` FR14 与 FR15，以及 `component:NumberInput` FR15 与 FR16 投射 FR1–FR10，而那些描述回退、按键 alert，或仅靠颜色显示的拒绝的行指向它们。`component:NumberInput` FR6、`component:TimeInput` FR11、`component:DateInput` FR25 与 `component:DateTimeInput` FR8 在 blur 保留被拒绝草稿之后，或在 Enter 或 blur 保留无法识别的日期文本之后，从隐藏输入提交已提交值的文本。`component:DateTimeInput` FR16 在两个段都持有拒绝时显示日期段的消息。`component:NumberInput` 与 `component:TimeInput` 增加 `onEntryErrorChange` 及其输入错误类型。`spec:AST-117` 的投射，`component:NumberInput` FR14、`component:TimeInput` FR13、`component:DateInput` FR24 与 `component:DateTimeInput` FR15，在这些投射所规定之处于 `'complete'` 下揭示拒绝，并在 `'blur-or-enter'` 下保留被拒绝的文本。
+- 这四个组件的 `.doc.mjs` 文件描述拒绝何时显示、被拒绝的文本在提交时保留，以及哪条消息胜过调用方的 `status`；`NumberInput` 与 `TimeInput` 的文档描述 `onEntryErrorChange`。
 
-Requirement gaps, each a WCAG 2.2 Level A mismatch that FR53 fixes unless it
-says otherwise:
+需求缺口，每一处都是 WCAG 2.2 Level A 的不符，除非另有说明，均由 FR53 修复：
 
-- AR3 gap (WCAG 2.2 3.3.1), outside this fix: inside an InputGroup, a member's
-  own rejection is announced and sets `aria-invalid` but shows no visible
-  message.
+- AR3 缺口（WCAG 2.2 3.3.1），不在本次修复范围内：在 InputGroup 内部，成员自己的拒绝会被播报并设置 `aria-invalid`，但不显示任何可见消息。
 
 ## Verification
 
-| Contract | Verification                                  | Representative states                                                                                                                                                                                                               | Mutation or failure expectation                                                                                                              |
-| -------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1      | Completeness unit cases per kind of entry     | Dates per `spec:AST-111` FR12; `1:3`, `1:30`, `1:30 PM`, `13:30` in 12- and 24-hour fields; `-`, `1a`, `150` with `max={100}` while typed and at commit; `0002-05-10`                                                               | An unfinished entry counts as complete, or a complete one waits                                                                              |
-| FR2, FR3 | Keystroke-by-keystroke suites                 | Each value and text rejection of each member; native date year typing; pasted text                                                                                                                                                  | A rejection appears before the entry is complete, a text rejection appears while typing, or a complete value rejection waits                 |
-| FR4      | Enter and blur suites; native form submission | Each rejection kind; empty entry; `NumberInput` past a bound; a kept `NumberInput` draft in a decimal-comma locale, posted focused and unfocused; a native restore; a form posted after Enter and after blur on each kept rejection | Text reverts or commits, `onChange` fires, a form posts other than FR4 says, a native restore drops its rejection, or a clamp is reported    |
-| FR5, FR7 | Accessibility-tree and live-region assertions | Standalone, horizontal-labels; InputGroup (alert only); each status placement; no caller `status`; an `error`, `warning`, and `success` status; callback or none                                                                    | The signals appear or clear apart, a `warning` or `success` status hides a rejection, the wrong message wins, or an announcement repeats     |
-| FR6      | Edit suites after a shown rejection           | Edit to valid; to empty; to incomplete; to another rejection; caller `value` change, and one at each commit that keeps the entry; calendar pick                                                                                     | A fixed entry keeps its rejection, an incomplete edit clears it or announces it again, or a pick leaves it                                   |
-| FR8      | `NumberInput` and `TimeInput` callback suites | Each kind; the rejection ending by typing, a new `value`, or a new bound; disabling; unmount; an unchanged rejection; native and sheet surfaces                                                                                     | A report is missing, repeats an unchanged rejection, carries the wrong `kind` or `value`, or comes from a surface with no typed text         |
-| FR9      | Enter suites in a form                        | `TimeInput` and the `DateTimeInput` time segment with a rejected draft, a valid draft, and no draft; the preset-time list open                                                                                                      | Enter reveals nothing for a rejected draft, a closed time field prevents the form's submission, or Enter in the open list submits            |
-| FR10     | Disabled and busy suites                      | Rejection shown, then disabled; DateInput text kept while busy; a `NumberInput` draft when disabled                                                                                                                                 | A locked field reveals or reports a rejection, kept DateInput text loses its rejection once editable, or a dropped draft's rejection returns |
-| AR1–AR4  | Screen-reader evidence under `spec:AST-009`   | Each member, typed and native, standalone and grouped, with and without a caller `status`                                                                                                                                           | An unfinished entry is announced, a rejection is heard twice, or a commit discards an entry with no message                                  |
+| Contract | Verification                              | Representative states                                                                                                                                                                        | Mutation or failure expectation                                                                              |
+| -------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| FR1      | 每种输入的完整性单元用例                  | 按 `spec:AST-111` FR12 的日期；`1:3`、`1:30`、`1:30 PM`、`13:30` 在 12 小时制与 24 小时制字段中；键入时与提交时配合 `max={100}` 的 `-`、`1a`、`150`；`0002-05-10`                            | 未完成的输入被算作完整，或一条完整的输入被拖延                                                               |
+| FR2, FR3 | 逐键测试套件                              | 每个成员的每种值拒绝与文本拒绝；原生日期年份键入；粘贴的文本                                                                                                                                 | 拒绝在输入完整之前出现、文本拒绝在键入时出现，或完整的值拒绝被拖延                                           |
+| FR4      | Enter 与 blur 测试套件；原生表单提交      | 每种拒绝类型；空输入；超出边界的 `NumberInput`；在十进制逗号区域设置中保留的 `NumberInput` 草稿，分别在聚焦与未聚焦时提交；原生恢复；在每种被保留的拒绝上按 Enter 之后与 blur 之后提交的表单 | 文本被回退或提交、`onChange` 被触发、表单提交的内容与 FR4 所述不同、原生恢复丢掉了它的拒绝，或一次钳制被上报 |
+| FR5, FR7 | 无障碍树与 live region 断言               | 独立字段、水平标签；InputGroup（仅 alert）；每种状态位置；无调用方 `status`；`error`、`warning` 与 `success` 状态；有回调或无回调                                                            | 各项信号分开出现或分开清除、`warning` 或 `success` 状态隐藏了拒绝、错误的消息胜出，或播报重复                |
+| FR6      | 显示拒绝之后的编辑测试套件                | 编辑为有效；编辑为空；编辑为不完整；编辑为另一种拒绝；调用方 `value` 变化，以及在每个保留该输入的提交时的一个变化；日历选择                                                                  | 已修好的输入保留其拒绝、不完整的编辑清除了它或再次播报它，或一次选择让它保留                                 |
+| FR8      | `NumberInput` 与 `TimeInput` 回调测试套件 | 每种类型；通过键入、新的 `value` 或新的边界结束的拒绝；禁用；卸载；未变化的拒绝；原生与 sheet 面板表面                                                                                       | 上报缺失、重复上报未变化的拒绝、携带错误的 `kind` 或 `value`，或来自没有键入文本的表面的上报                 |
+| FR9      | 表单中的 Enter 测试套件                   | 带被拒绝草稿、有效草稿与无草稿的 `TimeInput` 与 `DateTimeInput` 时间段；预设时间列表打开                                                                                                     | Enter 对被拒绝的草稿不揭示任何内容、关闭的时间字段阻止表单提交，或在打开的列表中按 Enter 却提交              |
+| FR10     | 禁用与忙碌测试套件                        | 显示拒绝后禁用；忙碌期间保留的 DateInput 文本；禁用时的 `NumberInput` 草稿                                                                                                                   | 被锁定的字段揭示或上报拒绝、保留的 DateInput 文本在可编辑后失去其拒绝，或被丢弃草稿的拒绝重新出现            |
+| AR1–AR4  | `spec:AST-009` 下的屏幕阅读器证据         | 每个成员、键入与原生、独立与分组、带与不带调用方 `status`                                                                                                                                    | 未完成的输入被播报、拒绝被听到两次，或一次提交丢弃了一条输入而没有消息                                       |
 
 ## Decision log
 
@@ -413,168 +179,107 @@ says otherwise:
 **Reference:** `spec:AST-118/DEC-1`
 **Decider:** `nynexman4464`, `2026-11-11`
 
-Form guidance advises against flagging an entry a person has not finished, and
-allows checking a fixed-length entry once it is fully typed. A field marks and
-announces nothing while an entry is unfinished, so a lone `-` never flashes an
-error (FR1–FR3).
+表单指引建议不要标记使用者尚未完成的输入，并允许在定长输入被完整键入之后检查它。字段在输入未完成时不标记也不播报任何内容，因此单独一个 `-` 绝不会闪出错误（FR1–FR3）。
 
-Rejected: a pause in typing as completion, because its timing differs between
-people and assistive technologies.
+已否决：把键入中的停顿当作完成，因为其时序因人以及因辅助技术而异。
 
 ### DEC-2 — A date or time completes when every field is present
 
 **Reference:** `spec:AST-118/DEC-2`
 **Decider:** `nynexman4464`, `2026-11-11`
 
-Typed dates and times have a fixed set of fields, so they are complete when
-every field is present. A native date control reports partial years while its
-year is typed, so its value is complete only at commit (FR1). DEC-12 covers
-numbers.
+键入的日期与时间有一组固定的字段，因此当每个字段都存在时它们就是完整的。原生日期控件在键入年份时会上报部分年份，因此它的值仅在提交时才完整（FR1）。DEC-12 涵盖数字。
 
 ### DEC-3 — Text that is not a value waits for commit and then stays
 
 **Reference:** `spec:AST-118/DEC-3`
 **Decider:** `nynexman4464`, `2026-11-11`
 
-Unreadable text is never complete, so it waits for commit. A commit that
-dropped it would discard the person's entry with no message, so the commit
-keeps it and shows why (FR3, FR4).
+无法识别的文本永远不完整，因此它等待提交。若一次提交将其丢弃，就会在没有任何消息的情况下丢弃使用者的输入，因此提交保留它并说明原因（FR3、FR4）。
 
 ### DEC-4 — Every rejection is a visible message
 
 **Reference:** `spec:AST-118/DEC-4`
 **Decider:** `nynexman4464`, `2026-11-11`
 
-A rejection that is only announced, or only colors the text, leaves a sighted
-person without the reason and a screen-reader user with words no one else
-sees. In a standalone field, the field's error status carries the reason for
-everyone, and its announcement is the one announcement (FR5). DEC-10 covers a
-member inside an InputGroup.
+只被播报、或只给文本着色的拒绝，会让有视力的使用者得不到原因，而让屏幕阅读器使用者得到别人看不见的词语。在独立字段中，字段的错误状态为所有人承载原因，其播报就是那唯一一次播报（FR5）。DEC-10 涵盖 InputGroup 内部的成员。
 
 ### DEC-5 — A caller error status keeps each member's precedence
 
 **Reference:** `spec:AST-118/DEC-5`
 **Decider:** `nynexman4464`, `2026-11-11`
 
-`NumberInput`, `TimeInput`, and `DateTimeInput`'s time segment show a caller
-`error` status over their own message, and `DateInput` shows its message over
-the caller's, as each does on the latest stable release. `onEntryErrorChange`
-gives `NumberInput` and `TimeInput` the rejection, so an app that wants its own
-wording passes it as an `error` status (FR7, FR8). DEC-8 names the two screens
-that change.
+`NumberInput`、`TimeInput` 与 `DateTimeInput` 的时间段在它们自己的消息之上显示调用方 `error` 状态，而 `DateInput` 在调用方的消息之上显示自己的消息，与它们在最新稳定版上的做法一致。`onEntryErrorChange` 把拒绝交给 `NumberInput` 与 `TimeInput`，因此想要自己措辞的应用可以把它作为 `error` 状态传入（FR7、FR8）。DEC-8 指明会改变的两处界面。
 
 ### DEC-6 — Enter commits `TimeInput` and still submits the form
 
 **Reference:** `spec:AST-118/DEC-6`
 **Decider:** `nynexman4464`, `2026-11-11`
 
-Enter reveals a rejected draft's message, and the field does not prevent it
-beyond that commit, so a form submits from `TimeInput` as it does from any text
-field. A valid draft has already committed while it was typed, and a rejected
-draft posts its typed text, as on the latest stable release (FR4, FR9). `DateTimeInput`'s time segment follows the same rule
-outside its preset-time list.
+Enter 揭示被拒绝草稿的消息，而字段在该提交之外不再阻止它，因此从 `TimeInput` 提交表单与从任何文本字段提交一样。有效草稿在键入时就已经提交，被拒绝的草稿提交其键入文本，与最新稳定版一致（FR4、FR9）。`DateTimeInput` 的时间段在其预设时间列表之外遵循同一规则。
 
 ### DEC-7 — A shown rejection stays until the entry is valid
 
 **Reference:** `spec:AST-118/DEC-7`
 **Decider:** `nynexman4464`, `2026-11-11`
 
-A rejection clears the moment the entry is fixed, so a correction gets
-immediate credit. An edit that leaves the entry wrong does not make the
-rejection untrue, so the rejection stays without a new announcement. A changed
-message is new information, so it is announced once (FR6).
+拒绝在输入被修好的那一刻清除，因此修正会立即得到认可。使输入仍然错误的编辑并不会让拒绝变得不实，因此拒绝保留且不再播报。变化的消息是新信息，因此只播报一次（FR6）。
 
 ### DEC-8 — These changes are one accessibility behavior fix
 
 **Reference:** `spec:AST-118/DEC-8`
 **Decider:** `nynexman4464`, `2026-11-11`
 
-Each change makes the four members meet WCAG 2.2 1.4.1 and 3.3.1 in a
-standalone field, and none needs an app to change code, so they ship together
-as a patch under `spec:AST-017` FR53. A caller `error` status keeps its place
-on `NumberInput` and `TimeInput` (DEC-5), and what a form posts does not change
-(DEC-13). Two screens an app chose change as part of
-the fix: a `warning` or `success` status gives way to a rejection's message
-(DEC-11), and unreadable `DateInput` text stays at commit with its message in
-place of a caller status, as the field's message already wins there.
+每项改动都让这四个成员在独立字段中满足 WCAG 2.2 1.4.1 与 3.3.1，且都不需要应用改动代码，因此它们作为 `spec:AST-017` FR53 之下的一个补丁一起发布。调用方 `error` 状态在 `NumberInput` 与 `TimeInput` 上保留其位置（DEC-5），表单提交的内容不变（DEC-13）。作为修复的一部分，应用所选择的两处界面会改变：`warning` 或 `success` 状态让位于拒绝的消息（DEC-11），无法识别的 `DateInput` 文本在提交时保留，其消息位于调用方状态的位置，正如字段消息在那里本就胜出。
 
 ### DEC-9 — A native control restores its value and keeps the rejection
 
 **Reference:** `spec:AST-118/DEC-9`
 **Decider:** `nynexman4464`, `2026-11-11`
 
-A native date or time control's own value is what a form posts, so a refused
-date or time cannot stay in it. The control restores the committed value at
-blur and keeps the rejection's message, `aria-invalid`, and announcement, so
-the restore says why (FR4).
+原生日期或时间控件自己的值就是表单提交的内容，因此被拒绝的日期或时间不能留在其中。控件在 blur 时恢复已提交值，并保留拒绝的消息、`aria-invalid` 与播报，因此该恢复会说明原因（FR4）。
 
 ### DEC-10 — A grouped member announces its rejection
 
 **Reference:** `spec:AST-118/DEC-10`
 **Decider:** `nynexman4464`, `2026-11-11`
 
-Inside an InputGroup, the group owns the only visible status, and its records
-give a member no message box of its own. A grouped member's rejection is
-announced and sets `aria-invalid`; a visible message there belongs to the
-InputGroup records (FR5, AR3).
+在 InputGroup 内部，分组拥有唯一可见的状态，其记录不给成员自己的消息框。分组内成员的拒绝会被播报并设置 `aria-invalid`；那里的可见消息属于 InputGroup 记录（FR5、AR3）。
 
 ### DEC-11 — A warning or success status never hides a rejection
 
 **Reference:** `spec:AST-118/DEC-11`
 **Decider:** `nynexman4464`, `2026-11-11`
 
-A field marked invalid that reads "Looks good" names no error, against WCAG 2.2
-3.3.1, so a `warning` or `success` caller status never replaces a rejection's
-message on any member, with or without `onEntryErrorChange`, as `DateInput`
-already does (FR7).
+被标记为无效却写着“Looks good”的字段没有指明任何错误，这违反 WCAG 2.2 3.3.1，因此在任何成员上、无论是否带 `onEntryErrorChange`，调用方 `warning` 或 `success` 状态绝不替换拒绝的消息，正如 `DateInput` 已经做的那样（FR7）。
 
 ### DEC-12 — A typed number is complete only at commit
 
 **Reference:** `spec:AST-118/DEC-12`
 **Decider:** `nynexman4464`, `2026-11-11`
 
-A number has no fixed length, so no point before Enter or blur says it is
-finished. `NumberInput` reveals a typed number's rejection at commit and
-nothing while the person types, as React Aria's NumberField shows validation
-when the person commits the value, typically on blur (FR1).
+数字没有固定长度，因此在 Enter 或 blur 之前的任何时刻都不能说它已完成。`NumberInput` 在提交时揭示键入数字的拒绝，在使用者键入时什么都不揭示，正如 React Aria 的 NumberField 在使用者提交该值时（通常是 blur 时）显示校验（FR1）。
 
-Rejected: a number that no digit typed at its end can bring into range counting
-as complete, because the test is complex and easy to get wrong with negative
-numbers and decimals.
+已否决：把“在其末尾键入任何数字都无法让它落入范围”的数字算作完整，因为该测试复杂，且在负数与小数上容易出错。
 
 ### DEC-13 — What a form posts does not change
 
 **Reference:** `spec:AST-118/DEC-13`
 **Decider:** `nynexman4464`, `2026-11-12`
 
-A form posts what it posts on the latest stable release. Where that release
-reverts rejected text at a commit, the member keeps the text, and a hidden
-input carries the caller's `name` with the committed value's text, which the
-release posts once the text reverts. Elsewhere, the input that carries `name`
-on the release keeps it and posts what it posts there. No posted value changes, so the change
-stays an accessibility behavior fix under `spec:AST-017` FR53 (FR4).
+表单提交的内容与它在最新稳定版上提交的内容相同。在发布版于提交时回退被拒绝文本之处，成员保留该文本，并由隐藏输入承载调用方的 `name` 与已提交值的文本——发布版在文本回退之后提交的正是后者。在其他位置，在发布版上承载 `name` 的输入仍承载它，并提交它在那里提交的内容。没有任何提交值改变，因此该改动仍是 `spec:AST-017` FR53 之下的无障碍行为修复（FR4）。
 
-Rejected: the committed value's text in every case, because it changes what a
-released form posts, which `spec:AST-017` FR1 classes as breaking.
+已否决：在所有情况下都提交已提交值的文本，因为这会改变已发布表单提交的内容，而 `spec:AST-017` FR1 将其归类为破坏性改动。
 
 ### DEC-14 — A value passed at a commit that keeps the entry keeps it
 
 **Reference:** `spec:AST-118/DEC-14`
 **Decider:** `nynexman4464`, `2026-11-12`
 
-A caller can pass a new `value` from an Enter or blur that keeps rejected
-text, as a live filter does when it restores the value it had before the
-edit. A field that took that `value` as a replacement would erase the text the
-commit just kept and discard the entry with no message (FR4, AR4). Keeping an
-invalid entry with a chance to correct it is preferred to removing it. A
-`value` passed in the same update as any Enter or blur that keeps rejected
-text, the first or a later one, therefore leaves the entry, its rejection, and
-its message, and reports no change; a later new `value` replaces the entry
-(FR4, FR6, FR8).
+调用方可以在保留被拒绝文本的 Enter 或 blur 中传入新的 `value`，正如实时过滤器在恢复编辑之前的值时所做的。若字段把该 `value` 当作替换，就会抹掉提交刚刚保留的文本，并在没有消息的情况下丢弃该输入（FR4、AR4）。保留无效输入并留出改正机会，优于将其移除。因此，在与任何保留被拒绝文本的 Enter 或 blur（第一次或之后的某一次）同一次更新中传入的 `value`，会让输入、其拒绝与其消息保持原样，且不上报任何变化；之后的新 `value` 会替换该输入（FR4、FR6、FR8）。
 
-Rejected: sparing only the commit that reveals the rejection, because Enter
-and then a blur that restores the value would erase the text.
+已否决：只放过揭示拒绝的那一次提交，因为先 Enter 再 blur 恢复值会抹掉文本。
 
 ## Open questions
 
-None.
+无。

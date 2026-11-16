@@ -21,167 +21,107 @@ deciding_specs: []
 
 ## User intent
 
-Movement should clarify what changed and where content came from without making a
-surface feel theatrical or sluggish. Every state change should remain understandable
-when motion is reduced.
+运动应当阐明发生了什么变化，以及内容来自何处，而不要让表面显得戏剧化或迟滞。每一次状态变化在减少动效时都应保持可理解。
 
 ## Design principles
 
-- **DR1 — Motion carries meaning.** Animation MUST explain response, continuity,
-  entry, exit, or spatial change rather than decorate otherwise static content.
-- **DR2 — Weight determines timing.** Small local feedback SHOULD feel faster
-  than large entrances, exits, or continuous movement.
-- **DR3 — Movement settles naturally.** Easing SHOULD communicate controlled
-  deceleration rather than ornamental bounce or elasticity; a theme's
-  expressive character may overshoot on entrances and moves only
-  (`spec:AST-108`).
-- **DR4 — Stable content stays stable.** Motion SHOULD avoid unnecessary layout
-  disruption and preserve reading and interaction context.
-- **DR5 — Reduced motion preserves meaning.** Every animated transition MUST have
-  an immediate or minimally moving form that communicates the same state change.
-  `design:reduced-motion` owns the current reduced-motion rule.
+- **DR1 — 动效承载含义。** 动画必须解释响应、连续性、进入、退出或空间变化，而不是为原本静态的内容作装饰。
+- **DR2 — 权重决定时长。** 小的局部反馈应当比大的进入、退出或持续运动感觉更快。
+- **DR3 — 运动自然沉降。** 缓动应传达受控的减速，而不是装饰性的弹跳或弹性；主题的表现性特征只可以在进入和移动时过冲（`spec:AST-108`）。
+- **DR4 — 稳定内容保持稳定。** 动效应避免不必要的布局扰动，并保持阅读与交互上下文。
+- **DR5 — 减少动效保留含义。** 每一个动画过渡都必须有一种即时或极小移动的形式，传达相同的状态变化。`design:reduced-motion` 拥有当前减少动效规则。
 
 ## Anatomy and hierarchy
 
-| Role                | Purpose                                     | Required relationship                               |
-| ------------------- | ------------------------------------------- | --------------------------------------------------- |
-| origin state        | Establishes what is changing                | Remains identifiable until continuity is clear      |
-| transition cue      | Connects origin and destination             | Uses only the movement needed to explain the change |
-| destination state   | Shows the completed result                  | Settles without residual decorative activity        |
-| reduced-motion path | Communicates the same result without travel | Preserves timing and status meaning where needed    |
+| 角色         | 用途                         | 必需关系                   |
+| ------------ | ---------------------------- | -------------------------- |
+| 初始状态     | 确立正在变化的内容           | 在连续性清晰之前保持可识别 |
+| 过渡提示     | 连接起点与终点               | 只使用解释该变化所需的运动 |
+| 目标状态     | 展示完成后的结果             | 沉降后没有残留的装饰性活动 |
+| 减少动效路径 | 在不移动的情况下传达相同结果 | 在需要时保留时序和状态含义 |
 
 ## State representation
 
-Hover and press use the lightest useful response; entrances and exits may use a
-more visible transition; large or continuous movement requires stronger user
-justification. Loading and status MUST remain understandable without animation.
+悬停和按压使用最轻的有用响应；进入和退出可以使用更明显的过渡；大范围或持续的运动需要更强的用户理由。加载和状态必须在没有动画的情况下仍可理解。
 
 ## Responsive and input behavior
 
-The source wiki does not establish responsive-path, interruption, or
-input-specific motion rules beyond the principles above. Those concerns remain
-open for separately evidenced decisions, except the hover-to-display rule below.
+源 wiki 除上述原则外，没有确立响应式路径、中断或特定输入的动效规则。除下面的悬停显示规则外，这些问题仍留待有单独证据的决策。
 
 ### Hover-to-display delay
 
-A hover-to-display interaction is anything a hover-capable pointer reveals,
-shows, or expands: a tooltip, a hover card, a hover-opened menu or flyout, a
-container that reveals content on hover, a preview, or a popover that opens on
-hover.
+悬停显示交互是指任何支持悬停的指针所揭示、显示或展开的内容：工具提示、悬停卡片、悬停打开的菜单或浮出层、在悬停时显示内容的容器、预览，或在悬停时打开的弹出层。
 
-- **Entry delay.** A hover-to-display interaction MUST wait a small delay
-  before it renders or updates, so a pointer brushing across the trigger does
-  not cause eager rendering or updates. The surface's owner chooses the default
-  delay; its record MAY set the delay to zero, with its reason
-  (`architecture:interaction-modality` INV11).
-- **Exit guard.** Leaving the trigger MUST NOT flicker the content out: the
-  content stays until a short exit delay elapses or, for a container reveal,
-  until its fade completes, so a brush out and back in reads as one hover. Under
-  `prefers-reduced-motion: reduce` a container reveal's fade is instant
-  (`design:reduced-motion` DR3), so its content leaves at once.
-- **Pointer-specific.** Keyboard focus reveals immediately with no dwell. The
-  hover gate never delays touch or a coarse pointer; whether a tap opens a
-  surface stays with its owner (`architecture:interaction-modality` INV4).
-- **Group hand-off.** Within a group of triggers, a pointer that moves from one
-  open trigger to the next shows the next at once; the entry delay applies to
-  the first open only (`architecture:interaction-modality` INV11).
-- **Default on; adjustable.** The delay and guard are on by default, and each
-  owner sets its own default values. A timer-driven surface (a tooltip, a hover
-  card, a hover-opened menu or flyout) exposes them as `delay` and `hideDelay`,
-  in milliseconds, and a caller shortens or removes them only for a stated use
-  case. A container reveal keeps its timing in CSS; a caller opts into its
-  entry delay with `hoverDelay`, and its exit fade has no option.
+- **进入延迟。** 悬停显示交互在渲染或更新之前必须等待一小段延迟，这样指针掠过触发器时不会导致急切的渲染或更新。该表面的所有者选择默认延迟；其记录可以将延迟设为零，并说明理由（`architecture:interaction-modality` INV11）。
+- **退出保护。** 离开触发器不得使内容闪退：内容会保留，直到短暂的退出延迟过去，或者对于容器显示而言，直到其淡出完成，这样移出再移入会被视为一次悬停。在 `prefers-reduced-motion: reduce` 下，容器显示的淡出是即时的（`design:reduced-motion` DR3），因此其内容会立即离开。
+- **特定于指针。** 键盘焦点会立即显示，无需停留。悬停门控从不延迟触摸或粗略指针；点击是否打开某个表面由其所有者决定（`architecture:interaction-modality` INV4）。
+- **组内移交。** 在一组触发器中，指针从一个打开的触发器移动到下一个时，会立即显示下一个；进入延迟仅适用于第一次打开（`architecture:interaction-modality` INV11）。
+- **默认开启；可调整。** 延迟和保护默认开启，每个所有者设置自己的默认值。由计时器驱动的表面（工具提示、悬停卡片、悬停打开的菜单或浮出层）将其作为 `delay` 和 `hideDelay` 公开，单位为毫秒，调用方仅在明确的使用场景下缩短或移除它们。容器显示将其时序保留在 CSS 中；调用方通过 `hoverDelay` 选择启用其进入延迟，其退出淡出没有选项。
 
-Inventory of hover-to-display surfaces and their defaults:
+悬停显示表面及其默认值清单：
 
-| Surface                                         | Entry delay                               | Exit guard                              | Conforms                                             |
-| ----------------------------------------------- | ----------------------------------------- | --------------------------------------- | ---------------------------------------------------- |
-| `Tooltip`                                       | on, `delay`                               | `hideDelay`, else the hover bridge      | yes                                                  |
-| `HoverCard`                                     | on, `delay`                               | on, `hideDelay`                         | yes                                                  |
-| `TopNavMenu`                                    | on, `delay`                               | on, `hideDelay`                         | yes                                                  |
-| `TopNavMegaMenu`                                | on, `delay`                               | on, `hideDelay`                         | yes                                                  |
-| `DropdownMenu` submenu                          | on, no option                             | on, no option                           | partial: no `delay` or `hideDelay` option            |
-| `SideNavItem` collapsed flyout                  | on, no option                             | on, no option                           | partial: no `delay` or `hideDelay` option            |
-| `TopNavHeading` menu                            | none on a first open, no option           | on, no option                           | no: first open has no entry delay (gap, FR5)         |
-| `SideNavHeading` menu                           | none on a first open, no option           | on, no option                           | no: first open has no entry delay (gap, FR5)         |
-| `Slider` value tooltip                          | none (`delay` set to zero)                | on                                      | no: zero delay with no recorded reason               |
-| `Overlay` with `showOn="hover"`                 | none, no option                           | exit fade, instant under reduced motion | no: no entry delay                                   |
-| Container reveal (`Thumbnail`, `TreeList` rows) | opt-in                                    | exit fade, instant under reduced motion | partial: entry delay opt-in                          |
-| Markdown heading links                          | none (`module:Markdown/headingLinks` AR3) | exit fade, instant under reduced motion | partial: zero delay recorded in AR3 without a reason |
+| 表面                                   | 进入延迟                                 | 退出保护                        | 符合情况                               |
+| -------------------------------------- | ---------------------------------------- | ------------------------------- | -------------------------------------- |
+| `Tooltip`                              | 开启，`delay`                            | `hideDelay`，否则由悬停桥接处理 | 是                                     |
+| `HoverCard`                            | 开启，`delay`                            | 开启，`hideDelay`               | 是                                     |
+| `TopNavMenu`                           | 开启，`delay`                            | 开启，`hideDelay`               | 是                                     |
+| `TopNavMegaMenu`                       | 开启，`delay`                            | 开启，`hideDelay`               | 是                                     |
+| `DropdownMenu` 子菜单                  | 开启，无选项                             | 开启，无选项                    | 部分：没有 `delay` 或 `hideDelay` 选项 |
+| `SideNavItem` 折叠浮出层               | 开启，无选项                             | 开启，无选项                    | 部分：没有 `delay` 或 `hideDelay` 选项 |
+| `TopNavHeading` 菜单                   | 首次打开无，无选项                       | 开启，无选项                    | 否：首次打开没有进入延迟（差距，FR5）  |
+| `SideNavHeading` 菜单                  | 首次打开无，无选项                       | 开启，无选项                    | 否：首次打开没有进入延迟（差距，FR5）  |
+| `Slider` 值工具提示                    | 无（`delay` 设为零）                     | 开启                            | 否：零延迟且没有记录理由               |
+| `Overlay` 搭配 `showOn="hover"`        | 无，无选项                               | 退出淡出，减少动效下即时        | 否：没有进入延迟                       |
+| 容器显示（`Thumbnail`、`TreeList` 行） | 选择启用                                 | 退出淡出，减少动效下即时        | 部分：进入延迟为选择启用               |
+| Markdown 标题链接                      | 无（`module:Markdown/headingLinks` AR3） | 退出淡出，减少动效下即时        | 部分：AR3 中记录为零延迟但没有理由     |
 
-A surface listed as not conforming is a gap for its owner to close or to justify
-with a recorded use case; this record does not change its shipped behavior.
+被列为不符合的表面是其所有者需要弥补的差距，或用记录的使用场景来证明其合理性；本记录不会改变其已发布的行为。
 
 ### Verification
 
-| Contract | Verification                                                                    | Representative states                                                                       | Failure signal                                                         |
-| -------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| DEC-1    | Unit tests with fake timers for tooltip, hover card and menu timing             | brush in and out under the delay; dwell past the delay; leave and re-enter within the guard | content rendered before the delay elapses, or removed during the guard |
-| DEC-1    | Real-browser tests of container reveals                                         | dwell; brush past; leave; reduced motion                                                    | content revealed before the dwell, or a fade under reduced motion      |
-| DEC-1    | Real-browser keyboard and coarse-pointer tests                                  | focus-within; a finger on a trigger                                                         | any dwell before a focus reveal; a hover delay applied to touch        |
-| DEC-1    | Evidence gap: no group hand-off test exists until the INV11 recognizer is built | move from one open trigger to the next in a group; first open                               | —                                                                      |
-| DEC-1    | Inventory review on a new or changed hover-to-display surface                   | each surface above                                                                          | a surface with no entry delay and no recorded use case                 |
+| 契约  | 验证                                                   | 代表性状态                                               | 失败信号                                   |
+| ----- | ------------------------------------------------------ | -------------------------------------------------------- | ------------------------------------------ |
+| DEC-1 | 使用假计时器对工具提示、悬停卡片和菜单时序进行单元测试 | 在延迟内移入移出；停留超过延迟；离开并在保护期内重新进入 | 内容在延迟过去之前渲染，或在保护期内被移除 |
+| DEC-1 | 对容器显示进行真实浏览器测试                           | 停留；掠过；离开；减少动效                               | 内容在停留之前显示，或在减少动效下淡出     |
+| DEC-1 | 真实浏览器的键盘和粗略指针测试                         | 焦点在内；手指在触发器上                                 | 焦点显示前有任何停留；悬停延迟应用于触摸   |
+| DEC-1 | 证据缺口：在 INV11 识别器构建之前，不存在组内移交测试  | 在一组中从一个打开的触发器移动到下一个；首次打开         | —                                          |
+| DEC-1 | 在新的或变更的悬停显示表面上进行清单审查               | 上述每个表面                                             | 没有进入延迟且没有记录使用场景的表面       |
 
 ## Accessibility intent
 
-Motion must not be required to perceive status, hierarchy, or completion. Reduced
-motion should suppress unnecessary travel while preserving feedback. Animated
-content should not repeatedly steal attention from reading or input.
+动效不得成为感知状态、层级或完成所必需的手段。减少动效应抑制不必要的移动，同时保留反馈。动画内容不应反复抢夺阅读或输入的注意力。
 
 ## Representative examples
 
-- A pressed control responds immediately without launching decorative movement.
-- A surface entrance explains where new content belongs, then settles quietly.
-- Reduced-motion mode shows the same completed state without spatial travel.
+- 按下的控件立即响应，不启动装饰性运动。
+- 表面进入说明新内容所属的位置，然后安静地沉降。
+- 减少动效模式显示相同的完成状态，但没有空间移动。
 
 ## Visual references
 
-No normative assets are included. Micro-interaction, entrance/exit, and
-reduced-motion pairs should be added under `docs/design/assets/motion/` before
-promotion.
+不包含规范性资产。微交互、进入/退出和减少动效的配对应在提升之前添加到 `docs/design/assets/motion/` 下。
 
 ## Component contract links
 
-- Each surface in the inventory above owns its delay and guard values;
-  `architecture:interaction-modality` INV11 owns the hover-intent mechanism.
+- 上述清单中的每个表面拥有其延迟和保护值；`architecture:interaction-modality` INV11 拥有悬停意图机制。
 
 ## Decision log
 
-This record distills motion intent from the public Design Conventions wiki
-without copying duration values, CSS properties, or audit mechanics. One point
-is decided:
+本记录从公开的 Design Conventions wiki 中提炼动效意图，不复制时长值、CSS 属性或审计机制。有一项决定：
 
 ### DEC-1 — Every hover-to-display interaction is debounced
 
-**Reference:** `design:motion/DEC-1`
-**Decider:** `cixzhang`, `2026-10-11`; the `delay` and `hideDelay` options, `2026-11-06`
+**参考：** `design:motion/DEC-1`
+**决策者：** `cixzhang`，`2026-10-11`；`delay` 和 `hideDelay` 选项，`2026-11-06`
 
-Every hover-to-display interaction requires a small delay to prevent brush-over
-eager rendering and updates, and an exit guard so the content does not flicker
-out. The delay exists to prevent users brushing the interface from causing janky
-rerenders while they move their pointer; it is input handling, not motion
-taste. Keyboard focus reveals immediately and coarse pointers are not gated.
-Defaults are on; a caller opts out only for a stated use case. Timer-driven
-hover surfaces (tooltips, hover cards, hover-opened menus and flyouts) expose
-the wait as `delay` and the exit guard as `hideDelay` (milliseconds), as
-Tooltip, HoverCard and TopNavMenu already do. Within a group of triggers, a
-pointer moving from one open trigger to the next shows the next at once
-(`architecture:interaction-modality` INV11). Removing a
-surface's default delay is rejected inside this decision: it trades a pointer
-guard for no benefit to keyboard or touch users, who already see the content at
-once.
+每个悬停显示交互都需要一小段延迟，以防止指针掠过时急切渲染和更新，并需要退出保护，使内容不会闪退。延迟的存在是为了防止用户掠过界面时在移动指针的过程中造成卡顿的重渲染；这是输入处理，不是动效品味。键盘焦点立即显示，粗略指针不受门控。默认开启；调用方仅在有明确使用场景时才选择退出。由计时器驱动的悬停表面（工具提示、悬停卡片、悬停打开的菜单和浮出层）将等待公开为 `delay`，将退出保护公开为 `hideDelay`（毫秒），如 Tooltip、HoverCard 和 TopNavMenu 已经做的那样。在一组触发器中，指针从一个打开的触发器移动到下一个时会立即显示下一个（`architecture:interaction-modality` INV11）。在本决策中，移除表面的默认延迟会被拒绝：它以牺牲指针保护为代价，对键盘或触摸用户没有任何好处，因为他们本来就会立即看到内容。
 
 ## Open questions
 
-- **OQ1 — Reference transitions.** Which component interactions should be the
-  normative examples for local, entrance/exit, and large movement?
-- **OQ2 — Interruption and reflow.** What requirements should govern reversing,
-  cancelling, replacing, or responsively reflowing an active transition?
-- **OQ3 — Allowed expressive motion.** Which product contexts, if any, justify a
-  deliberately expressive treatment beyond functional continuity?
+- **OQ1 — 参考过渡。** 哪些组件交互应作为局部、进入/退出和大范围运动的规范性示例？
+- **OQ2 — 中断与重排。** 应有哪些要求来管理反转、取消、替换或响应式重排活动中的过渡？
+- **OQ3 — 允许的表现性动效。** 哪些产品上下文（如果有）值得在功能连续性之外采用刻意的表现性处理？
 
 ## Content boundary
 
-This file defines motion intent and the hover-to-display rule. It does not
-define duration or easing tokens, CSS properties, animation APIs, other
-component behavior, or audit checks.
+本文件定义动效意图和悬停显示规则。它不定义时长或缓动令牌、CSS 属性、动画 API、其他组件行为或审计检查。

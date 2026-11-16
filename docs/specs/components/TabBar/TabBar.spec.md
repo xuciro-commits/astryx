@@ -27,127 +27,122 @@ system_specs: [spec:AST-085/FR1, spec:AST-085/FR2, spec:AST-085/FR5]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                  |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `TabBar` takes `moreValue` (default `'more'`); `TabBarMoreList` takes `children`, `value` and `onChange`; Core's catalog has `@astryx.tabBar.more`.       |
-| Behavior                | Past five tabs the bar shows four tabs and More, which lists the rest, for every pointer, as UITabBarController does. The arrow keys skip a disabled tab. |
-| End-user impact         | Six or more sections stay reachable on a phone's bar, as on iOS; keyboard users never land on a disabled tab.                                             |
-| Builder impact          | An app with more than five tabs renders `TabBarMoreList` while `value` is `moreValue`, and shows a chosen section inside More.                            |
-| Compatibility/readiness | Five tabs or fewer render as before. Draft.                                                                                                               |
-| Review checks           | Reject a fifth slot that changes with the pointer, a More list that omits or reorders tabs, or a disabled row or tab that can be chosen.                  |
-| Governing rules         | `spec:AST-085` FR1, FR2 and FR5 (a disabled control stays focusable, blocks every change, and is announced as disabled).                                  |
+| Area                    | Contract                                                                                                                                           |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public contract         | `TabBar` 接受 `moreValue`（默认 `'more'`）；`TabBarMoreList` 接受 `children`、`value` 和 `onChange`；Core 的目录中有 `@astryx.tabBar.more`。       |
+| Behavior                | 超过五个标签页时，该栏显示四个标签页和 More（More 列出其余标签页），对所有指针设备都如此，与 UITabBarController 一致。方向键会跳过已禁用的标签页。 |
+| End-user impact         | 六个或更多分区在手机的栏上仍可访问，如同在 iOS 上；键盘用户永远不会落到已禁用的标签页上。                                                          |
+| Builder impact          | 标签页超过五个的应用会在 `value` 为 `moreValue` 时渲染 `TabBarMoreList`，并在 More 内部显示所选分区。                                              |
+| Compatibility/readiness | 五个或更少标签页的渲染与之前相同。草稿。                                                                                                           |
+| Review checks           | 否决随指针变化而改变的第 5 个槽位、遗漏或重排标签页的 More 列表，以及可被选中的禁用行或已禁用标签页。                                              |
+| Governing rules         | `spec:AST-085` FR1、FR2 和 FR5（已禁用控件保持可聚焦、阻止任何更改，并被宣布为已禁用）。                                                           |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；下方正文具有权威性。
 
 ## Intent
 
-TabBar is the lab's floating bar of top-level sections, modelled on UIKit's
-tab bar. This record states how it holds more sections than fit, how disabled
-tabs meet the keyboard, and the More tab's label. Consumer usage lives in
-`TabBar.doc.mjs`.
+TabBar 是 lab 中顶级分区的浮动栏，仿照 UIKit 的标签栏建模。本记录说明它如何容纳超出容量的分区、已禁用的标签页如何应对键盘，以及 More 标签页的标签。使用方用法见 `TabBar.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes` for a bar of five tabs or fewer. A bar of six or more tabs, outside the documented three to five, moves its fifth tab onward into More (FR1).
-- Compatibility class: additive; `moreValue` and `TabBarMoreList` are new.
-- Controlled/uncontrolled behavior: unchanged; the app owns `value`.
-- Migration decision: none needed.
+- 保留已发布的默认行为：五个或更少标签页的栏为 `yes`。六个或更多标签页的栏（超出文档所述的三到五个）会将其第五个及之后的标签页移入 More（FR1）。
+- 兼容性类别：增量式；`moreValue` 和 `TabBarMoreList` 是新增的。
+- 受控/非受控行为：不变；`value` 由应用拥有。
+- 迁移决策：无需迁移。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- Which tabs the bar shows, and when More replaces the rest.
-- When More reads as selected, and what choosing More again means.
-- `TabBarMoreList`: More's list of the remaining tabs.
+- 该栏显示哪些标签页，以及 More 何时取代其余标签页。
+- More 何时读作已选中，以及再次选择 More 意味着什么。
+- `TabBarMoreList`：More 中其余标签页的列表。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- More's navigation stack and the screens inside it — owned by the app.
-- Rearranging tabs (iOS's Edit) — not provided.
+- More 的导航栈及其内部的屏幕——由应用拥有。
+- 重新排列标签页（iOS 的 Edit）——未提供。
 
 ## Public concepts
 
-| Concept          | Closed values or states | Meaning                                                   | Availability by variant/orientation/state | Default  | Owner              | Stability    | Invalid-value behavior                        |
-| ---------------- | ----------------------- | --------------------------------------------------------- | ----------------------------------------- | -------- | ------------------ | ------------ | --------------------------------------------- |
-| More tab         | shown, hidden           | The fifth slot, standing for every tab past the fourth    | Shown only past five tabs                 | hidden   | `component:TabBar` | experimental | Not applicable                                |
-| `moreValue`      | any string              | The value the app's `value` takes while More's list shows | Past five tabs                            | `'more'` | `component:TabBar` | experimental | A tab with the same value is shadowed         |
-| `TabBarMoreList` | one row per tab         | More's screen: the tabs past the fourth, in order         | While `value` is `moreValue`              | none     | `component:TabBar` | experimental | No tabs past the fourth renders an empty list |
+| Concept          | Closed values or states | Meaning                                    | Availability by variant/orientation/state | Default  | Owner              | Stability | Invalid-value behavior             |
+| ---------------- | ----------------------- | ------------------------------------------ | ----------------------------------------- | -------- | ------------------ | --------- | ---------------------------------- |
+| More tab         | 显示、隐藏              | 第五个槽位，代表第四个之后的所有标签页     | 仅在超过五个标签页时显示                  | 隐藏     | `component:TabBar` | 实验性    | 不适用                             |
+| `moreValue`      | 任意字符串              | More 的列表显示期间应用的 `value` 所取的值 | 超过五个标签页时                          | `'more'` | `component:TabBar` | 实验性    | 具有相同值的标签页会被遮蔽         |
+| `TabBarMoreList` | 每个标签页一行          | More 的屏幕：第四个之后的标签页，按顺序    | 当 `value` 为 `moreValue` 时              | 无       | `component:TabBar` | 实验性    | 第四个之后没有标签页时会渲染空列表 |
 
 ## Behavioral and layout contract
 
-Draft requirements identify their basis so observed code is not mistaken for an
-intentional decision. A `current` contract contains no unresolved rows.
+草稿需求会标明其依据，以免把观察到的代码误认为有意的决策。`current` 契约不包含未解决的行。
 
-| ID  | Candidate invariant                                                                                                                                                                                                                                                                                              | Basis                                            | Draft review state |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------------ |
-| FR1 | Past five tabs the bar shows four tabs and More, which lists the rest, for every pointer, as UITabBarController does.                                                                                                                                                                                            | UITabBarController's layout                      | settled            |
-| FR2 | More MUST read as selected while `value` is `moreValue` or any tab past the fourth.                                                                                                                                                                                                                              | UITabBarController                               | settled            |
-| FR3 | Choosing More while it is not selected MUST call `onChange` with `moreValue`; choosing it while it is selected MUST call `onReselect` with `moreValue`, never `onChange`.                                                                                                                                        | UIKit pops More's stack                          | settled            |
-| FR4 | `TabBarMoreList` takes the bar's `TabBarItem` children and MUST list every tab past the fourth, in order, with its icon, label, badge and a disclosure chevron that points to the inline end; the row whose value is `value` reads as selected, and choosing an enabled row MUST call `onChange` with its value. | UIKit's More list                                | settled            |
-| FR5 | A disabled tab's More row MUST be disabled, and choosing it MUST NOT call `onChange`.                                                                                                                                                                                                                            | `spec:AST-085` FR2                               | settled            |
-| FR6 | The arrow keys MUST skip a disabled tab, which stays announced as disabled.                                                                                                                                                                                                                                      | Core's TabList; `spec:AST-085` Non-goals and FR5 | settled            |
-| FR7 | The More tab's label and the list's name MUST come from Core's catalog message `@astryx.tabBar.more`.                                                                                                                                                                                                            | Core's message catalog                           | settled            |
+| ID  | Candidate invariant                                                                                                                                                                                                                           | Basis                                        | Draft review state |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------ |
+| FR1 | 超过五个标签页时，该栏显示四个标签页和 More（More 列出其余标签页），对所有指针设备都如此，与 UITabBarController 一致。                                                                                                                        | UITabBarController 的布局                    | 已定               |
+| FR2 | 当 `value` 为 `moreValue` 或为第四个之后的任一标签页时，More 必须读作已选中。                                                                                                                                                                 | UITabBarController                           | 已定               |
+| FR3 | 在 More 未被选中时选择它，必须用 `moreValue` 调用 `onChange`；在其已被选中时选择它，必须用 `moreValue` 调用 `onReselect`，绝不调用 `onChange`。                                                                                               | UIKit 弹出 More 的栈                         | 已定               |
+| FR4 | `TabBarMoreList` 接受该栏的 `TabBarItem` 子元素，并且必须按顺序列出第四个之后的每个标签页，带上其图标、标签、徽标，以及一个指向行内末端（inline end）的展开指示箭头；值等于 `value` 的行读作已选中，选择已启用的行必须用其值调用 `onChange`。 | UIKit 的 More 列表                           | 已定               |
+| FR5 | 已禁用标签页的 More 行必须是禁用的，选择它不得调用 `onChange`。                                                                                                                                                                               | `spec:AST-085` FR2                           | 已定               |
+| FR6 | 方向键必须跳过已禁用的标签页，该标签页仍被宣布为已禁用。                                                                                                                                                                                      | Core 的 TabList；`spec:AST-085` 非目标与 FR5 | 已定               |
+| FR7 | More 标签页的标签和该列表的名称必须来自 Core 的目录消息 `@astryx.tabBar.more`。                                                                                                                                                               | Core 的消息目录                              | 已定               |
 
 ### Allowed variation
 
-- **AV1 — More's icon.** The icon may change with the theme; the slot and label may not.
+- **AV1 — More 的图标。** 图标可以随主题变化；槽位和标签不可以。
 
 ### Representative states
 
-| State                          | Required invariant                                          | Allowed variation |
-| ------------------------------ | ----------------------------------------------------------- | ----------------- |
-| Five tabs                      | No More tab (FR1)                                           | None              |
-| Six tabs, a fifth selected     | More selected; its list shows the fifth selected (FR2, FR4) | None              |
-| A disabled tab past the fourth | Its row is disabled (FR5)                                   | Its dimmed paint  |
+| State                        | Required invariant                                | Allowed variation |
+| ---------------------------- | ------------------------------------------------- | ----------------- |
+| 五个标签页                   | 没有 More 标签页（FR1）                           | 无                |
+| 六个标签页，选中第五个       | More 已选中；其列表显示第五个为已选中（FR2、FR4） | 无                |
+| 第四个之后的一个已禁用标签页 | 其行已禁用（FR5）                                 | 其变暗的绘制      |
 
 ### Transformation and precedence order
 
-- **ORD1 — selection.** A tab past the fourth resolves to More before the lens places itself (FR2).
+- **ORD1 — 选择。** 在 lens 自行定位之前，第四个之后的标签页解析为 More（FR2）。
 
 ### Performance and resources
 
-- **PR1 — no extra listeners.** The More tab adds no listener beyond those of a tab.
+- **PR1 — 无额外监听器。** More 标签页不会添加超出普通标签页的监听器。
 
 ## Accessibility contract
 
-- **AR1 — one name per row.** A More row with a badge MUST be named by `@astryx.tabBar.badgedItem`, as its tab is.
-- **AR2 — named list.** `TabBarMoreList` MUST be named by `@astryx.tabBar.more`.
+- **AR1 — 每行一个名称。** 带徽标的 More 行必须像其标签页一样由 `@astryx.tabBar.badgedItem` 命名。
+- **AR2 — 命名列表。** `TabBarMoreList` 必须由 `@astryx.tabBar.more` 命名。
 
 ## Design relationships
 
 | Anatomy or state | Design requirement | Representation authority | Hierarchy role | Component contract |
 | ---------------- | ------------------ | ------------------------ | -------------- | ------------------ |
-| More tab         | None recorded      | prescribed (UIKit)       | supporting     | FR1, FR7           |
+| More 标签页      | 无记录             | 规定（UIKit）            | 支撑           | FR1, FR7           |
 
-The component implements design requirements without copying their rationale.
+组件实现设计要求，但不复制其理由。
 
 ## Family and system relationships
 
-- `spec:AST-085` owns the disabled-control rules; TabBar applies FR1, FR2 and FR5 to its tabs and their More rows.
-- `spec:AST-085` leaves the arrow keys inside a composite to its own record: "Which items arrow keys visit inside a composite widget (listbox, menu, grid, tablist, roving group). The composite's own record decides that." FR6 decides it for TabBar, as Core's TabList does.
+- `spec:AST-085` 拥有已禁用控件规则；TabBar 将 FR1、FR2 和 FR5 应用于其标签页及其 More 行。
+- `spec:AST-085` 将复合控件内部的方向键行为留给其自己的记录：“方向键在复合控件（listbox、menu、grid、tablist、roving group）内部会访问哪些项。由该复合控件自己的记录决定这一点。”FR6 为 TabBar 决定了这一点，正如 Core 的 TabList 所做的那样。
 
 ## Verification map
 
-| Contract | Verification                                                                                                                                                                                                                                  | Representative states                        | Mutation or failure expectation                                                       | Audit section |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------- | ------------- |
-| FR1      | "shows the first four tabs and More when there are more than five"; "six tabs: the bar shows the first four and More…"                                                                                                                        | Five and six tabs                            | A bar without More shows six tabs and fails both                                      | None          |
-| FR2      | "selects More for a tab it holds, and chooses More with its value"                                                                                                                                                                            | A fifth tab selected                         | Selecting the fifth tab itself fails it                                               | None          |
-| FR3      | "selects More for a tab it holds, and chooses More with its value"; "More again while it holds a tab is a reselect, back to its list"                                                                                                         | More unselected, and More holding a tab      | Calling `onChange` with `moreValue` on a reselect, or not on a first choice, fails it | None          |
-| FR4      | "lists the tabs past the fourth, and a row chooses its tab"; "reads the selected tab’s More row as selected, and no other row"; "a section chosen in More opens inside it…"; "right to left, the More list’s disclosure chevrons point left…" | LTR and RTL, Help selected                   | A missing row, selected row or unmirrored chevron fails it                            | None          |
-| FR5      | "keeps a disabled tab past the fourth disabled in its More row…"                                                                                                                                                                              | Help disabled                                | An enabled row fails it                                                               | None          |
-| FR6      | "is skipped by the arrow keys"; "a disabled tab is announced disabled on the tab itself, with its name, in the accessibility tree (spec:AST-085 FR5)"                                                                                         | A disabled second tab                        | Focus landing on the disabled tab, or a missing disabled state, fails it              | None          |
-| FR7      | "names the More tab and its list with one catalog message, so a translation can change it"; `pnpm check:i18n-catalog`, for the key                                                                                                            | The More tab and its list, under an override | A hard-coded label ignores the override and fails it                                  | None          |
+| Contract | Verification                                                                                                                                                                              | Representative states             | Mutation or failure expectation                                              | Audit section |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ---------------------------------------------------------------------------- | ------------- |
+| FR1      | “超过五个时显示前四个标签页和 More”；“六个标签页：该栏显示前四个和 More……”                                                                                                                | 五个和六个标签页                  | 没有 More 的栏显示六个标签页，两项都失败                                     | 无            |
+| FR2      | “为其持有的标签页选中 More，并用其值选择 More”                                                                                                                                            | 选中第五个标签页                  | 直接选中第五个标签页本身会使其失败                                           | 无            |
+| FR3      | “为其持有的标签页选中 More，并用其值选择 More”；“在其持有标签页时再次选择 More 属于重新选择，返回其列表”                                                                                  | More 未选中，以及 More 持有标签页 | 在重新选择时用 `moreValue` 调用 `onChange`，或首次选择时未调用，都会使其失败 | 无            |
+| FR4      | “列出第四个之后的标签页，点击某行会选择其标签页”；“将所选标签页的 More 行读作已选中，其他行则不是”；“在 More 中选择的分区会在其中打开……”；“从右到左时，More 列表的展开指示箭头指向左侧……” | LTR 与 RTL，选中 Help             | 缺少某行、缺少选中行或箭头未镜像，都会使其失败                               | 无            |
+| FR5      | “第四个之后的已禁用标签页在其 More 行中保持禁用……”                                                                                                                                        | Help 已禁用                       | 某行处于启用状态会使其失败                                                   | 无            |
+| FR6      | “被方向键跳过”；“已禁用标签页在无障碍树中、在标签页本身上连同其名称被宣布为已禁用（spec:AST-085 FR5）”                                                                                    | 已禁用的第二个标签页              | 焦点落到已禁用标签页上，或缺少已禁用状态，都会使其失败                       | 无            |
+| FR7      | “用同一条目录消息命名 More 标签页及其列表，因此翻译可以改变它”；针对该键的 `pnpm check:i18n-catalog`                                                                                      | 在覆盖之下的 More 标签页及其列表  | 硬编码的标签会忽略覆盖，从而使其失败                                         | 无            |
 
 ## Decision log
 
-None recorded.
+无记录。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不复制使用方的 prop 表/示例、当前审计结果、实现步骤或 family/系统规则。它链接到它们的所有者。

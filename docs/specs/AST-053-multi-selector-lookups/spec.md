@@ -20,272 +20,141 @@ affects_consumer_docs: [cli]
 
 ## Intent
 
-An agent sometimes knows several exact subjects it must inspect. Repeating one CLI
-process per subject wastes setup work and makes it easy to lose a failure between
-successful calls. A lookup that accepts several selectors returns one complete,
-ordered receipt: every requested selector has one row, ambiguity stays visible, and
-the exit status says whether every lookup resolved.
+agent 有时知道它必须检查的若干确切对象。为每个对象重复启动一个 CLI 进程会浪费准备工作，并且容易在成功的调用之间漏掉一次失败。接受多个选择器的查找会返回一份完整且有序的回执：每个被请求的选择器都有一行，歧义保持可见，退出状态说明每一次查找是否都已解析。
 
-This record owns the observable batch contract and adoption rule for CLI lookups over
-independent exact selectors. FR11 E1-E5 are the only eligibility test. An eligible
-read-only lookup adopts batching by default; an ineligible command keeps its existing
-grammar. The lookup's existing authority still owns what a selector means, how one
-selector resolves, and the data returned for one resolved subject.
+本记录拥有针对独立确切选择器的 CLI 查找的可观察批量契约与采用规则。FR11 的 E1-E5 是唯一的资格测试。符合条件的只读查找默认采用批量；不符合条件的命令保留其既有文法。该查找既有的权威仍然拥有选择器的含义、单个选择器如何解析，以及为一个已解析对象返回的数据。
 
 ## Non-goals
 
-- Turning free-text search into a batch. Words in one search query remain one query.
-- Applying this read-only lookup contract to mutations, streaming or watch sessions,
-  comparisons, ranges, or commands whose positional arguments form one expression or
-  ordered workflow.
-- Changing existing CLI responses for zero or one positional selector, or existing
-  programmatic responses for omitted and string arguments.
-- Ranking candidates or choosing among ambiguous identities.
-- Adding a global option, configuration key, environment variable, or network source.
-- Changing a pre-existing batch response on a command that fails E1-E5. A `.batch`
-  suffix alone does not make that response an AST-053 receipt.
-- Equivalent internal implementations remain valid when they satisfy this contract.
+- 把自由文本搜索变成批量。一次搜索查询中的多个词仍然是一次查询。
+- 把这份只读查找契约应用于变更操作、流式或 watch 会话、比较、范围，或位置参数构成一个表达式或有序工作流的命令。
+- 改变针对零个或一个位置选择器的既有 CLI 响应，或改变针对省略参数与字符串参数的既有编程式响应。
+- 对候选排序，或在歧义身份之间做选择。
+- 新增全局选项、配置键、环境变量或网络来源。
+- 改变未通过 E1-E5 的命令上既有的批量响应。仅有 `.batch` 后缀并不能让该响应成为 AST-053 回执。
+- 等价的内实现只要满足本契约仍然有效。
 
 ## Requirements
 
-- **FR1 — Batch selection is explicit and discoverable.** An adopting command MUST
-  document its selector position as variadic in generated help and its manifest entry,
-  and as an accepted array in its programmatic API. No hidden control enables the
-  behavior.
-- **FR2 — Every accepted selector gets one row.** After invocation-level validation, a
-  batch receipt MUST contain exactly one result row per supplied selector, in input
-  order. Duplicate selectors remain duplicate rows. A command MAY reject the whole
-  request before resolution when its aggregate work would exceed a documented finite
-  bound; that rejection uses the ordinary top-level `ERR_INVALID_ARGUMENT` error
-  envelope, the CLI exits 1, and no batch is emitted. An accepted batch MUST NOT
-  truncate or deduplicate selectors.
-- **FR3 — Every row states its outcome.** Each row MUST echo the selector exactly and
-  identify one state: `found`, `not_found`, `ambiguous`, or `error`.
-- **FR4 — Found rows preserve single-lookup meaning.** A `found` row MUST carry under
-  `result` the same typed response that the programmatic API returns for that selector
-  by itself with the same controls and response-base fields. `spec:AST-047` FR10 decides
-  whether a command has adopted navigable output, and its FR7 defines the `links` field
-  after adoption. Single-result links stay nested with their row. The outer receipt
-  carries links only when the command's own AST-047 adoption authority defines the
-  receipt as a node; AST-053 does not synthesize moves. A caller does not reconstruct
-  the single result from batch-only fields.
-- **FR5 — Ambiguity is data, never a guess.** When several identities can satisfy a
-  selector, the row MUST be `ambiguous` and list every effective candidate with the
-  stable identity fields that the owning catalog exposes. The lookup MUST NOT choose
-  the first candidate or silently prefer one namespace, provider, or package.
-- **FR6 — Per-selector failures stay in the receipt.** A `not_found` or `error` row MUST
-  carry the stable error code the same one-selector lookup uses, its human-readable
-  error, and any structured suggestions. After a request is accepted as a batch, a
-  per-selector failure MUST NOT become a top-level error, disappear, or become an empty
-  success. Only validation or setup failures that apply to the invocation before any
-  selector can resolve use the ordinary top-level error envelope.
-- **FR7 — Exact qualifiers do not fall through.** When a selector carries an exact
-  qualifier owned by the lookup, such as a package version or revision, it resolves
-  only against that exact subject. A near identity with another qualifier is
-  `not_found`, may point to the owning discovery or next-action command, and is never
-  used as a plausible substitute.
-- **FR8 — The full receipt precedes failure.** The CLI MUST emit every row, then exit 1
-  when any row is not `found`. Text and JSON modes use the same exit status. The
-  programmatic API returns the complete typed receipt and leaves process exit policy
-  to its caller.
-- **FR9 — Existing cardinalities and positional meaning stay stable.** For an adopting
-  command, zero selectors preserve the command's existing zero-selector behavior,
-  whether browse or error; one selector preserves its existing success or error
-  response; and two or more selectors use the batch discriminator. Only the owned
-  selector position becomes variadic. Other positional arguments keep their existing
-  relationship and order. In the programmatic API, an omitted argument preserves its
-  existing behavior, a string requests one result, and an array requests a batch at
-  every array length, including zero and one.
-- **FR10 — Text is a projection of the batch.** Human-readable output MUST expose the
-  count and every row's selector, status, and state-specific fields through the shared
-  formatter vocabulary. Outer response fields stay on the receipt, and fields from a
-  nested single result stay with that row; nested links MUST NOT be promoted to the
-  receipt. Text MUST NOT invent a command-specific table or omit a field that JSON
-  carries.
-- **FR11 — Eligibility has one test.** A command is eligible exactly when all five
-  conditions hold:
-  - **E1:** it is read-only and its selector position accepts one exact stable subject;
-  - **E2:** selectors resolve independently, without a relationship or order between
-    them, and the same options and other positional arguments apply to each;
-  - **E3:** each result is finite and the command can return the complete accepted
-    receipt before exit;
-  - **E4:** one documented aggregate work bound can safely accept at least two
-    selectors in every supported option and projection mode, and resolving the set adds
-    no side effect; and
-  - **E5:** the selector is the command's final positional argument, so making it
-    variadic does not reinterpret a following positional.
-    A command admitted after this record became current that satisfies E1-E5 MUST adopt
-    the contract before its first public release. An existing command that satisfies
-    E1-E5 SHOULD migrate without changing its zero- and one-selector contracts. If any
-    condition fails, the command is not eligible.
-- **FR12 — Every adopter uses one batch vocabulary.** The discriminator MUST be
-  `<subject>.batch`, where `<subject>` is the stable subject family used by the
-  command's single-result responses. Under `architecture:cli-surface` INV2, `type`
-  carries that discriminator and `{count, results}` is the `data` payload. The shared
-  CLI response foundation MUST own and publish `BatchResponse` and `BatchRow` for that
-  payload and the four row states; subject API modules specialize those types with
-  their candidate and single-result types. An adopter MUST NOT invent synonymous
-  discriminator, status, or row field names. A pre-existing batch response on an
-  ineligible command keeps its command-owned contract and does not claim AST-053
-  conformance merely because its discriminator ends in `.batch`.
-- **FR13 — Admission records the classification.** Command admission under AST-042 MUST
-  classify the selector position against E1-E5. A top-level command's exclusion MUST
-  name the failed condition in a current command-owning record; a draft does not count.
-  A subcommand's exclusion MUST name the condition in its admitting pull request under
-  AST-042's existing code-owner approval bar. After typed admission metadata lands, its
-  CommandDoc MUST retain the same classification. Until that metadata and a repository
-  check land, FR11 and this requirement are enforced in review rather than
-  mechanically.
+- **FR1 — 批量选择是显式且可发现的。** 采用命令必须在生成的帮助与其清单条目中把选择器位置记录为可变参数，并在其编程式 API 中记录为可接受数组。没有任何隐藏控制项会启用该行为。
+- **FR2 — 每个被接受的选择器都得到一行。** 在调用级校验之后，批量回执必须为每个提供的选择器恰好包含一行结果，并按输入顺序排列。重复的选择器仍保留为重复行。当聚合工作量会超过已记录的有限上限时，命令可以在解析之前拒绝整个请求；该拒绝使用普通顶层 `ERR_INVALID_ARGUMENT` 错误信封，CLI 退出码为 1，且不发出批量。已接受的批量绝不能截断或去重选择器。
+- **FR3 — 每一行都说明其结果。** 每一行必须原样回显选择器，并标识一种状态：`found`、`not_found`、`ambiguous` 或 `error`。
+- **FR4 — found 行保持单次查找的含义。** `found` 行必须在 `result` 下携带与编程式 API 对该选择器单独调用时、使用相同控制项与相同响应基字段所返回的同一类型化响应。`spec:AST-047` FR10 决定命令是否已采用可导航输出，其 FR7 在采用之后定义 `links` 字段。单结果链接保持与其行嵌套。只有当命令自身的 AST-047 采用权威把该回执定义为节点时，外层回执才携带链接；AST-053 不合成移动。调用方不得仅凭批量专用字段重建单结果。
+- **FR5 — 歧义是数据，绝不是猜测。** 当多个身份都能满足一个选择器时，该行必须是 `ambiguous`，并列出每个有效候选及其所属目录暴露的稳定身份字段。查找绝不能选择第一个候选，也不能静默偏向某个命名空间、提供者或包。
+- **FR6 — 每个选择器的失败留在回执内。** `not_found` 行或 `error` 行必须携带与同名单选择器查找所用的同一稳定错误码、其人类可读错误以及任何结构化建议。请求被接受为批量之后，每个选择器的失败绝不能变成顶层错误、消失或变成空成功。只有适用于该调用、且在任何选择器解析之前生效的校验或设置失败，才使用普通顶层错误信封。
+- **FR7 — 确切限定符不会回落。** 当选择器携带查找所拥有的确切限定符（例如包版本或修订版）时，它只针对那个确切对象解析。带有其他限定符的近似身份属于 `not_found`，可以指向所属的发现命令或下一动作命令，并且绝不作为貌似合理的替代。
+- **FR8 — 完整回执先于失败。** CLI 必须先发出每一行，然后当任一行不是 `found` 时以退出码 1 结束。文本模式与 JSON 模式使用相同的退出状态。编程式 API 返回完整的类型化回执，并把进程退出策略留给其调用方。
+- **FR9 — 既有基数与位置含义保持稳定。** 对于采用命令，零个选择器保留该命令既有的零选择器行为，无论是浏览还是报错；一个选择器保留其既有的成功或错误响应；两个或更多选择器使用批量判别器。只有所属的选择器位置变为可变参数。其他位置参数保持其既有关系与顺序。在编程式 API 中，省略的参数保留其既有行为，字符串请求一个结果，数组在每一种数组长度（包括零和一）下都请求批量。
+- **FR10 — 文本是批量的投影。** 人类可读输出必须通过共享格式化词汇暴露计数以及每一行的选择器、状态和状态专用字段。外层响应字段留在回执上，嵌套单结果中的字段留在该行上；嵌套链接绝不能提升到回执。文本绝不能发明命令专用的表格，也不能省略 JSON 携带的字段。
+- **FR11 — 资格只有一个测试。** 当且仅当以下五个条件全部成立时，命令才符合资格：
+  - **E1:** 它是只读的，且其选择器位置接受一个确切稳定的对象；
+  - **E2:** 选择器独立解析，彼此之间没有关系或顺序，且相同的选项与其他位置参数适用于每一个；
+  - **E3:** 每个结果都是有限的，且命令能在退出前返回完整的已接受回执；
+  - **E4:** 一个已记录的聚合工作量上限能在每种支持的选项与投影模式下安全接受至少两个选择器，且解析该集合不产生副作用；以及
+  - **E5:** 选择器是该命令的最后一个位置参数，因此把它变为可变参数不会重新解释其后的位置参数。在本记录成为 current 之后被接纳、且满足 E1-E5 的命令，必须在其首次公开发布之前采用本契约。满足 E1-E5 的既有命令应当在不改变其零选择器与单选择器契约的前提下迁移。任一条件不成立，该命令就不符合资格。
+- **FR12 — 每个采用方使用同一套批量词汇。** 判别器必须是 `<subject>.batch`，其中 `<subject>` 是该命令单结果响应所使用的稳定对象族。在 `architecture:cli-surface` INV2 之下，`type` 携带该判别器，`{count, results}` 是 `data` 载荷。共享 CLI 响应基座必须为载荷与四种行状态拥有并发布 `BatchResponse` 与 `BatchRow`；按对象划分的 API 模块用其候选类型与单结果类型特化这些类型。采用方绝不能发明同义的判别器、状态或行字段名。不符合资格的命令上既有的批量响应保留其命令自有的契约，并且不因为其判别器以 `.batch` 结尾就声称符合 AST-053。
+- **FR13 — 接纳记录该分类。** AST-042 下的命令接纳必须对照 E1-E5 对选择器位置进行分类。顶层命令的排除必须在某个 current 的命令所属记录中指出未通过的条件；草稿不算。子命令的排除必须在其按 AST-042 既有代码所有者审批门槛接纳的拉取请求中指出该条件。类型化接纳元数据落地之后，其 CommandDoc 必须保留相同的分类。在该元数据与一项仓库检查落地之前，FR11 与本要求通过评审而非机械方式强制执行。
 
 ### Platform support
 
-- Supported feature/engine floor: every runtime already supported by the owning CLI
-  command.
-- Unsupported behavior: none. A command that is not eligible keeps its existing
-  grammar.
-- Browser evidence: not applicable; this is a CLI and programmatic API contract.
+- 支持的功能/引擎下限：所属 CLI 命令已支持的每个运行时。
+- 不支持的行为：无。不符合资格的命令保留其既有文法。
+- 浏览器证据：不适用；这是 CLI 与编程式 API 契约。
 
 ## Adoption and rollout
 
-FR11 E1-E5 govern eligibility. Typical adopters are `get`, `show`, `inspect`, and
-status-style reads over exact identities. The examples below illustrate a failed
-condition; they do not replace the E1-E5 test:
+FR11 的 E1-E5 决定资格。典型的采用方是针对确切身份的 `get`、`show`、`inspect` 以及状态式读取。以下示例说明某个未通过的条件；它们不能替代 E1-E5 测试：
 
-- free-text search or discovery fails E1 because several words form one query;
-- create, update, delete, apply, or other mutations fail E1 and E4 because they need
-  separate transaction and partial-write semantics;
-- compare, diff, range, pipeline, or workflow commands fail E2 because argument
-  position defines a relationship rather than independent subjects;
-- watch, shell, stream, or interactive commands fail E3 because they do not return one
-  finite receipt;
-- commands whose selector is followed by another positional fail E5 in the current
-  grammar; and
-- lookups that cannot safely accept at least two selectors in every supported mode fail
-  E4.
+- 自由文本搜索或发现不通过 E1，因为多个词构成一次查询；
+- create、update、delete、apply 或其他变更操作不通过 E1 与 E4，因为它们需要独立的事务与部分写入语义；
+- compare、diff、range、pipeline 或 workflow 命令不通过 E2，因为参数位置定义的是关系而非独立对象；
+- watch、shell、stream 或交互式命令不通过 E3，因为它们不返回一份有限回执；
+- 在当前文法中，选择器之后还跟有其他位置参数的命令不通过 E5；以及
+- 在每种支持模式下无法安全接受至少两个选择器的查找不通过 E4。
 
-Adopt the contract one command at a time:
+一次为一个命令采用该契约：
 
-1. Classify the owned selector position against E1-E5 during AST-042 admission. Record
-   any exclusion exactly as FR13 requires.
-2. Define and document the aggregate work bound, including selector count and any
-   command-specific cost dimension. It must safely accept at least two selectors in
-   every supported mode. Reject work beyond it before resolution with top-level
-   `ERR_INVALID_ARGUMENT` and CLI exit 1; never truncate an accepted batch.
-3. Preserve existing zero- and one-selector behavior and minimum cardinality. Make
-   only the owned selector position variadic; do not reinterpret another positional.
-4. Make programmatic batch intent explicit with an array at every array length. Use
-   the shared batch response and row types, the `<subject>.batch` discriminator, and
-   the existing one-selector response under each `found.result`.
-5. Preserve outer and nested response-base fields, then apply every existing read
-   projection and option to each `found` row. Do not ship a reduced batch-only detail
-   surface.
-6. Add generated help, manifest/API docs including `exitCodes`, a searchable guide,
-   real text and JSON receipts, and deterministic coverage for oversized rejection,
-   empty and one-item API arrays, order, duplicates, all-found, mixed, all-failed,
-   ambiguity, response-base fields, and every projection.
+1. 在 AST-042 接纳期间对照 E1-E5 对所属的选择器位置进行分类。按 FR13 的要求原样记录任何排除。
+2. 定义并记录聚合工作量上限，包含选择器数量及任何命令专用的成本维度。它必须在每种支持模式下安全接受至少两个选择器。在解析之前以顶层 `ERR_INVALID_ARGUMENT` 和 CLI 退出码 1 拒绝超出的工作量；绝不截断已接受的批量。
+3. 保留既有的零选择器与单选择器行为以及最小基数。只把所属的选择器位置变为可变参数；不要重新解释另一个位置参数。
+4. 用每一种数组长度下的数组显式表达编程式批量意图。使用共享批量响应与行类型、`<subject>.batch` 判别器，以及每个 `found.result` 下既有的单选择器响应。
+5. 保留外层与嵌套响应基字段，然后对每个 `found` 行应用每一项既有的读取投影与选项。不要交付缩减的批量专用细节面。
+6. 添加生成的帮助、包含 `exitCodes` 的清单/API 文档、可搜索指南、真实的文本与 JSON 回执，以及针对超大拒绝、空数组与单元素 API 数组、顺序、重复、全部找到、混合、全部失败、歧义、响应基字段和每种投影的确定性覆盖。
 
 ## Current-state impact
 
-The component lookup remains the designated first adopter. Its runtime implementation
-lands separately from this specification amendment and MUST apply FR1-FR12 before it
-claims compliance. CLI browse and single-selector response types stay unchanged;
-programmatic callers choose the catalog with an omitted argument, one result with a
-string, and a batch with an array. `architecture:cli-surface` keeps ownership of the
-outer envelope, formatter vocabulary, generated help, and API to CLI parity.
+组件查找仍是指定的首个采用方。其运行时实现与本规格修订分开落地，并且在声称合规之前必须应用 FR1-FR12。CLI 浏览与单选择器响应类型保持不变；编程式调用方用省略参数选择目录，用字符串选择一个结果，用数组选择批量。`architecture:cli-surface` 保留外层信封、格式化词汇、生成的帮助以及 API 与 CLI 一致性的所有权。
 
-AST-042 projects the E1-E5 classification into command admission for FR13. The next
-rollout phase adds typed classification to CommandDoc and the generated manifest, then
-classifies every existing exact selector position. Those public command docs and the
-manifest become the canonical inventory. Later changes migrate each eligible command
-family. External scheduling is not authority and its references do not enter this
-public repository. Each command's own current authority continues to own selector
-grammar, single-result data, and any recorded exclusion.
+AST-042 为 FR13 把 E1-E5 分类投射到命令接纳中。下一推广阶段为 CommandDoc 与生成的清单添加类型化分类，然后对每个既有的确切选择器位置分类。这些公开命令文档与清单成为规范性的清册。后续变更逐个迁移每个符合资格的命令族。外部排期不是权威，其引用不进入这个公开仓库。每个命令自身的当前权威继续拥有选择器文法、单结果数据以及任何已记录的排除。
 
 ## Verification
 
-| Contract | Verification                                                       | Representative states                                                        | Mutation or failure expectation                                                            |
-| -------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| FR1      | Generated help and manifest tests; FunctionDoc contract tests      | one selector position becomes variadic                                       | Batch input exists in code but is absent from help, manifest, or API docs                  |
-| FR2, FR3 | Programmatic API and CLI batch tests                               | minimum useful bound; oversized rejection; order; duplicates; mixed outcomes | An accepted selector is reordered, deduplicated, dropped, or has no state                  |
-| FR4      | Batch versus single-result and response-base comparison            | detail, links, and each supported focused projection                         | A found row differs from the same one-selector result                                      |
-| FR5      | Ambiguous installed-identity fixture                               | two effective package owners for one name                                    | One owner is chosen or a candidate is omitted                                              |
-| FR6, FR7 | Missing, malformed, unknown-package, and version-mismatch fixtures | suggestions present and absent; another version installed                    | A selector failure escapes the receipt, loses its code, or uses another qualifier          |
-| FR8      | Text and JSON process tests                                        | all found; one failure; several failures                                     | Output stops at the first failure or an unresolved batch does not exit 1                   |
-| FR9      | CLI cardinality, positional-meaning, and API input-shape tests     | zero browse/error; one; many; empty and one-item arrays                      | Existing cardinality changes, another positional becomes a selector, or array shape drifts |
-| FR10     | Text projection and navigable-output tests                         | every row state; outer fields with and without links                         | Text omits a JSON field, moves a nested link, or draws an unregistered output format       |
-| FR11     | AST-042 admission review                                           | E1-E5 eligible adopter; top-level and subcommand exclusions                  | An eligible new command is single-only, or an exclusion does not name a failed condition   |
-| FR12     | Shared JSON/type contract and manifest tests                       | `<subject>.batch`; every shared row state                                    | An adopter invents a discriminator, status, or row field                                   |
-| FR13     | Knowledge-reference, pull-request, and typed-metadata review       | current top-level record; subcommand evidence; draft exclusion               | Admission skips classification or uses the wrong evidence for its tier                     |
+| 契约     | 验证                                     | 代表性状态                                    | 变更或失败预期                                               |
+| -------- | ---------------------------------------- | --------------------------------------------- | ------------------------------------------------------------ |
+| FR1      | 生成帮助与清单测试；FunctionDoc 契约测试 | 一个选择器位置变为可变参数                    | 代码中存在批量输入，但帮助、清单或 API 文档中缺失            |
+| FR2, FR3 | 编程式 API 与 CLI 批量测试               | 最小有用上限；超大拒绝；顺序；重复；混合结果  | 已接受的选择器被重排、去重、丢弃，或没有状态                 |
+| FR4      | 批量与单结果及响应基的比较               | 细节、链接以及每一种支持的聚焦投影            | found 行与同一单选择器结果不同                               |
+| FR5      | 歧义安装身份测试夹具                     | 同一名称有两个有效包所有者                    | 选择了一个所有者，或漏掉了一个候选                           |
+| FR6, FR7 | 缺失、畸形、未知包与版本不匹配的测试夹具 | 建议存在与不存在；安装了另一个版本            | 选择器失败逃出回执、丢失其错误码，或使用另一个限定符         |
+| FR8      | 文本与 JSON 进程测试                     | 全部找到；一个失败；多个失败                  | 输出在首个失败处停止，或未解析的批量不以退出码 1 结束        |
+| FR9      | CLI 基数、位置含义与 API 输入形状测试    | 零个浏览/报错；一个；多个；空数组与单元素数组 | 既有基数改变、另一个位置参数变成选择器，或数组形状漂移       |
+| FR10     | 文本投影与可导航输出测试                 | 每种行状态；带链接与不带链接的外层字段        | 文本省略某个 JSON 字段、移动嵌套链接，或绘制未注册的输出格式 |
+| FR11     | AST-042 接纳评审                         | 符合 E1-E5 的采用方；顶层与子命令排除         | 符合资格的新命令只支持单个，或排除未指出未通过的条件         |
+| FR12     | 共享 JSON/类型契约与清单测试             | `<subject>.batch`；每种共享行状态             | 采用方发明了判别器、状态或行字段                             |
+| FR13     | 知识引用、拉取请求与类型化元数据评审     | current 顶层记录；子命令证据；草稿排除        | 接纳跳过分类，或为其层级使用了错误的证据                     |
 
 ## Decision log
 
 ### DEC-1 — A batch is a complete ordered receipt
 
 **Reference:** `spec:AST-053/DEC-1`
+
 **Decider:** `josephfarina`, `2026-10-01`
 
-Batch lookup exists to reduce repeated process work without hiding what happened to
-any accepted request, so accepted selectors remain one-for-one and in order, including
-duplicates. A work-bound rejection happens before batch resolution and returns no
-partial receipt.
+批量查找的存在是为了减少重复的进程工作，同时不隐藏任何已接受请求发生了什么，因此已接受的选择器保持一一对应且按顺序，包括重复项。工作量上限的拒绝发生在批量解析之前，并且不返回部分回执。
 
-Rejected: fail an accepted batch on the first miss, which loses later answers; drop
-failed selectors, which makes partial work look complete; or truncate an oversized
-request after resolution begins.
+已否决：在首次未命中时就使已接受的批量失败，这会丢失后续答案；丢弃失败的选择器，这会让部分工作看起来完整；或在解析开始之后截断超大请求。
 
 ### DEC-2 — Ambiguity lists candidates
 
 **Reference:** `spec:AST-053/DEC-2`
+
 **Decider:** `josephfarina`, `2026-10-01`
 
-An unqualified identity can belong to several namespaces, providers, or packages. The
-receipt exposes every effective candidate so the caller can make the next lookup
-exact.
+未限定的身份可能属于多个命名空间、提供者或包。回执暴露每个有效候选，使调用方可以把下一次查找做确切。
 
-Rejected: precedence or first-match selection, which turns catalog order into an
-undocumented answer.
+已否决：优先级或首个匹配式选择，它会把目录顺序变成未记录的答案。
 
 ### DEC-3 — An unresolved row makes the CLI fail after output
 
 **Reference:** `spec:AST-053/DEC-3`
+
 **Decider:** `josephfarina`, `2026-10-01`
 
-Automation needs the process status to say whether every requested lookup resolved,
-while the receipt is still useful for fixing all failures in one pass, so any
-unresolved row exits 1 after output.
+自动化需要进程状态说明每个被请求的查找是否都已解析，而回执仍然有助于一次修好所有失败，因此任何未解析的行在输出后以退出码 1 结束。
 
-Rejected: exit zero because some rows succeeded, which reports incomplete work as
-success; and emit no receipt on failure, which forces repeated calls.
+已否决：因为某些行成功就退出 0，这会把不完整的工作报告为成功；以及在失败时不发出回执，这会迫使重复调用。
 
 ### DEC-4 — Input shape makes batch intent explicit
 
 **Reference:** `spec:AST-053/DEC-4`
+
 **Decider:** `josephfarina`, `2026-10-01`
 
-Existing CLI callers keep the zero- and one-selector behavior they already parse.
-Programmatic callers choose those paths with an omitted argument or a string, and
-choose a complete batch receipt with an array. Empty and one-item arrays remain
-batches, so filtering a selector list never changes the response type.
+既有的 CLI 调用方保留它们已经在解析的零选择器与单选择器行为。编程式调用方用省略参数或字符串选择这些路径，用数组选择完整批量回执。空数组与单元素数组仍然是批量，因此过滤选择器列表绝不会改变响应类型。
 
-Rejected: making an array's response depend on its length, which makes an explicit
-batch call change shape as a caller filters selectors; and always returning a batch
-for strings, which changes the stable JSON shape for existing callers.
+已否决：让数组的响应取决于其长度，这会使一次显式批量调用在调用方过滤选择器时改变形状；以及始终为字符串返回批量，这会改变既有调用方的稳定 JSON 形状。
 
 ### DEC-5 — Independent read-only lookups batch by default
 
 **Reference:** `spec:AST-053/DEC-5`
+
 **Decider:** `josephfarina`, `2026-10-01`
 
-Repeated process setup and fragmented failures are common to every lookup that meets
-E1-E5, not only component docs. Commands admitted after this record became current
-adopt the shared batch vocabulary in their first public release. Existing eligible
-commands migrate one at a time without changing zero- and one-selector behavior.
+重复的进程设置与碎片化的失败是满足 E1-E5 的每一次查找的共同问题，而不仅是组件文档。在本记录成为 current 之后被接纳的命令在其首次公开发布中采用共享批量词汇。既有的符合资格命令逐个迁移，不改变零选择器与单选择器行为。
 
-Rejected: leaving adoption entirely optional, which produces a different batching
-model for each command; and making every multi-argument command a batch, which breaks
-search queries, mutations, comparisons, workflows, and interactive sessions whose
-arguments are not independent read-only subjects.
+已否决：让采用完全可选，这会为每个命令产生不同的批量化模型；以及把每个多参数命令都变成批量，这会破坏搜索查询、变更操作、比较、工作流以及参数并非独立只读对象的交互式会话。
 
 ## Open questions
 
-None.
+无。

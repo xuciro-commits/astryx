@@ -35,154 +35,121 @@ system_specs: [spec:AST-009, spec:AST-020]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                     |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `orientation`, `label`, theme-extensible `variant`, `isFullBleed`, `BaseProps<HTMLDivElement>`, and a root `ref`.                                                                                                            |
-| Behavior                | The separator renders one rule without a label and two rules around a renderable label; full bleed consumes inherited logical container inset.                                                                               |
-| End-user impact         | People perceive a named separator across horizontal, vertical, labelled, full-bleed, narrow, and RTL compositions.                                                                                                           |
-| Builder impact          | None; the record describes shipped behavior. Numeric zero is a valid label; booleans and empty strings leave one continuous unnamed rule.                                                                                    |
-| Compatibility/readiness | Released behavior recorded as current; no API, default, or output changes. Two implementation gaps are listed under Current-state impact.                                                                                    |
-| Review checks           | Reject missing numeric labels, physical-edge bleed, dropped root inputs, or a target or axis that disagrees with the rendered separator.                                                                                     |
-| Governing rules         | `architecture:public-component-api/INV1,INV5–INV9`; `architecture:component-theming-surface/INV3–INV7,INV14`; `architecture:container-padding/INV1,INV3,INV7–INV10`; WCAG 2.2 SC 1.3.1 and 4.1.2 through `spec:AST-020/FR1`. |
+| 领域          | 契约                                                                                                                                                                                                                       |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共契约      | `orientation`、`label`、主题可扩展的 `variant`、`isFullBleed`、`BaseProps<HTMLDivElement>`，以及一个根 `ref`。                                                                                                             |
+| 行为          | 分隔符在没有标签时渲染一条线，在有可渲染标签时于标签两侧渲染两条线；full bleed 消耗继承来的逻辑容器内缩。                                                                                                                  |
+| 最终用户影响  | 人们能在水平、垂直、带标签、full bleed、窄幅以及 RTL 的组合中感知到一个具名分隔符。                                                                                                                                        |
+| 构建者影响    | 无；本记录描述已发布行为。数值零是有效标签；布尔值与空字符串会留下一条连续的无名线。                                                                                                                                       |
+| 兼容性/就绪度 | 已发布行为被记录为 current；没有 API、默认值或输出变化。两处实现缺口列在 Current-state impact 下。                                                                                                                         |
+| 审查检查      | 拒绝缺失的数值标签、物理边缘 bleed、被丢弃的根输入，以及与渲染出的分隔符不一致的目标或轴。                                                                                                                                 |
+| 治理规则      | `architecture:public-component-api/INV1,INV5–INV9`；`architecture:component-theming-surface/INV3–INV7,INV14`；`architecture:container-padding/INV1,INV3,INV7–INV10`；WCAG 2.2 SC 1.3.1 与 4.1.2，经由 `spec:AST-020/FR1`。 |
 
-This table is a review projection; the body below is authoritative.
+该表是审查投影；下方正文具有权威性。
 
 ## Intent
 
-Divider provides a programmatic and visual separator between caller-owned content
-regions. It owns orientation, line weight, optional label placement and naming,
-logical full-bleed geometry, and the aggregate `divider` theme target. The caller
-owns the meaning of the surrounding regions.
+Divider 在调用方拥有的内容区域之间提供程序化与视觉上的分隔。它拥有方向、线宽、可选的标签放置与命名、逻辑 full-bleed 几何，以及聚合的 `divider` 主题目标。调用方拥有周围区域的含义。
 
-Consumer syntax and examples belong in `Divider.doc.mjs`.
+使用方语法与示例属于 `Divider.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: yes — horizontal, subtle, unlabelled, and not full
-  bleed.
-- Compatibility class: records shipped behavior; no public prop, default, DOM,
-  or styling output changes. ReactNode values that React renders, including
-  numeric zero, stay inside the label wrapper; skipped scalar labels leave one
-  continuous unnamed rule.
-- Controlled/uncontrolled behavior: not applicable.
-- Migration decision: none.
+- 已发布默认值保持不变：是——水平、subtle、无标签，且不是 full bleed。
+- 兼容类别：记录已发布行为；没有公共 prop、默认值、DOM 或样式输出的变化。React 能渲染的 ReactNode 值（包括数值零）留在标签包装器内部；被跳过的标量标签会留下一条连续的无名线。
+- 受控/非受控行为：不适用。
+- 迁移决策：无。
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Current-state impact
 
-- **Theme-added variant without line paint (FR3).** `DividerVariantMap` admits
-  theme-added values, but an unmatched value leaves the inner rule unpainted, so
-  the line can disappear. `architecture:component-theming-surface` INV14
-  requires an extensible visual axis to have a safe theme-independent baseline;
-  OQ2 holds the remediation direction.
-- **Caller `role` and `aria-orientation` replaced (FR6).** Divider sets
-  `role="separator"` and `aria-orientation` after caller props, so a caller's
-  explicit values never reach the root, where
-  `architecture:public-component-api` INV5 lets a caller's explicit input reach
-  the element.
+- **主题新增的 variant 缺少线条绘制（FR3）。** `DividerVariantMap` 接受主题新增的值，但未匹配的值会让内部线条不被绘制，于是这条线可能消失。`architecture:component-theming-surface` INV14 要求可扩展的视觉轴具备安全的、与主题无关的基线；OQ2 承载修复方向。
+- **调用方的 `role` 与 `aria-orientation` 被替换（FR6）。** Divider 在调用方 props 之后设置 `role="separator"` 与 `aria-orientation`，因此调用方显式给出的值永远到不了根元素，而 `architecture:public-component-api` INV5 允许调用方的显式输入到达该元素。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- One semantic separator root and its public ref, DOM, data, ARIA, class, style,
-  event, and `xstyle` composition.
-- Horizontal and vertical rule geometry.
-- Optional label placement and the separator naming relationship.
-- Built-in subtle and strong line weights.
-- The reflected custom-variant state, including the missing line-paint fallback
-  recorded under Current-state impact.
-- Logical full-bleed consumption of inherited container inset.
-- The aggregate `divider` target with reflected orientation and variant axes.
+- 一个语义分隔符根元素及其公共 ref、DOM、data、ARIA、class、style、event 与 `xstyle` 组合。
+- 水平与垂直的线条几何。
+- 可选的标签放置以及分隔符的命名关系。
+- 内置的 subtle 与 strong 线宽。
+- 反映出来的自定义 variant 状态，包括 Current-state impact 下记录的缺失线条绘制回退。
+- 对继承容器内缩的逻辑 full-bleed 消耗。
+- 聚合的 `divider` 目标，以及反映出来的 orientation 与 variant 轴。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- The meaning or heading structure of surrounding content regions — owned by the
-  product callsite.
-- Container inset publication — owned by `architecture:container-padding`.
-- A separate public target for Rule or Label — none exists; OQ1 holds the question.
-- Theme-authored custom variant paint and the public part that should own it —
-  OQ2 holds the question.
+- 周围内容区域的含义或标题结构——由产品调用点拥有。
+- 容器内缩的发布——由 `architecture:container-padding` 拥有。
+- Rule 或 Label 的独立公共目标——不存在；OQ1 承载该问题。
+- 由主题创作的自定义 variant 绘制，以及应当拥有它的公共部件——OQ2 承载该问题。
 
 ## Public concepts
 
-| Concept      | Closed values or states                       | Meaning                                                                                       | Availability by variant/orientation/state | Default      | Owner                        | Stability                               | Invalid-value behavior                                                                     |
-| ------------ | --------------------------------------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------- | ------------ | ---------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Orientation  | `horizontal`; `vertical`                      | Selects the separator axis, rule geometry, and `aria-orientation`.                            | Every divider                             | `horizontal` | component                    | stable                                  | Closed union; rejected by types                                                            |
-| Label        | renderable ReactNode; omitted/skipped scalar  | Inserts one label between two rules and names the separator unless explicit ARIA naming wins. | Every orientation and variant             | omitted      | caller/component             | stable                                  | `null`, booleans, and empty strings render no label; numeric zero remains visible          |
-| Variant      | `subtle`; `strong`; theme-added visual values | Selects line paint and reflects the requested value on the target.                            | Every orientation and label state         | `subtle`     | component/theme              | stable built-ins; theme-extensible axis | An unmatched custom value leaves the rule unpainted (FR3)                                  |
-| Full bleed   | false; true                                   | Consumes inherited logical container inset on the divider axis.                               | Every orientation                         | false        | component/container protocol | stable                                  | Missing variables resolve to zero                                                          |
-| Root surface | ref; DOM/data/ARIA; class/style/xstyle/events | Extends the semantic separator root.                                                          | Every divider                             | omitted      | public component API         | stable                                  | Accepted inputs compose; a caller `role` or `aria-orientation` is replaced today (FR6 gap) |
+| 概念       | 封闭值或状态                                  | 含义                                                             | 按 variant/方向/状态的可用性 | 默认值       | 拥有者                       | 稳定性                      | 无效值行为                                                                       |
+| ---------- | --------------------------------------------- | ---------------------------------------------------------------- | ---------------------------- | ------------ | ---------------------------- | --------------------------- | -------------------------------------------------------------------------------- |
+| 方向       | `horizontal`；`vertical`                      | 选择分隔符轴、线条几何与 `aria-orientation`。                    | 每个 divider                 | `horizontal` | component                    | stable                      | 封闭联合；由类型系统拒绝                                                         |
+| 标签       | 可渲染的 ReactNode；被省略或被跳过的标量      | 在两条线之间插入一个标签，并为其命名，除非显式的 ARIA 命名胜出。 | 每种方向与 variant           | 省略         | caller/component             | stable                      | `null`、布尔值与空字符串不渲染标签；数值零保持可见                               |
+| Variant    | `subtle`；`strong`；主题新增的视觉值          | 选择线条绘制，并在目标上反映请求的值。                           | 每种方向与标签状态           | `subtle`     | component/theme              | 内置值 stable；主题可扩展轴 | 未匹配的自定义值会让线条不被绘制（FR3）                                          |
+| Full bleed | false；true                                   | 在 divider 轴上消耗继承的逻辑容器内缩。                          | 每种方向                     | false        | component/container protocol | stable                      | 缺失的变量解析为零                                                               |
+| 根表面     | ref；DOM/data/ARIA；class/style/xstyle/events | 扩展语义分隔符根元素。                                           | 每个 divider                 | 省略         | public component API         | stable                      | 接受的输入会组合；调用方的 `role` 或 `aria-orientation` 目前会被替换（FR6 缺口） |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                     | Basis                                                                       |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| FR1 | The divider renders one rule without a renderable label and two rules with the label between them. Numeric zero is a renderable label; `null`, booleans, and empty strings render no label. A horizontal divider is a full-width flex row and a vertical divider a full-height inline flex column; the label uses supporting type in secondary text with `--spacing-3` padding on the divider's axis.         | Released ReactNode API; current source, docs, and tests                     |
-| FR2 | By default the root exposes `role="separator"` and the selected `aria-orientation`; a caller's explicit `role` or `aria-orientation` wins and is used as given, even where it contradicts `orientation` (FR6). A renderable label names it through `aria-labelledby` unless a caller `aria-label` or `aria-labelledby` is supplied.                                                                           | WCAG 2.2 SC 1.3.1 and 4.1.2; current source and tests                       |
-| FR3 | `subtle` paints the rule `--color-border` and `strong` paints it `--color-border-emphasized`, at `--border-width`. The exported map accepts theme-added values, which the root reflects, and an extensible visual axis has a safe theme-independent baseline (`architecture:component-theming-surface` INV14). Implementation gap: an unmatched value leaves the inner rule unpainted (Current-state impact). | `architecture:component-theming-surface/INV4,INV6,INV14`; current source    |
-| FR4 | Full bleed consumes the inherited logical inline inset for horizontal dividers and the logical block inset for vertical dividers, extending the box by the same amounts; absent inset resolves to zero.                                                                                                                                                                                                       | `architecture:container-padding/INV1,INV3,INV7–INV10`; current source       |
-| FR5 | The root carries the `divider` target and reflects `orientation` and the requested `variant`. Rule and Label carry no public target. The reflected `data-orientation` and `data-variant` are component-owned theming state and replace a caller's values.                                                                                                                                                     | `architecture:component-theming-surface/INV3–INV6`; current source and docs |
-| FR6 | `ref`, DOM, data, ARIA, class, style, event, and `xstyle` inputs reach or compose on the separator root, and a caller's explicit `role` or `aria-orientation` reaches it (`architecture:public-component-api` INV5). Implementation gap: the component sets `role` and `aria-orientation` after caller props, so a caller's values are replaced (Current-state impact).                                       | `architecture:public-component-api/INV5–INV8`; current source and tests     |
+| ID  | 不变式                                                                                                                                                                                                                                                                                                                      | 依据                                                               |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| FR1 | 分隔符在没有可渲染标签时渲染一条线，在有标签时渲染两条线并把标签放在中间。数值零是可渲染标签；`null`、布尔值与空字符串不渲染标签。水平 divider 是满宽的 flex 行，垂直 divider 是满高的 inline flex 列；标签使用辅助字体样式与次级文字色，并在 divider 的轴上使用 `--spacing-3` 内边距。                                     | 已发布的 ReactNode API；当前源码、文档与测试                       |
+| FR2 | 默认情况下根元素暴露 `role="separator"` 与选定的 `aria-orientation`；调用方显式的 `role` 或 `aria-orientation` 胜出并按原样使用，即使它与 `orientation` 矛盾（FR6）。可渲染的标签通过 `aria-labelledby` 为其命名，除非调用方提供了 `aria-label` 或 `aria-labelledby`。                                                      | WCAG 2.2 SC 1.3.1 与 4.1.2；当前源码与测试                         |
+| FR3 | `subtle` 用 `--color-border` 绘制线条，`strong` 用 `--color-border-emphasized`，宽度为 `--border-width`。导出的映射接受主题新增的值，根元素会反映它们，并且可扩展的视觉轴具备安全的、与主题无关的基线（`architecture:component-theming-surface` INV14）。实现缺口：未匹配的值会让内部线条不被绘制（Current-state impact）。 | `architecture:component-theming-surface/INV4,INV6,INV14`；当前源码 |
+| FR4 | full bleed 为水平 divider 消耗继承的逻辑 inline 内缩，为垂直 divider 消耗逻辑 block 内缩，并按相同数值扩展盒子；内缩缺失时解析为零。                                                                                                                                                                                        | `architecture:container-padding/INV1,INV3,INV7–INV10`；当前源码    |
+| FR5 | 根元素携带 `divider` 目标，并反映 `orientation` 与请求的 `variant`。Rule 与 Label 不携带公共目标。反映出的 `data-orientation` 与 `data-variant` 是组件拥有的主题状态，会替换调用方的值。                                                                                                                                    | `architecture:component-theming-surface/INV3–INV6`；当前源码与文档 |
+| FR6 | `ref`、DOM、data、ARIA、class、style、event 与 `xstyle` 输入会到达分隔符根元素或在其上组合，调用方显式的 `role` 或 `aria-orientation` 也会到达（`architecture:public-component-api` INV5）。实现缺口：组件在调用方 props 之后设置 `role` 与 `aria-orientation`，因此调用方的值会被替换（Current-state impact）。            | `architecture:public-component-api/INV5–INV8`；当前源码与测试      |
 
 ### Allowed variation
 
-- **AV1 — Label content.** Any caller-owned ReactNode that React renders may fill
-  the label wrapper.
-- **AV2 — Theme paint.** An active theme may restyle the aggregate target and its
-  variant axis. OQ2 owns the unresolved inner-rule paint and fallback boundary.
-- **AV3 — Container geometry.** Full bleed follows the inherited per-edge inset,
-  including asymmetric and zero values.
+- **AV1 — 标签内容。** 任何 React 能渲染的、由调用方拥有的 ReactNode 都可以填充标签包装器。
+- **AV2 — 主题绘制。** 活跃主题可以重设聚合目标及其 variant 轴的样式。OQ2 承载未解决的内线绘制与回退边界。
+- **AV3 — 容器几何。** full bleed 遵循继承的逐边内缩，包括不对称值与零值。
 
 ### Representative states
 
-| State                               | Required invariant                                                                      | Allowed variation                          |
-| ----------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------ |
-| Unlabelled horizontal               | One subtle or strong inline rule; horizontal separator semantics                        | Container width and theme paint            |
-| Labelled horizontal                 | Two rules around one visible, naming label                                              | Any renderable label content               |
-| Numeric zero label                  | One visible `0` inside the label wrapper; separator name `0`                            | Any orientation or variant                 |
-| Vertical labelled/unlabelled        | Block-axis rules and vertical separator semantics                                       | Container height and label content         |
-| Theme-added variant without a match | Requested variant reflected; inner rule has no component-owned paint (FR3 gap)          | Custom variant name                        |
-| Full bleed                          | Logical-axis inset consumed without physical-direction assumptions                      | Uniform, asymmetric, zero, or absent inset |
-| RTL                                 | Horizontal geometry remains logical; full bleed consumes inline start/end independently | Surrounding content and label language     |
+| 状态                       | 必需不变式                                                    | 允许的变体                   |
+| -------------------------- | ------------------------------------------------------------- | ---------------------------- |
+| 无标签水平                 | 一条 subtle 或 strong 的 inline 线；水平分隔符语义            | 容器宽度与主题绘制           |
+| 有标签水平                 | 一个可见的具名标签两侧各一条线                                | 任何可渲染的标签内容         |
+| 数值零标签                 | 标签包装器内一个可见的 `0`；分隔符名称为 `0`                  | 任何方向或 variant           |
+| 垂直有标签/无标签          | block 轴上的线条与垂直分隔符语义                              | 容器高度与标签内容           |
+| 主题新增且未匹配的 variant | 请求的 variant 被反映；内部线条没有组件拥有的绘制（FR3 缺口） | 自定义 variant 名称          |
+| Full bleed                 | 在不假设物理方向的前提下消耗逻辑轴内缩                        | 均匀、不对称、零或缺失的内缩 |
+| RTL                        | 水平几何保持逻辑化；full bleed 独立消耗 inline 起止边         | 周围内容与标签语言           |
 
 ### Transformation and precedence order
 
-- **ORD1 — Label presence.** Apply the shared renderable-value predicate; when a
-  label remains, render and reference one wrapper between two rules.
-- **ORD2 — Accessible name.** Explicit `aria-labelledby` wins, then explicit
-  `aria-label`, then the rendered label wrapper; an unlabelled separator stays
-  unnamed.
-- **ORD3 — Variant paint.** Reflect the requested value on the root target. Built-in
-  values select subtle or strong inner-rule paint; unmatched custom values select no
-  inner-rule paint (FR3).
+- **ORD1 — 标签存在性。** 应用共享的可渲染值判定；当标签保留时，在两条线之间渲染并引用一个包装器。
+- **ORD2 — 无障碍名称。** 显式的 `aria-labelledby` 胜出，其次是显式的 `aria-label`，再次是渲染出的标签包装器；无标签的分隔符保持无名。
+- **ORD3 — Variant 绘制。** 在根目标上反映请求的值。内置值选择 subtle 或 strong 的内部线条绘制；未匹配的自定义值不选择任何内部线条绘制（FR3）。
 
 ### Performance and resources
 
-- **PR1 — No external lifecycle.** Divider installs no listener, observer, timer,
-  request, state machine, or Effect.
+- **PR1 — 无外部生命周期。** Divider 不安装任何监听器、观察器、定时器、请求、状态机或 Effect。
 
 ## Accessibility contract
 
-- **AR1 — Programmatic separator.** By default the root exposes separator role
-  and the exact visual orientation; a caller's explicit `role` or
-  `aria-orientation` wins (FR6), and today the component's values replace it
-  (FR6 gap).
-- **AR2 — Label relationship.** A rendered label names the separator unless the
-  caller supplies an explicit accessible name relationship.
-- **AR3 — Decorative rule segments.** Internal rule elements add no separate role,
-  name, focus target, or interaction.
+- **AR1 — 程序化分隔符。** 默认情况下根元素暴露分隔符角色与精确的视觉方向；调用方显式的 `role` 或 `aria-orientation` 胜出（FR6），而目前组件的值会替换它（FR6 缺口）。
+- **AR2 — 标签关系。** 渲染出的标签为分隔符命名，除非调用方提供了显式的无障碍名称关系。
+- **AR3 — 装饰性线条片段。** 内部线条元素不额外添加角色、名称、焦点目标或交互。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                                                            | Representation authority                                     | Hierarchy role | Component contract |
-| ---------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | -------------- | ------------------ |
-| Divider group    | Arrange rule segments and the optional label on one logical axis.                             | Current source; container geometry from current architecture | supporting     | FR1, FR4           |
-| Rule             | Paint a visible subtle or strong separation line; theme-added values lack a settled fallback. | Current source; custom fallback is the FR3 gap               | supporting     | FR3                |
-| Label            | Present optional content between two rules using supporting text tokens.                      | Current source; no separate target (OQ1)                     | prominent      | FR1–FR2            |
+| 解剖或状态 | 设计要求                                                         | 表示权威                        | 层级角色   | 组件契约 |
+| ---------- | ---------------------------------------------------------------- | ------------------------------- | ---------- | -------- |
+| Divider 组 | 在一条逻辑轴上安排线条片段与可选标签。                           | 当前源码；容器几何来自当前架构  | supporting | FR1, FR4 |
+| 线条       | 绘制可见的 subtle 或 strong 分隔线；主题新增的值缺少确定的回退。 | 当前源码；自定义回退即 FR3 缺口 | supporting | FR3      |
+| 标签       | 使用辅助文字 token 在两条线之间呈现可选内容。                    | 当前源码；无独立目标（OQ1）     | prominent  | FR1–FR2  |
 
-No component-local design decision is recorded.
+未记录组件本地的设计决策。
 
 ### Theming anatomy
 
@@ -204,49 +171,36 @@ No component-local design decision is recorded.
 }
 ```
 
-The two `none` dispositions record that no public target reaches Rule or Label;
-OQ1 holds whether they should gain one.
+两个 `none` 处置记录了没有公共目标到达 Rule 或 Label；它们是否应获得目标由 OQ1 承载。
 
 ## Family and system relationships
 
-- `architecture:container-padding` owns the inherited internal inset protocol;
-  Divider consumes it only through `isFullBleed`.
-- `architecture:component-theming-surface` sets the rules for the target,
-  reflected axes, and anatomy qualification, and the requirement that an open visual axis have
-  a deterministic fallback. Divider's custom-value path does not satisfy that
-  requirement (FR3); OQ2 holds the remediation direction.
-- `architecture:public-component-api` owns root composition, ref behavior, and
-  compatibility of the released ReactNode label surface.
-- There is no current Divider family or design record.
+- `architecture:container-padding` 拥有继承的内部内缩协议；Divider 仅通过 `isFullBleed` 消耗它。
+- `architecture:component-theming-surface` 为目标、反映轴与解剖资质设定规则，并要求开放的视觉轴具备确定性的回退。Divider 的自定义值路径不满足该要求（FR3）；OQ2 承载修复方向。
+- `architecture:public-component-api` 拥有根组合、ref 行为，以及已发布 ReactNode 标签表面的兼容性。
+- 当前没有 Divider family 或设计记录。
 
 ## Verification map
 
-| Contract           | Verification                                                                                                          | Representative states                                                    | Mutation or failure expectation                                                                                                                                                                                                                                                                                    | Audit section            |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ |
-| FR1, FR2, AR1, AR2 | `Divider.test.tsx` orientation, label, naming, and numeric-zero tests                                                 | Labelled and unlabelled, numeric zero, explicit names, both orientations | Rendering zero outside the wrapper, an unnamed labelled separator, or role, orientation, or name drift fails. Gap: only the unlabelled horizontal default is in the stable visual baseline (`core-divider--default`); the vertical layout and the label's type and padding have no automated check.                | `audit:Divider/a11y`     |
-| AR3                | Source review                                                                                                         | Labelled and unlabelled                                                  | Gap: no automated check fails if a rule segment gains a role, name, or tab stop.                                                                                                                                                                                                                                   | `audit:Divider/a11y`     |
-| FR3, FR5           | `Divider.test.tsx` variant and target tests; `themingTargets.test.ts`; stable visual baseline `core-divider--default` | Subtle, strong, both orientations; default                               | A lost class or `orientation`/`variant` reflection fails; a changed default rule paint comes back changed for review. Gap: the strong paint and the unmatched theme-added path have no automated check.                                                                                                            | `audit:Divider/theming`  |
-| FR4                | `@astryx/no-physical-properties` lint rule; `Divider.stories.tsx` full-bleed fixtures                                 | Horizontal and vertical, LTR and RTL, absent inset                       | A physical left/right property in Divider's styles fails lint. Gap: the `Divider.test.tsx` full-bleed test only checks that the element renders, so no automated check fails when full bleed is not applied, on the wrong axis, or with a non-zero fallback, and no browser right-to-left check covers full bleed. | `audit:Divider/layout`   |
-| FR6                | `Divider.test.tsx` ref and passthrough tests                                                                          | Ref, extra props                                                         | A dropped ref or caller prop fails. Gap: the ref test accepts any element, so a ref on a wrapper passes; no test covers the styling-input merge or a caller `role` or `aria-orientation`.                                                                                                                          | `audit:Divider/behavior` |
-| PR1                | Source review                                                                                                         | Every state                                                              | Gap: no automated check fails if Divider adds a listener, observer, timer, or effect.                                                                                                                                                                                                                              | `audit:Divider/behavior` |
-| AR1, AR2           | Accessibility-tree evidence (`spec:AST-009` FR3)                                                                      | Labelled and unlabelled separators                                       | Gap: no accessibility-tree check proves the separator role, orientation, or name; the unit tests query the DOM.                                                                                                                                                                                                    | `audit:Divider/a11y`     |
+| 契约               | 验证                                                                                                     | 代表状态                                   | 变异或失败预期                                                                                                                                                                                                                                      | 审计小节                 |
+| ------------------ | -------------------------------------------------------------------------------------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| FR1, FR2, AR1, AR2 | `Divider.test.tsx` 的方向、标签、命名与数值零测试                                                        | 有标签与无标签、数值零、显式名称、两种方向 | 在包装器之外渲染零、有标签的分隔符缺少名称，或角色、方向、名称漂移都会失败。缺口：稳定视觉基线（`core-divider--default`）只覆盖无标签的水平默认值；垂直布局与标签的字体样式和内边距没有自动化检查。                                                 | `audit:Divider/a11y`     |
+| AR3                | 源码审查                                                                                                 | 有标签与无标签                             | 缺口：若线条片段获得角色、名称或 tab 停靠点，没有自动化检查会失败。                                                                                                                                                                                 | `audit:Divider/a11y`     |
+| FR3, FR5           | `Divider.test.tsx` 的 variant 与目标测试；`themingTargets.test.ts`；稳定视觉基线 `core-divider--default` | subtle、strong、两种方向；默认             | 丢失 class 或 `orientation`/`variant` 的反映会失败；默认线条绘制的变更会返回以供审查。缺口：strong 绘制与未匹配的主题新增路径没有自动化检查。                                                                                                       | `audit:Divider/theming`  |
+| FR4                | `@astryx/no-physical-properties` lint 规则；`Divider.stories.tsx` 的 full-bleed 测试夹具                 | 水平与垂直、LTR 与 RTL、缺失内缩           | Divider 样式中出现物理 left/right 属性会导致 lint 失败。缺口：`Divider.test.tsx` 的 full-bleed 测试只检查元素是否渲染，因此当 full bleed 未应用、应用在错误的轴上或使用非零回退时没有自动化检查会失败，且没有覆盖 full bleed 的浏览器从右到左检查。 | `audit:Divider/layout`   |
+| FR6                | `Divider.test.tsx` 的 ref 与透传测试                                                                     | ref、额外 props                            | 丢失 ref 或调用方 prop 会失败。缺口：ref 测试接受任何元素，因此包装器上的 ref 也能通过；没有测试覆盖样式输入的合并，或调用方的 `role` 或 `aria-orientation`。                                                                                       | `audit:Divider/behavior` |
+| PR1                | 源码审查                                                                                                 | 每种状态                                   | 缺口：若 Divider 新增监听器、观察器、定时器或 effect，没有自动化检查会失败。                                                                                                                                                                        | `audit:Divider/behavior` |
+| AR1, AR2           | 无障碍树证据（`spec:AST-009` FR3）                                                                       | 有标签与无标签的分隔符                     | 缺口：没有无障碍树检查能证明分隔符角色、方向或名称；单元测试查询的是 DOM。                                                                                                                                                                          | `audit:Divider/a11y`     |
 
 ## Decision log
 
-None recorded. The record describes shipped behavior.
+未记录。本记录描述已发布行为。
 
 ## Open questions
 
-- **OQ1 — Should Rule or Label gain stable public theming targets?** (`human-api`)
-  No public target reaches them today; that absence does not decide the answer.
-- **OQ2 — Should the open `variant` axis close, or which painting part owns its
-  deterministic custom-value fallback?** (`human-api`) The root target can carry
-  theme paint while the inner rule carries built-in paint. Applying a subtle inner
-  fallback can cover an existing root background; keeping the current path can make
-  the rule disappear. Options: close the axis, move target ownership, or route
-  paint through a reviewed public property.
+- **OQ1 — Rule 或 Label 是否应获得稳定的公共主题目标？**（`human-api`）目前没有公共目标到达它们；这种缺失并不决定答案。
+- **OQ2 — 应关闭开放的 `variant` 轴，还是由哪个绘制部件拥有其确定性的自定义值回退？**（`human-api`）根目标可以承载主题绘制，而内部线条承载内置绘制。应用 subtle 的内部回退可能覆盖已有的根背景；保留当前路径可能让线条消失。选项：关闭该轴、移动目标归属，或让绘制经过一个已审查的公共属性。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不重复使用方 prop 表/示例、当前审计结果、实现步骤或 family/system 规则。它链接到它们的拥有者。

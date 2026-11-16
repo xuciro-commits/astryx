@@ -20,239 +20,101 @@ affects_consumer_docs: [authoring]
 
 ## Intent
 
-People run Astryx commands such as `astryx upgrade --apply` on projects they
-own. Those commands edit existing files in place. A consumer must be able to
-trust that each edit targets content Astryx can prove it may change, that
-generated, vendored, and dependency content is regenerated rather than edited,
-and that anything Astryx could not change is reported instead of hidden.
+人们在自有项目上运行 Astryx 命令，例如 `astryx upgrade --apply`。这些命令会就地编辑既有的文件。使用方必须能够信任：每一次编辑都以 Astryx 能证明自己可以修改的内容为目标；生成内容、外部引入（vendored）内容与依赖内容是被重新生成，而不是被编辑；并且任何 Astryx 无法修改的内容都会被报告出来，而不是被隐藏。
 
-This record owns what an operation may modify in an existing consumer file, what
-counts as evidence, and how skipped or blocked changes are reported. It applies
-to every operation that modifies or replaces an existing file in a consumer
-project, including core, integration, and configuration codemods. For
-`astryx upgrade`, it also owns which project the operation works on, which
-installed Core it migrates to, how its result names files, and how it reports a
-CLI too old to finish the migration.
+本记录规定一次操作可以修改既有使用方文件中的哪些内容、什么算作证据，以及被跳过或被阻止的更改如何报告。它适用于在使用方项目中修改或替换既有文件的每一种操作，包括 core、integration 与 configuration 的 codemod。对于 `astryx upgrade`，它还规定该操作在哪个项目上工作、迁移到哪个已安装的 Core、其结果如何命名文件，以及如何报告 CLI 过旧以致无法完成迁移的情况。
 
 ## Non-goals
 
-- Creating new files, such as template copies or scaffolding. Their write
-  confinement stays with `architecture:cli-surface`, and template copy behavior
-  stays with `spec:AST-028`.
-- Defining individual migrations or their mappings. The
-  [Release compatibility and versioning spec](../AST-017/spec.md) owns when a
-  deprecation, planned cleanup, or incompatible fix requires migration evidence;
-  this record owns how a consumer-file transform edits safely.
-- Choosing a command for inspecting effective settings; `spec:AST-017` FR20
-  requires one.
-- Where other commands look for the project, including where `init` writes
-  agent docs. FR9–FR13 govern `astryx upgrade` only.
-- Equivalent internal implementations remain valid when they satisfy this contract.
+- 创建新文件，例如模板副本或脚手架。它们的写入范围限制仍归 `architecture:cli-surface` 所有，模板副本行为仍归 `spec:AST-028` 所有。
+- 定义各个迁移及其映射。[发布兼容性与版本管理规格](../AST-017/spec.md) 规定弃用、计划中的清理或不兼容修复何时需要迁移证据；本记录规定使用方文件转换如何安全地编辑。
+- 为检查生效设置而选择某条命令；`spec:AST-017` FR20 要求提供这样一条命令。
+- 其他命令在何处查找项目，包括 `init` 在何处写入 agent 文档。FR9–FR13 仅约束 `astryx upgrade`。
+- 当其满足本契约时，等价的内部实现仍然有效。
 
 ## Requirements
 
-- **FR1 — Every edit needs affirmative evidence.** An operation MUST modify
-  existing consumer content only when the file is not protected (FR2–FR4) and the
-  edited construct is proven in scope. For a source transform, proof is a
-  resolved binding to the migrated export: a named, aliased, default, or
-  namespace import, or a re-export, that is not shadowed at the edit site. A
-  type-only import proves only type positions and never authorizes an edit to a
-  runtime value. A matching name, string, or shape alone is not proof, and a
-  file-level import does not authorize edits elsewhere in the file. When proof is
-  missing, the content MUST stay unchanged and the candidate MUST be reported
-  under FR7.
-- **FR2 — Generated, vendored, and dependency content is protected.** An
-  operation MUST NOT modify a file that is inside an installed dependency or
-  version-control metadata, is outside the operation root, is reached through a
-  symbolic link, is marked generated or vendored by a recognized convention
-  (FR3), or is excluded by the project's ignore rules. A file or directory name
-  alone neither protects nor unprotects a file.
-- **FR3 — Recognized conventions are read from the checkout.** The CLI MUST
-  recognize these declarations from files present in the working tree, without
-  running a version-control program:
-  - `linguist-generated` and `linguist-vendored` in `.gitattributes` files,
-    including nested files;
-  - a generated marker in the file's leading comment block: `@generated`,
-    `@partially-generated`, or a line matching the standard
-    `Code generated … DO NOT EDIT.` form. A marker after authored code does not
-    protect the file, and `@partially-generated` protects the whole file;
-  - exclusions in `.gitignore` files and in `.hgignore`.
+- **FR1 — 每一次编辑都需要肯定性证据。** 一次操作必须仅在文件未受保护（FR2–FR4）且被编辑的构造被证明在范围内时，才修改既有的使用方内容。对于源码转换，证据是指向被迁移导出的已解析绑定：具名、别名、默认或命名空间导入，或再导出，且该绑定在编辑位置未被遮蔽。仅类型的导入只为类型位置提供证明，绝不授权对运行时值的编辑。仅名字、字符串或形状匹配不构成证据，文件级导入不授权对该文件其他位置的编辑。缺少证据时，内容必须保持不变，候选必须按 FR7 报告。
+- **FR2 — 生成内容、外部引入内容与依赖内容受保护。** 一次操作不得修改满足以下任一条件的文件：位于已安装依赖或版本控制元数据之内、位于操作根之外、经由符号链接抵达、被可识别的约定标记为生成或外部引入（FR3）、或被项目的忽略规则排除。仅凭文件或目录名既不会保护也不会解除保护一个文件。
+- **FR3 — 可识别的约定从检出目录读取。** CLI 必须从工作树中存在的文件识别以下声明，而不运行版本控制程序：
+  - `.gitattributes` 文件中的 `linguist-generated` 与 `linguist-vendored`，包括嵌套文件；
+  - 文件开头注释块中的生成标记：`@generated`、`@partially-generated`，或匹配标准 `Code generated … DO NOT EDIT.` 形式的一行。位于手写代码之后的标记不保护该文件，而 `@partially-generated` 保护整个文件；
+  - `.gitignore` 文件与 `.hgignore` 中的排除项。
 
-  Each convention uses its own standard semantics, including later-rule
-  precedence, explicit unset or false attribute values, and ignore-rule negation.
-  The effective result for the file decides protection; Astryx configuration and
-  integration contributions can only add protection to it (FR4). The result MUST
-  be the same in Git, Sapling, and Mercurial checkouts and in a directory with no
-  version control. The recognized set is public and discoverable under
-  `spec:AST-017` FR14. It grows by amendment when a convention is established
-  across ecosystems.
+  每种约定都使用其自身的标准语义，包括后规则优先、显式取消设置或为假的属性值，以及忽略规则的取反。该文件的有效结果决定保护状态；Astryx 配置与集成贡献只能在其之上追加保护（FR4）。该结果在 Git、Sapling 与 Mercurial 检出中，以及在没有版本控制的目录中，必须相同。可识别的集合是公开的，并可在 `spec:AST-017` FR14 下被发现。当一个约定在各生态中被确立时，它通过修订而增长。
 
-- **FR4 — Protection is additive and fails closed.** Project configuration and
-  integration contributions MAY add protection under `spec:AST-017` FR19 and
-  FR20. A protection setting requires a reproduced case that FR3 conventions
-  miss. No configuration or contribution can remove protection established by
-  FR2, FR3, or another source. When a protection source cannot be read or
-  parsed, the operation MUST fail before writing, with a stable error that names
-  the source.
-- **FR5 — Generated output is regenerated, not edited.** When a required change
-  would alter a protected generated file, the operation MUST leave that file
-  unchanged, complete the in-scope edits to owned sources, and then run the
-  regeneration the project declares. The CLI MUST regenerate output of its own
-  generators itself, or report the exact command that does. After regeneration,
-  it MUST evaluate the protected files again.
-- **FR6 — A blocked required change is an incomplete result.** If a protected
-  file still requires a change after FR5, the operation MUST exit nonzero with a
-  stable error code and list every such file with the declaration that protects
-  it. Completed edits to owned files remain. A protected file that needs no
-  change never blocks. Running the same operation again after the project
-  regenerates MUST NOT apply a completed edit twice. A dry run MUST report the
-  same classification without writing.
-- **FR7 — Every skipped candidate is reported.** The machine-readable result
-  MUST list modified files, protected files that required a change (FR6), and
-  candidates declined for lack of proof (FR1) with their location and reason.
-  Human-readable output MUST show the same facts. Declined candidates are
-  reported as needing manual review; they do not by themselves fail the
-  operation. A result MUST NOT look complete while a required change is blocked.
-- **FR8 — Every modification path follows this contract.** Core, integration,
-  and configuration codemods, and any other operation that modifies existing
-  consumer files, MUST apply FR1–FR7 identically. A new modification path cannot
-  opt out, consistent with `spec:AST-017` FR16. The managed agent-docs block is
-  governed by `architecture:cli-surface` INV31.
-- **FR9 — An upgrade works on its project.** `astryx upgrade` MUST operate on
-  the project of the folder it runs in: the nearest folder at or above that
-  folder whose `package.json` declares an Astryx package, or that its workspace
-  lists as a member when the workspace root's `package.json` declares one. A
-  `package.json` declares an Astryx package when any of its dependency fields,
-  peer dependencies included, names an `@astryxdesign/*` package or a legacy
-  `@xds/*` one. A folder's workspace root is the one `spec:AST-048` FR15 finds
-  from it, and the workspace lists the folder when a pattern in the root
-  `package.json` `workspaces` field or in `pnpm-workspace.yaml` `packages`
-  matches the folder and no exclusion pattern removes it. A folder that installs
-  Core but qualifies neither way is not a project: an upgrade run there works on
-  the project above it, if any. The search MUST NOT continue past a folder that
-  holds version-control metadata, and MUST end at the home folder without
-  counting it as a project or as a workspace root. The project root is the
-  operation root (FR2): the upgrade reads the project's configuration, agent
-  docs, and protection sources (FR3, FR4) there. When no folder qualifies, the
-  folder the command runs in is the operation root.
-- **FR10 — A named source folder is read where the command runs.** By default,
-  an upgrade MUST scan the `src` folder of the operation root. A source folder
-  the caller names MUST be resolved from the folder the command runs in, and
-  MUST be inside the operation root; one outside it fails with
-  `ERR_PATH_TRAVERSAL` before any write.
-- **FR11 — A workspace member migrates to the Core its workspace installs.**
-  The version an upgrade migrates to MUST be that of the Core
-  (`@astryxdesign/core`, or the legacy `@xds/core`) the project installs: in the
-  `node_modules` of the project root; for a member its workspace lists, in the
-  nearest `node_modules` from the project root up to the workspace root; and for
-  a project installed without `node_modules`, the copy its package manager
-  resolves for it. A Core above a project that no workspace lists MUST NOT
-  count. When no folder qualifies under FR9, the target is the Core in the
-  `node_modules` of the folder the command runs in. With no installed Core, the
-  upgrade fails with `ERR_VERSION_DETECT` before any write.
-- **FR12 — The result names files from where the command runs.** The
-  machine-readable result of an upgrade MUST name its modified, protected, and
-  declined files (FR7), the files its errors name, its agent-doc files, and the
-  files of its copied-composition summary by paths relative to the folder the
-  command runs in, so each resolves from there. When the command runs at the
-  operation root, the copied-composition summary instead names its files
-  relative to the source folder the upgrade scanned. When the operation root is
-  another folder, the human-readable output MUST name it.
-- **FR13 — A CLI older than the installed Core reports an incomplete upgrade.**
-  When the installed `@astryxdesign/core` is newer than both the running CLI and
-  the version the upgrade starts from, the upgrade MUST run the codemods the
-  running CLI has for the range, and its human-readable output MUST report the
-  upgrade as incomplete and MUST NOT say the code is up to date. The
-  machine-readable result MUST carry the optional `cliBehindCore` field, present
-  only in this case, with the running CLI's version and one command that
-  finishes the upgrade with the CLI release matching the installed Core. That
-  command MUST work from any folder it is run in, upgrading the same project; it
-  MUST repeat the run's options, MUST name the source folder the run scanned,
-  and MUST quote each argument for the shell it targets. The human-readable
-  output MUST print the command on a line of its own, and MUST name that shell
-  unless it is a POSIX shell. This case does not change the exit status, or what
-  `complete` and `errorCode` report under FR6.
+- **FR4 — 保护是累加的，并且以失败即关闭的方式处理。** 项目配置与集成贡献可以在 `spec:AST-017` FR19 与 FR20 下追加保护。一项保护设置要求提供 FR3 约定未能覆盖的复现案例。任何配置或贡献都不能移除由 FR2、FR3 或其他来源确立的保护。当某个保护来源无法读取或解析时，操作必须在写入前失败，并给出指明该来源的稳定错误。
+- **FR5 — 生成输出通过重新生成而非编辑处理。** 当某项必需的更改会改动受保护的生成文件时，操作必须保持该文件不变，完成对自有源码的范围内编辑，然后运行项目所声明的重新生成。CLI 必须自行重新生成其自身生成器的输出，或报告负责该工作的确切命令。在重新生成之后，它必须再次评估受保护的文件。
+- **FR6 — 被阻止的必需更改即为未完成的结果。** 如果在 FR5 之后受保护文件仍然需要更改，操作必须以非零状态退出，给出稳定的错误码，并列出每一个此类文件以及保护它的声明。对自有文件的已完成编辑予以保留。无需更改的受保护文件绝不阻止操作。在项目重新生成之后再次运行同一操作，不得重复应用已完成的编辑。试运行必须在不写入的情况下报告相同的分类。
+- **FR7 — 每一个被跳过的候选都会被报告。** 机器可读结果必须列出已修改文件、需要更改的受保护文件（FR6），以及因缺少证据而被拒绝的候选（FR1），并附带其位置与原因。人类可读输出必须展示相同的事实。被拒绝的候选以需要人工复核的方式报告；它们本身不会使操作失败。当某项必需更改被阻止时，结果不得看起来是完成的。
+- **FR8 — 每一条修改路径都遵循本契约。** core、integration 与 configuration 的 codemod，以及任何其他修改既有使用方文件的操作，都必须以相同方式应用 FR1–FR7。新的修改路径不能选择退出，这与 `spec:AST-017` FR16 一致。受管的 agent 文档块归 `architecture:cli-surface` INV31 管辖。
+- **FR9 — 一次升级在其所属项目上工作。** `astryx upgrade` 必须在它所运行文件夹所属的项目上操作：即该文件夹本身或其上方的最近一个文件夹，其 `package.json` 声明了某个 Astryx 包；或者当工作区根目录的 `package.json` 声明了某个 Astryx 包时，该文件夹被该工作区列为成员。当 `package.json` 的任一依赖字段（包括 peer 依赖）命名了 `@astryxdesign/*` 包或旧版的 `@xds/*` 包时，它就声明了一个 Astryx 包。某文件夹的工作区根，是 `spec:AST-048` FR15 从该文件夹找到的那一个；当根 `package.json` 的 `workspaces` 字段或 `pnpm-workspace.yaml` 的 `packages` 中的某个模式匹配该文件夹，且没有任何排除模式将其移除时，该工作区就把该文件夹列为成员。安装了 Core 但两种方式都不符合条件的文件夹不是项目：在那里运行的升级会改为作用于其上方的那一个项目（若存在）。搜索不得越过持有版本控制元数据的文件夹，并且必须在主目录处结束，不将其计为项目或工作区根。项目根就是操作根（FR2）：升级在那里读取项目的配置、agent 文档与保护来源（FR3、FR4）。当没有任何文件夹符合条件时，命令所运行的文件夹就是操作根。
+- **FR10 — 命名的源码文件夹从命令运行处读取。** 默认情况下，升级必须扫描操作根的 `src` 文件夹。调用方命名的源码文件夹必须从命令所运行的文件夹解析，并且必须位于操作根之内；位于其外的会以 `ERR_PATH_TRAVERSAL` 失败，且在任何写入之前。
+- **FR11 — 工作区成员迁移到其工作区所安装的 Core。** 升级所迁移到的版本必须是项目所安装的 Core（`@astryxdesign/core`，或旧版 `@xds/core`）的版本：对于项目根，取项目根 `node_modules` 中的那份 Core；对于其工作区列出的成员，取项目根至工作区根之间最近的 `node_modules` 中的那份；对于未使用 `node_modules` 安装的项目，取其包管理器为它解析出的副本。没有工作区列出的项目上方的 Core 不得计入。当没有任何文件夹符合 FR9 时，目标是命令所运行文件夹的 `node_modules` 中的 Core。若没有已安装的 Core，升级会在任何写入之前以 `ERR_VERSION_DETECT` 失败。
+- **FR12 — 结果从命令运行处命名文件。** 升级的机器可读结果必须以相对于命令所运行文件夹的路径，命名其已修改、受保护与被拒绝的文件（FR7）、其错误所命名的文件、其 agent 文档文件，以及其复制组合摘要中的文件，使每一项都能从该处解析。当命令在操作根运行时，复制组合摘要改为以相对于升级所扫描的源码文件夹的路径命名其文件。当操作根是另一个文件夹时，人类可读输出必须指出它。
+- **FR13 — 比已安装 Core 更旧的 CLI 报告升级未完成。** 当已安装的 `@astryxdesign/core` 比运行中的 CLI 和升级起始版本都更新时，升级必须运行运行中的 CLI 针对该范围所拥有的 codemod，并且其人类可读输出必须将该升级报告为未完成，且不得声称代码已是最新。机器可读结果必须携带可选的 `cliBehindCore` 字段，仅在此情况下出现，其中包含运行中 CLI 的版本，以及一条使用与已安装 Core 相匹配的 CLI 发行版来完成该升级的命令。该命令必须在其被运行的任何文件夹中都能工作，并升级同一个项目；它必须重复该次运行的选项，必须指明该次运行所扫描的源码文件夹，并且必须为它面向的 shell 引用每一个参数。人类可读输出必须将该命令打印在单独一行，并且除非它是 POSIX shell，否则必须指明该 shell。此情况不改变退出状态，也不改变 FR6 下 `complete` 与 `errorCode` 所报告的内容。
 
 ### Platform support
 
-- Supported feature/engine floor: every supported CLI runtime on Linux, macOS,
-  and Windows; Git, Sapling, and Mercurial checkouts; directories with no
-  version control; and the workspaces and install layouts of npm, pnpm, Yarn
-  (Plug'n'Play included), and Bun.
-- Unsupported behavior: a version-control declaration that exists only in
-  repository metadata outside the working tree is not read; the project adds
-  protection under FR4 when a reproduced case needs it.
-- Browser evidence: not applicable.
+- 受支持的特性/引擎下限：Linux、macOS 与 Windows 上每一个受支持的 CLI 运行时；Git、Sapling 与 Mercurial 检出；没有版本控制的目录；以及 npm、pnpm、Yarn（包括 Plug'n'Play）与 Bun 的工作区与安装布局。
+- 不支持的行为：仅存在于工作树之外的仓库元数据中的版本控制声明不会被读取；当复现案例需要时，项目在 FR4 下追加保护。
+- 浏览器证据：不适用。
 
 ## Current-state impact
 
-Current codemod scanners skip a fixed list of directory names and never follow
-symbolic links. They read no generated markers, attributes, or ignore files, so a
-codemod can edit a generated file. Some transforms treat a file-level import as
-permission to edit matching literals anywhere in that file. Both behaviors are
-non-conforming with FR1–FR3; this record does not choose their implementation.
+当前的 codemod 扫描器跳过一份固定的目录名列表，并且从不跟随符号链接。它们不读取任何生成标记、属性或忽略文件，因此 codemod 可能编辑生成的文件。有些转换把文件级导入视为可以编辑该文件中任何位置匹配字面量的许可。这两种行为都不符合 FR1–FR3；本记录不选择它们的实现。
 
-Post-codemod hooks already exist and serve as the declared regeneration for FR5.
-The `authoring` guides and the codemod authoring guidance must
-explain protection, how to mark generated files, and how transforms prove scope.
+codemod 后置钩子（post-codemod hooks）已经存在，并充当 FR5 所声明的重新生成。`authoring` 指南与 codemod 撰写指南必须解释保护机制、如何标记生成文件，以及转换如何证明作用范围。
 
-This specification-only change alters no runtime behavior or published package
-and needs no Changeset.
+这一仅涉及规格的变更不改变任何运行时行为或已发布包，且不需要 Changeset。
 
 ## Verification
 
-| Contract | Verification                                               | Representative states                                                                                                                                                                                                                | Mutation or failure expectation                                                                                                  |
-| -------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| FR1      | Transform fixtures                                         | named, aliased, default, namespace, re-exported, type-only in a type position and a value position, shadowed, wrong-package, unrelated literal                                                                                       | A same-named local or unrelated literal changes, or a proven usage is not edited                                                 |
-| FR2–FR4  | Protection fixtures in each checkout kind                  | nested attributes, unset or false attribute, negated ignore, marker after code, partial marker, ignored path, symlink, config and integration additions, attempted removal, bad source                                               | A protected file changes, a result differs by version control, or a bad source allows writes                                     |
-| FR5–FR6  | Upgrade runs with a generated file and a regeneration hook | hook succeeds, hook fails, dry run, second run                                                                                                                                                                                       | Protected bytes change, exit is zero with a blocked change, or a second run edits twice                                          |
-| FR7      | Result snapshots in JSON and text                          | modified, blocked, declined                                                                                                                                                                                                          | A blocked or declined candidate is missing from either output                                                                    |
-| FR8      | Inventory of every operation that modifies existing files  | core, integration, config codemods, new path                                                                                                                                                                                         | A path bypasses FR1–FR7                                                                                                          |
-| FR9      | Upgrade runs from folders inside and around projects       | a subfolder; a listed and an unlisted workspace member; a folder whose `package.json` declares no Astryx package; a folder with no `package.json` inside a home folder that installs Astryx; a nested checkout; no qualifying folder | The upgrade operates on another project, the home folder, or a folder past version-control metadata                              |
-| FR10     | Upgrade runs with a named source folder                    | the default from a subfolder; one folder named from a subfolder in each spelling; a folder outside the operation root                                                                                                                | A named folder read from another folder than the one the command runs in, or a folder outside the operation root that is scanned |
-| FR11     | Upgrade target detection                                   | a member whose workspace forces Core, or that declares another range or only a peer range; an unlisted project below an installed Core; a Core in a parent folder; an install without `node_modules`; no qualifying folder           | A member that misses the Core its workspace installs, or a Core above an unlisted project that counts                            |
-| FR12     | Result snapshots from a subfolder and from the root        | modified, protected, declined, error, agent-doc, and copied-composition paths                                                                                                                                                        | A path that does not resolve from the folder the command runs in, or a root run whose copied-composition paths change            |
-| FR13     | Upgrade runs with a CLI older than the installed Core      | no codemods left; part of the range covered; each option; the printed command run inside the project, above it, and in an unrelated folder; a folder name with shell metacharacters in each targeted shell                           | An up-to-date or complete report, a dropped option, a command that misses the project elsewhere, or an unnamed non-POSIX shell   |
+| 契约    | 验证                                  | 代表性状态                                                                                                                                                             | 变更或失败预期                                                                     |
+| ------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| FR1     | 转换测试夹具                          | 具名、别名、默认、命名空间、再导出、位于类型位置与值位置的仅类型、被遮蔽、错误的包、无关字面量                                                                         | 同名的局部变量或无关字面量被改动，或者已证明的用法未被编辑                         |
+| FR2–FR4 | 每种检出类型中的保护测试夹具          | 嵌套属性、未设置或为假的属性、取反的忽略、代码之后的标记、部分标记、被忽略的路径、符号链接、配置与集成追加、尝试移除、坏来源                                           | 受保护文件被改动，结果随版本控制而不同，或者坏来源允许写入                         |
+| FR5–FR6 | 带生成文件与重新生成钩子的升级运行    | 钩子成功、钩子失败、试运行、第二次运行                                                                                                                                 | 受保护字节被改动，存在被阻止的更改时退出码为零，或者第二次运行重复编辑             |
+| FR7     | JSON 与文本形式的结果快照             | 已修改、被阻止、被拒绝                                                                                                                                                 | 被阻止或被拒绝的候选在其中任一输出中缺失                                           |
+| FR8     | 对每一个修改既有文件的操作的清点      | core、integration、config 的 codemod、新增路径                                                                                                                         | 某条路径绕过 FR1–FR7                                                               |
+| FR9     | 从项目内部与周边文件夹运行的升级      | 子文件夹；已列出与未列出的工作区成员；其 `package.json` 未声明 Astryx 包的文件夹；安装了 Astryx 的主目录内没有 `package.json` 的文件夹；嵌套检出；没有符合条件的文件夹 | 升级作用于另一个项目、主目录，或越过版本控制元数据的文件夹                         |
+| FR10    | 带命名源码文件夹的升级运行            | 从子文件夹取默认值；从子文件夹以每种写法命名的某一个文件夹；位于操作根之外的文件夹                                                                                     | 命名的文件夹从命令所运行文件夹之外的另一处被读取，或者扫描了位于操作根之外的文件夹 |
+| FR11    | 升级目标检测                          | 其工作区强制 Core、或声明了另一范围或仅 peer 范围的成员；位于已安装 Core 之下的未列出项目；父文件夹中的 Core；没有 `node_modules` 的安装；没有符合条件的文件夹         | 成员错过了其工作区所安装的 Core，或者未列出项目上方的 Core 被计入                  |
+| FR12    | 来自子文件夹与来自根的结果快照        | 已修改、受保护、被拒绝、错误、agent 文档，以及复制组合路径                                                                                                             | 某个路径无法从命令所运行的文件夹解析，或者根运行的复制组合路径发生变化             |
+| FR13    | 在 CLI 比已安装 Core 更旧时的升级运行 | 没有剩余 codemod；该范围只覆盖一部分；每一个选项；所打印的命令在项目内、项目上方以及无关文件夹中运行；在每个目标 shell 中带 shell 元字符的文件夹名                     | 报告为最新或完成、丢掉某个选项、命令在别处错过项目，或者未指明非 POSIX shell       |
 
 ## Decision log
 
 ### DEC-1 — Edit only with affirmative evidence
 
-**Reference:** `spec:AST-040/DEC-1`
-**Decider:** `josephfarina`, `2026-09-23`
+**引用：** `spec:AST-040/DEC-1`
 
-An upgrade rewrites a person's source without review of each edit, so every
-edit needs proof. A resolved binding shows that the construct is the export being
-migrated. Uncertain candidates are left alone and reported.
+**决策者：** `josephfarina`，`2026-09-23`
 
-Rejected: matching by name, string, or shape, and treating a file-level import as
-permission for the whole file. Both rewrite unrelated code silently.
+升级会在不逐条复核每一次编辑的情况下重写某人的源码，因此每一次编辑都需要证据。已解析的绑定表明该构造就是被迁移的导出。不确定的候选保持原样，并被报告。
+
+已否决：按名字、字符串或形状匹配，以及把文件级导入当作对整个文件的许可。两者都会静默地重写无关代码。
 
 ### DEC-2 — Use established, VCS-neutral conventions
 
-**Reference:** `spec:AST-040/DEC-2`
-**Decider:** `josephfarina`, `2026-09-23`
+**引用：** `spec:AST-040/DEC-2`
 
-Projects already mark generated and vendored content through attributes, file
-headers, and ignore files. Reading those from the working tree gives the same
-answer in any checkout and needs no new annotation.
+**决策者：** `josephfarina`，`2026-09-23`
 
-Rejected: an Astryx-only marker, a skip flag as the main mechanism, running a
-version-control program, filename conventions, and configuration without a
-reproduced gap.
+项目已经通过属性、文件头与忽略文件来标记生成内容与外部引入内容。从工作树读取这些信息，在任何检出中都会给出相同的答案，并且不需要任何新的标注。
+
+已否决：一个仅 Astryx 的标记、把跳过标志作为主要机制、运行版本控制程序、文件名约定，以及在没有复现缺口的情况下依赖配置。
 
 ### DEC-3 — Regenerate, then report what remains
 
-**Reference:** `spec:AST-040/DEC-3`
-**Decider:** `josephfarina`, `2026-09-23`
+**引用：** `spec:AST-040/DEC-3`
 
-Generated files follow their sources, so the operation edits sources, runs the
-declared regeneration, and checks again. Anything still blocked makes the result
-incomplete and names each file.
+**决策者：** `josephfarina`，`2026-09-23`
 
-Rejected: editing generated output, silently skipping it, and stopping before
-any edit, because regeneration needs the source edits.
+生成文件跟随其源码，因此操作编辑源码、运行所声明的重新生成，然后再次检查。任何仍被阻止的内容都会使结果不完整，并指明每一个文件。
+
+已否决：编辑生成输出、静默跳过它，以及在任何编辑之前停下，因为重新生成需要那些源码编辑。
 
 ## Open questions
 
-None.
+无。

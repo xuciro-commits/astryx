@@ -29,133 +29,117 @@ system_specs: [spec:AST-009]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                   |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Public contract         | `label` (a string), `children` (the value), optional `icon`, root `BaseProps`, and a `ref`.                                                |
-| Behavior                | One label and value pair, rendered as a `dt` and `dd` either side by side in the list's grid or stacked inside a wrapper.                  |
-| End-user impact         | People read each fact's label next to or above its value, and assistive technology pairs them.                                             |
-| Builder impact          | None; the record describes shipped behavior.                                                                                               |
-| Compatibility/readiness | Released behavior recorded as current; no API, default, or output changes.                                                                 |
-| Review checks           | Reject a pair that is not `dt` and `dd`, a wrapper in the side-by-side layout, or caller props that move off the element carrying the ref. |
-| Governing rules         | `architecture:public-component-api` INV5–INV8; `architecture:component-theming-surface`; WCAG 2.2 SC 1.3.1.                                |
+| Area                    | Contract                                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Public contract         | `label`（字符串）、`children`（值）、可选的 `icon`、根 `BaseProps`，以及 `ref`。                             |
+| Behavior                | 一个标签与值的配对，渲染为 `dt` 与 `dd`，二者要么在列表的网格中并排，要么堆叠在包裹元素内。                  |
+| End-user impact         | 人们在其值旁边或上方阅读每条事实的标签，辅助技术会将二者配对。                                               |
+| Builder impact          | 无；本记录描述已发布的行为。                                                                                 |
+| Compatibility/readiness | 已发布行为被记录为当前状态；无 API、默认值或输出变更。                                                       |
+| Review checks           | 拒绝不是 `dt` 与 `dd` 的配对、并排布局中出现包裹元素，或使调用方 props 从承载 ref 的元素上移开的写法。       |
+| Governing rules         | `architecture:public-component-api` INV5–INV8；`architecture:component-theming-surface`；WCAG 2.2 SC 1.3.1。 |
 
-This table is a review projection; the body below is authoritative.
+本表是评审用的投影，正文为准。
 
 ## Intent
 
-MetadataListItem is one key and value entry inside a MetadataList. It owns the
-entry's term and definition markup and their type; the caller owns the label,
-icon, and value.
+MetadataListItem 是 MetadataList 中的一个键值条目。它负责该条目的术语与定义标记及其类型；标签、图标与值由调用方负责。
 
-Consumer syntax and examples belong in `MetadataListItem.doc.mjs`.
+使用方的语法与示例见 `MetadataListItem.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes` — side by side outside a stacked list.
-- Compatibility class: records shipped behavior; no public prop, default, DOM,
-  target, or styling output changes.
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- Released default preserved: `yes` —— 在堆叠列表之外并排显示。
+- 兼容性类别：记录已发布行为；不改变公共 prop、默认值、DOM、target 或样式输出。
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明见使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The entry's `dt` and `dd`, the stacked wrapper, and the `metadata-list-item`
-  target that `component:MetadataList` maps.
-- Label and value type, the icon slot, and where caller inputs land.
+- 条目的 `dt` 与 `dd`、堆叠包裹元素，以及 `component:MetadataList` 映射的 `metadata-list-item` target。
+- 标签与值的类型、图标槽位，以及调用方输入落到的位置。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Label position, columns, and orientation — owned by
-  `component:MetadataList`.
-- The label, icon, and value content — owned by the caller.
+- 标签位置、列数与方向 —— 由 `component:MetadataList` 拥有。
+- 标签、图标与值的内容 —— 由调用方拥有。
 
 ## Public concepts
 
-| Concept | Closed values or states | Meaning                                  | Availability by variant/orientation/state | Default      | Owner                    | Stability | Invalid-value behavior |
-| ------- | ----------------------- | ---------------------------------------- | ----------------------------------------- | ------------ | ------------------------ | --------- | ---------------------- |
-| Label   | string                  | The entry's key.                         | Always                                    | —            | caller                   | Stable    | —                      |
-| Value   | ReactNode (`children`)  | The entry's value.                       | Always                                    | —            | caller                   | Stable    | —                      |
-| Icon    | ReactNode; unset        | Content shown before the label.          | Always                                    | unset        | caller                   | Stable    | —                      |
-| Layout  | side by side; stacked   | Set by the parent list, not by the item. | Always                                    | side by side | `component:MetadataList` | Stable    | —                      |
+| Concept | Closed values or states | Meaning                        | Availability by variant/orientation/state | Default | Owner                    | Stability | Invalid-value behavior |
+| ------- | ----------------------- | ------------------------------ | ----------------------------------------- | ------- | ------------------------ | --------- | ---------------------- |
+| Label   | string                  | 条目的键。                     | 始终                                      | —       | 调用方                   | 稳定      | —                      |
+| Value   | ReactNode (`children`)  | 条目的值。                     | 始终                                      | —       | 调用方                   | 稳定      | —                      |
+| Icon    | ReactNode；未设置       | 显示在标签之前的内容。         | 始终                                      | 未设置  | 调用方                   | 稳定      | —                      |
+| Layout  | 并排；堆叠              | 由父列表设置，而非由条目设置。 | 始终                                      | 并排    | `component:MetadataList` | 稳定      | —                      |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                               | Basis                                                                   |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| FR1 | Side by side (labels at the start, or outside a MetadataList), the item renders a `dt` holding the icon and label, then a `dd` holding the value, as direct children of the list's grid. The `dt` carries the `metadata-list-item` target, the `ref`, and the caller's props and styling inputs; a `data-testid` becomes `<id>-label` on the `dt` and `<id>-value` on the `dd`. Both cells are at least 24px tall and break long words. | Current source and tests                                                |
-| FR2 | Stacked (labels on top, or a horizontal list), the item renders a `div` wrapper carrying the `metadata-list-item` target, the `ref`, `data-testid`, and the caller's props and styling inputs, holding the `dt` above the `dd` with a `--spacing-0-5` gap.                                                                                                                                                                              | Current source and tests                                                |
-| FR3 | The label uses medium-weight body type in secondary text color; the value uses body type in primary text color. An icon sits before the label with a `--spacing-2` gap.                                                                                                                                                                                                                                                                 | Current source and docs                                                 |
-| FR4 | `xstyle`, `className`, and `style` compose after component styles on the element carrying the target, and caller props reach that element after the component's own attributes.                                                                                                                                                                                                                                                         | Current source and tests; `architecture:public-component-api` INV5–INV8 |
+| ID  | Invariant                                                                                                                                                                                                                                                                                                                                   | Basis                                                         |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| FR1 | 并排时（标签位于起始处，或位于 MetadataList 之外），条目渲染一个承载图标与标签的 `dt`，随后是一个承载值的 `dd`，二者作为列表网格的直接子元素。`dt` 承载 `metadata-list-item` target、`ref`，以及调用方的 props 与样式输入；`data-testid` 会变成 `dt` 上的 `<id>-label` 与 `dd` 上的 `<id>-value`。两个单元格高度至少 24px，并会折断长单词。 | 当前源码与测试                                                |
+| FR2 | 堆叠时（标签位于上方，或为水平列表），条目渲染一个 `div` 包裹元素，承载 `metadata-list-item` target、`ref`、`data-testid`，以及调用方的 props 与样式输入，其中 `dt` 在 `dd` 之上，间隔为 `--spacing-0-5`。                                                                                                                                  | 当前源码与测试                                                |
+| FR3 | 标签使用中等字重的正文类型，颜色为次要文本色；值使用正文类型，颜色为主要文本色。图标位于标签之前，间隔为 `--spacing-2`。                                                                                                                                                                                                                    | 当前源码与文档                                                |
+| FR4 | `xstyle`、`className` 与 `style` 在承载 target 的元素上于组件样式之后合成，调用方 props 在组件自身属性之后到达该元素。                                                                                                                                                                                                                      | 当前源码与测试；`architecture:public-component-api` INV5–INV8 |
 
 ### Allowed variation
 
-- **AV1 — Content.** Any string may be the label; any ReactNode may be the
-  icon or value.
+- **AV1 — 内容。** 任意字符串都可以作为标签；任意 ReactNode 都可以作为图标或值。
 
 ### Representative states
 
-| State        | Required invariant                                                   | Allowed variation |
-| ------------ | -------------------------------------------------------------------- | ----------------- |
-| Side by side | `dt` and `dd` as grid siblings; target, ref, and props on the `dt`.  | Content.          |
-| Stacked      | One wrapper with the target, ref, and props, holding `dt` over `dd`. | Content.          |
-| With icon    | The icon precedes the label inside the `dt`.                         | Icon.             |
+| State  | Required invariant                                               | Allowed variation |
+| ------ | ---------------------------------------------------------------- | ----------------- |
+| 并排   | `dt` 与 `dd` 作为网格同级元素；target、ref 与 props 在 `dt` 上。 | 内容。            |
+| 堆叠   | 一个包裹元素承载 target、ref 与 props，其中 `dt` 在 `dd` 之上。  | 内容。            |
+| 带图标 | 图标位于 `dt` 内标签之前。                                       | 图标。            |
 
 ### Transformation and precedence order
 
-- **ORD1 — Layout.** The parent list's horizontal orientation or `top` label
-  position → stacked; otherwise side by side.
+- **ORD1 — 布局。** 父列表的水平方向或 `top` 标签位置 → 堆叠；否则并排。
 
 ### Performance and resources
 
-- **PR1 — No resources.** MetadataListItem reads its parent list's label
-  position and orientation and holds no state.
+- **PR1 — 无资源消耗。** MetadataListItem 读取父列表的标签位置与方向，自身不持有状态。
 
 ## Accessibility contract
 
-- **AR1 — Term and definition.** The label is a `dt` and the value its `dd`,
-  so assistive technology pairs them (WCAG 2.2 SC 1.3.1). The icon adds no
-  semantics of its own.
+- **AR1 — 术语与定义。** 标签是 `dt`，值是它的 `dd`，因此辅助技术会将二者配对（WCAG 2.2 SC 1.3.1）。图标不添加自身的语义。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement          | Representation authority | Hierarchy role | Component contract |
-| ---------------- | --------------------------- | ------------------------ | -------------- | ------------------ |
-| Label            | Secondary-color medium key. | Current source and docs  | Supporting     | FR1–FR3            |
-| Metadata         | Primary-color value.        | Current source and docs  | Prominent      | FR1–FR3            |
+| Anatomy or state | Design requirement | Representation authority | Hierarchy role | Component contract |
+| ---------------- | ------------------ | ------------------------ | -------------- | ------------------ |
+| 标签             | 次要颜色的中等键。 | 当前源码与文档           | 支撑性         | FR1–FR3            |
+| 元数据           | 主要颜色的值。     | 当前源码与文档           | 突出           | FR1–FR3            |
 
-Theming: the `dt` (side by side) or the wrapper (stacked) carries the
-`metadata-list-item` target, which `MetadataList.doc.mjs` declares and
-`component:MetadataList` maps. `MetadataListItem.doc.mjs` declares no anatomy of
-its own, so no anatomy-theming block is declared here.
+主题：`dt`（并排）或包裹元素（堆叠）承载 `metadata-list-item` target，该 target 由 `MetadataList.doc.mjs` 声明并由 `component:MetadataList` 映射。`MetadataListItem.doc.mjs` 未声明自身的解剖结构，因此这里不声明 anatomy-theming 块。
 
 ## Family and system relationships
 
-- `component:MetadataList` owns layout, label position, and the target
-  mapping.
-- `architecture:public-component-api` owns caller-input routing; FR4 applies
-  it.
-- `spec:AST-009` owns accessibility-tree evidence; the verification map names
-  its gap.
+- `component:MetadataList` 拥有布局、标签位置与 target 映射。
+- `architecture:public-component-api` 拥有调用方输入路由；FR4 应用它。
+- `spec:AST-009` 拥有无障碍树证据；验证映射中指出了其缺口。
 
 ## Verification map
 
-| Contract     | Verification                                                                                    | Representative states             | Mutation or failure expectation                                                                                                                                                                                                                                                                                                       | Audit section                     |
-| ------------ | ----------------------------------------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| FR1          | `MetadataList.test.tsx` item, label-width, and pass-through-target tests                        | Side by side                      | A missing label or value, a `dt` or `dd` that is not a direct child of the `dl`, wrong `-label` and `-value` test ids, or props or click handling that leave the `dt`, fails. Gap: no test attaches a `ref`, and the 24px minimum height has no check. No check fails if the side-by-side `dt` loses the `metadata-list-item` target. | `audit:MetadataListItem/layout`   |
-| FR2          | `MetadataList.test.tsx` stacked and stacked pass-through tests                                  | Stacked                           | A missing wrapper, `dt`, or `dd`, or props that leave the wrapper, fails. Gap: the stacked gap has no check. No test attaches a `ref` to the stacked wrapper.                                                                                                                                                                         | `audit:MetadataListItem/layout`   |
-| FR3          | `MetadataList.test.tsx` icon test                                                               | With icon                         | A missing icon fails. Gap: label and value type and color and the icon gap have no automated check.                                                                                                                                                                                                                                   | `audit:MetadataListItem/design`   |
-| FR4          | `MetadataList.test.tsx` pass-through tests                                                      | `aria-label`, `id`, data; click   | A dropped attribute or handler fails. Gap: no test covers `className`, `style`, or the `xstyle` merge order.                                                                                                                                                                                                                          | `audit:MetadataListItem/api`      |
-| AR1          | `MetadataList.test.tsx` role queries                                                            | Term and definition               | A missing `term` or `definition` role in the DOM fails. Gap: no accessibility-tree check proves the pairing (`spec:AST-009` FR3).                                                                                                                                                                                                     | `audit:MetadataListItem/a11y`     |
-| PR1          | Source review                                                                                   | Every state                       | Gap: no automated check fails if MetadataListItem adds state.                                                                                                                                                                                                                                                                         | `audit:MetadataListItem/behavior` |
-| RTL relation | RTL audit curated D2 target (`apps/storybook/rtl-audit/targets.json`) on `MetadataList / Basic` | Side label and value; LTR and RTL | A label that is not at the inline start of its value fails D2.                                                                                                                                                                                                                                                                        | `audit:MetadataListItem/i18n-rtl` |
+| Contract     | Verification                                                                                       | Representative states          | Mutation or failure expectation                                                                                                                                                                                                                    | Audit section                     |
+| ------------ | -------------------------------------------------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| FR1          | `MetadataList.test.tsx` 的条目、标签宽度与透传 target 测试                                         | 并排                           | 缺少标签或值、`dt` 或 `dd` 不是 `dl` 的直接子元素、`-label` 与 `-value` 测试 id 错误，或 props 与点击处理离开 `dt` 时，测试失败。缺口：没有测试附加 `ref`，24px 最小高度没有检查。若并排的 `dt` 丢失 `metadata-list-item` target，没有检查会失败。 | `audit:MetadataListItem/layout`   |
+| FR2          | `MetadataList.test.tsx` 的堆叠与堆叠透传测试                                                       | 堆叠                           | 缺少包裹元素、`dt` 或 `dd`，或 props 离开包裹元素时，测试失败。缺口：堆叠间隔没有检查。没有测试为堆叠包裹元素附加 `ref`。                                                                                                                          | `audit:MetadataListItem/layout`   |
+| FR3          | `MetadataList.test.tsx` 的图标测试                                                                 | 带图标                         | 缺少图标时测试失败。缺口：标签与值的字体、颜色以及图标间隔没有自动化检查。                                                                                                                                                                         | `audit:MetadataListItem/design`   |
+| FR4          | `MetadataList.test.tsx` 的透传测试                                                                 | `aria-label`、`id`、data；点击 | 丢弃属性或处理器时测试失败。缺口：没有测试覆盖 `className`、`style` 或 `xstyle` 的合并顺序。                                                                                                                                                       | `audit:MetadataListItem/api`      |
+| AR1          | `MetadataList.test.tsx` 的角色查询                                                                 | 术语与定义                     | DOM 中缺少 `term` 或 `definition` 角色时测试失败。缺口：没有无障碍树检查能证明该配对（`spec:AST-009` FR3）。                                                                                                                                       | `audit:MetadataListItem/a11y`     |
+| PR1          | 源码审查                                                                                           | 每种状态                       | 缺口：若 MetadataListItem 添加状态，没有自动化检查会失败。                                                                                                                                                                                         | `audit:MetadataListItem/behavior` |
+| RTL relation | RTL 审计策划的 D2 target（`apps/storybook/rtl-audit/targets.json`），作用于 `MetadataList / Basic` | 侧边标签与值；LTR 与 RTL       | 标签不在其值的行内起始处时 D2 失败。                                                                                                                                                                                                               | `audit:MetadataListItem/i18n-rtl` |
 
 ## Decision log
 
-None recorded. The record describes shipped behavior.
+无。本记录描述已交付的行为。
 
 ## Open questions
 
@@ -163,5 +147,4 @@ None.
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or list layout rules. It links to their owners.
+本文件不重复使用方 prop 表/示例、当前审计结果、实现步骤或列表布局规则。它链接到各自的拥有者。

@@ -29,122 +29,110 @@ system_specs: [spec:AST-059, spec:AST-038]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                                   |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Public contract         | `LayerProvider` with `children`, `toast` (`{position, maxVisible, inset}`), and `inset` (`{blockStart, blockEnd, inlineStart, inlineEnd}`).                                                                                                |
-| Behavior                | The outermost provider supplies layer configuration and renders the one toast viewport once Toast is imported. A nested provider renders its children unchanged, except that a nested `inset` narrows the inset for layers in its subtree. |
-| End-user impact         | Toasts appear in one configured corner, and anchored layers and toasts stay clear of a declared floating bar.                                                                                                                              |
-| Builder impact          | None.                                                                                                                                                                                                                                      |
-| Compatibility/readiness | Records shipped behavior, except that the toast viewport waits for a Toast import (FR1); no public change.                                                                                                                                 |
-| Review checks           | Reject a second toast viewport from a nested provider, a provider that hosts trigger-associated layers, or a default provider that renders layers differently from no provider.                                                            |
-| Governing rules         | `spec:AST-059` FR6 (the inset); `architecture:layer-runtime` INV10–INV11; `component:Toast`.                                                                                                                                               |
+| Area                    | Contract                                                                                                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Public contract         | `LayerProvider`，接受 `children`、`toast`（`{position, maxVisible, inset}`）与 `inset`（`{blockStart, blockEnd, inlineStart, inlineEnd}`）。                       |
+| Behavior                | 最外层的 provider 提供层配置，并在 Toast 被导入后渲染唯一的 toast 视口。嵌套的 provider 原样渲染其 children，唯一例外是嵌套的 `inset` 会收窄其子树中层的 `inset`。 |
+| End-user impact         | Toast 出现在一个配置好的角落，锚定层与 toast 与声明的浮动栏保持距离。                                                                                              |
+| Builder impact          | 无。                                                                                                                                                               |
+| Compatibility/readiness | 记录已发布的行为，例外是 toast 视口会等待 Toast 导入（FR1）；无公开变更。                                                                                          |
+| Review checks           | 拒绝嵌套 provider 产生的第二个 toast 视口、托管与触发器关联的层的 provider，以及与无 provider 时渲染不同的默认 provider。                                          |
+| Governing rules         | `spec:AST-059` FR6（`inset`）；`architecture:layer-runtime` INV10–INV11；`component:Toast`。                                                                       |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；下文正文具有权威性。
 
 ## Intent
 
-LayerProvider is the app-level configuration point for Astryx layers. It is the
-only public component `Layer.doc.mjs` documents, as an inline entry; the rest of
-that doc describes the layer runtime, which `architecture:layer-runtime` owns.
-This record owns what the provider itself renders.
+LayerProvider 是 Astryx 层的应用级配置点。它是 `Layer.doc.mjs` 唯一以行内条目形式记录的公开组件；该文档其余部分描述层运行时，由 `architecture:layer-runtime` 拥有。本记录拥有 provider 自身所渲染的内容。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior, except that the toast
-  viewport waits for a Toast import (FR1); no public change
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 已发布的默认行为保持不变：`yes`
+- 兼容性类别：记录已发布的行为，例外是 toast 视口会等待 Toast 导入（FR1）；无公开变更
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方的迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- Whether a provider mounts the toast viewport, and what a nested provider
-  passes through (FR1–FR3).
+- provider 是否挂载 toast 视口，以及嵌套 provider 透传什么（FR1–FR3）。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- What the inset does to gutters, caps, and the toast viewport — owned by
-  `spec:AST-059` FR6.
-- Layer hosting, placement, and text defaults — owned by
-  `architecture:layer-runtime` and `spec:AST-038`.
-- Toast behavior, including how `toast.inset` edges combine with `inset` —
-  owned by `component:Toast` (FR6).
+- `inset` 对 gutter、上限与 toast 视口的作用——由 `spec:AST-059` FR6 拥有。
+- 层托管、放置与文本默认值——由 `architecture:layer-runtime` 与 `spec:AST-038` 拥有。
+- Toast 行为，包括 `toast.inset` 的各边如何与 `inset` 结合——由 `component:Toast` 拥有（FR6）。
 
 ## Public concepts
 
-No component-local concept beyond the consumer props.
+除使用方 props 之外，没有组件本地概念。
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                     | Basis                              |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| FR1 | A provider with no LayerProvider above it supplies the layer context (`toast` configuration and `inset`) and the toast context. Once Toast is imported, it renders one toast viewport after `children`, configured by `toast.position`, `toast.maxVisible`, `toast.inset`, and `inset`; before that, none.    | Current source and tests           |
-| FR2 | A provider nested under another mounts no toast viewport. Without `inset` it renders its children unchanged; with `inset`, each edge it declares applies to the layers in its subtree, and it keeps the outer `toast` configuration. What an edge it leaves unset reads in that subtree is uncontracted here. | Current source; `spec:AST-059` FR6 |
-| FR3 | With nothing declared, a provider changes no layer geometry, so layers under a default provider match layers with no provider.                                                                                                                                                                                | `spec:AST-059` FR6; tests          |
+| ID  | Invariant                                                                                                                                                                                                                                      | Basis                        |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| FR1 | 其上没有 LayerProvider 的 provider 提供层上下文（`toast` 配置与 `inset`）和 toast 上下文。一旦 Toast 被导入，它在 `children` 之后渲染一个 toast 视口，由 `toast.position`、`toast.maxVisible`、`toast.inset` 与 `inset` 配置；在此之前不渲染。 | 当前源码与测试               |
+| FR2 | 嵌套在另一个 provider 之下的 provider 不挂载 toast 视口。没有 `inset` 时，它原样渲染其 children；有 `inset` 时，它声明的每条边作用于其子树中的层，并保留外层的 `toast` 配置。它未设置的边在该子树中读取到什么，此处不作契约规定。              | 当前源码；`spec:AST-059` FR6 |
+| FR3 | 在未声明任何内容时，provider 不改变层几何，因此默认 provider 之下的层与无 provider 时的层一致。                                                                                                                                                | `spec:AST-059` FR6；测试     |
 
 ### Allowed variation
 
-- **AV1 — Configuration.** The `toast` and `inset` values vary.
+- **AV1 — 配置。** `toast` 与 `inset` 的值可变。
 
 ### Representative states
 
-| State                | Required invariant                              | Allowed variation |
-| -------------------- | ----------------------------------------------- | ----------------- |
-| Root provider        | Context supplied; a viewport once Toast loads.  | Toast config.     |
-| Nested without inset | Children unchanged; no second viewport.         | —                 |
-| Nested with inset    | Subtree inset narrowed; toast config unchanged. | Inset.            |
+| State             | Required invariant                   | Allowed variation |
+| ----------------- | ------------------------------------ | ----------------- |
+| 根 provider       | 提供上下文；Toast 加载后有一个视口。 | Toast 配置。      |
+| 无 `inset` 的嵌套 | children 不变；没有第二个视口。      | —                 |
+| 带 `inset` 的嵌套 | 子树 `inset` 收窄；toast 配置不变。  | `inset`。         |
 
 ### Transformation and precedence order
 
-- **ORD1 — Inset.** For an edge a nested provider declares, its value applies
-  in its subtree; unset edges are uncontracted (FR2).
+- **ORD1 — Inset。** 对于嵌套 provider 声明的边，其值作用于其子树；未设置的边不作契约规定（FR2）。
 
 ### Performance and resources
 
-- No resource rule.
+- 无资源规则。
 
 ## Accessibility contract
 
-- No accessibility behavior of its own; the toast viewport's is owned by
-  `component:Toast`.
+- 自身没有无障碍行为；toast 视口的无障碍行为由 `component:Toast` 拥有。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                | Representation authority | Hierarchy role | Component contract |
-| ---------------- | --------------------------------- | ------------------------ | -------------- | ------------------ |
-| Provider         | Renders no visual surface itself. | Current source           | Supporting     | FR1                |
+| Anatomy or state | Design requirement       | Representation authority | Hierarchy role | Component contract |
+| ---------------- | ------------------------ | ------------------------ | -------------- | ------------------ |
+| Provider         | 自身不渲染任何可视表面。 | 当前源码                 | 支撑           | FR1                |
 
-`Layer.doc.mjs` declares no anatomy, so no anatomy-theming map is recorded.
+`Layer.doc.mjs` 未声明解剖结构，因此不记录解剖结构与主题的映射。
 
 ## Family and system relationships
 
-- `spec:AST-059` FR6 owns the inset's meaning.
-- `architecture:layer-runtime` INV10 states that the provider is configuration,
-  not a universal layer host.
+- `spec:AST-059` FR6 拥有 `inset` 的含义。
+- `architecture:layer-runtime` INV10 指出，provider 是配置，而非通用的层宿主。
 
 ## Verification map
 
-| Contract | Verification                                                                                                                                                                                                                                                                          | Representative states                                         | Mutation or failure expectation                                                                                   | Audit section                  |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| FR1–FR3  | `LayerProvider.test.tsx`; for FR1 also `toastHost.test.tsx` and `toastHost.lateRegistration.test.tsx`; `LayerProvider.test.tsx` toast-configuration suite for `toast.maxVisible` and for a nested provider without `inset` (one viewport, outer configuration kept, no added element) | Default, declared inset, nested, toast inset, no Toast import | A default-provider difference, an inset that does not reach its layers, or a viewport with no Toast import fails. | `audit:LayerProvider/behavior` |
+| Contract | Verification                                                                                                                                                                                                                                 | Representative states                                 | Mutation or failure expectation                                                     | Audit section                  |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------ |
+| FR1–FR3  | `LayerProvider.test.tsx`；FR1 还包括 `toastHost.test.tsx` 与 `toastHost.lateRegistration.test.tsx`；`LayerProvider.test.tsx` 的 toast 配置套件，针对 `toast.maxVisible` 以及无 `inset` 的嵌套 provider（一个视口、保留外层配置、不增加元素） | 默认、声明 `inset`、嵌套、toast `inset`、未导入 Toast | 默认 provider 的差异、未到达其层的 `inset`，或未导入 Toast 就出现视口，均视为失败。 | `audit:LayerProvider/behavior` |
 
-Read from source, with no focused test yet:
+从源码读取，尚无聚焦测试：
 
-- FR1: `toast.position` reaching the viewport.
+- FR1：`toast.position` 到达视口。
 
 ## Decision log
 
-No component-local decision is recorded.
+未记录组件本地的决策。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables, the inset rules, or the
-layer runtime. It links to their owners.
+本文件不重复使用方 props 表、`inset` 规则或层运行时。它链接到它们的拥有者。

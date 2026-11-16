@@ -26,108 +26,73 @@ deciding_specs: []
 
 ## User intent
 
-A page template or reusable block should look like an intentional product
-surface, not merely a valid collection of components. It should establish a
-clear reading order, coherent regions, and theme-safe emphasis while leaving
-product content and application chrome to the adopting product.
+页面模板或可复用区块应当看起来像有意的产品界面，而不仅仅是若干合法组件的集合。它应建立清晰的阅读顺序、连贯的区域和在各主题下安全的强调，同时将产品内容和应用外壳留给采用它的产品。
 
 ## Design principles
 
-- **DR1 — Layout communicates purpose.** Structural regions, grid, and stacking
-  MUST make the page's primary task apparent before individual content is read.
-- **DR2 — Visual hierarchy directs the eye.** Size, weight, and placement MUST
-  establish an intentional path from page context to primary content and action.
-- **DR3 — Spacing and alignment express relationships.** Repeated edges, gaps,
-  and grouping tiers MUST remain coherent across the whole composition.
-- **DR4 — Components preserve their affordances.** A template MUST choose
-  components and variants whose visual language matches the intended action,
-  navigation, data, or status role.
-- **DR5 — Color and theming preserve hierarchy.** Surface and accent choices MUST
-  retain meaning and emphasis in every supported theme and color mode.
+- **DR1 — 布局传达目的。** 结构区域、网格和堆叠必须在阅读各项内容之前让页面的主要任务显而易见。
+- **DR2 — 视觉层级引导视线。** 大小、粗细和位置必须建立从页面上下文到主要内容与操作的有意路径。
+- **DR3 — 间距和对齐表达关系。** 重复的边缘、间隙和分组层级必须在整个组合中保持连贯。
+- **DR4 — 组件保持其可供性。** 模板必须选择视觉语言与预期操作、导航、数据或状态角色相匹配的组件和变体。
+- **DR5 — 颜色和主题保持层级。** 表面和强调色的选择必须在每个支持的主题和颜色模式下保留含义与强调。
 
 ## Anatomy and hierarchy
 
-| Role               | Purpose                                                         | Required relationship                                              |
-| ------------------ | --------------------------------------------------------------- | ------------------------------------------------------------------ |
-| page context       | Establishes where the person is and what the surface is for     | Leads the visual hierarchy without competing with the primary task |
-| structural region  | Groups navigation, controls, content, or supporting information | Uses layout boundaries and spacing that match its role             |
-| primary content    | Carries the page's main task or information                     | Receives the strongest sustained hierarchy                         |
-| primary action     | Offers the most important local next step                       | Remains singular and easy to identify within its action group      |
-| supporting content | Adds explanation, metadata, or secondary action                 | Remains available without flattening hierarchy                     |
-| repeated item      | Forms a list, grid, table, or card collection                   | Preserves alignment and rhythm across realistic content variation  |
+| 角色       | 用途                                 | 必需关系                         |
+| ---------- | ------------------------------------ | -------------------------------- |
+| 页面上下文 | 确立用户所在位置以及该界面的用途     | 引导视觉层级，但不与主要任务竞争 |
+| 结构区域   | 对导航、控件、内容或辅助信息进行分组 | 使用与其角色匹配的布局边界和间距 |
+| 主要内容   | 承载页面的主要任务或信息             | 获得最强的持续层级               |
+| 主要操作   | 提供最重要的本地下一步               | 在其操作组中保持唯一且易于识别   |
+| 辅助内容   | 添加解释、元数据或次要操作           | 保持可用，但不扁平化层级         |
+| 重复条目   | 形成列表、网格、表格或卡片集合       | 在真实内容变化中保持对齐和节奏   |
 
 ## State representation
 
-| State              | Required representation                                                     | Allowed variation                                                                   |
-| ------------------ | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| populated          | Regions and hierarchy remain clear with realistic content                   | Content length and collection size may vary within the template's purpose           |
-| sparse             | Empty space preserves intentional grouping rather than collapsing structure | Optional supporting regions may disappear                                           |
-| constrained        | Regions reflow without losing reading order or primary action               | Navigation and secondary content may move or collapse according to family contracts |
-| light or dark mode | Surface hierarchy, contrast, and accent meaning remain intact               | Theme controls palette and visual personality                                       |
-| interactive        | Component states remain recognizable inside the larger composition          | Components retain their family-owned treatments                                     |
+| 状态           | 必需表示                                 | 允许的变化                               |
+| -------------- | ---------------------------------------- | ---------------------------------------- |
+| 已填充         | 在真实内容下区域和层级仍然清晰           | 内容长度和集合大小可在模板用途范围内变化 |
+| 稀疏           | 空白保持有意的分组，而不是使结构塌陷     | 可选的辅助区域可以消失                   |
+| 受限           | 区域重新流动，但不丢失阅读顺序或主要操作 | 导航和次要内容可根据族契约移动或折叠     |
+| 浅色或深色模式 | 表面层级、对比度和强调含义保持完整       | 主题控制调色板和视觉个性                 |
+| 交互           | 组件状态在更大的组合中仍然可识别         | 组件保留其族拥有的处理                   |
 
 ## Responsive and input behavior
 
-- **DR6 — Reflow preserves reading order.** Responsive changes MUST retain the
-  relationship among page context, primary content, supporting regions, and
-  actions.
-- **DR7 — Collections adapt without arbitrary clipping.** Repeated content MUST
-  use a layout strategy that remains coherent across supported widths and
-  realistic item lengths.
-- **DR8 — Input modes keep the same task hierarchy.** Keyboard, pointer, and
-  touch paths MUST reach the same primary task and actions without relying on
-  hover-only discovery.
+- **DR6 — 重新流动保持阅读顺序。** 响应式更改必须保留页面上下文、主要内容、辅助区域和操作之间的关系。
+- **DR7 — 集合自适应而不任意裁剪。** 重复内容必须使用在支持的宽度和真实条目长度下保持连贯的布局策略。
+- **DR8 — 输入模式保持相同的任务层级。** 键盘、指针和触摸路径必须到达相同的主要任务和操作，而不依赖仅悬停发现。
 
 ## Accessibility intent
 
-Visual hierarchy should agree with semantic reading and focus order. Reflow must
-not separate labels, explanations, errors, or actions from the content they
-serve. Theme variation must preserve legibility and state meaning, and realistic
-content must not expose inaccessible overflow or truncation.
+视觉层级应与语义阅读顺序和焦点顺序一致。重新流动不得将标签、解释、错误或操作与其所服务的内容分离。主题变化必须保持可读性和状态含义，真实内容不得暴露不可访问的溢出或截断。
 
-Semantic markup, component APIs, focus management, and responsive implementation
-belong to components, layout families, and consumer guidance.
+语义标记、组件 API、焦点管理和响应式实现属于组件、布局族和消费方指南。
 
 ## Representative examples
 
-- A dense data page still exposes one clear title, control region, primary data
-  region, and action hierarchy when viewed at a glance.
-- A card collection retains alignment and grouping with realistic titles,
-  metadata, and missing optional content.
-- A narrow layout moves supporting regions without changing reading order or
-  hiding the primary action.
+- 密集的数据页面在扫视时仍然呈现一个清晰的标题、控件区域、主要数据区域和操作层级。
+- 卡片集合在真实的标题、元数据和缺失可选内容下保持对齐和分组。
+- 狭窄布局移动辅助区域，而不改变阅读顺序或隐藏主要操作。
 
 ## Visual references
 
-No normative assets are included in this seed draft. Representative full-page
-and block examples should be added under
-`docs/design/assets/template-composition/` in light, dark, wide, and constrained
-states before promotion.
+此种子草稿不包含规范性资产。代表性的整页和区块示例应在提升为正式记录之前，按浅色、深色、宽屏和受限状态添加到 `docs/design/assets/template-composition/` 下。
 
 ## Component contract links
 
-No component contract links are asserted. The listed layout-family relationships
-are candidates for review; consumer templates remain responsible for using the
-public contracts those families expose.
+未声明任何组件契约链接。列出的布局族关系是评审候选；消费方模板仍然负责使用这些族暴露的公共契约。
 
 ## Decision log
 
-No repository design decision has approved this record yet. This draft migrates
-only the human visual-quality axes from the public Design Conventions wiki; it
-deliberately excludes authoring mechanics and audit grading.
+尚未有仓库设计决策批准此记录。此草稿仅迁移公共 Design Conventions wiki 中的人类视觉质量维度；它有意排除编写机制和审计评分。
 
 ## Open questions
 
-- **OQ1 — Representative templates.** Which page templates and blocks should be
-  normative examples for each composition requirement?
-- **OQ2 — Product chrome boundary.** Which structural regions belong to a
-  reusable page template versus the host application?
-- **OQ3 — Evidence.** How should screenshot review demonstrate hierarchy and
-  composition without turning subjective judgment into a misleading score?
+- **OQ1 — 代表性模板。** 哪些页面模板和区块应成为每项组合要求的规范示例？
+- **OQ2 — 产品外壳边界。** 哪些结构区域属于可复用页面模板，哪些属于宿主应用？
+- **OQ3 — 证据。** 截图评审应如何展示层级和组合，而不将主观判断变成误导性的分数？
 
 ## Content boundary
 
-This file defines human visual intent for template composition. It does not
-define required React components, raw-HTML policy, icon plumbing, styling
-mechanics, mock-data sources, documentation metadata, line-count targets, audit
-grades, or consumer instructions.
+本文件定义模板组合的人类视觉意图。它不定义必需的 React 组件、原始 HTML 策略、图标管道、样式机制、模拟数据源、文档元数据、行数目标、审计评分或消费方说明。

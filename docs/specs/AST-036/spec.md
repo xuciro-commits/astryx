@@ -25,383 +25,387 @@ affects_consumer_docs: [Markdown, Outline]
 
 ## Contract at a glance
 
-| Area                 | Contract                                                                                                                                                                                                                                                                                                                                             |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract      | One additive `plugins` prop and `createMarkdownPlugin()`. A plugin exposes only `syntax`, immutable `transform`, and `renderers`. Text matching, semantic fences, and source decoration are helper-authored transforms, not separate protocol phases.                                                                                                |
-| Behavior             | Parsing, transformation, Markdown rendering, and Outline observe one stable, strictly typed, MDAST-aligned tree. Ordered transforms return validated replacement trees while Core retains built-in semantics and readable fallback.                                                                                                                  |
-| Remark compatibility | A separate adapter may run synchronous transform-only Remark plugins over the documented supported MDAST subset. Parser extensions, async plugins, compiler plugins, arbitrary `VFile` state, and unsupported node kinds are rejected rather than approximated.                                                                                      |
-| End-user impact      | Readers may receive additional syntax and transformed document structure while ordinary Markdown, copyable fallback, heading and Outline identity, accessibility, navigation, images, lists, and tables retain canonical ownership.                                                                                                                  |
-| Builder impact       | Existing builders do nothing. Opt-in builders pass one stable plugin list. Simple text, fence, and decoration use cases use helpers that return transforms.                                                                                                                                                                                          |
-| Compatibility        | Omitted plugins and `plugins={[]}` are semantically the same empty pipeline. Core may skip empty preparation and allocation, but no separate behavior model exists. Existing `components`, `inlinePlugins`, math, citations, autolinks, and parser signatures retain their meaning.                                                                  |
-| Review checks        | Reject a second plugin prop, public lifecycle-specific phases, mutable shared AST, raw-markup nodes, plugin override of Core semantics, unbounded parser hooks, silent Remark incompatibility, transform-driven reparsing, or work proportional to every plugin at every source character.                                                           |
-| Governing rules      | [`architecture:public-component-api`](../../architecture/public-component-api.md); [`family:navigation-destinations`](../../families/navigation-destinations.md); [AST-002 FR4](../AST-002/spec.md); [AST-002 FR15](../AST-002/spec.md); [AST-002 FR17](../AST-002/spec.md); [AST-002 FR18](../AST-002/spec.md); [AST-002 FR20](../AST-002/spec.md). |
+| 领域          | 契约                                                                                                                                                                                                                                                                                                                                                 |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公开契约      | 一个新增的 `plugins` prop 和 `createMarkdownPlugin()`。插件只暴露 `syntax`、不可变的 `transform` 和 `renderers`。文本匹配、语义围栏和源码装饰是由辅助函数编写的 transform，而不是独立的协议阶段。                                                                                                                                                    |
+| 行为          | 解析、转换、Markdown 渲染和 Outline 观察同一棵稳定、严格类型化、与 MDAST 对齐的树。有序 transform 返回经过校验的替换树，同时 Core 保留内置语义和可读回退。                                                                                                                                                                                           |
+| Remark 兼容性 | 单独的适配器可以在文档化的受支持 MDAST 子集上运行同步、仅做转换的 Remark 插件。解析器扩展、异步插件、编译插件、任意 `VFile` 状态以及不支持的节点类型会被拒绝，而不是被近似处理。                                                                                                                                                                     |
+| 终端用户影响  | 读者可能会获得额外的语法和转换后的文档结构，而普通 Markdown、可复制回退、标题与 Outline 标识、无障碍性、导航、图片、列表和表格仍保留其规范所有权。                                                                                                                                                                                                   |
+| 构建者影响    | 现有构建者无需做任何事。选择启用的构建者传入一份稳定的插件列表。简单的文本、围栏和装饰用例使用返回 transform 的辅助函数。                                                                                                                                                                                                                            |
+| 兼容性        | 省略 plugins 与 `plugins={[]}` 在语义上是同一条空管线。Core 可以跳过空的准备和分配，但不存在单独的行为模型。现有的 `components`、`inlinePlugins`、数学、引文、自动链接和解析器签名保留其含义。                                                                                                                                                       |
+| 审查检查      | 拒绝第二个 plugin prop、公开的特定生命周期阶段、可变的共享 AST、原始标记节点、插件覆盖 Core 语义、无界解析器钩子、静默的 Remark 不兼容、由 transform 驱动的重新解析，或对每个源字符都按每个插件成比例执行的工作。                                                                                                                                    |
+| 治理规则      | [`architecture:public-component-api`](../../architecture/public-component-api.md); [`family:navigation-destinations`](../../families/navigation-destinations.md); [AST-002 FR4](../AST-002/spec.md); [AST-002 FR15](../AST-002/spec.md); [AST-002 FR17](../AST-002/spec.md); [AST-002 FR18](../AST-002/spec.md); [AST-002 FR20](../AST-002/spec.md). |
 
-This section is a review projection; the body below is authoritative.
+本节是审查投影；以下正文才是权威。
 
 ## Intent
 
-Application authors should be able to add reusable Markdown behavior without rewriting source text, forking the parser, or replacing the whole renderer. One understandable model must cover new source syntax, document-level semantic transformation, and typed rendering.
+应用作者应当能够添加可复用的 Markdown 行为，而无需重写源文本、分叉解析器或替换整个渲染器。一个可理解的模型必须同时覆盖新的源语法、文档级语义转换和类型化渲染。
 
-The public concepts should remain fewer than the use cases. Prose replacement, semantic code fences, source decoration, callouts, frontmatter, TOCs, footnotes, and compatible Remark transforms all use the same immutable transform boundary rather than becoming independent protocol phases.
+公开概念的数量应当少于用例的数量。正文替换、语义代码围栏、源码装饰、提示框、frontmatter、目录、脚注以及兼容的 Remark transform 都使用同一个不可变 transform 边界，而不是变成独立的协议阶段。
 
 ## Ownership boundary
 
-AST-036 owns shared plugin admission, syntax and transform ordering, compatibility, validation, failure behavior, parse identity, Remark-adapter limits, and observable resource constraints. Markdown owns its concrete AST declarations, parser integration, aggregate rendering, and helpers. Outline owns its projection of Markdown heading identity. A first-party plugin owns its specific semantics and evidence in its own module record.
+AST-036 拥有共享的插件准入、语法与 transform 排序、兼容性、校验、失败行为、解析标识、Remark 适配器限制以及可观察的资源约束。Markdown 拥有其具体的 AST 声明、解析器集成、聚合渲染和辅助函数。Outline 拥有其对 Markdown 标题标识的投影。第一方插件在其自己的模块记录中拥有其特定语义和证据。
 
 ## Non-goals
 
-- Adopt Unified, mutable MDAST, `VFile`, or Remark as Core runtime dependencies.
-- Break the released `parseMarkdown` result shape before a separately approved
-  migration.
-- Promise compatibility with arbitrary Remark parser, transform, compiler, async, or raw-HTML plugins.
-- Expose mutable shared AST, unrestricted visitors, DOM access, package discovery, or a registry.
-- Replace generic CodeBlock highlighting or Core-owned document, heading, navigation, image, list, or table semantics.
-- Make a zero-plugin document a separate semantic mode.
+- 将 Unified、可变 MDAST、`VFile` 或 Remark 采纳为 Core 运行时依赖。
+- 在另行批准的迁移之前破坏已发布的 `parseMarkdown` 结果形状。
+- 承诺与任意 Remark 解析器、transform、编译器、异步或原始 HTML 插件兼容。
+- 暴露可变的共享 AST、无限制的访问器、DOM 访问、包发现或注册表。
+- 替换通用 CodeBlock 高亮，或 Core 拥有的文档、标题、导航、图片、列表或表格语义。
+- 让零插件文档成为一种单独的语义模式。
 
 ## Platform support
 
-- **Feature and engine floor:** unchanged from current Markdown/Core package support; the protocol adds no browser, React, Node, or TypeScript floor.
-- **Unsupported behavior:** unsupported syntax/transform/Remark behavior fails closed to the last valid readable document and cannot silently approximate output.
-- **Browser evidence:** interactive stories verify rendered output, keyboard/focus order, copyable fallback, navigation ownership, and unchanged no-plugin behavior in real Chromium; server-render fixtures cover non-browser use.
+- **功能与引擎下限：** 与当前 Markdown/Core 包支持保持不变；该协议不新增任何浏览器、React、Node 或 TypeScript 下限。
+- **不支持的行为：** 不支持的语法/transform/Remark 行为会失败关闭到最后一个有效的可读文档，并且不能静默地近似输出。
+- **浏览器证据：** 交互式 story 在真实 Chromium 中验证渲染输出、键盘/焦点顺序、可复制回退、导航所有权以及未改变的无插件行为；服务端渲染测试夹具覆盖非浏览器使用。
 
 ## Current-state impact
 
-| Current seam              | Preserved behavior                                                                     | New role                                                                                                      |
-| ------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `components`              | Replaces supported built-in renderers, including the all-fence code renderer.          | Wins before plugin rendering, except that a semantic-fence proposal claims its fence first (FR17).            |
-| `inlinePlugins`           | Replaces matched prose with released traversal, overlap, callback, and error behavior. | Remains compatible; a later migration may adapt it through a helper-backed transform only after exact parity. |
-| Parser and streaming APIs | Produce the released AST and reuse settled incremental output.                         | Accept syntax plugins and apply live transforms without making transforms part of parse identity.             |
-| Markdown and Outline      | Share built-in heading text and slug behavior.                                         | Also share transformed heading projection and collision allocation.                                           |
+| 当前接缝            | 保留的行为                                           | 新角色                                                                        |
+| ------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `components`        | 替换受支持的内置渲染器，包括 all-fence 代码渲染器。  | 优先于插件渲染生效，除非某个语义围栏提案先认领其围栏（FR17）。                |
+| `inlinePlugins`     | 以已发布的遍历、重叠、回调和错误行为替换匹配的正文。 | 保持兼容；后续迁移只能在完全对等之后通过由辅助函数支撑的 transform 来适配它。 |
+| 解析器与流式 API    | 产出已发布的 AST 并复用已稳定的增量输出。            | 接受语法插件并应用实时 transform，而不让 transform 成为解析标识的一部分。     |
+| Markdown 与 Outline | 共享内置标题文本和 slug 行为。                       | 还共享转换后的标题投影和冲突分配。                                            |
 
 ## Semantic model
 
-A plugin entry is an opaque value created by Markdown's public `createMarkdownPlugin()` factory and accepted only through the ordered `plugins` array. Its public shape is `{name, apiVersion: 1, syntax?, transform?, renderers?}` subject to these rules: `syntax` contains ordered bounded inline/block tokenizer declarations and requires `parseKey`; `transform` is one synchronous immutable root-to-root function; `renderers` is a node-name-keyed map whose entries provide one pure render callback and one deterministic `toText` projection. A plugin exposes no other lifecycle phase. A plain object cannot masquerade as an entry, and heterogeneous lists preserve the union of their extension-node kinds under strict TypeScript.
+插件条目是由 Markdown 的公开 `createMarkdownPlugin()` 工厂创建的不透明值，只能通过有序的 `plugins` 数组被接受。其公开形状是 `{name, apiVersion: 1, syntax?, transform?, renderers?}`，并受以下规则约束：`syntax` 包含有序、有界的行内/块级分词器声明，并要求 `parseKey`；`transform` 是一个同步、不可变的根到根函数；`renderers` 是一个以节点名为键的映射，其条目提供一个纯渲染回调和一个确定性的 `toText` 投影。插件不暴露其他生命周期阶段。普通对象不能伪装成条目，异构列表在严格 TypeScript 下保留其扩展节点类型的并集。
 
-The public construction surface is `createMarkdownPlugin()`, `createMarkdownTextTransform()`, `createMarkdownFenceTransform()`, and `createMarkdownSourceDecoration()`. Limited Remark compatibility is a separate tree-shakeable `createMarkdownRemarkTransform()` export from `@astryxdesign/core/Markdown/remark`. These helpers return or annotate the one `transform` capability; they never accept React render callbacks and are not additional lifecycle phases. In particular, `createMarkdownFenceTransform()` maps eligible built-in code nodes to an owning plugin's typed extension data, while that plugin's standard `renderers` map owns presentation and `toText`. Detailed TypeScript signatures and examples live in the Markdown consumer docs, while these names and responsibilities are part of this contract.
+公开的构建接口是 `createMarkdownPlugin()`、`createMarkdownTextTransform()`、`createMarkdownFenceTransform()` 和 `createMarkdownSourceDecoration()`。有限的 Remark 兼容性是一个单独的、可 tree-shake 的 `createMarkdownRemarkTransform()` 导出，来自 `@astryxdesign/core/Markdown/remark`。这些辅助函数返回或标注那唯一一个 `transform` 能力；它们从不接受 React 渲染回调，也不是额外的生命周期阶段。特别是，`createMarkdownFenceTransform()` 将符合条件的内置代码节点映射为拥有该围栏的插件的类型化扩展数据，而该插件的标准 `renderers` 映射拥有呈现和 `toText`。详细的 TypeScript 签名和示例位于 Markdown 使用方文档中，而这些名称和职责是本契约的一部分。
 
-The canonical document is an immutable, discriminated, Unist-shaped tree aligned with the supported MDAST subset below. **MDAST is a public community specification maintained by the syntax-tree/unified ecosystem, not a browser or standards-body API.** Astryx's public contract is its own exported, versioned TypeScript node union: it uses the listed MDAST node names and field meanings where they align, documents every deviation, and does not promise nominal or structural interchangeability with arbitrary `mdast`, Unified, or third-party plugin versions. `parseMarkdownAst()` and `parseInlineAst()` expose that tree additively from the server-safe `@astryxdesign/core/Markdown/parser` subpath; the component barrel also re-exports them for client code. Parsing, transforms, Markdown rendering, and Outline projection observe the same node meanings. Released parser entrypoints retain their current result types and values through a compatibility boundary; adopting plugins requires no migration.
+规范文档是一棵不可变的、可判别的、Unist 形状的树，与下文受支持的 MDAST 子集对齐。**MDAST 是由 syntax-tree/unified 生态维护的公开社区规范，不是浏览器或标准机构 API。** Astryx 的公开契约是它自己导出的、带版本的 TypeScript 节点联合：它在与 MDAST 对齐之处使用所列的 MDAST 节点名称和字段含义，记录每一处偏离，并且不承诺与任意 `mdast`、Unified 或第三方插件版本在名义上或结构上可互换。`parseMarkdownAst()` 和 `parseInlineAst()` 从服务端安全的 `@astryxdesign/core/Markdown/parser` 子路径以新增方式暴露该树；组件桶也为客户端代码重新导出它们。解析、transform、Markdown 渲染和 Outline 投影观察相同的节点含义。已发布的解析器入口点通过兼容性边界保留其当前结果类型和值；采用插件不需要迁移。
 
-The Markdown owner exposes stable node unions and node-kind-narrowed traversal. Plugin-defined extension kinds augment the generic union without widening unrelated built-in callbacks. A transform receives readonly input and returns the original root or a replacement root. Equivalent validation and immutability implementations are permitted.
+Markdown 所有者暴露稳定的节点联合和按节点类型收窄的遍历。插件定义的扩展类型在不拓宽无关内置回调的前提下增强通用联合。transform 接收只读输入，并返回原始根或替换根。允许使用等价的校验和不可变性实现。
 
-A syntax contribution declares non-empty literal prefixes, a finite pending bound, and a synchronous deterministic tokenizer. It may emit only its owning typed extension nodes. Syntax-bearing plugins declare stable parse identity; only ordered syntax identity participates in incremental parse identity.
+语法贡献声明非空字面前缀、有限挂起边界和同步确定性分词器。它只能发出其拥有的类型化扩展节点。携带语法的插件声明稳定的解析标识；只有有序的语法标识参与增量解析标识。
 
-A transform is synchronous and deterministic. It may replace, insert, remove, or annotate representable nodes within the permitted-edit matrix. It cannot mutate input, author source provenance, introduce raw markup or React values, or bypass Core-owned semantics. Transform changes refresh transformed output without changing syntax parse identity.
+transform 是同步且确定性的。它可以在允许的编辑矩阵内替换、插入、删除或标注可表示的节点。它不能修改输入、创作源出处、引入原始标记或 React 值，也不能绕过 Core 拥有的语义。transform 的变更会刷新转换后的输出，但不改变语法解析标识。
 
-Renderers receive typed extension-node data only. Every extension node introduced through syntax or transform has a renderer and deterministic perceivable-text projection. A source-backed leaf falls back to exact authored source; a synthetic leaf falls back to its required text projection; a container keeps and renders its validated children. Sibling content continues after failure.
+渲染器只接收类型化的扩展节点数据。通过语法或 transform 引入的每个扩展节点都有一个渲染器和一个确定性的可感知文本投影。有源可依的叶子回退到确切的原始作者源码；合成叶子回退到其必需的文本投影；容器保留并渲染其经过校验的子节点。失败之后，同级内容继续处理。
 
-Each extension kind declares `content: 'none' | 'phrasing' | 'flow'` or a finite allowlist that narrows the category implied by `display`. Core validates children at every transform boundary. Syntax-created containers declare an inner source span that Core parses; plugins never turn raw source into child nodes. A plugin may read or remove another plugin's nodes, but it may create, edit, or duplicate only its own. Cross-plugin reads are declared through `dependsOn` and validated against list order.
+每个扩展类型声明 `content: 'none' | 'phrasing' | 'flow'`，或声明一个收窄 `display` 所隐含类别的有限允许列表。Core 在每次 transform 边界校验子节点。语法创建的容器声明一个内部源区间，由 Core 解析；插件绝不把原始源码变成子节点。插件可以读取或删除另一个插件的节点，但只能创建、编辑或复制自己的节点。跨插件读取通过 `dependsOn` 声明，并依据列表顺序校验。
 
-Plugin admission and every failure phase use one source-free, rate-limited `onPluginDiagnostic` channel in development and production. Malformed entries and protocol-version mismatches fail locally rather than throwing into the caller. Plugin-authored reports use stable codes, never document-derived text.
+插件准入以及每个失败阶段在开发和生产环境中都使用同一个无源码、限速的 `onPluginDiagnostic` 通道。格式错误的条目和协议版本不匹配会在本地失败，而不会抛给调用方。插件编写的报告使用稳定代码，绝不使用由文档派生的文本。
 
-Text matching, semantic fences, and source decoration are optional transform helpers, not additional public phases. Equivalent optimized execution is allowed when it preserves ordered transform semantics and observable results.
+文本匹配、语义围栏和源码装饰是可选的 transform 辅助函数，而不是额外的公开阶段。在保留有序 transform 语义和可观察结果的前提下，允许等价的优化执行。
 
 ## Canonical MDAST compatibility matrix
 
-| Node or field                               | Supported contract                                                                                                                                                                               | Rejected or constrained behavior                                                                                                    |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `root`, `children`                          | One root; ordered typed children.                                                                                                                                                                | Removing/retyping the root; cycles; shared mutable children.                                                                        |
-| `text`, `value`                             | Text replacement, splitting, insertion, and removal.                                                                                                                                             | Functions, React values, or non-string `value`.                                                                                     |
-| `paragraph`, `strong`, `emphasis`, `delete` | Ordered phrasing children.                                                                                                                                                                       | Block children inside phrasing containers.                                                                                          |
-| `heading`, `depth`                          | Phrasing children may transform; transformed text participates in shared Markdown/Outline identity.                                                                                              | Changing a source-backed heading's depth; renderer-defined IDs.                                                                     |
-| `inlineCode`, `break`                       | Standard MDAST meaning.                                                                                                                                                                          | Transforming protected inline-code contents through text helpers.                                                                   |
-| `link`, `url`, `children`                   | Phrasing children; every Astryx-owned destination is revalidated by the navigation owner.                                                                                                        | Nested links; bypassing destination policy; non-string URLs.                                                                        |
-| `image`, `url`, `alt`                       | Revalidated resource URL and text alternative.                                                                                                                                                   | Bypassing resource policy or removing required alternative text.                                                                    |
-| `blockquote`                                | Ordered block children.                                                                                                                                                                          | Invalid child kinds.                                                                                                                |
-| `list`, `listItem`                          | `ordered`, optional `start`, `spread`, optional `checked`, and block children. Astryx also preserves the authored ordered-list `delimiter` for exact released projection.                        | Invalid task/list structure or non-finite starts.                                                                                   |
-| `code`, `lang`, `meta`, `value`             | MDAST semantics: `lang` is `null` when absent and `meta` is optional. Ordinary code remains copyable; fence helpers annotate the original node.                                                  | Replacing/removing source through the fence helper; bypassing `components.code` for a fence no proposal claims.                     |
-| Astryx flow image                           | Preserves released standalone-image block behavior with `url` and `alt`; phrasing images retain normal MDAST placement.                                                                          | Treating the flow extension as portable MDAST without adapter evidence.                                                             |
-| `table`, `tableRow`, `tableCell`, `align`   | Rectangular rows, phrasing cells, normalized alignment.                                                                                                                                          | Replacing Core table semantics or producing ragged/invalid structure.                                                               |
-| `thematicBreak`                             | Standard MDAST meaning.                                                                                                                                                                          | Children or renderer slots.                                                                                                         |
-| `math`, `inlineMath`                        | Present only when the released math opt-in is enabled.                                                                                                                                           | Enabling math through transformation alone.                                                                                         |
-| `position`                                  | Core-authored optional start/end UTF-16 offsets on source-backed nodes; line and column remain optional until available without changing released range behavior. Synthetic nodes omit position. | Authoring, shifting, or forging source positions.                                                                                   |
-| `data`                                      | Finite JSON-like plugin data under the owning plugin key; Core bookkeeping uses one reserved `astryx` namespace with no rendering effect by itself.                                              | `hName`, `hProperties`, `hChildren`, functions, DOM/React values, raw-markup channels, or plugin-authored Core-reserved data.       |
-| Astryx extension node                       | Stable plugin/name/display/data discriminants; declared `none`, `phrasing`, `flow`, or narrowed allowlist content; renderer and text projection.                                                 | Foreign minting/editing/duplication, undeclared children, missing projection/renderer, or changing another plugin's discriminants.  |
-| Astryx citation node                        | Preserved as an owned typed extension to the MDAST subset.                                                                                                                                       | Rewriting it as a link to bypass citation ownership.                                                                                |
-| Other MDAST nodes                           | Unsupported unless a later current contract adds them.                                                                                                                                           | `html`, definitions/references, footnotes, frontmatter, directives, MDX, and other unknown nodes fail closed in the Remark adapter. |
+| 节点或字段                                  | 受支持的契约                                                                                                                                 | 被拒绝或受约束的行为                                                                                |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `root`, `children`                          | 一个根；有序的类型化子节点。                                                                                                                 | 删除/改型根；环；共享的可变子节点。                                                                 |
+| `text`, `value`                             | 文本替换、拆分、插入和删除。                                                                                                                 | 函数、React 值或非字符串 `value`。                                                                  |
+| `paragraph`, `strong`, `emphasis`, `delete` | 有序的 phrasing 子节点。                                                                                                                     | phrasing 容器内的块级子节点。                                                                       |
+| `heading`, `depth`                          | phrasing 子节点可被 transform；转换后的文本参与共享的 Markdown/Outline 标识。                                                                | 改变有源可依标题的深度；由渲染器定义的 ID。                                                         |
+| `inlineCode`, `break`                       | 标准 MDAST 含义。                                                                                                                            | 通过文本辅助函数转换受保护的行内代码内容。                                                          |
+| `link`, `url`, `children`                   | phrasing 子节点；每个 Astryx 拥有的目标都由导航所有者重新校验。                                                                              | 嵌套链接；绕过目标策略；非字符串 URL。                                                              |
+| `image`, `url`, `alt`                       | 重新校验的资源 URL 和文本替代。                                                                                                              | 绕过资源策略或删除必需的替代文本。                                                                  |
+| `blockquote`                                | 有序的块级子节点。                                                                                                                           | 无效的子节点类型。                                                                                  |
+| `list`, `listItem`                          | `ordered`、可选的 `start`、`spread`、可选的 `checked`，以及块级子节点。Astryx 还保留作者编写的有序列表 `delimiter`，以实现精确的已发布投影。 | 无效的任务/列表结构或非有限 start。                                                                 |
+| `code`, `lang`, `meta`, `value`             | MDAST 语义：缺失时 `lang` 为 `null`，`meta` 是可选的。普通代码保持可复制；围栏辅助函数标注原始节点。                                         | 通过围栏辅助函数替换/删除源码；对没有任何提案认领的围栏绕过 `components.code`。                     |
+| Astryx flow image                           | 保留带 `url` 和 `alt` 的已发布独立图片块行为；phrasing 图片保持正常的 MDAST 位置。                                                           | 在没有适配器证据的情况下将 flow 扩展视为可移植的 MDAST。                                            |
+| `table`, `tableRow`, `tableCell`, `align`   | 矩形行、phrasing 单元格、归一化的对齐。                                                                                                      | 替换 Core 表格语义或产生参差/无效结构。                                                             |
+| `thematicBreak`                             | 标准 MDAST 含义。                                                                                                                            | 子节点或渲染器槽位。                                                                                |
+| `math`, `inlineMath`                        | 仅当已发布的数学选择启用被开启时才存在。                                                                                                     | 仅通过转换就启用数学。                                                                              |
+| `position`                                  | 由 Core 编写在具有源依据的节点上的可选 start/end UTF-16 偏移；行和列在可用之前保持可选，且不改变已发布的区间行为。合成节点省略 position。    | 编写、偏移或伪造源码位置。                                                                          |
+| `data`                                      | 在拥有该 data 的插件键下存放有限、类 JSON 的插件数据；Core 的记录使用一个保留的 `astryx` 命名空间，其本身没有渲染效果。                      | `hName`、`hProperties`、`hChildren`、函数、DOM/React 值、原始标记通道，或插件编写的 Core 保留数据。 |
+| Astryx extension node                       | 稳定的 plugin/name/display/data 判别字段；声明为 `none`、`phrasing`、`flow` 或收窄的允许列表内容；有渲染器和文本投影。                       | 外来创建/编辑/复制、未声明的子节点、缺失投影/渲染器，或改变另一个插件的判别字段。                   |
+| Astryx citation node                        | 作为 MDAST 子集的一个拥有的类型化扩展而保留。                                                                                                | 将其改写为链接以绕过引文所有权。                                                                    |
+| Other MDAST nodes                           | 除非后续的 current 契约添加它们，否则不受支持。                                                                                              | `html`、定义/引用、脚注、frontmatter、指令、MDX 以及其他未知节点在 Remark 适配器中失败关闭。        |
 
 ## Permitted transform edits
 
-| Surface                         | Permitted                                                                                                   | Rejected                                                                                                     |
-| ------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Document root                   | Return the same root or a structurally valid replacement root.                                              | Removing/retyping the root or adding an independently rendered document shell.                               |
-| Source-backed text and phrasing | Replace, split, insert, remove, or annotate while preserving protected contexts.                            | Text-helper matches inside protected code, links, images, citations, math, or accepted opaque syntax.        |
-| Headings                        | Transform phrasing children; remove or reorder headings; shared identity updates from transformed text.     | Changing a source-backed depth, forging/duplicating provenance or identity, or supplying a renderer-only ID. |
-| Links and images                | Insert or update values that pass their current navigation/resource owners.                                 | Bypassing destination, protocol, alternative-text, or trusted-resource policy.                               |
-| Lists and tables                | Insert, remove, or transform valid descendants while retaining Core-owned semantics.                        | Changing roles, ownership, or producing invalid structure.                                                   |
-| Code fences                     | A semantic-fence helper may attach owned typed extension data to the original code node.                    | Replacing source through the helper, rendering inside the helper, or claiming a fence it does not annotate.  |
-| Source decoration               | Attach non-semantic, non-interactive presentation metadata to source-backed ranges.                         | Changing AST meaning, focus order, accessible name, navigation, selection, or copyable text.                 |
-| Plugin extension nodes          | Insert/edit the transform owner's node; read or remove foreign nodes/subtrees; preserve validated children. | Minting, editing, duplicating, or internally reordering another plugin's node; undeclared child content.     |
-| Inline entrypoints              | Return exactly one paragraph-equivalent root containing phrasing nodes.                                     | Block nodes, multiple top-level blocks, or a changed container shape.                                        |
+| 表面                      | 允许                                                                                    | 拒绝                                                                                 |
+| ------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| 文档根                    | 返回同一个根或结构上有效的替换根。                                                      | 删除/改型根，或添加一个独立渲染的文档外壳。                                          |
+| 有源依据的文本与 phrasing | 在保留受保护上下文的同时进行替换、拆分、插入、删除或标注。                              | 在受保护的代码、链接、图片、引文、数学或已接受的不透明语法内部发生文本辅助函数匹配。 |
+| 标题                      | transform phrasing 子节点；删除或重排标题；共享标识随转换后的文本更新。                 | 改变有源依据的深度、伪造/复制出处或标识，或提供仅渲染器使用的 ID。                   |
+| 链接与图片                | 插入或更新能通过其当前导航/资源所有者校验的值。                                         | 绕过目标、协议、替代文本或受信资源策略。                                             |
+| 列表与表格                | 在保留 Core 拥有语义的同时插入、删除或 transform 有效后代。                             | 改变角色、所有权，或产生无效结构。                                                   |
+| 代码围栏                  | 语义围栏辅助函数可以将拥有的类型化扩展数据附加到原始代码节点上。                        | 通过辅助函数替换源码、在辅助函数内部渲染，或认领一个它并未标注的围栏。               |
+| 源码装饰                  | 将有语义无关、非交互的呈现元数据附加到有源依据的区间。                                  | 改变 AST 含义、焦点顺序、无障碍名称、导航、选择或可复制文本。                        |
+| 插件扩展节点              | 插入/编辑 transform 所有者自己的节点；读取或删除外来的节点/子树；保留经过校验的子节点。 | 创建、编辑、复制另一个插件的节点，或在其内部重排；未声明的子节点内容。               |
+| 行内入口点                | 恰好返回一个与段落等价的根，其中包含 phrasing 节点。                                    | 块级节点、多个顶层块，或改变的容器形状。                                             |
 
 ## Limited Remark compatibility profile
 
-A Remark adapter accepts a synchronous transform-only plugin confined to the matrix above. Each invocation receives a fresh mutable tree copy and an isolated constrained file object. The file exposes readonly source text, per-invocation finite JSON data, and diagnostic reporting; it exposes no processor registration, cross-run state, compiler, I/O, or async completion.
+Remark 适配器接受一个仅限于上述矩阵的同步、仅做转换的插件。每次调用都会收到一棵全新的可变树副本和一个隔离的受限文件对象。该文件暴露只读源文本、每次调用的有限 JSON 数据和诊断报告；它不暴露处理器注册、跨运行状态、编译器、I/O 或异步完成。
 
-The adapter's input type is structurally compatible with conventional Unified/Remark `Plugin` values, including their broad declared transformer return union, so a compatible package does not need a type wrapper. Runtime acceptance remains narrower: an invocation that actually returns a promise or uses an unsupported capability fails closed. Astryx exports its own supported-subset tree and file types rather than re-exporting or pinning the complete `mdast`/Unified type surface, so upstream type evolution cannot silently widen Astryx's contract.
+适配器的输入类型在结构上与常规的 Unified/Remark `Plugin` 值兼容，包括其声明的宽泛 transformer 返回联合，因此兼容的包不需要类型包装器。运行时的接受范围仍然更窄：实际返回 promise 或使用不受支持能力的调用会失败关闭。Astryx 导出自己的受支持子集树和文件类型，而不是重新导出或固定完整的 `mdast`/Unified 类型表面，因此上游类型演进无法悄悄拓宽 Astryx 的契约。
 
-Remark compatibility is content-only, not presentation compatibility. Adapted plugins may return only the supported structural nodes and fields; Astryx still renders those nodes through its own components, tokens, navigation/resource policies, and accessibility semantics. `html`, `hName`, `hProperties`, `hChildren`, custom compiler output, CSS assumptions, and third-party renderer conventions are rejected rather than approximated. A plugin that needs new presentation must use an Astryx-owned typed extension node and renderer outside the Remark adapter.
+Remark 兼容性仅针对内容，而非呈现兼容性。被适配的插件只能返回受支持的结构节点和字段；Astryx 仍然通过自己的组件、token、导航/资源策略和无障碍语义来渲染这些节点。`html`、`hName`、`hProperties`、`hChildren`、自定义编译器输出、CSS 假设以及第三方渲染器约定都会被拒绝，而不是被近似处理。需要新呈现的插件必须使用 Astryx 拥有的类型化扩展节点和渲染器，在 Remark 适配器之外实现。
 
-The adapter validates the plugin's returned or mutated tree against the matrix before it becomes observable. Unsupported nodes, raw HTML, promises, shared processor state, invalid structure, forged positions, and unrepresentable metadata preserve the last valid tree and report a source-free diagnostic.
+在插件返回或修改的树变得可观察之前，适配器会依据矩阵对其校验。不支持的节点、原始 HTML、promise、共享处理器状态、无效结构、伪造的位置以及不可表示的元数据都会保留最后一个有效树，并报告一条无源码的诊断。
 
-Compatibility is explicit per plugin and tested version. “Remark-compatible” means equivalent supported-subset fixtures pass the adapter matrix; package shape or ecosystem membership alone is not evidence. Plugins using processor data, micromark extensions, async work, unrestricted `VFile` behavior, unsupported nodes, renderer metadata, or compiler hooks are outside the profile.
+兼容性是按插件和测试版本显式声明的。“Remark 兼容”是指在适配器矩阵下通过等价受支持子集测试夹具；仅凭包形状或生态成员身份不构成证据。使用处理器数据、micromark 扩展、异步工作、无限制的 `VFile` 行为、不支持的节点、渲染器元数据或编译器钩子的插件不在该范围之内。
 
 ## Requirements
 
 ### Admission and compatibility
 
-- **FR1 — One public plugin model.** `plugins` and `createMarkdownPlugin()` are the canonical extension seam. The only protocol capabilities are `syntax`, `transform`, and `renderers`; helper APIs may compile common use cases into transforms.
-- **FR2 — One empty-pipeline behavior.** Omitted plugins and an empty list have identical AST, DOM, styling, targets, IDs, errors, and streaming behavior. Core may avoid empty normalization and allocation, but no behavior may depend on whether the empty list was explicit.
-- **FR3 — Zero breaking changes.** Existing `components`, `inlinePlugins`, citations, opt-in GFM autolinking, math, sources, parser signatures, fields, optionality, mutability, no-plugin result types, DOM, accessibility, heading/Outline identity, streaming reuse, and renderer precedence retain their released meaning and behavior. Opting into plugins adds behavior only for that callsite.
-- **FR4 — `inlinePlugins` migrates only after parity.** No deprecation occurs until a helper-backed transform preserves every released traversal context, overlap rule, callback result, `null`, throw, migration-doc, and codemod requirement.
-- **FR5 — Entries are durable package values.** First-party plugins are colocated under Markdown and exported normally; third-party plugins are explicit package imports with a compatible Core peer range. No registry or discovery mechanism exists.
+- **FR1 — 单一公开插件模型。** `plugins` 和 `createMarkdownPlugin()` 是规范的扩展接缝。唯一的协议能力是 `syntax`、`transform` 和 `renderers`；辅助 API 可以把常见用例编译成 transform。
+- **FR2 — 单一空管线行为。** 省略插件与空列表具有完全相同的 AST、DOM、样式、目标、ID、错误和流式行为。Core 可以避免空归一化和分配，但任何行为都不得取决于空列表是否为显式给出。
+- **FR3 — 零破坏性变更。** 现有的 `components`、`inlinePlugins`、引文、可选的 GFM 自动链接、数学、源码、解析器签名、字段、可选性、可变性、无插件结果类型、DOM、无障碍性、标题/Outline 标识、流式复用和渲染器优先级都保留其已发布的含义和行为。选择启用插件只在该调用点增加行为。
+- **FR4 — `inlinePlugins` 仅在完全对等后才迁移。** 在由辅助函数支撑的 transform 保留每一条已发布的遍历上下文、重叠规则、回调结果、`null`、抛出、迁移文档和 codemod 要求之前，不会发生任何弃用。
+- **FR5 — 条目是持久的包值。** 第一方插件与 Markdown 放在一起并正常导出；第三方插件是显式包导入，并带有兼容的 Core peer 范围。不存在注册表或发现机制。
 
 ### Parsing and immutable transformation
 
-- **FR6 — Fixed order.** Built-in and extension syntax parse first; transforms then run in plugin-array order; rendering runs last. A transform observes the validated result of every earlier transform.
-- **FR7 — Built-in lexical shields win during syntax.** Escapes, inline and fenced code, links, images, citations, math, and accepted opaque syntax remain protected according to their current owners. Block extension syntax remains top-level unless a current owner explicitly broadens it.
-- **FR8 — Ordered syntax claims.** Duplicate plugin names fail validation. Syntax contributions resolve in plugin and declaration order; first match wins, defer reserves the bounded candidate, and terminal parsing resolves all pending source.
-- **FR9 — Canonical AST is MDAST-aligned, strictly typed, and reachable.** Parsing, transforms, rendering, and Outline projection use one stable Unist-shaped subset with complete available source positions. `parseMarkdownAst()` and `parseInlineAst()` return that canonical tree from the server-safe `@astryxdesign/core/Markdown/parser` subpath and the Markdown component barrel. Public node-kind traversal narrows callbacks by discriminant, including generic plugin extensions. Released parser functions retain their existing result types and values until a separately approved migration.
-- **FR10 — Transform input is immutable.** A transform returns the same root or a replacement root. Attempted mutation cannot change any observed input node, array, data object, source position, prior snapshot, or later plugin input.
-- **FR11 — Transform output is representable and validated.** Output is finite, acyclic, typed data that satisfies both matrices above. Core rejects raw HTML, React values, DOM nodes, functions in node data, invalid built-in structure, foreign extension ownership, authored/shifted provenance, and block-shaped output from inline entrypoints.
-- **FR12 — Transform failure is local to the plugin.** A throw, promise, rejected thenable, invalid result, or unsupported adapter output reports one source-free diagnostic and passes the last valid root to later plugins and rendering. Core attaches a rejection sink before refusing an asynchronous tokenizer or transform so a rejected promise cannot escape through the host's unhandled-rejection channel. Source-backed nodes preserve authored-source fallback; synthetic extension leaves use their required perceivable-text projection; extension containers preserve their validated children.
-- **FR13 — Live transforms do not reparse or mutate retained output.** Adding, removing, reordering, or updating transforms refreshes transformed output without rerunning syntax tokenization. Only current parser options and ordered syntax identity invalidate syntax parse identity. Prior snapshots stay unchanged; unchanged settled legacy output retains its released reuse and remount behavior.
+- **FR6 — 固定顺序。** 内置和扩展语法先解析；然后 transform 按插件数组顺序运行；渲染最后运行。transform 观察每一个更早 transform 的经过校验的结果。
+- **FR7 — 内置词法屏障在语法阶段优先。** 转义、行内代码和围栏代码、链接、图片、引文、数学以及已接受的不透明语法按照其当前所有者保持受保护。块级扩展语法保持顶层，除非当前所有者显式拓宽它。
+- **FR8 — 有序语法认领。** 重复的插件名称无法通过校验。语法贡献按插件顺序和声明顺序解析；首个匹配胜出，defer 保留有界候选，终结解析会解析所有挂起源码。
+- **FR9 — 规范 AST 与 MDAST 对齐、严格类型化且可到达。** 解析、transform、渲染和 Outline 投影使用一个稳定的、Unist 形状的子集，并带有完整的可用源码位置。`parseMarkdownAst()` 和 `parseInlineAst()` 从服务端安全的 `@astryxdesign/core/Markdown/parser` 子路径和 Markdown 组件桶返回该规范树。公开的节点类型遍历按判别字段收窄回调，包括泛型插件扩展。已发布的解析器函数保留其现有结果类型和值，直到另行批准的迁移。
+- **FR10 — Transform 输入不可变。** transform 返回同一个根或一个替换根。尝试修改不能改变任何被观察的输入节点、数组、数据对象、源码位置、先前快照或后续插件的输入。
+- **FR11 — Transform 输出可表示且经过校验。** 输出是满足上述两个矩阵的有限、无环、类型化数据。Core 拒绝原始 HTML、React 值、DOM 节点、节点数据中的函数、无效的内置结构、外来的扩展所有权、编写/偏移的出处，以及行内入口点产生的块形状输出。
+- **FR12 — Transform 失败局限于该插件。** 抛出、promise、被拒绝的 thenable、无效结果或不受支持的适配器输出会报告一条无源码诊断，并将最后一个有效根传给后续插件和渲染。Core 在拒绝异步分词器或 transform 之前会附加一个拒绝接收器，这样被拒绝的 promise 无法通过宿主的未处理拒绝通道逃逸。有源依据的节点保留原始作者源码回退；合成扩展叶子使用其必需的可感知文本投影；扩展容器保留其经过校验的子节点。
+- **FR13 — 实时 transform 不重新解析，也不修改保留的输出。** 添加、删除、重排或更新 transform 会刷新转换后的输出，而不会重新运行语法分词。只有当前解析器选项和有序语法标识会使语法解析标识失效。先前的快照保持不变；未改变的已稳定旧输出保留其已发布的复用和重新挂载行为。
 
 ### Rendering and cross-surface identity
 
-- **FR14 — Extension rendering is complete and local.** Every extension kind a plugin may introduce has an owning renderer and perceivable-text projection. Missing or failed rendering preserves exact authored source for source-backed leaves, the required projection for synthetic leaves, or validated Markdown children for containers; siblings continue running.
-- **FR15 — Core semantics remain authoritative.** Plugins cannot replace the document root or override Core-owned heading level/ID, navigation, image policy, list semantics, table semantics, or built-in accessibility behavior. Trusted renderer-created links and resources remain renderer-owned.
-- **FR16 — One selected heading projection.** Markdown and Markdown-derived Outline use the same syntax list, transform list, text projection, and installed heading projection. The released projection remains top-level; `module:Markdown/headingLinks` may opt into its separately owned projection through the same opaque plugin list without changing Outline selection. Renderer output cannot change identity.
-- **FR17 — A semantic fence claims its fence before the code override.** A semantic-fence helper may annotate an eligible original code node but cannot replace its source. Rendering resolves the helper proposal first: when the owning plugin's renderer renders it, that output replaces the fence. `components.code` renders every fence no proposal claims, and is the local fallback for a claimed fence whose renderer is absent, returns nothing, throws, or suspends. Without `components.code`, ordinary copyable code is that fallback.
+- **FR14 — 扩展渲染完整且局部。** 插件可能引入的每个扩展类型都有一个拥有的渲染器和可感知文本投影。缺失或失败的渲染会对有源依据的叶子保留确切的作者源码，对合成叶子保留必需的投影，对容器保留经过校验的 Markdown 子节点；同级继续运行。
+- **FR15 — Core 语义保持权威。** 插件不能替换文档根，也不能覆盖 Core 拥有的标题级别/ID、导航、图片策略、列表语义、表格语义或内置无障碍行为。由受信渲染器创建的链接和资源仍归渲染器所有。
+- **FR16 — 单一选定的标题投影。** Markdown 和由 Markdown 派生的 Outline 使用相同的语法列表、transform 列表、文本投影和已安装的标题投影。已发布的投影保持顶层；`module:Markdown/headingLinks` 可以通过同一个不透明插件列表选择它单独拥有的投影，而不改变 Outline 的选择。渲染器输出不能改变标识。
+- **FR17 — 语义围栏在代码覆盖之前认领其围栏。** 语义围栏辅助函数可以标注一个符合条件的原始代码节点，但不能替换其源码。渲染会优先解析辅助函数提案：当拥有该围栏的插件的渲染器渲染它时，该输出替换围栏。`components.code` 渲染没有任何提案认领的每一个围栏，并且是已被认领但其渲染器缺失、返回空、抛出或挂起时的本地回退。在没有 `components.code` 的情况下，普通可复制代码就是该回退。
 
 ### Remark compatibility
 
-- **FR18 — Adapter scope is explicit.** The adapter supports only synchronous transform-only plugins over the documented MDAST subset. It does not emulate Unified parser/compiler registration, async execution, processor state, or unrestricted `VFile` behavior.
-- **FR19 — Translation is lossless or rejected.** Each adapted node and metadata field has a documented round trip. Unsupported input or output fails closed with readable source; the adapter never silently drops or approximates content.
-- **FR20 — Compatibility is tested per plugin.** A package is called compatible only after fixtures prove equivalent supported-subset output, protected-context behavior, diagnostics, source preservation, and server rendering.
+- **FR18 — 适配器范围是显式的。** 适配器只支持在文档化的 MDAST 子集上运行的同步、仅做转换的插件。它不模拟 Unified 解析器/编译器注册、异步执行、处理器状态或无限制的 `VFile` 行为。
+- **FR19 — 翻译是无损的或被拒绝。** 每个被适配的节点和元数据字段都有文档化的往返。不受支持的输入或输出会以可读源码失败关闭；适配器绝不静默丢弃或近似内容。
+- **FR20 — 兼容性按插件测试。** 一个包只有在测试夹具证明等价的受支持子集输出、受保护上下文行为、诊断、源码保留和服务端渲染之后，才能被称为兼容。
 
 ### Resources
 
-- **FR21 — Unclaimed work is bounded.** A helper callback runs only for an actual claim; unmatched source cannot invoke it. Stable and recreated semantically equivalent plugin lists must both satisfy FR23, without requiring any particular preparation or dispatch implementation.
-- **FR22 — Existing parser budgets remain the floor.** The canonical [parser performance fixture](../../../packages/core/src/Markdown/parser.perf.test.ts) remains green: full parse stays below 20/50/100/400/1000 ms at 10/50/200/500/2000 sections; full and incremental 50-character streaming stay below 5000 ms at 50 sections and 30000 ms at 500; incremental time stays at most 1.1× full reparse; and its exact settled-tail work, object-reuse, source-range, median/worst-block, and tracked whole-prefix assertions remain unchanged.
-- **FR23 — Focused overhead budgets cover both transform paths.** Under the evidence protocol below, each budget names the path it measures. First-party helper transforms: five zero-work helpers add at most 15 percent and the representative three-helper set adds at most 25 percent, at both fixture sizes. Plugin-authored transforms, which pay full immutability and validation guards: five zero-work transforms add at most 30 percent and the representative three-transform set adds at most 50 percent, at both fixture sizes. Streaming the representative plugin-authored set stays within FR22's streaming budgets and at most 1.25× the same stream with an empty pipeline. Per-transform guard work is bounded by one traversal of that transform's output; whole-document invariant collection happens once per pipeline run, not once per transform. Core may skip a guard for a helper-authored transform only where the helper's own construction already guarantees the property, and the published budget must say which path a number describes.
-- **FR24 — Optional work stays optional.** The server-safe `@astryxdesign/core/Markdown/parser` subpath contains no client directive or component dependency. Remark adapters, the conformance kit, and heavy renderers are tree-shakeable and absent from parser-only/server bundles unless imported.
+- **FR21 — 未被认领的工作是有界的。** 辅助函数回调只在真正发生认领时运行；不匹配的源码无法调用它。稳定和重建的语义等价插件列表都必须满足 FR23，而不要求任何特定的准备或分派实现。
+- **FR22 — 现有解析器预算仍是下限。** 规范的 [parser performance fixture](../../../packages/core/src/Markdown/parser.perf.test.ts) 保持通过：在 10/50/200/500/2000 个 section 时，完整解析保持在 20/50/100/400/1000 ms 以下；在 50 个 section 时完整和增量的 50 字符流式保持低于 5000 ms，在 500 个 section 时保持低于 30000 ms；增量时间最多为完整重新解析的 1.1×；其确切的已稳定尾部工作、对象复用、源码区间、中位/最差块以及被跟踪的整段前缀断言保持不变。
+- **FR23 — 聚焦的开销预算覆盖两条 transform 路径。** 在下面的证据协议下，每项预算都指明它所测量的路径。第一方辅助函数 transform：在两个夹具规模下，五个零工作量辅助函数最多增加 15%，代表性的三辅助函数组合最多增加 25%。插件编写的 transform 需要付出完整的不可变性和校验守卫代价：在两个夹具规模下，五个零工作量 transform 最多增加 30%，代表性的三 transform 组合最多增加 50%。对代表性插件编写组合进行流式处理，保持在 FR22 的流式预算之内，并且最多为同一流在空管线下的 1.25×。每个 transform 的守卫工作以该 transform 输出的一次遍历为界；整个文档的不变式收集在每次管线运行时发生一次，而不是每个 transform 一次。只有当辅助函数自身的构造已经保证了某属性时，Core 才可以对辅助函数编写的 transform 跳过守卫，并且已发布的预算必须说明某个数字描述的是哪条路径。
+- **FR24 — 可选工作保持可选。** 服务端安全的 `@astryxdesign/core/Markdown/parser` 子路径不包含客户端指令或组件依赖。Remark 适配器、一致性工具包和重型渲染器都可 tree-shake，并且除非被导入，否则不会出现在仅解析器/服务端 bundle 中。
 
 ### Extension containers, ownership, and node data
 
-- **FR25 — Extension nodes declare their content.** Every extension kind declares `'none'`, `'phrasing'`, `'flow'`, or an explicit allowlist with optional finite cardinality bounds. An allowlist narrows the category its `display` already implies and never widens it, and an extension kind's name may not collide with a supported built-in node name. Core validates the declaration at admission and the actual children at every transform boundary. A container produced by syntax declares an inner source span that Core parses; no plugin supplies children built from raw source. Containers count toward the built-in container-depth bound, neither restart nor independently scope the heading projection selected under FR16, and keep their children when their renderer fails.
-- **FR26 — Ownership is minting and editing, not existence.** A transform may read another plugin's extension nodes and may remove them, including removing a subtree that contains them. It may not create, edit, reorder the internals of, or duplicate a node owned by another plugin. A source heading may be removed or inserted but its depth may not change and its identity may not be forged or duplicated. Every rejection under this rule reports a diagnostic that names the ownership rule and the owning plugin rather than a generic invalid-document code.
-- **FR27 — Plugins declare the plugins they read.** `dependsOn` lists plugin names whose extension nodes a plugin reads. Preparation validates that each named plugin is present and ordered earlier. An unmet or misordered dependency is a failure local to the declaring plugin: its transform does not run, its syntax and renderers remain active, and one diagnostic distinguishes missing from misordered. Declaring no dependency keeps array-order-only behavior.
-- **FR28 — Core-internal per-node state lives in one reserved data namespace.** Core's own per-node bookkeeping is a documented reserved key of node `data`, not a hidden, non-enumerable, or signature-matched channel. Plugin data lives under the owning plugin's key. Plugins may read reserved data; authoring, editing, forging, or removing it is rejected with a diagnostic.
+- **FR25 — 扩展节点声明其内容。** 每个扩展类型声明 `'none'`、`'phrasing'`、`'flow'`，或一个带有可选有限基数边界的显式允许列表。允许列表会收窄其 `display` 已经隐含的类别，且绝不拓宽它，扩展类型的名称不得与受支持的内置节点名称冲突。Core 在准入时校验该声明，并在每个 transform 边界校验实际的子节点。由语法产生的容器声明一个 Core 会解析的内部源码区间；没有插件提供由原始源码构建的子节点。容器计入内置容器深度上限，既不重启也不独立划定 FR16 下选定的标题投影范围，并且在其渲染器失败时保留其子节点。
+- **FR26 — 所有权是创建与编辑，而非存在。** transform 可以读取另一个插件的扩展节点，也可以删除它们，包括删除包含它们的子树。它不能创建、编辑、重排其内部结构或复制另一个插件拥有的节点。源标题可以被删除或插入，但其深度不得改变，其标识不得被伪造或复制。本规则下的每次拒绝都会报告一条诊断，其中指明所有权规则和拥有该节点的插件，而不是一个通用的无效文档代码。
+- **FR27 — 插件声明它读取的插件。** `dependsOn` 列出插件会读取其扩展节点的插件名称。准备阶段会校验每个被命名的插件都存在且排在更早的位置。未满足或顺序错误的依赖是声明该依赖的插件的局部失败：它的 transform 不运行，其语法和渲染器保持活动，一条诊断会区分缺失与顺序错误。不声明依赖则保持仅按数组顺序的行为。
+- **FR28 — Core 内部的逐节点状态存放在一个保留数据命名空间中。** Core 自己的逐节点记录是节点 `data` 的一个有文档的保留键，而不是隐藏的、不可枚举的或签名匹配的通道。插件数据存放在拥有该数据的插件键下。插件可以读取保留数据；编写、编辑、伪造或删除它都会被拒绝并给出诊断。
 
 ### Diagnostics and failure visibility
 
-- **FR29 — One diagnostic channel, including in production.** `onPluginDiagnostic` is available on the component and in parser options and receives one event per failure or advisory: the plugin name, phase (admission, syntax, transform, render, or adapter), stable enumerated code, and severity. Events are source-free by construction — no document text, node values, destinations, or positions — and are delivered in development and production. Delivery is rate-limited per document and plugin/phase/code, and a suppression code reports when the bound is reached. With no handler, development surfaces each unique code once and production stays silent. `context.report()` accepts a plugin-authored stable code rather than document-derived text and is delivered as an advisory, never as a failure. Any condition that silently degrades a document to reduced plugin behavior, including exceeding a validation size bound, emits a diagnostic.
-- **FR30 — Admission and version failures are uniform and soft.** A malformed entry, duplicate name, unsupported protocol version, or otherwise unadmissible list behaves identically through the component and every public parser entrypoint: the call succeeds with the last valid configuration — an empty pipeline when nothing is admissible — reports one diagnostic, and never throws into the caller. A protocol-version mismatch is never an import-time or module-scope throw. Plugin identity created by a compatible duplicate Core copy remains valid through a stable cross-package brand whose frozen shape and version are verified.
+- **FR29 — 单一诊断通道，生产环境亦然。** `onPluginDiagnostic` 在组件和解析器选项中均可用，并为每次失败或提示接收一个事件：插件名称、阶段（准入、语法、transform、渲染或适配器）、稳定的枚举代码和严重程度。事件在构造上不含源码——没有文档文本、节点值、目标或位置——并且在开发和生产环境中都会投递。投递按文档以及插件/阶段/代码限速，并且当达到上限时会发出一个抑制代码。没有处理器时，开发环境会一次性呈现每个唯一代码，生产环境保持静默。`context.report()` 接受插件编写的稳定代码，而不是由文档派生的文本，并作为提示投递，绝不作为失败。任何会静默地将文档降级为缩减插件行为的条件，包括超出校验大小上限，都会发出诊断。
+- **FR30 — 准入和版本失败是统一且柔和的。** 格式错误的条目、重复的名称、不受支持的协议版本或其他不可准入的列表，在组件和每个公开解析器入口点上行为一致：调用以最后一个有效配置成功——当没有任何可准入项时为一条空管线——报告一条诊断，并且绝不向调用方抛出。协议版本不匹配绝不会是导入时或模块作用域内的抛出。由兼容的重复 Core 副本创建的插件标识通过一个稳定的跨包 brand 保持有效，该 brand 的冻结形状和版本会被校验。
 
 ### Authoring, canonical APIs, and packaging
 
-- **FR31 — Extension types are inferred.** `createMarkdownPlugin()` infers the plugin's extension-node union from its declaration. No callsite requires explicit type arguments or a hand-written node alias to obtain correct narrowing in `renderers`, `transform`, traversal, and the aggregated list union. A declaration that produces extension nodes without a matching renderer, or that resolves to an empty extension union while extension kinds are used, is a type error rather than a silently permissive `never`.
-- **FR32 — The canonical AST has public parse entrypoints.** `parseMarkdownAst()` and `parseInlineAst()` return the canonical tree these types describe, accept the same options and ordered plugin list as the component, and sit beside the released `parseMarkdown` family, which keeps its projected result shape.
-- **FR33 — A server-safe parser entry exists.** `@astryxdesign/core/Markdown/parser` exports parsing, canonical AST types, and plugin admission with no client-boundary directive, so a server importer does not pull a client reference. It is registered in the generated export map and covered by an import fixture, exactly as the adapter entry is.
-- **FR34 — A conformance kit produces per-plugin evidence.** `@astryxdesign/core/Markdown/testing` exports fixtures a plugin author runs to produce the evidence FR20 requires: protected contexts, immutability, validation rejection, failure fallback and diagnostics, container content validation, streaming idempotence, and server rendering. It is tree-shakeable and absent from runtime bundles.
-- **FR35 — Compatibility and limits are consumer-documented.** Consumer documentation publishes the supported and rejected categories with the Astryx answer for each: transform-only content rewriters are supported; anything that extends the grammar, emits markup or hast, depends on processor or file state, or only reports messages is not. It states plainly that no raw-markup stage exists, names the native capabilities that make specific plugin categories unnecessary, and documents that a renderer is arbitrary application code, so the trust boundary is the plugin package rather than the document.
+- **FR31 — 扩展类型是被推断的。** `createMarkdownPlugin()` 从其声明推断插件的扩展节点联合。任何调用点都不需要显式类型参数或手写节点别名，就能在 `renderers`、`transform`、遍历和聚合列表联合中获得正确的收窄。产生扩展节点却没有匹配渲染器的声明，或在使用了扩展类型的情况下解析为空扩展联合的声明，都是类型错误，而不是一个静默宽容的 `never`。
+- **FR32 — 规范 AST 有公开的解析入口点。** `parseMarkdownAst()` 和 `parseInlineAst()` 返回这些类型所描述的规范树，接受与组件相同的选项和有序插件列表，并与已发布的 `parseMarkdown` 家族并列，后者保持其投影的结果形状。
+- **FR33 — 存在服务端安全的解析器入口。** `@astryxdesign/core/Markdown/parser` 导出解析、规范 AST 类型和插件准入，且没有客户端边界指令，因此服务端导入者不会拉入客户端引用。它注册在生成的导出映射中，并由一个导入测试夹具覆盖，与适配器入口完全一样。
+- **FR34 — 一致性工具包产出逐插件证据。** `@astryxdesign/core/Markdown/testing` 导出插件作者运行的测试夹具，以产出 FR20 所需的证据：受保护上下文、不可变性、校验拒绝、失败回退与诊断、容器内容校验、流式幂等性和服务端渲染。它可 tree-shake，并且不在运行时 bundle 中出现。
+- **FR35 — 兼容性和限制有使用方文档。** 使用方文档发布受支持和被拒绝的类别，并给出每个类别的 Astryx 答复：支持仅做转换的内容改写器；任何扩展语法、发出标记或 hast、依赖处理器或文件状态，或仅报告消息的做法都不支持。它明确说明不存在原始标记阶段，指出使特定插件类别变得不必要的原生能力，并说明渲染器是任意的应用代码，因此信任边界是插件包而非文档。
 
 ### Streaming, theming, and stability
 
-- **FR36 — Transforms are idempotent under streaming.** A transform runs again for every streamed update. Given the same source prefix it must return the same result, and its output must converge rather than oscillate as the prefix grows. Transforms whose effect is valid only on complete input use the final-input signal. Evidence includes a no-oscillation fixture across chunk boundaries.
-- **FR37 — Extension output has an opt-in theme target.** An extension renderer may opt into one Markdown-owned extension theme target so themes can reach plugin output. Opting out leaves output untargeted. The target carries no default styling or anatomy beyond block spacing and content width Core already applies, and it does not make plugin output part of Markdown's default anatomy.
-- **FR38 — Prepared work is reused for equal lists.** Semantically equal plugin lists reuse prepared syntax and transform work across renders whether or not the array reference is stable, so preparation cost is not proportional to render count. Where reuse cannot be established, development reports one diagnostic identifying the recreated list, and consumer documentation states the hoisting guidance.
-- **FR39 — Protocol stability is published.** The first public release publishes what `apiVersion` covers — entry shape, capability names, extension-node discriminants, declared content shapes, diagnostic codes and phases, and canonical node union — and what it does not — helper internals, unlisted AST fields, Core-reserved node data, and diagnostic text. A change that invalidates an existing conforming plugin bumps `apiVersion`; purely additive capability does not. The policy states which Core versions accept a given `apiVersion` and how skew fails, consistent with FR30.
+- **FR36 — Transform 在流式下幂等。** 每次流式更新都会重新运行 transform。给定相同的源码前缀，它必须返回相同的结果，并且随着前缀增长，其输出必须收敛而不是振荡。只在完整输入上才有效果的 transform 使用最终输入信号。证据包括一个跨块边界的不振荡测试夹具。
+- **FR37 — 扩展输出有一个选择启用的主题目标。** 扩展渲染器可以选择启用一个由 Markdown 拥有的扩展主题目标，以便主题可以作用于插件输出。选择不启用则输出不被定向。除 Core 已应用的块间距和内容宽度外，该目标不携带任何默认样式或结构，也不会让插件输出成为 Markdown 默认结构的一部分。
+- **FR38 — 准备工作对相等列表复用。** 语义相等的插件列表在多次渲染之间复用已准备的语法和 transform 工作，无论数组引用是否稳定，因此准备成本不与渲染次数成正比。在无法建立复用时，开发环境会报告一条诊断，指出被重建的列表，使用方文档则说明提升（hoisting）指导。
+- **FR39 — 协议稳定性已发布。** 首个公开发布会公布 `apiVersion` 覆盖的内容——条目形状、能力名称、扩展节点判别字段、声明的内容形状、诊断代码和阶段，以及规范节点联合——以及它不覆盖的内容——辅助函数内部、未列出的 AST 字段、Core 保留的节点数据和诊断文本。使现有合规插件失效的变更会提升 `apiVersion`；纯粹新增的能力不会。该策略说明哪些 Core 版本接受给定的 `apiVersion` 以及版本偏斜如何失败，与 FR30 一致。
 
 ### Planned first-party scope
 
-- **FR40 — First-party plugins use the public protocol.** Astryx ships a small first-party set — soft breaks, heading links, configurable entity references, and callout containers — through the public opaque plugin list, each owning its semantics and evidence in its own module record and serving as a canonical documentation example. No first-party plugin receives a public capability, validation exemption, ordering privilege, or type affordance unavailable to a third party; an internal composition seam or fast path is permitted only where its module record owns the behavior and the empty pipeline stays unchanged, per FR3.
-- **FR41 — Footnotes, definitions, and references stay Core scope.** They are not a plugin surface: their identity is document-level ID allocation, collision handling, and back-reference navigation that Core owns under FR15 and FR16, and a plugin owning them would fork the identity system Markdown and Outline share. Until a separately approved contract adds them as Core syntax, they are unsupported, the adapter rejects them, and consumer documentation names the gap explicitly rather than implying a plugin workaround.
+- **FR40 — 第一方插件使用公开协议。** Astryx 通过公开的不透明插件列表提供一个小型第一方集合——软换行、标题链接、可配置实体引用和提示框容器——每个都在自己的模块记录中拥有其语义和证据，并作为规范文档示例。没有任何第一方插件获得第三方无法获得的公开能力、校验豁免、排序特权或类型便利；只有当其模块记录拥有该行为且空管线保持不变时，才允许存在内部组合接缝或快速路径，依据 FR3。
+- **FR41 — 脚注、定义和引用仍属 Core 范围。** 它们不是插件表面：其标识是 Core 在 FR15 和 FR16 下拥有的文档级 ID 分配、冲突处理和反向引用导航，若由插件拥有它们，就会分叉 Markdown 与 Outline 共享的标识系统。在另行批准的契约将它们添加为 Core 语法之前，它们不受支持，适配器会拒绝它们，使用方文档会明确说明这一缺口，而不是暗示存在插件变通方案。
 
 ## Performance evidence protocol
 
-- **Fixture:** a deterministic 200- and 500-section document; each section contains one heading, prose with an identifier and mention, a two-item list, a block quote, one table row, and an ordinary fenced code block.
-- **Helper zero-work set:** five prepared first-party helper transforms with valid selectors that match no fixture node or source span.
-- **Helper representative set:** three helpers that respectively match prose identifiers, annotate eligible code fences, and decorate a known source range.
-- **Plugin-authored zero-work set:** five plugin-authored transforms that return their input root unchanged, taking the full immutability and validation path.
-- **Plugin-authored representative set:** three plugin-authored transforms that respectively rewrite matched prose text, wrap a section in an extension container, and read a preceding plugin's nodes under a declared dependency.
-- **Streaming set:** the plugin-authored representative set applied to the 200-section fixture streamed in 50-character chunks, compared against the same stream with an empty pipeline.
-- **Comparison:** omitted/empty pipeline versus the same parse-and-transform call with the stable plugin list, in one isolated process and runner.
-- **Sampling:** ten untimed warmups, then nine alternating paired rounds; each side averages 20 iterations per round. The reported ratio is the median of the nine paired ratios. Both 200- and 500-section ratios must satisfy FR23. An A/A control outside the measurement-validity bound invalidates that sample; the harness retries rather than certifying noisy output. After a first valid sample over a budget, the stable and recreated lists are each decided separately, per budget and fixture size: a list fails when five of up to nine fresh-process valid samples, the first included, are over the budget.
-- **Cost-shape evidence:** guard traversal counts are asserted directly, so adding a transform may add at most one output traversal and may not repeat whole-document invariant collection.
-- **Regression signal:** invoking a helper callback for unclaimed source, invoking a claimed helper more than once, regressing parse/result reuse, or publishing a number without naming its path must fail work-count or threshold evidence.
+- **测试夹具：** 一个确定性的 200 节与 500 节文档；每个章节包含一个标题、带有一个标识符与提及的正文、一个两项列表、一段块引用、一个表格行，以及一个普通的围栏代码块。
+- **辅助函数零工作集合：** 五个预先准备的第一方辅助 transform，其选择器有效，但不匹配任何测试夹具节点或源码区间。
+- **辅助函数代表性集合：** 三个辅助函数，分别匹配正文中的标识符、为符合条件的代码围栏添加标注，以及装饰一个已知的源码区间。
+- **插件编写的零工作集合：** 五个由插件编写的 transform，它们原样返回输入的根节点，并走完整的不可变性与校验路径。
+- **插件编写的代表性集合：** 三个由插件编写的 transform，分别重写匹配到的正文文本、把一个章节包裹进扩展容器，以及在已声明的依赖下读取前一个插件的节点。
+- **流式集合：** 把插件编写的代表性集合应用于以 50 字符块流式传入的 200 节测试夹具，并与使用空管线的同一流进行对比。
+- **对比：** 省略的或为空的管线，与使用稳定插件列表的同一“解析并转换”调用进行比较，二者在同一个隔离进程与运行器中执行。
+- **采样：** 先进行十次不计时的预热，然后进行九轮交替配对测量；每一侧每轮平均 20 次迭代。报告的比率是九个配对比率的中位数。200 节与 500 节的比率都必须满足 FR23。落在测量有效性边界之外的 A/A 对照会使该样本失效；测试装置会重试，而不是为有噪声的输出出具认证。在预算下取得第一个有效样本之后，稳定列表与重建列表分别判定，并按预算与测试夹具规模逐一进行：当至多九个全新进程有效样本中有五个（含第一个）超出预算时，该列表判定为失败。
+- **成本形态证据：** 守卫遍历次数被直接断言，因此添加一个 transform 至多只能增加一次输出遍历，且不得重复整篇文档的不变式收集。
+- **回归信号：** 对未被认领的源码调用辅助函数回调、对已认领的辅助函数调用不止一次、使解析／结果复用发生退化，或发布一个数字却未指明其路径，都必须使工作计数证据或阈值证据失败。
 
 ## Public parser integration
 
-Block, inline, incremental, canonical-AST, Markdown, and Outline entrypoints accept the same ordered plugin configuration and infer the same extension-node union while retaining their released signatures and projected result shapes. The canonical entrypoints return the canonical tree directly; released entrypoints keep their projection. The server-safe parser entry exposes the same behavior without a client boundary, and the Markdown component barrel re-exports it for client code. Inline transforms must satisfy the one-paragraph phrasing constraint. Transform-only updates cannot increase syntax tokenizer calls, mutate prior snapshots, or remount unchanged settled output beyond current behavior.
+块级、行内、增量、规范 AST、Markdown 与 Outline 入口都接受同一有序插件配置，并推断出相同的扩展节点联合类型，同时保留各自已发布的签名与投影后的结果形状。规范入口直接返回规范树；已发布的入口保留其投影。服务端安全解析器入口在无客户端边界的情况下暴露相同行为，Markdown 组件桶文件为客户端代码重新导出它。行内 transform 必须满足单段落的 phrasing 约束。仅 transform 的更新不得增加语法分词器调用、不得改动先前的快照，也不得在当前行为之外重新挂载未变更的已稳定输出。
 
 ### Public API admission evidence
 
-| Caller-owned distinction       | Before / unchanged default                                                                                    | Opt-in callsite                                                                                                                                                                        | Why Core cannot derive it                                                                                                                        |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| No plugin behavior             | `<Markdown>{source}</Markdown>` and `parseMarkdown(source)` retain released output.                           | `<Markdown plugins={plugins}>{source}</Markdown>`                                                                                                                                      | Only the application knows which extension packages and ordering it trusts for this document.                                                    |
-| Novel source grammar           | Preprocess source or fork parsing; `components` and `inlinePlugins` cannot claim new block/inline grammar.    | `createMarkdownPlugin({name, apiVersion: 1, parseKey, syntax, renderers})`                                                                                                             | The application owns the literal grammar, bounded tokenizer, parse-version key, and extension semantics.                                         |
-| Semantic text/fence/range work | Existing `inlinePlugins` remains available; `components.code` remains the code override for unclaimed fences. | Put `createMarkdownTextTransform()`, `createMarkdownFenceTransform()`, or `createMarkdownSourceDecoration()` in the plugin's one `transform`; render typed output through `renderers`. | Only the plugin knows which prose, language, or source range has domain meaning; helpers cannot infer product semantics and never own rendering. |
-| Rich extension container       | No custom container syntax or renderer is active.                                                             | Declare `content: 'phrasing'                                                                                                                                                           | 'flow'                                                                                                                                           | {allow, min?, max?}` and render the Core-parsed children through the owning renderer. | Core can validate and parse children but cannot infer whether a product concept is a callout, card, tab, or leaf. |
-| Cross-plugin observation       | Array order alone has no declared dependency.                                                                 | Add `dependsOn: ['earlier-plugin']` before reading its nodes.                                                                                                                          | Only the later plugin knows that its transform requires another plugin's output; Core validates presence and order.                              |
-| Diagnostics                    | With no handler, development reports unique failures and production stays silent.                             | Pass `onPluginDiagnostic={event => report(event)}` or the parser equivalent.                                                                                                           | The host owns telemetry destination and retention; Astryx owns a source-free bounded event shape, not the logging system.                        |
-| Canonical/server parsing       | Released parser calls keep their projected unions.                                                            | Import `parseMarkdownAst` from `@astryxdesign/core/Markdown/parser` when a server or transform tool needs the canonical tree.                                                          | Core cannot infer whether a caller needs released compatibility data or canonical extension-aware structure.                                     |
-| Markdown-derived Outline       | Existing calls omit options and retain released headings.                                                     | Pass the same `plugins` and finality to Markdown and `parseOutlineFromMarkdown`/`useOutlineFromMarkdown`.                                                                              | The caller owns which document/plugin configuration both surfaces represent; Core then owns shared text/slug identity.                           |
-| Theme reachability             | Renderer output is untargeted by default.                                                                     | Set the renderer's opt-in Markdown extension theme target.                                                                                                                             | Only the renderer author knows whether its application-owned output should participate in design-system theming.                                 |
+| Caller-owned distinction   | Before / unchanged default                                                              | Opt-in callsite                                                                                                                                                               | Why Core cannot derive it                                                                            |
+| -------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| 无插件行为                 | `<Markdown>{source}</Markdown>` 与 `parseMarkdown(source)` 保留已发布的输出。           | `<Markdown plugins={plugins}>{source}</Markdown>`                                                                                                                             | 只有应用知道它为本文档信任哪些扩展包以及何种顺序。                                                   |
+| 新的源码语法               | 预处理源码或分叉解析；`components` 与 `inlinePlugins` 无法认领新的块级／行内语法。      | `createMarkdownPlugin({name, apiVersion: 1, parseKey, syntax, renderers})`                                                                                                    | 应用拥有字面语法、有界分词器、解析版本键以及扩展语义。                                               |
+| 语义文本／围栏／区间工作   | 现有的 `inlinePlugins` 仍然可用；对于未被认领的围栏，`components.code` 仍是代码覆盖项。 | 把 `createMarkdownTextTransform()`、`createMarkdownFenceTransform()` 或 `createMarkdownSourceDecoration()` 放进插件的唯一 `transform` 中；通过 `renderers` 渲染带类型的输出。 | 只有插件知道哪段正文、哪种语言或哪个源码区间具有领域含义；辅助函数无法推断产品语义，也从不拥有渲染。 |
+| 富扩展容器                 | 没有自定义容器语法或渲染器处于活动状态。                                                | 声明 `content: 'phrasing'                                                                                                                                                     | 'flow'                                                                                               | {allow, min?, max?}`，并通过拥有它的渲染器渲染 Core 解析出的子节点。 | Core 可以校验并解析子节点，但无法推断某个产品概念是提示框、卡片、标签页还是叶子节点。 |
+| 跨插件观察                 | 仅数组顺序并不构成已声明的依赖。                                                        | 在读取另一个插件的节点之前添加 `dependsOn: ['earlier-plugin']`。                                                                                                              | 只有后一个插件知道自己的 transform 需要另一个插件的输出；Core 负责校验存在性与顺序。                 |
+| 诊断                       | 在没有处理器时，开发环境报告唯一的失败，生产环境保持静默。                              | 传入 `onPluginDiagnostic={event => report(event)}` 或解析器中的等效项。                                                                                                       | 宿主拥有遥测目标与保留策略；Astryx 拥有的是不含源码的有界事件形状，而不是日志系统。                  |
+| 规范解析／服务端解析       | 已发布的解析器调用保留其投影联合类型。                                                  | 当服务端或 transform 工具需要规范树时，从 `@astryxdesign/core/Markdown/parser` 导入 `parseMarkdownAst`。                                                                      | Core 无法推断调用方需要的是已发布兼容数据，还是感知扩展的规范结构。                                  |
+| 由 Markdown 派生的 Outline | 现有调用省略选项并保留已发布的标题。                                                    | 把相同的 `plugins` 与 finality 传给 Markdown 以及 `parseOutlineFromMarkdown`／`useOutlineFromMarkdown`。                                                                      | 调用方拥有这两个表面共同代表的文档／插件配置；Core 随后拥有共享的文本／slug 标识。                   |
+| 主题可达性                 | 渲染器输出默认不参与主题定位。                                                          | 设置渲染器按需启用的 Markdown 扩展主题目标。                                                                                                                                  | 只有渲染器作者知道其由应用拥有的输出是否应参与设计系统主题。                                         |
 
-The new decisions are additive and opt-in. `components` swaps supported built-in rendering but cannot add source grammar or document transforms. `inlinePlugins` performs released prose matching but cannot add block syntax, canonical whole-tree transforms, or typed extension ownership. Existing parser options cannot express application-defined grammar, renderer ownership, declared cross-plugin dependencies, or host diagnostics. These surviving distinctions therefore belong to the caller and cannot be derived safely by Core.
+这些新决策都是增量式的、按需启用的。`components` 可以替换受支持的内置渲染，但不能增加源码语法或文档 transform。`inlinePlugins` 执行已发布的正文匹配，但不能增加块级语法、规范整树 transform 或带类型的扩展归属。现有的解析器选项无法表达应用自定义的语法、渲染器归属、已声明的跨插件依赖或宿主诊断。因此这些仍然存在的差异归属于调用方，Core 无法安全地推导它们。
 
 ## Verification
 
-| Contract             | Verification                                                                                                                                                  | Representative states                                                                                                                 | Mutation or failure expectation                                                                                                  |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| FR1–FR5              | Public type/export fixtures, DOM/AST snapshots, duplicated-Core-copy fixture, and the callsite matrix above                                                   | Omitted, explicit empty, stable/recreated lists, every released prop and parser overload, two Core copies in one graph                | Removing empty parity, changing a released signature, or rejecting an entry created by a compatible second Core copy fails.      |
-| FR6–FR13             | Syntax claim matrix; typed narrowing; transform replacement/insertion/removal/annotation; inline-shape, mutation, cycle, raw, async, and provenance rejection | Full, inline, terminal, incremental partial/final, syntax-only update, transform-only update, prior snapshots                         | Reordering transforms changes ordered evidence; adding tokenizer calls, mutating a prior snapshot, or leaking a rejection fails. |
-| FR14–FR17            | Renderer/fallback matrix, semantic-owner matrix, heading/Outline identity, code override precedence, server rendering                                         | Source-backed and synthetic extensions, containers, duplicate headings, cross-base headings, custom code override present/absent      | Failed render preserves exact source, required projection, or children; `components.code` never pre-empts a claimed fence.       |
-| FR18–FR20            | One real compatible transform plus rejected async, parser-extension, raw-HTML, unsupported-node, forged-position, processor-state, and metadata fixtures      | Every supported matrix row, constrained file messages/data, protected contexts, server rendering                                      | Silent field loss, unsupported-node acceptance, source loss, or an escaping rejection fails closed fixtures.                     |
-| FR21–FR24            | Canonical linked parser budgets, callback work counts, guard-traversal counts, bundle inspection, and the exact paired protocol above                         | 200/500 sections, stable/recreated lists, helper and plugin-authored zero-work and representative sets, streaming set                 | Any unmatched callback, duplicate claim callback, repeated whole-document guard, parser-budget regression, or breach fails.      |
-| FR25–FR28            | Content-declaration admission/tree validation, ownership matrix, dependency preparation, reserved-data rejection                                              | Leaf, phrasing, flow, allowlist; nested containers at depth bound; foreign read/remove/mint/edit; unmet/misordered dependencies       | Plugin-built raw-source children, invalid content, foreign mint/edit, or generic ownership diagnostics fail.                     |
-| FR29–FR30            | Diagnostic fixtures in development/production and admission parity across entrypoints                                                                         | Every phase/code, advisories, rate suppression, no-handler default, malformed list, duplicate Core, version skew                      | Silent production failure, document content in diagnostics, module-scope throw, or entrypoint divergence fails.                  |
-| FR31–FR35            | Inference fixtures without explicit type arguments, canonical/server imports, conformance-kit self-test, documentation checks                                 | Syntax-only, transform-only, renderer-only, heterogeneous lists, server import, third-party kit run                                   | Explicit-type workarounds, client references in server entry, or undocumented rejected categories fail.                          |
-| FR36–FR39            | Streaming no-oscillation, theme reachability, prepared-reuse counts, stability-policy docs                                                                    | Chunk boundaries, final-only effects, themed/unthemed output, equal new-identity lists, version skew                                  | Oscillation, unreachable opted-in output, per-render re-preparation, or unpublished policy fails.                                |
-| FR40–FR41            | First-party module records/evidence and unsupported-node fixtures                                                                                             | Soft breaks, heading links, configurable entity references, callouts; footnote/definition/reference source through parser and adapter | First-party public privilege, changed empty-pipeline behavior, or plugin-owned footnote/definition support fails.                |
-| Repository integrity | Knowledge validation, public-content checks, typecheck, formatting, and changed-file review                                                                   | Specification and every implementation PR                                                                                             | Internal content, stale owner records, unrelated paths, or formatting/type failures block merge.                                 |
+| Contract   | Verification                                                                                                            | Representative states                                                                                          | Mutation or failure expectation                                                                     |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| FR1–FR5    | 公共类型／导出测试夹具、DOM/AST 快照、重复 Core 副本的测试夹具，以及上文的调用点矩阵                                    | 省略、显式空、稳定／重建列表、每一个已发布的 prop 与解析器重载、同一图中有两份 Core 副本                       | 移除空管线等价性、更改已发布的签名，或拒绝由兼容的第二份 Core 副本创建的条目，都判定为失败。        |
+| FR6–FR13   | 语法认领矩阵；类型化收窄；transform 的替换／插入／移除／标注；行内形状、改动、循环、原始内容、异步与来源的拒绝          | 完整、行内、终止、增量部分／最终、仅语法更新、仅 transform 更新、先前的快照                                    | 重排 transform 会改变有序证据；增加分词器调用、改动先前的快照，或让一次拒绝泄漏出去，都判定为失败。 |
+| FR14–FR17  | 渲染器／回退矩阵、语义所有者矩阵、标题／Outline 标识、代码覆盖优先级、服务端渲染                                        | 有源码支撑的扩展与合成扩展、容器、重复标题、跨基线的标题、自定义代码覆盖存在／不存在                           | 渲染失败时仍保留精确的源码、所要求的投影或子节点；`components.code` 绝不抢先于已被认领的围栏。      |
+| FR18–FR20  | 一个真实兼容的 transform，加上被拒绝的异步、解析器扩展、原始 HTML、不受支持节点、伪造位置、处理器状态与元数据的测试夹具 | 受支持矩阵的每一行、受限的文件消息／数据、受保护的上下文、服务端渲染                                           | 字段静默丢失、接受不受支持的节点、源码丢失，或一次拒绝逃逸出去，都会使失败关闭的测试夹具失败。      |
+| FR21–FR24  | 规范链接解析器的预算、回调工作计数、守卫遍历计数、打包产物检查，以及上文精确的配对协议                                  | 200／500 节、稳定／重建列表、辅助函数与插件编写的零工作集合和代表性集合、流式集合                              | 任何未匹配的回调、重复的认领回调、重复的整篇文档守卫、解析器预算退化或超支，都判定为失败。          |
+| FR25–FR28  | 内容声明的准入／树校验、归属矩阵、依赖准备、保留数据的拒绝                                                              | 叶子、phrasing、flow、允许列表；处于深度边界的嵌套容器；对他方节点的读取／移除／铸造／编辑；未满足／乱序的依赖 | 插件用原始源码构建子节点、内容无效、对他方节点铸造／编辑，或产生通用归属诊断，都判定为失败。        |
+| FR29–FR30  | 开发环境／生产环境的诊断测试夹具，以及各入口之间的准入一致性                                                            | 每一个阶段／代码、通告、速率抑制、无处理器时的默认行为、格式错误的列表、重复 Core、版本偏差                    | 生产环境静默失败、诊断中包含文档内容、模块作用域抛错，或入口之间出现分歧，都判定为失败。            |
+| FR31–FR35  | 不带显式类型参数的推断测试夹具、规范／服务端导入、一致性工具包自测、文档检查                                            | 仅语法、仅 transform、仅渲染器、异构列表、服务端导入、第三方工具包运行                                         | 使用显式类型的变通做法、服务端入口中出现客户端引用，或存在未记录的被拒类别，都判定为失败。          |
+| FR36–FR39  | 流式无震荡、主题可达性、准备复用计数、稳定性策略文档                                                                    | 块边界、仅最终效果、有主题／无主题输出、相等的新标识列表、版本偏差                                             | 出现震荡、按需启用后的输出不可达、每次渲染都重新准备，或策略未发布，都判定为失败。                  |
+| FR40–FR41  | 第一方模块记录／证据与不受支持节点的测试夹具                                                                            | 软换行、标题链接、可配置实体引用、提示框；经解析器与适配器处理的脚注／定义／引用源码                           | 第一方获得公开特权、空管线行为发生改变，或出现由插件拥有的脚注／定义支持，都判定为失败。            |
+| 仓库完整性 | 知识校验、公开内容检查、类型检查、格式化，以及变更文件审查                                                              | 规格与每一个实现 PR                                                                                            | 内部内容、过时的所有者记录、无关路径，或格式化／类型失败，都会阻止合并。                            |
 
 ## Related owner prerequisites
 
-Before implementation acceptance, current owner clauses must cover:
+在实现验收之前，处于 current 状态的所有者条款必须覆盖以下内容：
 
-1. a stable canonical MDAST-aligned AST, typed node-map/visitor APIs, released-parser compatibility projection, public canonical parse entrypoints, and Core-owned semantic validation;
-2. Markdown/Outline shared transformed heading identity and the unchanged top-level traversal both surfaces use;
-3. observable invalidation identity that distinguishes syntax from live transforms;
-4. navigation/resource conformance for transformed nodes;
-5. exact `inlinePlugins` compatibility before any migration;
-6. the diagnostic channel on the component and parser options;
-7. the opt-in extension theme target in Markdown's theming anatomy;
-8. server-safe parser and conformance-kit package entries;
-9. first-party plugin module owners for soft breaks, heading links, configurable entity references, and callouts.
+1. 一个与 MDAST 对齐的稳定规范 AST、带类型的节点映射／访问器 API、已发布解析器的兼容投影、公开的规范解析入口，以及由 Core 拥有的语义校验；
+2. Markdown／Outline 共享的转换后标题标识，以及两个表面共同使用的、未改变的顶层遍历；
+3. 可观察的失效标识，用以区分语法与实时 transform；
+4. 转换后节点的导航／资源一致性；
+5. 任何迁移之前精确的 `inlinePlugins` 兼容性；
+6. 组件与解析器选项上的诊断通道；
+7. Markdown 主题化结构中按需启用的扩展主题目标；
+8. 服务端安全的解析器与一致性工具包的包入口；
+9. 软换行、标题链接、可配置实体引用与提示框的第一方插件模块所有者。
 
 ## Decision log
 
 ### DEC-1 — Expose syntax, transform, and renderers only
 
-**Reference:** `spec:AST-036/DEC-1`
-**Direction owner:** `cixzhang`, `2026-09-15`
+**引用：** `spec:AST-036/DEC-1`
 
-The public protocol has three concepts. Text matching, semantic fences, and decorations are transform helpers, not parallel lifecycle APIs, and they never render — presentation always comes from the owning plugin's `renderers`. This keeps one mental model while permitting specialized internal execution.
+**方向负责人：** `cixzhang`, `2026-09-15`
 
-Rejected: five independent public capability phases; a second transform prop; helpers that accept render callbacks; replacing simple local syntax with an unbounded document hook.
+公开协议包含三个概念。文本匹配、语义围栏与装饰都是 transform 辅助函数，而不是并行的生命周期 API，并且它们从不负责渲染——呈现始终来自拥有它的插件的 `renderers`。这保持了单一的心智模型，同时允许内部存在专门化的执行方式。
+
+已否决：五个独立的公开能力阶段；第二个 transform prop；接受渲染回调的辅助函数；用一个无界的文档钩子取代简单的局部语法。
 
 ### DEC-2 — Make immutable AST transformation canonical
 
-**Reference:** `spec:AST-036/DEC-2`
-**Direction owner:** `cixzhang`, `2026-09-15`
+**引用：** `spec:AST-036/DEC-2`
 
-Transforms receive the canonical MDAST-aligned tree observed by parsing, rendering,
-and Outline. Public node-kind traversal preserves strict discriminated narrowing,
-including plugin extension nodes. Inputs are immutable and transforms return
-validated roots. Core owners retain provenance, structural validity, fallback, and
-semantic authority. Released parser results remain unchanged until a separately
-approved migration.
+**方向负责人：** `cixzhang`, `2026-09-15`
 
-Rejected: a second transform tree, in-place mutation of canonical state,
-transform-driven reparsing, raw markup, weakly typed string visitors, and
-renderer-controlled heading identity.
+Transform 接收解析、渲染与 Outline 所观察到的、与 MDAST 对齐的规范树。公开的节点种类遍历保留严格的判别式收窄，并涵盖插件扩展节点。输入是不可变的，transform 返回经过校验的根节点。Core 所有者保留来源、结构有效性、回退与语义权威。在另行批准的迁移之前，已发布的解析器结果保持不变。
+
+已否决：第二棵 transform 树、对规范状态的就地改动、由 transform 驱动的重新解析、原始标记、弱类型的字符串访问器，以及由渲染器控制的标题标识。
 
 ### DEC-3 — Support a limited Remark compatibility profile
 
-**Reference:** `spec:AST-036/DEC-3`
-**Direction owner:** `cixzhang`, `2026-09-15`
+**引用：** `spec:AST-036/DEC-3`
 
-A tree-shakeable adapter may run synchronous transform-only Remark plugins over an explicit MDAST subset. Compatibility is per-plugin evidence, never inferred from package identity, and supported and rejected categories are published for consumers.
+**方向负责人：** `cixzhang`, `2026-09-15`
 
-Rejected: adopting Unified/MDAST as Core's runtime, claiming arbitrary Remark compatibility, or silently approximating unsupported behavior.
+一个可 tree-shaking 的适配器可以在显式的 MDAST 子集上运行仅做 transform 的同步 Remark 插件。兼容性是逐个插件的证据，绝不从包身份推断；受支持与被拒绝的类别都会向使用方公布。
+
+已否决：采用 Unified/MDAST 作为 Core 的运行时、声称对任意 Remark 保持兼容，或静默地近似模拟不受支持的行为。
 
 ### DEC-4 — Separate syntax identity from live transforms
 
-**Reference:** `spec:AST-036/DEC-4`
-**Direction owner:** `cixzhang`, `2026-09-15`
+**引用：** `spec:AST-036/DEC-4`
 
-Only syntax and existing parser options determine parse identity. Transform and renderer updates reuse parsed output and rerun only their owning post-parse work.
+**方向负责人：** `cixzhang`, `2026-09-15`
 
-Rejected: object identity as parse identity, transform-driven reparsing, a public render key, or repeated preparation for semantically equal inputs.
+只有语法与现有的解析器选项决定解析标识。transform 与渲染器的更新复用已解析的输出，并且只重跑各自所属的解析后工作。
+
+已否决：以对象标识作为解析标识、由 transform 驱动的重新解析、公开的渲染键，或对语义相等的输入重复准备。
 
 ### DEC-5 — Extension nodes may contain validated Markdown
 
-**Reference:** `spec:AST-036/DEC-5`
-**Direction owner:** `cixzhang`, `2026-09-16`
+**引用：** `spec:AST-036/DEC-5`
 
-Callouts, admonitions, details, tabs, cards, and columns require real Markdown children. An extension therefore declares leaf, phrasing, flow, or narrowed allowlist content, and Core validates children. Core parses syntax-container inner spans; plugins never build children from raw source, so provenance and protected contexts stay Core-owned. A container never selects or independently scopes heading identity; it participates only in the projection already selected under FR16. A failed container renderer still exposes its validated children.
+**方向负责人：** `cixzhang`, `2026-09-16`
 
-Rejected: leaf-only extension nodes; independent nested document shells; plugin-authored parsed children; unbounded nesting.
+提示框、告诫框、详情块、标签页、卡片与分栏都需要真实的 Markdown 子节点。因此扩展会声明 leaf、phrasing、flow 或收窄的允许列表内容，由 Core 校验子节点。Core 解析语法容器的内部跨度；插件从不以原始源码构建子节点，因此来源与受保护的上下文仍由 Core 拥有。容器从不选择或独立限定标题标识的范围；它只参与 FR16 下已选定的投影。容器渲染器失败时仍会暴露其经过校验的子节点。
+
+已否决：仅叶子的扩展节点；独立的嵌套文档外壳；由插件编写的已解析子节点；无界嵌套。
 
 ### DEC-6 — Ownership means minting and editing, not existence
 
-**Reference:** `spec:AST-036/DEC-6`
-**Direction owner:** `cixzhang`, `2026-09-16`
+**引用：** `spec:AST-036/DEC-6`
 
-A transform may read or remove another plugin's nodes, including a removed subtree, but may not create, edit, internally reorder, or duplicate them. Source headings may be inserted, removed, or reordered but never re-levelled or given forged/duplicated identity. `dependsOn` makes cross-plugin reads explicit and validates presence and order.
+**方向负责人：** `cixzhang`, `2026-09-16`
 
-Rejected: foreign-node immortality; immortal headings; silent missing/misordered dependencies; generic ownership diagnostics.
+一个 transform 可以读取或移除另一个插件的节点（包括已移除的子树），但不得创建、编辑、在其内部重排或复制这些节点。源码标题可以被插入、移除或重排，但绝不能被重新定级，也不能被赋予伪造或重复的标识。`dependsOn` 使跨插件读取显式化，并校验存在性与顺序。
+
+已否决：他方节点不可移除；标题不可移除；依赖缺失或乱序时静默；通用的归属诊断。
 
 ### DEC-7 — Failure is visible in production
 
-**Reference:** `spec:AST-036/DEC-7`
-**Direction owner:** `cixzhang`, `2026-09-16`
+**引用：** `spec:AST-036/DEC-7`
 
-Astryx owns one source-free, rate-limited `onPluginDiagnostic` channel covering admission, syntax, transform, render, and adapter phases in development and production. Plugin advisories carry stable codes, not document-derived text. Admission failures are uniform across component and parser entrypoints; version skew never throws at import time. Rejected tokenizer and transform thenables are defused before refusal.
+**方向负责人：** `cixzhang`, `2026-09-16`
 
-Rejected: development-only reporting; free-text document-derived messages; silent bounded-validation fallback; one entrypoint throwing where another recovers.
+Astryx 拥有一个不含源码、限速的 `onPluginDiagnostic` 通道，覆盖开发环境与生产环境中的准入、语法、transform、渲染与适配器阶段。插件通告携带稳定的代码，而不是由文档派生的文本。准入失败在组件入口与解析器入口之间保持一致；版本偏差从不在导入时抛错。被拒绝的分词器 thenable 与 transform thenable 会在拒绝之前先被消解。
+
+已否决：仅在开发环境报告；自由文本形式的、由文档派生的消息；静默的有界校验回退；一个入口抛错而另一个入口恢复。
 
 ### DEC-8 — The canonical AST, server parser, and conformance kit are public
 
-**Reference:** `spec:AST-036/DEC-8`
-**Direction owner:** `cixzhang`, `2026-09-16`
+**引用：** `spec:AST-036/DEC-8`
 
-Exported canonical node types have public parse producers. A server-safe parser entry avoids a client reference. Shared conformance fixtures let third parties produce required evidence. Plugin declarations infer extension types without hand-written aliases or multiple explicit type arguments.
+**方向负责人：** `cixzhang`, `2026-09-16`
 
-Rejected: canonical types with no public producer; parser APIs reachable only through a client barrel; evidence requirements with no shared kit; inference deferred to examples.
+导出的规范节点类型都有公开的解析生产者。服务端安全的解析器入口避免客户端引用。共享的一致性测试夹具让第三方能够产出所需的证据。插件声明可以推断扩展类型，无需手写别名或多个显式类型参数。
+
+已否决：没有公开生产者的规范类型；只能通过客户端桶文件访问的解析器 API；没有共享工具包的证据要求；把类型推断推给示例。
 
 ### DEC-9 — Publish the cost of the path plugins actually take
 
-**Reference:** `spec:AST-036/DEC-9`
-**Direction owner:** `cixzhang`, `2026-09-16`
+**引用：** `spec:AST-036/DEC-9`
 
-First-party helpers may skip guards their construction proves, but their numbers do not describe third-party cost. Budgets therefore name helper and plugin-authored paths separately, include streaming, and constrain guard work to one traversal of each transform output with whole-document invariants collected once per pipeline run.
+**方向负责人：** `cixzhang`, `2026-09-16`
 
-Rejected: publishing helper-path numbers as protocol overhead; unmeasured streaming; repeated whole-document invariant collection per transform.
+第一方辅助函数可以跳过其构造即可证明的守卫，但它们的数字并不能描述第三方成本。因此预算分别指明辅助函数路径与插件编写路径，包含流式场景，并把守卫工作限制为每个 transform 输出遍历一次、整篇文档不变式在每个管线运行中收集一次。
+
+已否决：把辅助函数路径的数字当作协议开销公布；不测量流式场景；每个 transform 重复收集整篇文档的不变式。
 
 ### DEC-10 — Footnotes, definitions, and references stay Core scope
 
-**Reference:** `spec:AST-036/DEC-10`
-**Direction owner:** `cixzhang`, `2026-09-16`
+**引用：** `spec:AST-036/DEC-10`
 
-These concepts require document-level ID allocation, collision handling, and back-reference navigation shared with Markdown identity. They remain unsupported and adapter-rejected until a separate Core syntax contract adds them; documentation names the gap.
+**方向负责人：** `cixzhang`, `2026-09-16`
 
-Rejected: first- or third-party footnote plugins; adapter translation into ordinary links; leaving the limitation undocumented.
+这些概念需要与 Markdown 标识共享的文档级 ID 分配、冲突处理与反向引用导航。在单独一份 Core 语法契约将其纳入之前，它们仍不受支持并被适配器拒绝；文档会明确指出这一缺口。
+
+已否决：第一方或第三方的脚注插件；适配器把其转换为普通链接；让这一限制不被记录。
 
 ### DEC-11 — First-party plugins are ordinary plugins
 
-**Reference:** `spec:AST-036/DEC-11`
-**Direction owner:** `cixzhang`, `2026-09-22`
+**引用：** `spec:AST-036/DEC-11`
 
-Soft breaks, heading links, configurable entity references, and callout examples use the public opaque plugin list, own their semantics and evidence in module records, and receive no public capability, exemption, ordering privilege, or type affordance unavailable to third parties. An internal composition seam or fast path is allowed only when its module record owns the result and the empty pipeline remains observationally unchanged.
+**方向负责人：** `cixzhang`, `2026-09-22`
 
-Rejected: privileged first-party capabilities; demos that exercise private paths; a public protocol with no real first-party consumers.
+软换行、标题链接、可配置实体引用与提示框示例都使用公开的不透明插件列表，在各自的模块记录中拥有其语义与证据，并且不会获得任何第三方无法获得的公开能力、豁免、排序特权或类型便利。只有当其模块记录拥有该结果、且空管线在观察层面保持不变时，才允许存在内部组合接缝或快速路径。
+
+已否决：享有特权的第一方能力；演示中使用私有路径；没有真实第一方使用方的公开协议。
 
 ### DEC-12 — A semantic fence outranks the host code renderer
 
-**Reference:** `spec:AST-036/DEC-12`
-**Direction owner:** `cixzhang`, `2026-10-09`
+**引用：** `spec:AST-036/DEC-12`
 
-A host that supplies `components.code` usually does so to highlight ordinary code, and that host is the one most likely to also install fence plugins for diagrams, charts, or diffs. A fence proposal is the more specific claim: it names one language and the plugin that owns it, so it renders first and `components.code` renders every fence no plugin claims. A claimed fence whose renderer declines or fails falls back to the host's code renderer, so a reader still sees the code the way the host draws it. A product feature that gives a fence language meaning ships as a fence plugin, not as a branch inside a host's code renderer. Only a host that supplies both `components.code` and a fence plugin claiming the same language changes behavior: that language's fences render through the plugin. A host with only one of the two renders exactly as before.
+**方向负责人：** `cixzhang`, `2026-10-09`
 
-Rejected: passing the proposal to `components.code` for each host to re-dispatch, which puts plugin rendering back inside a host component.
+提供 `components.code` 的宿主通常是为了高亮普通代码，而这类宿主也最可能同时为图表、统计图或差异安装围栏插件。围栏提案是更具体的认领：它指明一种语言以及拥有该语言的插件，因此它先渲染，而 `components.code` 渲染所有未被插件认领的围栏。若已认领围栏的渲染器拒绝或失败，则回退到宿主的代码渲染器，这样读者看到的仍是宿主绘制代码的方式。赋予某种围栏语言含义的产品特性以围栏插件的形式发布，而不是作为宿主代码渲染器内部的一个分支。只有同时提供 `components.code` 与认领同一语言的围栏插件的宿主才会改变行为：该语言的围栏通过插件渲染。只提供两者之一的宿主，其渲染结果与之前完全一致。
+
+已否决：把提案传给 `components.code` 让每个宿主重新分派，这会把插件渲染重新塞回宿主机组件内部。
 
 ## Open questions
 
-None. The contract is current; implementation and compatibility evidence remain pending.
+无。该契约处于 current 状态；实现与兼容性证据仍待补齐。
 
 ## Content boundary
 
-This record does not duplicate consumer signatures, examples, private dispatch/cache design, repository layout, first-party plugin behavior, or current audit results. Those belong to their canonical owners.
+本记录不重复使用方签名、示例、私有分派／缓存设计、仓库布局、第一方插件行为或当前审计结果。这些内容归属于各自对应的规范所有者。

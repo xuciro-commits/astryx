@@ -31,111 +31,108 @@ system_specs: [spec:AST-002, spec:AST-029]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                         |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | No API shape or default changes. This draft records the current horizontal, vertical, and continuous-scale tick-density surface.                                                 |
-| Behavior                | Horizontal guides follow continuous y ticks except zero; vertical guides follow categorical x-band centers or continuous x ticks; both directions remain independently optional. |
-| End-user impact         | Chart readers receive guide lines aligned with the parent Chart's plot scales; this audit changes no rendered behavior.                                                          |
-| Builder impact          | Existing callsites remain valid and gain direct CLI documentation and focused evidence for current density fallbacks.                                                            |
-| Compatibility/readiness | The package remains canary-only. This observational draft is non-authoritative, and exact rendered/accessibility evidence remains pending.                                       |
-| Review checks           | Reject a changed public shape/default, a guide using a scale outside Chart context, a zero baseline drawn twice, or categorical guides no longer centered on their bands.        |
-| Governing rules         | `spec:AST-029/FR3–FR7`, `architecture:component-test-sufficiency/INV1–INV11`, `architecture:component-theming-surface/INV1–INV6`, and `spec:AST-002`.                            |
+| Area                    | Contract                                                                                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Public contract         | 不改变 API 形状或默认值。本草案记录当前的水平、垂直以及连续刻度密度表面。                                                                              |
+| Behavior                | 水平参考线跟随连续的 y 刻度，但排除零；垂直参考线跟随分类 x 带中心或连续的 x 刻度；两个方向仍各自独立可选。                                            |
+| End-user impact         | 图表读者获得的参考线与父级 Chart 的绘图刻度对齐；本次审查不改变任何渲染行为。                                                                          |
+| Builder impact          | 现有调用点仍然有效，并直接获得 CLI 文档以及针对当前密度回退的聚焦证据。                                                                                |
+| Compatibility/readiness | 该包仍仅限 canary。本观察性草案不具权威性，确切的渲染/无障碍证据仍有待补齐。                                                                           |
+| Review checks           | 若改变公共形状/默认值、参考线使用 Chart 上下文之外的刻度、零基线被绘制两次，或分类参考线不再居中于其带，则应否决。                                     |
+| Governing rules         | `spec:AST-029/FR3–FR7`、`architecture:component-test-sufficiency/INV1–INV11`、`architecture:component-theming-surface/INV1–INV6` 以及 `spec:AST-002`。 |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；下文正文具有权威性。
 
 ## Intent
 
-ChartGrid renders passive Cartesian guide lines inside a Chart. It owns line
-selection and placement from Chart-provided scales and plot dimensions while Chart
-owns the coordinate system, rendering order, and chart-level alternative.
+ChartGrid 在 Chart 内渲染被动的笛卡尔参考线。它负责基于 Chart 提供的刻度与绘图尺寸进行线条选择与定位，而 Chart 负责坐标系、渲染顺序以及图表级替代内容。
 
 ## Compatibility and migration
 
-- Released default preserved: yes at the canary surface; the package has no stable release.
-- Compatibility class: no public API, default, or rendered-behavior change.
-- Controlled/uncontrolled behavior: not applicable.
-- Migration decision: none; this draft does not authorize a public API change.
+- 已发布默认值是否保留：在 canary 表面上为是；该包没有稳定版本。
+- 兼容性类别：不改变公共 API、默认值或渲染行为。
+- 受控/非受控行为：不适用。
+- 迁移决策：无；本草案不授权变更公共 API。
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**负责**
 
-- Selecting horizontal and vertical guide values from Chart-provided scales.
-- Positioning each guide across the current plot width or height.
-- Omitting the horizontal zero guide that the paired axis may emphasize.
-- Sanitizing continuous-scale tick requests before passing them to d3.
+- 从 Chart 提供的刻度中选择水平与垂直参考线取值。
+- 将每条参考线定位到当前绘图宽度或高度范围。
+- 省略配对轴可能强调的水平零参考线。
+- 在传给 d3 之前净化连续刻度的刻度请求。
 
-**Does not own / non-goals**
+**不负责 / 非目标**
 
-- Data, domains, scale construction, plot dimensions, or paint order — owned by `component:Chart`.
-- Axis labels, tick marks, or plot-edge lines — owned by `component:ChartAxis`.
-- The chart's accessible name, description, or data alternative — owned by `component:Chart` and the product callsite.
-- Product-specific decisions about whether guides are needed.
+- 数据、域、刻度构建、绘图尺寸或绘制顺序——由 `component:Chart` 拥有。
+- 轴标签、刻度标记或绘图边缘线——由 `component:ChartAxis` 拥有。
+- 图表的无障碍名称、描述或数据替代内容——由 `component:Chart` 与产品调用点拥有。
+- 关于是否需要参考线的产品特定决策。
 
 ## Public concepts
 
-| Concept             | Closed values or states                 | Meaning                                                       | Availability by variant/orientation/state | Default   | Owner                 | Stability    | Invalid-value behavior                                                             |
-| ------------------- | --------------------------------------- | ------------------------------------------------------------- | ----------------------------------------- | --------- | --------------------- | ------------ | ---------------------------------------------------------------------------------- |
-| Horizontal guides   | shown or hidden                         | Draws lines at continuous y ticks, excluding zero.            | Every ChartGrid                           | shown     | `component:ChartGrid` | experimental | Not applicable.                                                                    |
-| Vertical guides     | shown or hidden                         | Draws lines at x ticks or categorical x-band centers.         | Every ChartGrid                           | hidden    | `component:ChartGrid` | experimental | Not applicable.                                                                    |
-| Continuous density  | finite non-negative number              | Requests an approximate line count from d3 continuous scales. | Horizontal guides and continuous x guides | `5`       | `component:ChartGrid` | experimental | Fractions floor; values above 1000 cap; negative/non-finite values fall back to 5. |
-| Categorical density | one guide per categorical x-band center | Keeps vertical guides aligned to every band.                  | Categorical x with vertical guides        | all bands | `component:ChartGrid` | experimental | `tickCount` currently has no effect.                                               |
-| Chart context       | inside a parent `Chart`                 | Supplies scales and current plot dimensions.                  | Always                                    | none      | `component:Chart`     | experimental | Rendering outside Chart throws the shared context error.                           |
+| 概念         | 封闭取值或状态              | 含义                                  | 按变体/方向/状态划分的可用性 | 默认值 | 所有者                | 稳定性 | 无效值行为                                                |
+| ------------ | --------------------------- | ------------------------------------- | ---------------------------- | ------ | --------------------- | ------ | --------------------------------------------------------- |
+| 水平参考线   | 显示、隐藏                  | 在连续的 y 刻度处绘制线条，但排除零。 | 每个 ChartGrid               | 显示   | `component:ChartGrid` | 实验性 | 不适用。                                                  |
+| 垂直参考线   | 显示、隐藏                  | 在 x 刻度或分类 x 带中心处绘制线条。  | 每个 ChartGrid               | 隐藏   | `component:ChartGrid` | 实验性 | 不适用。                                                  |
+| 连续密度     | 有限非负数                  | 向 d3 连续刻度请求近似的线条数量。    | 水平参考线与连续 x 参考线    | `5`    | `component:ChartGrid` | 实验性 | 小数向下取整；大于 1000 的值封顶；负数/非有限值回退为 5。 |
+| 分类密度     | 每个分类 x 带中心一条参考线 | 保持垂直参考线与每个带对齐。          | 带垂直参考线的分类 x         | 所有带 | `component:ChartGrid` | 实验性 | `tickCount` 当前无效果。                                  |
+| Chart 上下文 | 位于父级 `Chart` 内         | 提供刻度与当前绘图尺寸。              | 始终                         | 无     | `component:Chart`     | 实验性 | 在 Chart 之外渲染会抛出共享的上下文错误。                 |
 
 ## Behavioral and layout contract
 
-Draft requirements identify their basis so observed code is not mistaken for an
-intentional decision.
+草案需求标明其依据，以免把观察到的代码误认为有意做出的决策。
 
-| ID  | Candidate invariant                                                                                                                                | Basis                                                  | Draft review state |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------ |
-| FR1 | ChartGrid MUST consume the current width, height, x scale, and y scale from its parent Chart context.                                              | implementation, package composition, and focused tests | verify             |
-| FR2 | `horizontal` and `vertical` MUST independently enable their guide sets; enabling both MUST render both sets.                                       | implementation, JSDoc, tests, and Storybook            | verify             |
-| FR3 | Horizontal guides MUST use continuous y ticks, span the plot width, and omit y=0 so a paired axis does not receive a duplicate line.               | implementation, JSDoc, and focused tests               | verify             |
-| FR4 | Vertical guides MUST use categorical band centers for band x scales and d3 tick positions for continuous x scales, spanning the plot height.       | implementation and focused tests                       | verify             |
-| FR5 | Continuous tick requests MUST be finite, non-negative integers no greater than 1000; zero yields no continuous guides and invalid values use five. | implementation, crash-prevention rationale, and tests  | verify             |
-| FR6 | Guide paint MUST consume a semantic theme token. Whether grid lines become a public theme target remains unsettled.                                | implementation and current theming architecture        | verify             |
+| ID  | 候选不变式                                                                               | 依据                          | 草案审查状态 |
+| --- | ---------------------------------------------------------------------------------------- | ----------------------------- | ------------ |
+| FR1 | ChartGrid 必须从其父级 Chart 上下文消费当前宽度、高度、x 刻度与 y 刻度。                 | 实现、包组合与聚焦测试        | verify       |
+| FR2 | `horizontal` 与 `vertical` 必须各自独立启用其参考线集合；同时启用两者必须渲染两套集合。  | 实现、JSDoc、测试与 Storybook | verify       |
+| FR3 | 水平参考线必须使用连续的 y 刻度、跨越绘图宽度，并省略 y=0，以免配对轴收到重复的线条。    | 实现、JSDoc 与聚焦测试        | verify       |
+| FR4 | 垂直参考线必须对带 x 刻度使用分类带中心、对连续 x 刻度使用 d3 刻度位置，并跨越绘图高度。 | 实现与聚焦测试                | verify       |
+| FR5 | 连续刻度请求必须是有限、非负且不大于 1000 的整数；零不产生连续参考线，无效值使用 5。     | 实现、防止崩溃的理由与测试    | verify       |
+| FR6 | 参考线的绘制必须消费语义主题令牌。网格线是否成为公共主题目标仍未确定。                   | 实现与当前主题架构            | verify       |
 
 ### Allowed variation
 
-- **AV1 — Continuous tick count.** d3 may choose a nearby set of values rather than exactly the requested number.
-- **AV2 — Categorical values.** Each current x-band domain value contributes one centered vertical guide.
+- **AV1 — 连续刻度数量。** d3 可能选择一组邻近取值，而不是恰好等于请求的数量。
+- **AV2 — 分类取值。** 每个当前 x 带域值贡献一条居中的垂直参考线。
 
 ### Representative states
 
-| State                      | Required invariant                                               | Allowed variation                              |
-| -------------------------- | ---------------------------------------------------------------- | ---------------------------------------------- |
-| Default                    | Horizontal guides only; continuous density defaults to five.     | d3 chooses the exact y tick set.               |
-| Horizontal disabled        | No horizontal guides.                                            | Vertical guides may remain enabled.            |
-| Vertical categorical       | One vertical guide at each x-band center.                        | Band width and center follow Chart's x scale.  |
-| Vertical continuous        | One guide at each generated continuous x tick.                   | d3 chooses the exact x tick set.               |
-| Both directions            | Horizontal and vertical sets render together.                    | Their exact counts may differ.                 |
-| Zero continuous tick count | Continuous guide sets are empty.                                 | Categorical vertical guides remain unaffected. |
-| Invalid tick count         | Continuous guide generation falls back to the default request.   | d3 chooses the resulting exact ticks.          |
-| Narrow / RTL               | Guides remain tied to physical data coordinates and plot bounds. | Plot width and data-domain order vary.         |
+| 状态             | 必需不变式                            | 允许的变化                       |
+| ---------------- | ------------------------------------- | -------------------------------- |
+| 默认             | 仅水平参考线；连续密度默认为 5。      | d3 选择确切的 y 刻度集合。       |
+| 水平禁用         | 无水平参考线。                        | 垂直参考线可保持启用。           |
+| 垂直分类         | 在每个 x 带中心一条垂直参考线。       | 带宽与中心跟随 Chart 的 x 刻度。 |
+| 垂直连续         | 在每个生成的连续 x 刻度处一条参考线。 | d3 选择确切的 x 刻度集合。       |
+| 双向             | 水平与垂直集合一起渲染。              | 两者的确切数量可能不同。         |
+| 连续刻度数量为零 | 连续参考线集合为空。                  | 分类垂直参考线不受影响。         |
+| 刻度数量无效     | 连续参考线生成回退到默认请求。        | d3 选择由此产生的确切刻度。      |
+| 窄屏 / RTL       | 参考线仍绑定物理数据坐标与绘图边界。  | 绘图宽度与数据域顺序会变化。     |
 
 ### Transformation and precedence order
 
-- **ORD1 — Continuous density.** Validate finiteness and non-negativity → floor fractions → cap at 1000 → request d3 ticks.
-- **ORD2 — Placement.** Select enabled directions → choose the scale path → derive tick or band-center positions → span the current opposite plot dimension.
+- **ORD1 — 连续密度。** 校验有限性与非负性 → 小数向下取整 → 上限 1000 → 请求 d3 刻度。
+- **ORD2 — 定位。** 选择已启用的方向 → 选择刻度路径 → 推导刻度或带中心位置 → 跨越当前相对的绘图维度。
 
 ### Performance and resources
 
-- **PR1 — Derived output.** Guide arrays remain render-derived and memoized from enabled directions, scales, dimensions, and sanitized density. ChartGrid owns no listener, observer, timer, or persistent resource.
-- **PR2 — Bounded tick allocation.** A public density value cannot request more than 1000 continuous ticks from d3.
+- **PR1 — 派生输出。** 参考线数组仍是渲染派生并按已启用方向、刻度、尺寸与净化后的密度做记忆化。ChartGrid 不拥有任何监听器、观察器、定时器或持久资源。
+- **PR2 — 有界刻度分配。** 公共密度值不能向 d3 请求超过 1000 个连续刻度。
 
 ## Accessibility contract
 
-- **AR1 — Chart-level alternative.** ChartGrid renders passive supporting guides inside Chart's named image. Chart owns the accessible chart name and supported data-table alternative.
-- **AR2 — No grid-only information.** Grid lines do not replace visible labels, meaningful marks, or the parent Chart alternative.
+- **AR1 — 图表级替代内容。** ChartGrid 在 Chart 的具名图像内渲染被动的支撑性参考线。Chart 负责无障碍图表名称与受支持的数据表替代内容。
+- **AR2 — 不得仅靠网格传达信息。** 网格线不替代可见标签、有意义的标记或父级 Chart 的替代内容。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                                | Representation authority                      | Hierarchy role | Component contract |
-| ---------------- | ----------------------------------------------------------------- | --------------------------------------------- | -------------- | ------------------ |
-| Grid lines       | Support position comparison without carrying chart meaning alone. | unsettled; no current design record is linked | supporting     | FR2–FR6, AR1–AR2   |
+| 解剖结构或状态 | 设计要求                             | 呈现权威                       | 层级角色 | 组件契约         |
+| -------------- | ------------------------------------ | ------------------------------ | -------- | ---------------- |
+| 网格线         | 支持位置比较，但不单独承载图表含义。 | 未确定；未链接任何当前设计记录 | 支撑性   | FR2–FR6, AR1–AR2 |
 
 ### Theming anatomy
 
@@ -153,32 +150,31 @@ intentional decision.
 
 ## Family and system relationships
 
-- No current family or design record governs ChartGrid.
-- `architecture:component-test-sufficiency` owns rational public-state partitions, observable assertions, and audit evidence quality.
-- `architecture:component-theming-surface` owns anatomy-to-target disposition; token consumption alone does not enroll ChartGrid in public component theming.
-- `spec:AST-002` owns public API admission and prevents this audit from adding or reinterpreting a public choice.
-- `spec:AST-029` owns this observational backfill, closed evidence receipt, safe remediation, and fail-closed eligibility report.
+- 当前没有 family 或设计记录管辖 ChartGrid。
+- `architecture:component-test-sufficiency` 负责合理的公共状态分区、可观察断言与审查证据质量。
+- `architecture:component-theming-surface` 负责从解剖结构到目标的处置；仅消费令牌并不会让 ChartGrid 纳入公共组件主题。
+- `spec:AST-002` 负责公共 API 准入，并阻止本次审查新增或重新解释公共选择。
+- `spec:AST-029` 负责本次观察性回填、闭环证据回执、安全补救以及失败即关闭的资格报告。
 
 ## Verification map
 
-| Contract | Verification                                           | Representative states                                       | Mutation or failure expectation                                                    | Audit section                      |
-| -------- | ------------------------------------------------------ | ----------------------------------------------------------- | ---------------------------------------------------------------------------------- | ---------------------------------- |
-| FR1–FR2  | `ChartGrid.test.tsx`; `ChartGrid.stories.tsx`          | default, horizontal off, vertical on, both, neither         | A direction stops respecting its input or output escapes the parent Chart context. | `audit:ChartGrid/behavior`         |
-| FR3      | `ChartGrid.test.tsx`                                   | positive and mixed-sign y domains                           | Guides stop spanning the plot or y=0 is drawn twice.                               | `audit:ChartGrid/behavior-layout`  |
-| FR4      | `ChartGrid.test.tsx`; `ChartGrid.stories.tsx`          | categorical and continuous x                                | A band guide leaves its center or a continuous tick lands at the wrong coordinate. | `audit:ChartGrid/behavior-layout`  |
-| FR5, PR2 | focused zero/invalid-density tests and source review   | zero and invalid requests; fractional and capped partitions | Invalid input crashes render or bypasses the bounded fallback.                     | `audit:ChartGrid/behavior-testing` |
-| FR6      | strict lint; Storybook theme matrix remains pending    | light, dark, and supported non-default themes               | A raw color or component-side mode choice replaces semantic token paint.           | `audit:ChartGrid/theming-design`   |
-| AR1–AR2  | Chart accessibility tests; package axe remains pending | named Chart, small-data table, grid enabled                 | Grid content replaces or becomes the only source of required chart information.    | `audit:ChartGrid/accessibility`    |
+| 契约     | 验证方式                                      | 代表状态                             | 变异或失败预期                                        | 审计章节                           |
+| -------- | --------------------------------------------- | ------------------------------------ | ----------------------------------------------------- | ---------------------------------- |
+| FR1–FR2  | `ChartGrid.test.tsx`; `ChartGrid.stories.tsx` | 默认、水平关闭、垂直开启、两者、皆无 | 某个方向不再遵守其输入，或输出逸出父级 Chart 上下文。 | `audit:ChartGrid/behavior`         |
+| FR3      | `ChartGrid.test.tsx`                          | 正数与混合符号的 y 域                | 参考线不再跨越绘图，或 y=0 被绘制两次。               | `audit:ChartGrid/behavior-layout`  |
+| FR4      | `ChartGrid.test.tsx`; `ChartGrid.stories.tsx` | 分类与连续 x                         | 带参考线偏离其中心，或连续刻度落在错误坐标。          | `audit:ChartGrid/behavior-layout`  |
+| FR5, PR2 | 聚焦的零/无效密度测试与源码审查               | 零与无效请求；小数与封顶分区         | 无效输入导致渲染崩溃或绕过有界回退。                  | `audit:ChartGrid/behavior-testing` |
+| FR6      | 严格 lint；Storybook 主题矩阵仍有待补齐       | 浅色、深色与受支持的非默认主题       | 原始颜色或组件侧的模式选择取代了语义令牌绘制。        | `audit:ChartGrid/theming-design`   |
+| AR1–AR2  | Chart 无障碍测试；包级 axe 仍有待补齐         | 具名 Chart、小数据表、网格启用       | 网格内容取代或成为所需图表信息的唯一来源。            | `audit:ChartGrid/accessibility`    |
 
 ## Decision log
 
-None. This draft records observed behavior and evidence gaps only.
+无。本草案仅记录观察到的行为与证据缺口。
 
 ## Open questions
 
-- **OQ1 — Categorical density.** Should `tickCount` remain continuous-scale-only, or should vertical categorical guides gain a documented thinning contract aligned with ChartAxis? (`human-api`)
+- **OQ1 — 分类密度。** `tickCount` 应保持仅适用于连续刻度，还是垂直分类参考线应获得与 ChartAxis 一致的、有文档的稀疏化契约？（`human-api`）
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit results,
-implementation steps, or shared system rules. It links to their owners.
+本文件不重复使用方的 props 表/示例、当前审查结果、实现步骤或共享系统规则。它链接到它们的拥有者。

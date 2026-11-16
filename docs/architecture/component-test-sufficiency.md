@@ -47,313 +47,172 @@ deciding_specs: []
 
 ## Purpose
 
-Astryx component tests should give maintainers confidence that current promised
-behavior will fail clearly when it regresses, without turning every possible input
-combination or audit inventory row into a permanent test.
+Astryx 组件测试应当让维护者确信：当前承诺的行为一旦回归就会明确失败，而不必把每一种可能的输入组合或审计清单行都变成永久测试。
 
-This record defines how current component, module, family, architecture, system,
-design, and theme requirements plus applicable objective standards become a rational
-observable test plan. It owns test sufficiency and test quality. It does not create
-product behavior.
+本记录定义当前组件、模块、家族、架构、系统、设计和主题要求以及适用的客观标准，如何转化为合理、可观察的测试计划。它负责测试充分性和测试质量。它不创造产品行为。
 
 ## System model
 
-Test sufficiency starts from applicable authority, not from a universal list of
-states every component must implement:
+测试充分性从适用权威出发，而不是从每个组件都必须实现的通用状态清单出发：
 
-1. Assemble the component's current public behavior from every applicable current
-   component, module, family, architecture, system, design, and theme record, plus
-   applicable objective standards.
-2. Identify the promises whose failure would harm a user, consumer, accessibility
-   path, compatibility boundary, or regression-prone integration seam.
-3. Partition inputs, states, and boundaries by observable behavior and risk.
-4. Check whether existing evidence already fails for the distinct promise and
-   partition. If it does, cite that evidence and add no duplicate test.
-5. Select the evidence layer that can observe the failure: compile-time, unit/DOM,
-   browser behavior, rendered pixels, accessibility tree, real assistive technology,
-   documentation/schema validation, or review.
-6. Add a new automated test only when no current mutation-sensitive evidence covers
-   the promise at that layer.
-7. Record the relationship in the owning verification map.
+1. 从所有适用的当前组件、模块、家族、架构、系统、设计和主题记录，以及适用的客观标准中，汇总组件的当前公开行为。
+2. 识别那些失败会伤害用户、消费方、无障碍路径、兼容性边界或易回归集成接缝的承诺。
+3. 按可观察行为和风险划分输入、状态和边界。
+4. 检查现有证据是否已经会在该特定承诺和分区上失败。如果是，引用该证据，不要添加重复测试。
+5. 选择能够观察该失败的证据层：编译期、单元/DOM、浏览器行为、渲染像素、无障碍树、真实辅助技术、文档/模式校验或评审。
+6. 仅当当前没有任何对变异敏感的证据在该层覆盖该承诺时，才添加新的自动化测试。
+7. 在所属验证映射中记录该关系。
 
-The number of tests follows the number of distinct behaviors and risks. It is not a
-fixed target and does not equal the number of public props, source branches, audit
-rows, or inventory entries.
+测试数量取决于不同行为和风险的数量。它不是固定目标，也不等于公开 prop、源码分支、审计行或清单条目的数量。
 
 ## Boundaries and invariants
 
-- **INV1 — Authority and evidence are distinct.** A test may prove behavior
-  required by any applicable current component, module, family, architecture,
-  system, design, or theme authority, or by an applicable objective standard. Where `spec:AST-029` permits observational audit, a test may
-  also prove behavior exposed through an established public interface recorded in
-  the audit receipt. That evidence may support a test-sufficiency verdict but MUST
-  NOT create or settle product authority. Missing or draft-only authority remains
-  a separately reported authority gap.
-- **INV2 — Critical promises have regression evidence.** Tests cover every
-  applicable critical promise and regression-prone seam named by the owning
-  verification map. Critical promises include behavior whose failure breaks the
-  primary task, accessibility, a public callback or state contract, compatibility,
-  data integrity, cleanup/lifetime, or a documented composition boundary whose
-  failure breaks a current consumer outcome or a named regression-prone integration
-  seam.
-- **INV3 — Previously fixed behavior defects remain protected.** A fix to a
-  defect in a current observable behavior includes mutation-sensitive regression
-  evidence at a capable layer that reproduces the broken outcome before the fix
-  and passes after it. A documentation correction that leaves source, types,
-  behavior, and public machine-readable schema unchanged is not a behavior-defect
-  fix. Existing regression evidence remains unless authority removes the promise
-  or equivalent evidence demonstrably subsumes the case.
-- **INV4 — Partitions follow behavior and risk.** Inputs, states, platforms, and
-  boundaries MAY share one representative case only when current evidence shows
-  they exercise the same observable path and have no distinct regression risk.
-  Different behavior, ownership, platform semantics, failure modes, or known
-  regression history requires a separate partition.
-- **INV5 — Assertions observe the contract.** Tests assert public behavior,
-  owner-observable state, rendered user outcomes, accessibility semantics,
-  compile-time consumer contracts, or external-system effects through a stable
-  seam. A class, attribute, DOM shape, generated type, or source artifact is valid
-  evidence when current authority explicitly makes it contractual or an `AST-029`
-  receipt records it as the established public interface for this audit. Tests MUST
-  NOT rely solely on private call order, private state shape, internal collaborators,
-  or incidental structure when the promised outcome can be observed more directly.
-- **INV6 — Evidence is mutation-sensitive.** A test counted as sufficient MUST fail
-  when its promised behavior is removed, inverted, routed to the wrong owner, or
-  otherwise materially broken. An assertion that recomputes the implementation,
-  repeats a type/source declaration, checks a constant against itself, or snapshots
-  unrelated output does not prove the promise. A motion judgement holds and
-  asserts the judged motion itself, named by its target element and animated
-  property; a held count alone does not prove it, since other animations can fill
-  the count.
-- **INV7 — Coverage remains bounded and intentional.** Test volume has a named
-  behavioral, evidence-layer, or risk reason. Multiple evidence layers are not
-  duplicates when each observes a distinct required contract boundary, such as
-  compile-time API, DOM semantics, browser behavior, or assistive-technology
-  output. Repeated cases within the same partition, broad defensive matrices,
-  exhaustive combinations, and snapshot volume without additional behavioral
-  signal MUST NOT be required or credited as sufficiency.
-- **INV8 — Verification maps own durable evidence relationships.** Verification
-  maps in applicable current component, module, family, architecture, system,
-  design, and theme records name the critical contract, representative partitions,
-  evidence seam, and mutation or failure signal. When
-  no current map exists, the `spec:AST-029` audit receipt records the provisional
-  evidence relationship; the missing map is an authority or traceability gap, not
-  by itself a test-coverage gap. One test MAY prove several requirements, and one
-  requirement MAY need several tests. There is no one-row-to-one-test rule.
-- **INV9 — Audit remediation follows its process owner.** Audit-authored behavior-
-  test remediation follows `spec:AST-029/DEC-4`: establish the current or
-  established public seam, demonstrate the new case red before production changes,
-  and implement one minimal observable vertical slice. Store that chronology in
-  the pull-request or audit-run evidence. Red/green history is change evidence; it
-  is not part of standing suite sufficiency after the change lands.
-- **INV10 — Gaps and hardening are distinct.** Missing coverage is a gap only when
-  an applicable critical promise or known regression-prone partition lacks
-  mutation-sensitive evidence. Additional equivalent inputs, private implementation
-  checks, speculative platform combinations, and defensive edge cases without a
-  named risk are optional hardening and do not lower the sufficiency verdict.
-- **INV11 — New tests require a new proof obligation.** Classify the changed
-  claim, not the file edited. A change MUST NOT add a component functional test
-  merely because it edits documentation, private styling source, a private or
-  generated class name, a private wrapper, or another implementation detail. A
-  current public class or target contract is not covered by that exception and
-  requires focused contract evidence when changed. New automated evidence is
-  required only when the change adds or repairs a distinct current promise or risk
-  partition that existing evidence cannot detect at the correct layer. Otherwise
-  the change cites existing evidence or uses the applicable non-test proof, such as
-  typed documentation validation, source review, or rendered browser evidence.
+- **INV1 — 权威与证据是两回事。** 测试可以证明任何适用当前组件、模块、家族、架构、系统、设计或主题权威所要求的行为，或适用客观标准所要求的行为。在 `spec:AST-029` 允许观察性审计的情况下，测试也可以证明通过审计回执中记录的既有公开接口暴露的行为。该证据可以支持测试充分性结论，但不得创建或裁定产品权威。缺失或仅有草稿的权威仍作为单独的权威缺口报告。
+- **INV2 — 关键承诺有回归证据。** 测试覆盖所属验证映射列出的每一个适用关键承诺和易回归接缝。关键承诺包括：失败会破坏主要任务、无障碍、公开回调或状态契约、兼容性、数据完整性、清理/生命周期，或已记录组合边界（其失败会破坏当前消费方结果或已命名的易回归集成接缝）的行为。
+- **INV3 — 先前修复的行为缺陷持续受到保护。** 对当前可观察行为中缺陷的修复，需在具备能力的层提供对变异敏感的回归证据，该证据在修复前能复现损坏结果，修复后通过。不改变源码、类型、行为和公开机器可读模式的文档更正不属于行为缺陷修复。现有回归证据保留，除非权威移除了该承诺，或等效证据可证明已涵盖该情形。
+- **INV4 — 分区遵循行为与风险。** 输入、状态、平台和边界只有在当前证据表明它们走同一条可观察路径且不存在不同回归风险时，才可以共用一个代表性用例。不同的行为、归属、平台语义、失败模式或已知回归历史要求单独分区。
+- **INV5 — 断言观察契约。** 测试通过稳定接缝断言公开行为、所有者可观察状态、渲染用户结果、无障碍语义、编译期消费方契约或外部系统效果。当当前权威明确将某个类、属性、DOM 形状、生成类型或源码产物设为契约，或 `AST-029` 回执将其记录为本次审计的既有公开接口时，它就是有效证据。当承诺结果可以更直接地观察时，测试不得仅依赖私有调用顺序、私有状态形状、内部协作者或附带结构。
+- **INV6 — 证据对变异敏感。** 被计为充分的测试必须在其承诺行为被移除、反转、路由到错误所有者或以其他方式实质破坏时失败。重新计算实现的断言、重复类型/源码声明的断言、用常量与自身比较的断言，或快照无关输出的断言，都不能证明该承诺。动效判断持有并断言被判断的动效本身，以目标元素和动画属性命名；仅持有计数不能证明它，因为其他动画可能填充计数。
+- **INV7 — 覆盖保持有界且有意。** 测试量需有明确命名的行为、证据层或风险理由。多个证据层若各自观察不同的必需契约边界（如编译期 API、DOM 语义、浏览器行为或辅助技术输出），则不算重复。同一分区内的重复用例、宽泛的防御性矩阵、穷举组合以及没有额外行为信号的快照量，不得被要求或计为充分性。
+- **INV8 — 验证映射拥有持久证据关系。** 适用当前组件、模块、家族、架构、系统、设计和主题记录中的验证映射，列出关键契约、代表性分区、证据接缝以及变异或失败信号。当不存在当前映射时，`spec:AST-029` 审计回执记录临时证据关系；缺失映射是权威或可追溯性缺口，其本身不是测试覆盖缺口。一个测试可以证明多项要求，一项要求也可能需要多个测试。不存在一行对应一个测试的规则。
+- **INV9 — 审计整改遵循其流程所有者。** 审计编写的行为测试整改遵循 `spec:AST-029/DEC-4`：建立当前或既有的公开接缝，在生产变更前证明新用例为红，并实现一个最小可观察垂直切片。将该时间顺序存入拉取请求或审计运行证据。红/绿历史是变更证据；变更落地后，它不属于常设套件充分性的一部分。
+- **INV10 — 缺口与加固不同。** 只有当适用的关键承诺或已知易回归分区缺少对变异敏感的证据时，缺失覆盖才是缺口。额外的等效输入、私有实现检查、推测性的平台组合，以及没有命名风险的防御性边界用例属于可选加固，不会降低充分性结论。
+- **INV11 — 新测试需要新的证明义务。** 分类变更的声明，而不是编辑的文件。变更不得仅因为编辑了文档、私有样式源码、私有或生成的类名、私有包装器或其他实现细节，就添加组件功能测试。当前公开类或目标契约不在该豁免范围内，变更时需要聚焦的契约证据。仅当变更添加或修复了现有证据无法在正确层检测到的独特当前承诺或风险分区时，才需要新的自动化证据。否则，变更应引用现有证据或使用适用的非测试证明，如类型化文档校验、源码评审或渲染浏览器证据。
 
 ## Rational partitioning
 
-A partition is defined by a difference that can change the promised outcome or its
-risk. Representative dimensions include:
+分区由可能改变承诺结果或其风险的差异定义。代表性维度包括：
 
-- semantic state or transition;
-- controlled, uncontrolled, optimistic, rejected, or interrupted ownership where
-  the current contract distinguishes them;
-- enabled, disabled, read-only, busy, required, or invalid behavior where
-  applicable;
-- input modality, direction, browser capability, or platform when the owner or an
-  objective standard predicts different behavior;
-- zero, one, many, empty, overflow, boundary, or invalid data when the algorithm or
-  user outcome changes;
-- default, composed, replaceable-part, nested-owner, portal/top-layer, or teardown
-  paths when ownership or lifetime changes; and
-- exact previously broken inputs and seams.
+- 语义状态或转换；
+- 当前契约区分受控、非受控、乐观、拒绝或中断所有权的场景；
+- 适用时，启用、禁用、只读、忙碌、必填或无效行为；
+- 当所有者或客观标准预测不同行为时的输入模式、方向、浏览器能力或平台；
+- 当算法或用户结果变化时的零、一、多、空、溢出、边界或无效数据；
+- 当所有权或生命周期变化时的默认、组合、可替换部分、嵌套所有者、传送门/顶层或拆卸路径；以及
+- 确切先前被破坏的输入和接缝。
 
-Inputs are equivalent only when evidence supports the same observable contract,
-outcome, owner, and regression risk. A shared implementation path may support that
-judgment, but it is neither required nor sufficient. Different literal values do
-not require separate cases when none of those dimensions changes.
+只有在证据支持相同可观察契约、结果、所有者和回归风险时，输入才是等效的。共享实现路径可以支持该判断，但既非必需也非充分。当这些维度均未变化时，不同字面值不需要单独用例。
 
 ## When no new test is warranted
 
-A correct change may require **no new automated test**. Reviewers stop adding tests
-when existing evidence already detects the affected promise, or when an automated
-component test cannot observe the changed claim.
+正确的变更可能**不需要新的自动化测试**。当现有证据已经能检测受影响的承诺，或自动化组件测试无法观察变更的声明时，评审者应停止添加测试。
 
-| Change                                                                                                                                    | Required evidence                                                                                         | Do not add                                                                                     |
-| ----------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Consumer-doc prose or example is corrected to match unchanged current source, types, and behavior                                         | Existing doc parser/typecheck/schema validation when applicable, plus review against the canonical source | A component runtime test that repeats the prose, prop name, or example                         |
-| A recurring deterministic docs/source relationship is missing a guard                                                                     | One generalized validator at the shared source-of-truth boundary                                          | One component-specific test per corrected document                                             |
-| Visual paint or geometry values change while the set of states, selectors, state ownership, timing, and public structure remain unchanged | Real-browser before/after evidence and the applicable stable visual-regression path                       | A jsdom assertion that a private class exists, or a functional test that cannot observe pixels |
-| A private class, wrapper, StyleX declaration, or DOM arrangement changes without changing a current structural contract                   | Existing behavior evidence plus rendered evidence when appearance changes                                 | An assertion that freezes the new private implementation                                       |
-| Existing mutation-sensitive evidence already covers the same promise and partition                                                        | Link the existing evidence and show why its failure signal covers this change                             | A second test with equivalent setup and assertions                                             |
-| A refactor preserves all observable contracts                                                                                             | Run the applicable existing suites and review the unchanged public seams                                  | A test whose only purpose is to restate the refactor's new structure                           |
-| A machine-readable public schema, documented public target/class, or compile-time consumer contract changes                               | Focused contract/inventory/type evidence owned by that public surface                                     | A broader functional test when the structural contract check directly detects the failure      |
+| 变更                                                                         | 所需证据                                                         | 不要添加                                              |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------- |
+| 消费方文档散文或示例被更正，以匹配未变的当前源码、类型和行为                 | 适用时现有的文档解析器/类型检查/模式校验，加上对照规范源码的评审 | 重复散文、prop 名称或示例的组件运行时测试             |
+| 反复出现的确定性文档/源码关系缺少防护                                        | 在共享事实源边界上设置一个通用校验器                             | 为每个已更正文档添加一个组件专用测试                  |
+| 视觉绘制或几何值变化，而状态集合、选择器、状态所有权、时序和公开结构保持不变 | 真实浏览器前后对比证据以及适用的稳定视觉回归路径                 | 断言私有类存在的 jsdom 断言，或无法观察像素的功能测试 |
+| 私有类、包装器、StyleX 声明或 DOM 排列变化，但不改变当前结构契约             | 现有行为证据，以及外观变化时的渲染证据                           | 冻结新私有实现的断言                                  |
+| 现有对变异敏感的证据已覆盖同一承诺和分区                                     | 链接现有证据并说明其失败信号为何覆盖此变更                       | 具有等效设置和断言的第二个测试                        |
+| 重构保留所有可观察契约                                                       | 运行适用的现有套件并评审未变的公开接缝                           | 唯一目的是复述重构后新结构的测试                      |
+| 机器可读的公开模式、有文档的公开目标/类或编译期消费方契约变化                | 由该公开表面拥有的聚焦契约/清单/类型证据                         | 当结构契约检查能直接检测失败时，更宽泛的功能测试      |
 
-A visual implementation and its private class can be wrong together. For example,
-making a Button red and asserting that the new private class name is present proves
-neither the rendered color nor the user's visual outcome. The class assertion is
-valid only when current authority makes that exact class a public compatibility
-contract; even then, it proves class reachability, not pixels.
+视觉实现和它的私有类可能同时出错。例如，把 Button 变成红色并断言新的私有类名存在，既不能证明渲染颜色，也不能证明用户的视觉结果。只有当当前权威将那个确切的类设为公开兼容性契约时，类断言才有效；即便如此，它证明的是类的可达性，而不是像素。
 
-Documentation can itself carry a public machine-readable contract. In that case,
-test its parsed schema or generated projection at the shared boundary. Do not freeze
-ordinary prose word-for-word or duplicate source declarations in component tests.
+文档本身可以承载公开的机器可读契约。在这种情况下，在共享边界上测试其解析后的模式或生成的投射。不要逐字冻结普通散文，也不要在组件测试中重复源码声明。
 
-A documentation correction that exposes an untested behavior defect follows the
-behavior rule instead: first identify the current promise and uncovered partition,
-then add the smallest observable regression test for that behavior—not for the
-wording that revealed it.
+暴露未测试行为缺陷的文档更正则遵循行为规则：首先识别当前承诺和未覆盖的分区，然后为该行为添加最小的可观察回归测试——而不是为揭示该问题的措辞添加测试。
 
 ## Test-quality exclusions
 
-The following do not establish sufficiency by themselves:
+以下各项本身不能确立充分性：
 
-- a type test that merely copies a declaration without exercising the consumer's
-  compile-time contract;
-- a tautological expected value calculated by the same algorithm as production;
-- a test added beside a new private class or StyleX declaration that only asserts
-  that exact class or declaration is present;
-- a DOM/class assertion used as a substitute for a visual claim such as color,
-  spacing, alignment, clipping, or motion;
-- a test that freezes ordinary documentation prose or repeats an example already
-  validated by the shared documentation/type pipeline;
-- assertions against private function calls, hook internals, or implementation
-  ordering when public behavior is observable;
-- snapshots whose changed bytes do not identify the promised behavior;
-- repeated cases with no distinct behavior or risk;
-- Cartesian products or adversarial inputs generated without a current promise,
-  objective standard, prior defect, or named failure hypothesis;
-- tests that only prove rendering did not throw, unless crash-free rendering at that
-  named compatibility boundary is the promised observable outcome; and
-- tests added after a fix without evidence that the new case could detect the
-  original defect.
+- 仅复制声明而不检验消费方编译期契约的类型测试；
+- 由与生产相同的算法计算出的同义反复预期值；
+- 在新的私有类或 StyleX 声明旁添加、仅断言该确切类或声明存在的测试；
+- 用来替代颜色、间距、对齐、裁剪或动效等视觉声明的 DOM/类断言；
+- 冻结普通文档散文或重复共享文档/类型管道已校验示例的测试；
+- 当公开行为可观察时，针对私有函数调用、hook 内部或实现顺序的断言；
+- 变更字节无法标识承诺行为的快照；
+- 没有不同行为或风险的重复用例；
+- 在没有当前承诺、客观标准、先前缺陷或命名失败假设的情况下生成的笛卡尔积或对抗性输入；
+- 仅证明渲染未抛出异常的测试，除非在该命名兼容性边界上无崩溃渲染就是承诺的可观察结果；以及
+- 修复后添加、但没有证据表明新用例能够检测原始缺陷的测试。
 
-These tests may support debugging or optional hardening. They are not credited as
-the only evidence for a critical promise.
+这些测试可以支持调试或可选加固。它们不能作为关键承诺的唯一证据计入。
 
 ## Missing authority versus missing coverage
 
-Auditors classify the boundary before recommending tests:
+审计人员在建议测试前先分类边界：
 
-- **Current behavior authority, sufficient evidence:** no coverage gap.
-- **Current behavior authority, missing or insensitive evidence:** test-coverage
-  gap.
-- **No current behavior authority:** product-authority gap; route to the canonical
-  owner before prescribing expected output.
-- **Draft authority only:** private owner hold; a test may preserve current facts
-  but cannot make the draft decision current.
-- **Objective standard applies independently:** test the required observable
-  standard outcome and link the standard owner.
-- **Existing evidence covers an equivalent partition:** optional hardening, not a
-  gap.
+- **当前行为权威，证据充分：** 无覆盖缺口。
+- **当前行为权威，证据缺失或不敏感：** 测试覆盖缺口。
+- **无当前行为权威：** 产品权威缺口；在指定预期输出前，将其路由到规范所有者。
+- **仅有草稿权威：** 私有所有者保留；测试可以保留当前事实，但不能使草稿决定成为当前。
+- **客观标准独立适用：** 测试要求的标准可观察结果，并链接标准所有者。
+- **现有证据覆盖等效分区：** 可选加固，不是缺口。
 
 ## Verification-map contract
 
-A verification row identifies:
+验证行标识：
 
-- the current requirement or group of inseparable requirements;
-- the stable observable seam and evidence type;
-- representative partitions and why they are sufficient; and
-- the mutation or failure that must make the evidence fail.
+- 当前要求或不可分割要求的组；
+- 稳定的可观察接缝和证据类型；
+- 代表性分区及其充分性理由；以及
+- 必须使证据失败的变异或失败。
 
-Verification maps do not enumerate every audit inventory row, source branch, prop,
-or test file. They point to evidence at the level needed to keep the durable
-promise reviewable.
+验证映射不枚举每一个审计清单行、源码分支、prop 或测试文件。它们指向保持持久承诺可评审所需层级上的证据。
 
 ## Future audit-rubric migration handoff
 
-This architecture does not own rubric weights, score computation, versioning
-implementation, or wiki editing. It defines the test-sufficiency authority that a
-separate rubric activation MUST consume. When this record becomes current, that
-separately reviewed activation replaces Component Audit Rubric section 4's generic
-product-behavior checklist as follows:
+本架构不拥有评分标准权重、分数计算、版本化实现或 wiki 编辑。它定义了单独激活的评分标准必须消费的测试充分性权威。当本记录成为当前时，该单独评审的激活按如下方式替换组件审计评分标准第 4 节的通用产品行为清单：
 
-- retire **B1–B16** as product-behavior rule IDs;
-- do not reuse those IDs and do not renumber unrelated stable audit IDs;
-- preserve the weighted **Behavior** scoring slot;
-- populate that slot from every applicable current component, module, family,
-  architecture, system, design, and theme behavior requirement plus applicable
-  objective standards;
-- score the **Behavior** slot from observed conformance to the assembled applicable
-  behavior requirements and objective standards;
-- score the **Testing** slot from INV1–INV8 and INV10–INV11 evidence sufficiency
-  and quality, and retain INV9 as pull-request or audit-run evidence;
-- exclude non-applicable requirements and keep the rubric's existing explicit
-  unmeasured treatment when required evidence cannot be obtained;
-- preserve one-defect/one-section ownership so one missing behavior or test is not
-  deducted twice; and
-- bump the rubric minor version because replacing B1–B16 changes scoring method and
-  comparability.
+- 停用 **B1–B16** 作为产品行为规则 ID；
+- 不得复用这些 ID，也不得重新编号不相关的稳定审计 ID；
+- 保留加权的 **Behavior** 评分槽位；
+- 从每一个适用的当前组件、模块、家族、架构、系统、设计和主题行为要求及适用客观标准填充该槽位；
+- 根据对汇总的适用行为要求和客观标准的观察符合度，为 **Behavior** 槽位评分；
+- 根据 INV1–INV8 和 INV10–INV11 的证据充分性和质量，为 **Testing** 槽位评分，并将 INV9 保留为拉取请求或审计运行证据；
+- 排除不适用要求，并在无法获得所需证据时保留评分标准现有的显式未测量处理；
+- 保留一缺陷/一章节的归属，使一个缺失行为或测试不会被重复扣分；以及
+- 提升评分标准次版本号，因为替换 B1–B16 会改变评分方法和可比性。
 
-The future activation maps the former rows as follows:
+未来激活按如下方式映射原行：
 
-| Former rows | Future source                                                                                                                                                   |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| B1–B11      | Every applicable current component/module/family/architecture/system/design/theme behavior requirement and objective standard; no generic replacement behaviors |
-| B12         | Already retired in rubric v1.16; keep the ID reserved                                                                                                           |
-| B13         | Named risk partitions and documented composition seams from applicable current authority; no open-ended adversarial matrix                                      |
-| B14         | Applicable current component/module/family/architecture/system/design/theme contracts and objective standards for the owning behavior layer                     |
-| B15         | Current critical promises and regression-prone seams under INV2–INV4; no generic latent-regression catch-all                                                    |
-| B16         | Retire from Behavior; preserve the PR-only red/green obligation under `spec:AST-029/DEC-4` and the Testing/review process                                       |
+| 原行   | 未来来源                                                                                   |
+| ------ | ------------------------------------------------------------------------------------------ |
+| B1–B11 | 每一个适用的当前组件/模块/家族/架构/系统/设计/主题行为要求与客观标准；没有通用替代行为     |
+| B12    | 已在评分标准 v1.16 中停用；保留该 ID 预留                                                  |
+| B13    | 适用当前权威中的命名风险分区和已记录组合接缝；没有开放式对抗性矩阵                         |
+| B14    | 适用当前组件/模块/家族/架构/系统/设计/主题契约及所属行为层的客观标准                       |
+| B15    | INV2–INV4 下的当前关键承诺和易回归接缝；没有通用潜在回归兜底                               |
+| B16    | 从 Behavior 中停用；在 `spec:AST-029/DEC-4` 和 Testing/评审流程下保留仅拉取请求的红/绿义务 |
 
-This specification PR does not edit the wiki rubric, scoring code, audit prompt,
-tests, or tooling. The replacement activates only after this record is current and
-the separately reviewed rubric minor-version change lands.
+本规范 PR 不编辑 wiki 评分标准、评分代码、审计提示、测试或工具。替换仅在本记录成为当前，且单独评审的评分标准次版本变更落地后激活。
 
 ## Change coupling
 
-Focused test-sufficiency review triggers when a change:
+当变更出现以下情况时，触发聚焦的测试充分性评审：
 
-- adds or removes a current behavioral promise;
-- changes a verification map or its linked evidence;
-- fixes a defect or closes an audit coverage gap;
-- claims several inputs/states are equivalent;
-- adds a broad matrix, snapshot family, implementation-coupled test layer, or a
-  new test for a docs/visual/private-implementation-only change; or
-- changes which objective standard or platform distinction applies.
+- 添加或移除当前行为承诺；
+- 更改验证映射或其关联证据；
+- 修复缺陷或关闭审计覆盖缺口；
+- 声称多个输入/状态等效；
+- 添加宽泛矩阵、快照家族、实现耦合测试层，或为仅文档/视觉/私有实现的变更添加新测试；或
+- 更改适用的客观标准或平台区分。
 
-Review evaluates the changed requirement and representative unchanged partitions;
-it does not require unrelated full-suite expansion.
+评审评估变更的要求和代表性未变分区；它不要求无关的全套件扩展。
 
 ## Owning code
 
-- Applicable current component, module, family, architecture, system, design, and
-  theme verification maps — promises, representative partitions, evidence, and
-  failure expectations.
-- Colocated tests and checked browser/accessibility bindings — executable evidence
-  linked by those maps.
-- This record — shared sufficiency, partitioning, assertion-quality, and gap-
-  classification rules.
+- 适用的当前组件、模块、家族、架构、系统、设计和主题验证映射——承诺、代表性分区、证据和失败预期。
+- 同址测试和受检的浏览器/无障碍绑定——由这些映射链接的可执行证据。
+- 本记录——共享的充分性、分区、断言质量和缺口分类规则。
 
 ## Deciding specs
 
-None. `spec:AST-029` continues to own audit backfill, evidence receipts, mode, and
-Night Watch operation; it explicitly does not own the general component-test
-quality rubric. Applicable current component, module, family, architecture, system,
-design, and theme contracts plus objective standards remain the sources of expected
-behavior.
+无。`spec:AST-029` 继续拥有审计回填、证据回执、模式和 Night Watch 运行；它明确不拥有通用组件测试质量评分标准。适用的当前组件、模块、家族、架构、系统、设计和主题契约以及客观标准仍是预期行为的来源。
 
 ## Verification
 
-| Invariant         | Evidence                                                                                                             | Mutation or failure expectation                                                                                                                                                                                                                                                                                                           |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| INV1, INV10–INV11 | Authority-vs-coverage, established-public-interface, and no-new-test decision fixtures                               | Missing product authority is hidden, established public-interface evidence is denied a sufficiency result, optional hardening blocks acceptance, a docs/value-only-visual/private-only change receives a duplicate or non-observing component test, or a current public class/target change is excused as a private implementation detail |
-| INV2–INV3         | Critical-promise, behavior-defect, documentation-correction, and historical-regression fixtures                      | A primary, accessibility, callback, compatibility, composition, or previously fixed behavior defect loses its only mutation-sensitive evidence and still passes, or an unchanged prose-only documentation correction is required to add a regression test                                                                                 |
-| INV4              | Rational-partition fixtures                                                                                          | Proven-equivalent values require duplicate tests, private implementation identity is required to establish equivalence, or behaviorally different states collapse into one case                                                                                                                                                           |
-| INV5              | Public/runtime/compile-time seam replacement fixtures                                                                | Incidental private assertions pass while the promised user or consumer outcome is broken, contractual DOM/type/class/target evidence is incorrectly rejected, a DOM/class assertion is credited for pixels it cannot observe, or selector/state behavior is misclassified as a value-only visual change                                   |
-| INV6              | Tautology, declaration-copy, snapshot-noise, and behavior mutations; a held set missing the named motion             | An insensitive assertion receives credit, a meaningful behavior mutation leaves the credited test green, or a motion judgement passes on unrelated animations                                                                                                                                                                             |
-| INV7              | Same-partition duplicates, justified multi-layer evidence, exhaustive Cartesian, and broad defensive matrix fixtures | Distinct required evidence layers are collapsed as duplicates, or volume without a named distinct risk is credited as sufficiency                                                                                                                                                                                                         |
-| INV8              | Verification-map relationship fixtures                                                                               | Every audit row mechanically becomes a test, evidence cannot be traced to authority, or one test cannot satisfy inseparable requirements                                                                                                                                                                                                  |
-| INV9              | Pull-request and audit-run red/green trace fixtures                                                                  | Audit-authored remediation lacks a failing pre-change case, production remediation precedes the new case, or horizontal test generation replaces one observable vertical slice                                                                                                                                                            |
-| B1–B16 migration  | Rubric-version, section-ownership, and Behavior-slot migration fixture                                               | Generic B rules remain product authority, B12 is reactivated or reused, test evidence is double-scored in Behavior and Testing, B16 remains a Behavior check, unrelated IDs are renumbered, the Behavior weight disappears, or scoring changes without a minor-version bump                                                               |
+| 不变量            | 证据                                                           | 变异或失败预期                                                                                                                                                                      |
+| ----------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| INV1, INV10–INV11 | 权威与覆盖、既有公开接口和无新增测试决策的夹具                 | 缺失产品权威被隐藏；既有公开接口证据被拒绝给予充分性结果；可选加固阻止接受；仅文档/值-视觉/仅私有变更收到重复或不观察的组件测试；或当前公开类/目标变更被当作私有实现细节豁免        |
+| INV2–INV3         | 关键承诺、行为缺陷、文档更正和历史回归夹具                     | 主要、无障碍、回调、兼容性、组合或先前修复的行为缺陷失去其唯一对变异敏感的证据却仍然通过，或未变的仅散文文档更正被要求添加回归测试                                                  |
+| INV4              | 有理分区夹具                                                   | 已证明等效的值要求重复测试；要求私有实现身份来确立等效；或行为不同的状态被合并为一个用例                                                                                            |
+| INV5              | 公开/运行时/编译期接缝替换夹具                                 | 附带私有断言通过，而承诺的用户或消费方结果被破坏；契约性 DOM/类型/类/目标证据被错误拒绝；DOM/类断言被计为像素；或选择器/状态行为被误分类为仅值视觉变更                              |
+| INV6              | 同义反复、声明复制、快照噪声和行为变异；缺少命名运动的持有集合 | 不敏感断言获得计分；有意义的行为变异使已计分测试保持绿色；或动效判断在无关动画上通过                                                                                                |
+| INV7              | 同分区重复、有理由的多层证据、穷举笛卡尔积和宽泛防御矩阵夹具   | 不同的必需证据层被合并为重复；或没有命名不同风险的量被计为充分性                                                                                                                    |
+| INV8              | 验证映射关系夹具                                               | 每个审计行机械地变成一个测试；证据无法追溯到权威；或一个测试无法满足不可分割的要求                                                                                                  |
+| INV9              | 拉取请求和审计运行红/绿追踪夹具                                | 审计编写的整改缺少变更前的失败用例；生产整改先于新用例；或横向生成测试替代一个可观察垂直切片                                                                                        |
+| B1–B16 迁移       | 评分标准版本、章节所有权和 Behavior 槽位迁移夹具               | 通用 B 规则仍是产品权威；B12 被重新激活或复用；测试证据在 Behavior 和 Testing 中双重计分；B16 仍是 Behavior 检查；无关 ID 被重新编号；Behavior 权重消失；或评分变更没有次版本号提升 |

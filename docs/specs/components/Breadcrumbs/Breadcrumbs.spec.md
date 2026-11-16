@@ -30,136 +30,120 @@ system_specs: [spec:AST-038]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                   |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Public contract         | `Breadcrumbs` with `children`, `separator` (default `/`), `variant` (`default`, `supporting`, or an augmented value; default `default`), and `label`; target `breadcrumbs` with `variant`. |
-| Behavior                | A labeled navigation landmark holding an ordered list of BreadcrumbItem children; it tells every item in its own surface the separator and variant to use.                                 |
-| End-user impact         | Screen-reader users find the trail as a named "Breadcrumb" landmark and hear it as an ordered list; sighted users see one consistent separator and size across the trail.                  |
-| Builder impact          | None.                                                                                                                                                                                      |
-| Compatibility/readiness | Records shipped behavior; no public change.                                                                                                                                                |
-| Review checks           | Reject an unlabeled landmark, a trail that is not an ordered list, or items in the trail's own surface that ignore its separator or variant.                                               |
-| Governing rules         | `component:BreadcrumbItem` (each item); `design:bidirectionality` DR4 (separator mirroring); `architecture:component-theming-surface`.                                                     |
+| 领域          | 契约                                                                                                                                                                  |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公开契约      | 带 `children`、`separator`（默认 `/`）、`variant`（`default`、`supporting` 或扩充值；默认 `default`）以及 `label` 的 `Breadcrumbs`；目标 `breadcrumbs` 带 `variant`。 |
+| 行为          | 一个带标签的导航地标，持有一份由 BreadcrumbItem 子项组成的有序列表；它向自身表面内的每个条目告知要使用的分隔符与 variant。                                            |
+| 最终用户影响  | 屏幕阅读器用户会把这串路径识别为一个名为“Breadcrumb”的地标，并把它当作有序列表来听；视力正常的用户则看到整串路径使用一致的分隔符与尺寸。                              |
+| 构建者影响    | 无。                                                                                                                                                                  |
+| 兼容性/就绪度 | 记录已发布的行为；无公开变更。                                                                                                                                        |
+| 审查检查项    | 拒绝未加标签的地标、不是有序列表的路径，或路径自身表面内忽略其分隔符或 variant 的条目。                                                                               |
+| 治理规则      | `component:BreadcrumbItem`（每个条目）；`design:bidirectionality` DR4（分隔符镜像）；`architecture:component-theming-surface`。                                       |
 
-This table is a review projection; the body below is authoritative.
+此表是审查投影；以下正文具有权威性。
 
 ## Intent
 
-Breadcrumbs shows where a page sits in a hierarchy. It owns the trail's
-landmark, list, label, separator, and variant; each crumb's behavior belongs to
-BreadcrumbItem. Consumer usage lives in `Breadcrumbs.doc.mjs`.
+Breadcrumbs 显示页面在层级中所处的位置。它拥有路径的地标、列表、标签、分隔符与 variant；每个碎屑的行为属于 BreadcrumbItem。使用方用法见 `Breadcrumbs.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public change
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 已发布的默认值保持不变：`yes`
+- 兼容性类别：记录已发布的行为；无公开变更
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The navigation landmark, its label, the ordered list, its wrapping layout, and
-  the separator and variant every item in its own surface receives (FR1–FR4).
+- 导航地标及其标签、有序列表、其换行布局，以及其自身表面内每个条目所接收的分隔符与 variant（FR1–FR4）。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Each crumb's element, current-page state, separator rendering, menu, and the
-  `breadcrumb-item`, `breadcrumb-item-menu-trigger`, and `breadcrumb-menu`
-  targets — owned by `component:BreadcrumbItem`.
-- Destination handling — owned by `family:navigation-destinations` through
-  BreadcrumbItem.
-- Truncating or collapsing long trails — not provided; the list wraps.
+- 每个碎屑的元素、当前页状态、分隔符渲染、菜单，以及 `breadcrumb-item`、`breadcrumb-item-menu-trigger` 和 `breadcrumb-menu` 目标——由 `component:BreadcrumbItem` 拥有。
+- 目标位置处理——由 `family:navigation-destinations` 通过 BreadcrumbItem 拥有。
+- 截断或折叠长路径——不提供；列表会换行。
 
 ## Public concepts
 
-| Concept   | Closed values or states                   | Meaning                                         | Availability by variant/orientation/state | Default   | Owner                   | Stability | Invalid-value behavior                                        |
-| --------- | ----------------------------------------- | ----------------------------------------------- | ----------------------------------------- | --------- | ----------------------- | --------- | ------------------------------------------------------------- |
-| Variant   | `default`, `supporting`, augmented values | Body or supporting text size for every item.    | Whole trail.                              | `default` | `component:Breadcrumbs` | Stable    | A value other than `supporting` gets default sizing on items. |
-| Separator | any node; `/` by default                  | Glyph shown before every item except the first. | Whole trail.                              | `/`       | `component:Breadcrumbs` | Stable    | Rendered as given.                                            |
+| 概念   | 封闭值或状态                    | 含义                                       | 按 variant/方向/状态的可用性 | 默认值    | 所有者                  | 稳定性 | 无效值行为                                     |
+| ------ | ------------------------------- | ------------------------------------------ | ---------------------------- | --------- | ----------------------- | ------ | ---------------------------------------------- |
+| 变体   | `default`、`supporting`、扩充值 | 每个条目的正文或辅助文字尺寸。             | 整串路径。                   | `default` | `component:Breadcrumbs` | 稳定   | 除 `supporting` 以外的值会让条目使用默认尺寸。 |
+| 分隔符 | 任意节点；默认 `/`              | 除第一个条目外，在每个条目之前显示的字符。 | 整串路径。                   | `/`       | `component:Breadcrumbs` | 稳定   | 按给定内容渲染。                               |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                          | Basis                    |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| FR1 | Breadcrumbs renders one `<nav>` named by `label`, else the translated `@astryx.breadcrumbs.label` ("Breadcrumb"); a caller `aria-label` or `aria-labelledby` replaces that name. It carries `breadcrumbs` with `variant`, the forwarded `ref`, `data-testid`, and other DOM props. | Current source and tests |
-| FR2 | The `<nav>` contains one `<ol>` that holds `children`; the list has no markers or inset and lays items out in a row that wraps.                                                                                                                                                    | Current source and tests |
-| FR3 | Every descendant BreadcrumbItem in the trail's own surface receives the trail's `separator` and `variant`; a crumb rendered inside a layer gets the defaults, as `spec:AST-038` FR7 requires.                                                                                      | Current source and tests |
-| FR4 | `className`, `style`, and `xstyle` merge onto the `<nav>` after component styles.                                                                                                                                                                                                  | Current source           |
+| ID  | 不变式                                                                                                                                                                                                                                                           | 依据           |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| FR1 | Breadcrumbs 渲染一个 `<nav>`，其名称取自 `label`，否则取翻译后的 `@astryx.breadcrumbs.label`（“Breadcrumb”）；调用方传入的 `aria-label` 或 `aria-labelledby` 会替换该名称。它携带带 `variant` 的 `breadcrumbs`、转发的 `ref`、`data-testid` 以及其他 DOM props。 | 当前源码与测试 |
+| FR2 | `<nav>` 包含一个持有 `children` 的 `<ol>`；该列表没有标记、无内缩，并将条目排成一行、可换行。                                                                                                                                                                    | 当前源码与测试 |
+| FR3 | 路径自身表面内的每个后代 BreadcrumbItem 都会收到该路径的 `separator` 与 `variant`；在层内渲染的碎屑会得到默认值，正如 `spec:AST-038` FR7 所要求的。                                                                                                              | 当前源码与测试 |
+| FR4 | `className`、`style` 和 `xstyle` 在组件样式之后合并到 `<nav>` 上。                                                                                                                                                                                               | 当前源码       |
 
 ### Allowed variation
 
-- **AV1 — Separator.** Any node may replace `/`.
-- **AV2 — Theme styling.** Themes restyle `breadcrumbs` per variant.
+- **AV1 — 分隔符。** 任意节点都可以替换 `/`。
+- **AV2 — 主题样式。** 主题按 variant 为 `breadcrumbs` 重新设定样式。
 
 ### Representative states
 
-| State              | Required invariant                            | Allowed variation |
-| ------------------ | --------------------------------------------- | ----------------- |
-| Default trail      | Named landmark; ordered list; `/` separators. | Item content.     |
-| Supporting variant | Items use supporting size.                    | —                 |
-| Custom separator   | Items show the given separator.               | Glyph.            |
-| Narrow container   | Items wrap onto more lines.                   | Line count.       |
+| 状态            | 必需的不变式                     | 允许的变化 |
+| --------------- | -------------------------------- | ---------- |
+| 默认路径        | 具名地标；有序列表；`/` 分隔符。 | 条目内容。 |
+| Supporting 变体 | 条目使用辅助尺寸。               | —          |
+| 自定义分隔符    | 条目显示给定的分隔符。           | 字符。     |
+| 窄容器          | 条目换行到更多行。               | 行数。     |
 
 ### Transformation and precedence order
 
-- **ORD1 — Label.** A caller `aria-label` or `aria-labelledby`, then `label`,
-  then the translated default.
+- **ORD1 — 标签。** 先是调用方的 `aria-label` 或 `aria-labelledby`，然后是 `label`，最后是翻译后的默认值。
 
 ### Performance and resources
 
-- No resource rule.
+- 无资源规则。
 
 ## Accessibility contract
 
-- **AR1 — Landmark and list.** FR1 and FR2: one named navigation landmark with
-  an ordered list of crumbs.
+- **AR1 — 地标与列表。** FR1 与 FR2：一个具名导航地标，带有由碎屑组成的有序列表。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement               | Representation authority       | Hierarchy role | Component contract |
-| ---------------- | -------------------------------- | ------------------------------ | -------------- | ------------------ |
-| Trail            | Wrapping row of crumbs.          | Current source and public docs | Supporting     | FR1, FR2           |
-| Item             | One crumb.                       | `component:BreadcrumbItem`     | Supporting     | FR3                |
-| Separator        | Trail-wide glyph between crumbs. | `component:BreadcrumbItem`     | Supporting     | FR3                |
-| Icon             | Optional crumb start content.    | `component:BreadcrumbItem`     | Supporting     | —                  |
+| 解剖结构或状态 | 设计要求                     | 表示权威                   | 层级角色 | 组件契约 |
+| -------------- | ---------------------------- | -------------------------- | -------- | -------- |
+| 路径           | 可换行的碎屑行。             | 当前源码与公开文档         | 支撑级   | FR1, FR2 |
+| 条目           | 一个碎屑。                   | `component:BreadcrumbItem` | 支撑级   | FR3      |
+| 分隔符         | 碎屑之间贯穿整串路径的字符。 | `component:BreadcrumbItem` | 支撑级   | FR3      |
+| 图标           | 可选的碎屑起始内容。         | `component:BreadcrumbItem` | 支撑级   | —        |
 
-No anatomy-theming map is recorded yet; the block is optional during migration.
-Mapping the four anatomy parts against the four targets `Breadcrumbs.doc.mjs`
-lists, three of which BreadcrumbItem owns, by delegation, is deferred.
+尚未记录解剖结构-主题映射；该块在迁移期间是可选的。将四个解剖部件与 `Breadcrumbs.doc.mjs` 列出的四个目标（其中三个由 BreadcrumbItem 通过委托拥有）进行映射的工作，已推迟。
 
 ## Family and system relationships
 
-- `component:BreadcrumbItem` renders each crumb and its separator.
-- `design:bidirectionality` DR4 governs the default separator's mirroring, which
-  BreadcrumbItem implements.
+- `component:BreadcrumbItem` 渲染每个碎屑及其分隔符。
+- `design:bidirectionality` DR4 治理默认分隔符的镜像，由 BreadcrumbItem 实现。
 
 ## Verification map
 
-| Contract | Verification                                                       | Representative states                 | Mutation or failure expectation            | Audit section                     |
-| -------- | ------------------------------------------------------------------ | ------------------------------------- | ------------------------------------------ | --------------------------------- |
-| FR1, AR1 | `Breadcrumbs.test.tsx` landmark tests; `Breadcrumbs.a11y.test.tsx` | Default and custom label              | A missing landmark or name fails.          | `audit:Breadcrumbs/accessibility` |
-| FR2      | `Breadcrumbs.test.tsx` ordered-list test                           | Several items                         | A non-list trail fails.                    | `audit:Breadcrumbs/anatomy`       |
-| FR3      | `Breadcrumbs.test.tsx` separator and variant tests                 | Default, custom separator, supporting | Items that ignore the trail settings fail. | `audit:Breadcrumbs/behavior`      |
-| FR1      | `Breadcrumbs.test.tsx` ref and test-id tests                       | Root props                            | Dropped ref or test id fails.              | `audit:Breadcrumbs/api`           |
+| 契约     | 验证                                                           | 代表性状态                     | 变更或失败预期               | 审计部分                          |
+| -------- | -------------------------------------------------------------- | ------------------------------ | ---------------------------- | --------------------------------- |
+| FR1, AR1 | `Breadcrumbs.test.tsx` 的地标测试；`Breadcrumbs.a11y.test.tsx` | 默认与自定义标签               | 缺失地标或名称则失败。       | `audit:Breadcrumbs/accessibility` |
+| FR2      | `Breadcrumbs.test.tsx` 的有序列表测试                          | 多个条目                       | 非列表路径则失败。           | `audit:Breadcrumbs/anatomy`       |
+| FR3      | `Breadcrumbs.test.tsx` 的分隔符与 variant 测试                 | 默认、自定义分隔符、supporting | 忽略路径设置的条目则失败。   | `audit:Breadcrumbs/behavior`      |
+| FR1      | `Breadcrumbs.test.tsx` 的 ref 与 test-id 测试                  | 根 props                       | 丢失 ref 或 test id 则失败。 | `audit:Breadcrumbs/api`           |
 
-Read from source, with no focused test yet: crumbs inside a layer getting the
-defaults (FR3); the `breadcrumbs` target and its
-`variant` state, other DOM props, and a caller `aria-label` or
-`aria-labelledby` replacing the name (FR1); the list's markers, inset, and
-wrapping row (FR2); and FR4.
+以下内容从源码读取，尚无针对性测试：层内碎屑获得默认值（FR3）；`breadcrumbs` 目标及其 `variant` 状态、其他 DOM props，以及调用方 `aria-label` 或 `aria-labelledby` 替换名称（FR1）；列表的标记、内缩与可换行行（FR2）；以及 FR4。
 
 ## Decision log
 
-No component-local decision is recorded.
+未记录组件本地决策。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables, examples, or item behavior. It
-links to their owners.
+本文件不重复使用方的 prop 表、示例或条目行为。它链接到其所有者。

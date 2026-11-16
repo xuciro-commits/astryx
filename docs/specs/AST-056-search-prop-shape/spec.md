@@ -47,525 +47,255 @@ review_triggers: [public-api, accessibility, compatibility]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | One vocabulary, not one structure. "The query matched nothing" is `emptySearchText` taking `ReactNode`, on every component that has the state; "there is nothing here at all" stays `emptyText` and the two never merge (FR1, FR2, DEC-1). A capability that needs a query names that in its own prop name, and its handler is its only switch (FR5, DEC-3). No configuration object (DEC-2).                                                                                                                   |
-| Behavior                | Unchanged. Who resolves a query is settled by who owns the choices and is not restated per component: a component holding its own choice set filters them and exposes a boolean to show the input; a component whose presented choices ARE the query's result takes a required `searchSource` (FR4, DEC-2).                                                                                                                                                                                                     |
-| End-user impact         | A person meets the same dead end everywhere, and can be offered the same way out of it: widening `emptySearchResultsText` to `ReactNode` lets a product put a link or a create row in a `Tokenizer`'s empty result as it already can in a `Selector`'s. A half-configured create row stops silently rendering nothing (FR5). Whatever a caller supplies is also what gets announced (FR3, AR1).                                                                                                                 |
-| Builder impact          | One rename to learn: `emptySearchResultsText` becomes `emptySearchText`. No prop moves, no object literal, no restructuring. Every shipped prop keeps working through the cycle.                                                                                                                                                                                                                                                                                                                                |
-| Compatibility/readiness | Not additive, but small: one prop renamed on three components, with its type widened from `string` to `ReactNode`. No required prop moves. The replacement-first cycle and its cost are in `Migration and compatibility`; FR7 is the only requirement that constrains it. Authority: `draft`. Three owner questions remain open; none of them changes FR1 or FR2.                                                                                                                                               |
-| Review checks           | Reject a second name for a state these props already express; a boolean that gates a handler; a capability that renders inert when a sibling prop is missing; an empty-state value that cannot reach assistive technology (AR1); a query input named only by its placeholder (AR2).                                                                                                                                                                                                                             |
-| Governing rules         | [`spec:AST-002`](../AST-002/spec.md) FR1, FR4, FR15, FR16 and `spec:AST-002/DEC-1`, `DEC-6` for admission and one responsibility per input; [`architecture:public-component-api`](../../architecture/public-component-api.md) INV1, INV2, INV3, INV9 for the shared naming grammar and released-API lifecycle; [`spec:AST-017`](../AST-017/spec.md) FR28–FR31 for deprecation and cleanup; [`family:input-fields`](../../families/input-fields.md) for the field chrome around the query input, unchanged here. |
+| 区域          | 契约                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共契约      | 一套词汇，而不是一种结构。“查询没有匹配到任何结果”是 `emptySearchText`，接受 `ReactNode`，出现在每一个具有该状态的组件上；“这里根本什么都没有”仍是 `emptyText`，两者永不合并（FR1、FR2、DEC-1）。一个离开查询就无法工作的能力，在自己的 prop 名称里说明这一点，而它的处理函数就是它唯一的开关（FR5、DEC-3）。不使用配置对象（DEC-2）。                                                                                                       |
+| 行为          | 不变。由谁解析查询，取决于谁拥有这些选项，并且不按组件逐一重述：持有自己选项集合的组件自行过滤它们，并暴露一个布尔值来显示输入框；所呈现的选项**就是**查询结果的组件，接受一个必填的 `searchSource`（FR4、DEC-2）。                                                                                                                                                                                                                          |
+| 最终用户影响  | 一个人在每个地方都会遇到同一个死胡同，也都能被提供同一种出路：把 `emptySearchResultsText` 放宽为 `ReactNode`，让产品可以在 `Tokenizer` 的空结果里放入一个链接或一行创建项，就像它已经能在 `Selector` 的空结果里做的那样。半配置的创建行不再静默地什么都不渲染（FR5）。调用方提供什么，被播报的就是什么（FR3、AR1）。                                                                                                                         |
+| 构建者影响    | 只需学会一处重命名：`emptySearchResultsText` 变成 `emptySearchText`。没有 prop 移动，没有对象字面量，没有重构。每个已发布的 prop 在整个周期内都照常工作。                                                                                                                                                                                                                                                                                    |
+| 兼容性/就绪度 | 并非纯增量，但规模很小：在三个组件上重命名一个 prop，并把其类型从 `string` 放宽为 `ReactNode`。没有必填 prop 移动。替代优先的周期及其代价见 `Migration and compatibility`；FR7 是唯一约束它的需求。权威：`draft`。仍有三个所有者问题未决；它们都不改变 FR1 或 FR2。                                                                                                                                                                          |
+| 审查检查      | 否决为这些 prop 已表达的状态再起第二个名字；否决门控处理函数的布尔值；否决在同级 prop 缺失时渲染为惰性的能力；否决无法到达辅助技术的空状态值（AR1）；否决仅以占位符命名的查询输入框（AR2）。                                                                                                                                                                                                                                                 |
+| 管辖规则      | [`spec:AST-002`](../AST-002/spec.md) FR1、FR4、FR15、FR16 以及 `spec:AST-002/DEC-1`、`DEC-6`，用于接纳与每个输入单一职责；[`architecture:public-component-api`](../../architecture/public-component-api.md) INV1、INV2、INV3、INV9，用于共享命名语法与已发布 API 生命周期；[`spec:AST-017`](../AST-017/spec.md) FR28–FR31，用于弃用与清理；[`family:input-fields`](../../families/input-fields.md)，用于查询输入框周边的字段外观，此处不变。 |
 
-This table is a review projection; the body below is authoritative.
+本表是一份审查投影；以下正文具有权威性。
 
 ## Intent
 
-Typing to narrow a list is one thing a person does, and Astryx spells it seven
-ways. A builder who has used `hasSearch` on `Selector` finds no `hasSearch` on
-`Tokenizer`; a builder who has set `emptySearchResultsText` on `Typeahead`
-finds `emptySearchText` on `CommandPalette`, taking a different type. Nothing
-is broken for the person using the product, but every new search-adjacent
-capability lands as another flat prop on one component, with its own name, and
-the next component copies whichever neighbour it happened to read.
+输入文字来缩小列表，是人会做的一件平常事，而 Astryx 把它拼成了七种写法。用过 `Selector` 上 `hasSearch` 的构建者，在 `Tokenizer` 上找不到 `hasSearch`；在 `Typeahead` 上设过 `emptySearchResultsText` 的构建者，在 `CommandPalette` 上看到的是 `emptySearchText`，类型还不一样。对使用产品的用户来说，没有什么坏了，但每一项新的搜索相关能力，都以又一个扁平 prop 的形式落在某个组件上，带着自己的名字，而下一个组件就照抄它碰巧读到的那个邻居。
 
-This record owns one answer: **a shared vocabulary for the states a typed
-query produces, with no restructuring.** It fixes the name and type of "the
-query matched nothing", keeps that state distinct from "there is nothing here
-at all", and says how a capability that cannot work without a query declares
-that dependency.
+本记录只负责一个答案：**为键入查询所产生的状态提供一套共享词汇，且不做任何重构。** 它固定“查询没有匹配到任何结果”的名称与类型，把该状态与“这里根本什么都没有”区分开来，并说明一个离开查询就无法工作的能力如何声明这层依赖。
 
-An earlier draft proposed collecting these props into one object-valued
-`search` prop. That is rejected in DEC-2: it would have cost nine
-deprecations across seven components, four of them a required prop, to solve
-a tidiness problem rather than one a person using an Astryx product meets.
+更早的一版草稿提议把这些 prop 收集到一个对象取值的 `search` prop 中。DEC-2 否决了它：那会在七个组件上付出九次弃用的代价，其中四次针对必填 prop，只为解决一个整洁性问题，而不是使用 Astryx 产品的用户会遇到的问题。
 
-The trigger is [#6829](https://github.com/meta/astryx/pull/6829), which
-proposes `hasCreate` + `onCreate` on `MultiSelector` — a sixth and seventh
-search-adjacent prop on a component that already carries three, under a name
-`Tokenizer` already ships with a different contract. That pull request is
-blocked on this ruling, and the shape it adopts is the shape every later
-component copies.
+触发点是 [#6829](https://github.com/meta/astryx/pull/6829)，它提议在 `MultiSelector` 上增加 `hasCreate` + `onCreate`——在一个已经带有三个搜索相关 prop 的组件上再加第六个和第七个，而所用的名字 `Tokenizer` 早已以另一套契约发布过。该 pull request 正被这条裁定阻塞，而它采用的形状，就是此后每个组件都会照抄的形状。
 
 ## Ownership boundary
 
-**Owns**
+**负责**
 
-- The name and type of each observable state a typed query produces, shared
-  across every component that has that state.
-- That "the query matched nothing" and "there is nothing here at all" are
-  distinct states under distinct names, and neither absorbs the other.
-- How a capability that cannot function without a query declares that
-  dependency, and what gates it.
-- Whether a newly proposed search-related prop joins this vocabulary or
-  introduces a second name for something it already says.
-- The accessibility floor the arrangement must keep for the empty-result
-  message and the query input's name.
+- 键入查询所产生的每个可观察状态的名称与类型，在所有具有该状态的组件之间共享。
+- “查询没有匹配到任何结果”与“这里根本什么都没有”是不同名称下的不同状态，且两者互不吞并。
+- 一个离开查询就无法工作的能力如何声明该依赖，以及由什么来门控它。
+- 新提议的搜索相关 prop 是加入这套词汇，还是为它已经说过的东西引入第二个名字。
+- 该安排对空结果消息与查询输入框名称必须保持的无障碍底线。
 
-**Why no existing record can hold it**
+**为什么没有现有记录能容纳它**
 
-- [`spec:AST-002`](../AST-002/spec.md) is `current` and approved, and a record
-  carries one `authority` value, so adding unapproved claims to it would
-  present them as approved (`architecture:knowledge-contracts` INV1, INV14).
-  It also owns a different fact — whether a public API is admitted at all —
-  and both its FR17 and its DEC-7 say in their own words that **component prop
-  and event naming remains separate**. A rule about the shape and name of a
-  component prop is structurally outside what AST-002 claims. This record sits
-  downstream of AST-002 FR1 and FR4: admission still decides whether a search
-  capability exists, and this record decides only where it is spelled.
-- [`architecture:public-component-api`](../../architecture/public-component-api.md)
-  is `current` and approved, with the same authority problem. It holds the
-  shared naming grammar (INV2) and links its human rulings through
-  `deciding_specs` — `spec:AST-002/DEC-1`, `spec:AST-005/DEC-1`,
-  `spec:AST-012/DEC-1`. A new cross-component ruling belongs in a spec it
-  links, not inside it; its own INV18 boundary keeps observable caller-visible
-  behavior in a product contract.
-- [`family:input-fields`](../../families/input-fields.md) is `current` and owns
-  the field chrome — label, status, size, theming — shared by its members. Two
-  of the components this record binds, `BaseTypeahead` and `CommandPalette`,
-  are not members and are not input fields; `CommandPalette` is a dialog. They
-  are not one sibling family, which is why the vocabulary is owned here rather
-  than by that contract.
-- `contributing:api-conventions` and the wiki's `Prop Naming` section document
-  conventions for booleans, callbacks, enums, direction, and HTML collisions.
-  They say nothing about one state keeping one name across components, and
-  guidance is not an authority record. Both owe an amendment once this record
-  is `current`.
-- The six component records would each hold a private copy of the same
-  decision, which `architecture:knowledge-contracts` INV2 forbids.
-  `component:MultiSelector` is already drafting one as its FR10 / DEC-3.
+- [`spec:AST-002`](../AST-002/spec.md) 是 `current` 且已批准，而一条记录只携带一个 `authority` 值，因此向其添加未批准的声明，就会把它们呈现为已批准（`architecture:knowledge-contracts` INV1、INV14）。它还负责另一项事实——公共 API 究竟是否被接纳——并且其 FR17 与 DEC-7 都以自己的话说明**组件 prop 与事件的命名保持独立**。关于组件 prop 的形状与名称的规则，在结构上超出了 AST-002 所声明的范围。本记录位于 AST-002 FR1 与 FR4 的下游：接纳仍然决定搜索能力是否存在，而本记录只决定它在何处被拼写。
+- [`architecture:public-component-api`](../../architecture/public-component-api.md) 是 `current` 且已批准，存在同样的权威性问题。它持有共享命名语法（INV2），并通过 `deciding_specs` 链接其人工裁定——`spec:AST-002/DEC-1`、`spec:AST-005/DEC-1`、`spec:AST-012/DEC-1`。新的跨组件裁定属于它所链接的某条规格，而不是它内部；它自身的 INV18 边界把可观察的、调用方可见的行为留在产品契约中。
+- [`family:input-fields`](../../families/input-fields.md) 是 `current`，负责其成员共享的字段外观——标签、状态、尺寸、主题化。本记录所约束的组件中有两个，`BaseTypeahead` 与 `CommandPalette`，并非其成员，也不是输入字段；`CommandPalette` 是一个对话框。它们不属于同一个兄弟家族，这正是这套词汇由本记录负责、而非由那份契约负责的原因。
+- `contributing:api-conventions` 与 wiki 的 `Prop Naming` 小节记录了布尔值、回调、枚举、方向与 HTML 冲突方面的约定。它们对“一个状态在所有组件间保持一个名称”只字未提，而指南并不是权威记录。一旦本记录成为 `current`，两者都欠一次修正。
+- 那六条组件记录将各自持有一份同一决策的私有副本，而 `architecture:knowledge-contracts` INV2 禁止这样做。`component:MultiSelector` 已在其 FR10 / DEC-3 中起草了这样一份副本。
 
 ## Non-goals
 
-- **Matching quality.** Fuzzy matching, ranking, highlighting, tokenization,
-  and diacritic folding are not settled here. FR4 fixes only the floor for the
-  mode where the component does the filtering.
-- **Whether any particular component should gain search, or a create row.**
-  That is `spec:AST-002` admission, case by case.
-- **`PowerSearch`.** Its query is a structured field/operator/value expression,
-  not a typed string narrowing a list. Its `maxSearchResults` and its per-field
-  `searchSource` are cited as evidence of spread, not governed (OQ4).
-- **`emptyBootstrapText` on `CommandPalette`.** "No query yet, and the default
-  set is empty" is a different observable state from "the query matched
-  nothing"; it stays a top-level prop.
-- **The trigger-menu configuration on `ChatComposerInput`.** Its per-trigger
-  objects each carry an `emptySearchResultsText`, so FR1 reaches them, but
-  whether that nested rename rides this record's cycle is OQ4.
-- **Internal filtering implementation.** Equivalent internal implementations
-  remain valid when they satisfy this contract. Internal modules, files,
-  function names, algorithms, data structures, storage layouts, manifests,
-  journals, locks, transaction protocols, and CI job/workflow topology belong in
-  architecture or implementation unless callers or interoperating systems
-  intentionally depend on that exact mechanism as a public protocol.
+- **匹配质量。** 模糊匹配、排序、高亮、分词与变音符号折叠不在此裁定。FR4 只为组件自行过滤的那种模式确定底线。
+- **任何特定组件是否应当获得搜索，或获得一行创建项。** 那属于 `spec:AST-002` 的接纳问题，需逐案处理。
+- **`PowerSearch`。** 它的查询是结构化的 字段/运算符/值 表达式，而不是缩小列表的键入字符串。它的 `maxSearchResults` 与按字段的 `searchSource` 被引为扩散的证据，不受本记录管辖（OQ4）。
+- **`CommandPalette` 上的 `emptyBootstrapText`。** “尚无查询，且默认集合为空”与“查询没有匹配到任何结果”是不同的可观察状态；它保持为顶层 prop。
+- **`ChatComposerInput` 上的触发菜单配置。** 它的每个触发器对象各携带一个 `emptySearchResultsText`，因此 FR1 覆盖它们，但这次嵌套重命名是否搭乘本记录的周期，属于 OQ4。
+- **内部过滤实现。** 只要满足本契约，等价的内部实现同样有效。内部模块、文件、函数名、算法、数据结构、存储布局、清单、日志、锁、事务协议以及 CI 作业/工作流拓扑，属于架构或实现，除非调用方或互操作系统有意将该确切机制作为公共协议依赖。
 
 ## Evidence: every search-shaped prop in core today
 
-Read from `packages/core/src` at this record's base commit. This table is the
-evidence for FR1–FR5; it is not a migration plan.
+阅读自本记录基准提交时的 `packages/core/src`。此表是 FR1–FR5 的证据；它不是迁移计划。
 
-| Component           | Query input exists because                        | Who resolves the query                                 | Placeholder                                       | "Nothing matched"                                        | Query observable by the caller                       | Create affordance                                         | Other search-shaped props                                      |
-| ------------------- | ------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
-| `Selector`          | `hasSearch?: boolean` — default `false`           | the component, over its own `options`                  | `searchPlaceholder?: string` — `'Search…'`        | `emptySearchText?: ReactNode` — `'No results found'`     | **no** — `searchQuery` is internal `useState`        | —                                                         | `emptyText?: ReactNode` (`'No options'`, a different state)    |
-| `MultiSelector`     | `hasSearch?: boolean` — default `false`           | the component, over its own `options`                  | `searchPlaceholder?: string` — `'Search…'`        | `emptySearchText?: ReactNode` — `'No results found'`     | **no** — `searchQuery` is internal `useState`        | `hasCreate` + `onCreate` **proposed** in #6829            | `emptyText?: ReactNode` (`'No options'`)                       |
-| `Tokenizer`         | `searchSource: SearchSource<T>` — **required**    | the caller's source                                    | `placeholder?: string` — the input is the control | `emptySearchResultsText?: string` — `'No results found'` | `onChangeQuery?: (query: string) => void`            | `hasCreate?: boolean` — **the component mints the token** | `minQueryLength?: number` (`1`), `debounceMs?: number` (`150`) |
-| `Typeahead`         | `searchSource: SearchSource<T>` — **required**    | the caller's source                                    | `placeholder?: string`                            | `emptySearchResultsText?: string`                        | `onChangeQuery?: (query: string) => void`            | —                                                         | `minQueryLength?: number`, `debounceMs?: number`               |
-| `BaseTypeahead`     | `searchSource: SearchSource<T>` — **required**    | the caller's source                                    | `placeholder?: string`                            | `emptySearchResultsText?: string`                        | `onChangeQuery?: (query: string) => void`            | `__queryEntries` — underscored, `@internal`               | `minQueryLength?: number`, `debounceMs?: number`               |
-| `CommandPalette`    | `searchSource: SearchSource<T>` — **required**    | the caller's source                                    | `CommandPaletteInput.placeholder` — `'Search…'`   | `emptySearchText?: ReactNode` — `'No results'`           | through the `input` slot's `value` / `onValueChange` | —                                                         | `emptyBootstrapText?: ReactNode` (`'Type to search'`)          |
-| `ChatComposerInput` | one `searchSource` per entry in `triggers[]`      | the caller's source, per trigger                       | — (the composer's own `placeholder`)              | `triggers[].emptySearchResultsText?: string`             | —                                                    | —                                                         | `triggers[].loadingText`, `triggers[].menuLabel`, `debounceMs` |
-| `PowerSearch`       | a structured filter expression, not a typed query | the caller's per-field `searchSource?` (value pickers) | internal (`@astryx.powersearch.placeholder`)      | —                                                        | —                                                    | —                                                         | `maxSearchResults?: number`                                    |
+| 组件                | 查询输入存在的原因                         | 由谁解析查询                               | 占位符                                         | “没有匹配到任何结果”                                    | 调用方能否观察到查询                          | 创建能力                                        | 其他搜索相关 prop                                                |
+| ------------------- | ------------------------------------------ | ------------------------------------------ | ---------------------------------------------- | ------------------------------------------------------- | --------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------- |
+| `Selector`          | `hasSearch?: boolean`——默认 `false`        | 该组件自身，在其自己的 `options` 上        | `searchPlaceholder?: string`——`'Search…'`      | `emptySearchText?: ReactNode`——`'No results found'`     | **否**——`searchQuery` 是内部 `useState`       | —                                               | `emptyText?: ReactNode`（`'No options'`，另一种状态）            |
+| `MultiSelector`     | `hasSearch?: boolean`——默认 `false`        | 该组件自身，在其自己的 `options` 上        | `searchPlaceholder?: string`——`'Search…'`      | `emptySearchText?: ReactNode`——`'No results found'`     | **否**——`searchQuery` 是内部 `useState`       | `hasCreate` + `onCreate`，在 #6829 中**提议中** | `emptyText?: ReactNode`（`'No options'`）                        |
+| `Tokenizer`         | `searchSource: SearchSource<T>`——**必填**  | 调用方的 source                            | `placeholder?: string`——输入框本身就是控件     | `emptySearchResultsText?: string`——`'No results found'` | `onChangeQuery?: (query: string) => void`     | `hasCreate?: boolean`——**组件自行铸造 token**   | `minQueryLength?: number`（`1`）、`debounceMs?: number`（`150`） |
+| `Typeahead`         | `searchSource: SearchSource<T>`——**必填**  | 调用方的 source                            | `placeholder?: string`                         | `emptySearchResultsText?: string`                       | `onChangeQuery?: (query: string) => void`     | —                                               | `minQueryLength?: number`、`debounceMs?: number`                 |
+| `BaseTypeahead`     | `searchSource: SearchSource<T>`——**必填**  | 调用方的 source                            | `placeholder?: string`                         | `emptySearchResultsText?: string`                       | `onChangeQuery?: (query: string) => void`     | `__queryEntries`——带下划线，`@internal`         | `minQueryLength?: number`、`debounceMs?: number`                 |
+| `CommandPalette`    | `searchSource: SearchSource<T>`——**必填**  | 调用方的 source                            | `CommandPaletteInput.placeholder`——`'Search…'` | `emptySearchText?: ReactNode`——`'No results'`           | 通过 `input` 插槽的 `value` / `onValueChange` | —                                               | `emptyBootstrapText?: ReactNode`（`'Type to search'`）           |
+| `ChatComposerInput` | `triggers[]` 中每个条目一个 `searchSource` | 调用方的 source，按触发器逐个              | —（输入器自身的 `placeholder`）                | `triggers[].emptySearchResultsText?: string`            | —                                             | —                                               | `triggers[].loadingText`、`triggers[].menuLabel`、`debounceMs`   |
+| `PowerSearch`       | 结构化的过滤表达式，而非键入查询           | 调用方的按字段 `searchSource?`（值选择器） | 内部（`@astryx.powersearch.placeholder`）      | —                                                       | —                                             | —                                               | `maxSearchResults?: number`                                      |
 
-Four drift axes are visible in that table, and each one is a separate decision
-somebody made alone:
+那张表里能看到四条漂移轴线，每一条都是某个人独自做出的单独决策：
 
-1. **Two names for "nothing matched":** `emptySearchText` on `Selector`,
-   `MultiSelector`, and `CommandPalette`; `emptySearchResultsText` on
-   `Typeahead`, `BaseTypeahead`, `Tokenizer`, and each `ChatComposerTrigger`.
-2. **Two types for the same message:** `ReactNode` on the first group, `string`
-   on the second. A builder who can pass an element to one component cannot to
-   its neighbour.
-3. **Three defaults for it:** `'No results found'`, `'No results'`, and —
-   because `Selector` and `MultiSelector` also carry a top-level `emptyText` —
-   `'No options'` for the adjacent state.
-4. **The prefix only appears where search is optional.** `Selector` and
-   `MultiSelector` write `searchPlaceholder` because they also have a trigger
-   placeholder; `Typeahead` and `Tokenizer` write `placeholder` because the
-   query input _is_ the control. Both are locally right, which is exactly why
-   no component will fix this on its own.
+1. **“没有匹配到任何结果”有两个名字：** `Selector`、`MultiSelector` 与 `CommandPalette` 上是 `emptySearchText`；`Typeahead`、`BaseTypeahead`、`Tokenizer` 以及每个 `ChatComposerTrigger` 上是 `emptySearchResultsText`。
+2. **同一条消息有两种类型：** 前一组是 `ReactNode`，后一组是 `string`。能向一个组件传递元素的构建者，无法向它的邻居传递。
+3. **它有三个默认值：** `'No results found'`、`'No results'`，以及——因为 `Selector` 与 `MultiSelector` 还带有顶层 `emptyText`——相邻状态的 `'No options'`。
+4. **前缀只出现在搜索可选的地方。** `Selector` 与 `MultiSelector` 写 `searchPlaceholder`，因为它们还有一个触发器占位符；`Typeahead` 与 `Tokenizer` 写 `placeholder`，因为查询输入框*就是*那个控件。两者在各自局部都是对的，而这恰恰是没有任何组件会自行修好它的原因。
 
-Beyond core, `packages/lab` has copied the drift: `TransferList` takes
-`hasSearch` + `searchPlaceholder` + `searchLabel`, and `ChatEmojiPicker` takes
-`searchLabel`. Lab is not a stable public promise, so
-this record does not govern it; it is evidence that the pattern spreads by
-copying.
+在 core 之外，`packages/lab` 已经复制了这种漂移：`TransferList` 接受 `hasSearch` + `searchPlaceholder` + `searchLabel`，而 `ChatEmojiPicker` 接受 `searchLabel`。Lab 不是稳定的公共承诺，因此本记录不管辖它；它是这种模式靠复制而扩散的证据。
 
 ### Two prior claims about prior art, corrected
 
-- **`searchConfig` is not a component prop and is not prior art for this
-  shape.** It is a parameter and plugin-config field in
-  `Table/plugins/filtering/useTableFiltering.tsx`, holding a
-  `PowerSearchConfig` — the structured field/operator/value configuration of
-  the filter builder. It configures a different concept.
-- **The repository's real precedent for this shape is `ChatComposerTrigger`.**
-  Each entry in `ChatComposerInput`'s `triggers[]` is an object carrying
-  `searchSource`, `renderItem`, `onSelect`, `emptySearchResultsText`,
-  `loadingText`, and `menuLabel` — the whole configuration of one trigger's
-  query in one value, with keys that mostly drop the prefix the surrounding
-  name already supplies. It works, it is shipped, and nobody has asked for it
-  to be flattened.
+- **`searchConfig` 不是组件 prop，也不是这种形状的先行技术。** 它是 `Table/plugins/filtering/useTableFiltering.tsx` 中的一个参数与插件配置字段，持有一个 `PowerSearchConfig`——即过滤构建器的结构化 字段/运算符/值 配置。它配置的是另一个概念。
+- **本仓库中这种形状真正的先例是 `ChatComposerTrigger`。** `ChatComposerInput` 的 `triggers[]` 中每个条目都是一个对象，携带 `searchSource`、`renderItem`、`onSelect`、`emptySearchResultsText`、`loadingText` 与 `menuLabel`——把一个触发器的查询的整套配置放在一个值里，其键大多省略了外围名称已经提供的那个前缀。它有效，已发布，而且没有人要求把它拍平。
 
 ## Public API and concepts
 
-| Concept                 | Closed values or states                      | Meaning                                                                                                | Default                           | Owner          | Stability |
-| ----------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------- | -------------- | --------- |
-| `emptySearchText`       | `ReactNode`                                  | What the component shows when the query matched nothing. One name and one type everywhere (FR1)        | per component                     | `spec:AST-056` | proposed  |
-| showing the input       | a boolean, or a required `searchSource`      | A component holding its own choices exposes a boolean; one whose choices ARE the result takes a source | per component                     | the component  | shipped   |
-| a query-only capability | a handler whose name says it needs a query   | Presence of the handler is the switch; no boolean beside it (FR5)                                      | absent                            | `spec:AST-056` | proposed  |
-| "no choices at all"     | the component's own top-level `emptyText`    | A different observable state from "the query matched nothing"; unchanged by this record                | the component's localized default | the component  | stable    |
-| fetch tuning            | `minQueryLength`, `debounceMs`, loading text | Not placed by this record; they belong to whoever fetches, and OQ5 asks whether they move inside       | per component                     | the component  | stable    |
+| 概念                   | 封闭取值或状态                           | 含义                                                                        | 默认值             | 负责方         | 稳定性 |
+| ---------------------- | ---------------------------------------- | --------------------------------------------------------------------------- | ------------------ | -------------- | ------ |
+| `emptySearchText`      | `ReactNode`                              | 查询没有匹配到任何结果时组件所显示的内容。到处只有一个名称、一个类型（FR1） | 按组件而定         | `spec:AST-056` | 提议中 |
+| 显示输入框             | 一个布尔值，或一个必填的 `searchSource`  | 持有自己选项的组件暴露一个布尔值；其选项**就是**结果的组件接受一个 source   | 按组件而定         | 该组件         | 已发布 |
+| 仅在有查询时存在的能力 | 名称表明它需要查询的处理函数             | 处理函数的存在即为开关；旁边没有布尔值（FR5）                               | 缺省               | `spec:AST-056` | 提议中 |
+| “完全没有选项”         | 组件自身的顶层 `emptyText`               | 与“查询没有匹配到任何结果”不同的可观察状态；本记录不改变它                  | 组件的本地化默认值 | 该组件         | 稳定   |
+| 抓取调优               | `minQueryLength`、`debounceMs`、加载文案 | 不由本记录安置；它们属于执行抓取的一方，而 OQ5 询问它们是否移入内部         | 按组件而定         | 该组件         | 稳定   |
 
 ## Requirements
 
 ### Behavioral contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Basis                                                                        | Verification state                      |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------- |
-| FR1 | One observable state has one prop name and one type across every component with a typed query. "The query matched nothing" is `emptySearchText`, accepting `ReactNode`. `emptySearchResultsText` resolves to it and its `string` typing is widened, so a caller may pass an element. No component may name or type this state differently.                                                                                                                                                                                                        | DEC-1; `architecture:public-component-api` INV2                              | Proposed; no evidence on `main`         |
-| FR2 | "The query matched nothing" and "the component was given no choices at all" are different states and MUST stay separately expressible under distinct names: `emptySearchText` and `emptyText`. `Selector` and `MultiSelector` already declare both, so neither name may absorb the other, and a component offering only one MUST still use the name that matches the state it means.                                                                                                                                                              | DEC-1; `spec:AST-002` FR16                                                   | Proposed; shipped behavior, unspecified |
-| FR3 | Whatever a caller supplies for an empty state MUST reach the person operating the component, visually and non-visually alike. A component that announces this state MUST announce what it rendered. Announcing a built-in default while rendering the caller's element is a defect, not a fallback.                                                                                                                                                                                                                                               | AR1; `architecture:interaction-modality`                                     | Proposed; defect on `main` (see AR1)    |
-| FR4 | Who resolves the query is settled by who owns the choices, and is not restated per component. A component that holds its own choice set resolves the query itself, matching case-insensitively on each choice's displayed label at minimum, and exposes a boolean to turn the query input on. A component whose presented choices ARE the query's result takes a required `searchSource`. Both kinds reach the same observable states: a narrowed list, an empty result, and `emptyText`.                                                         | DEC-2; `spec:AST-002` FR16                                                   | Proposed; shipped behavior, unspecified |
-| FR5 | A capability that cannot function without a typed query MUST have exactly one switch, and MUST report through the component's primary change callback with a descriptor naming the kind of change, rather than through a handler prop of its own. A caller MUST NOT be able to express a configuration that renders nothing and reports nothing, which `hasCreate && hasSearch && onCreate != null` permits whenever any one piece is missing. Enabling it on a component with no query input MUST warn in development rather than fail silently. | DEC-3; `spec:AST-002` FR15 (never silently render a broken state)            | Proposed; no evidence on `main`         |
-| FR6 | A new search-related capability is admitted under `spec:AST-002` against this record, or not at all. A new top-level prop whose name carries the word `search` MUST name the state or capability it governs in the vocabulary this record fixes, and MUST NOT introduce a second name for a state one of these props already expresses.                                                                                                                                                                                                           | DEC-4; `spec:AST-002` FR1, FR5, DEC-1                                        | Proposed; no evidence on `main`         |
-| FR7 | Every prop this record renames is a released public surface with a victim, so it MUST follow `spec:AST-017` FR28–FR31: the replacement ships first, old usage stays equivalent through the overlap, and removal happens in a declared minor with a `[breaking]` Changeset naming the replacement. While both exist, a component given both MUST resolve to the new prop and MUST fire a development warning.                                                                                                                                      | `architecture:public-component-api` INV9; `spec:AST-017` FR1, FR3, FR28–FR31 | Proposed; cycle not started             |
+| ID  | 不变式                                                                                                                                                                                                                                                                                                                                                               | 依据                                                                         | 验证状态                          |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------- |
+| FR1 | 在每个带键入查询的组件上，一个可观察状态只有一个 prop 名称和一个类型。“查询没有匹配到任何结果”是 `emptySearchText`，接受 `ReactNode`。`emptySearchResultsText` 归并到它，其 `string` 类型被放宽，因此调用方可以传入元素。任何组件都不得以不同方式命名或定型该状态。                                                                                                  | DEC-1；`architecture:public-component-api` INV2                              | 提议中；`main` 上无证据           |
+| FR2 | “查询没有匹配到任何结果”与“组件完全没有被提供选项”是不同状态，必须能以不同名称分别表达：`emptySearchText` 与 `emptyText`。`Selector` 与 `MultiSelector` 已经声明了两者，因此任何一个名称都不得吞并另一个；只提供一个名称的组件，仍必须使用与其所指状态相符的名称。                                                                                                   | DEC-1；`spec:AST-002` FR16                                                   | 提议中；行为已发布，但未被规定    |
+| FR3 | 调用方为空状态提供的任何内容，必须以视觉与非视觉两种方式同样传达给操作该组件的用户。会播报该状态的组件必须播报它实际渲染的内容。渲染调用方的元素却播报内置默认值，是缺陷，而不是回退。                                                                                                                                                                               | AR1；`architecture:interaction-modality`                                     | 提议中；`main` 上有缺陷（见 AR1） |
+| FR4 | 由谁解析查询，取决于谁拥有这些选项，并且不按组件逐一重述。持有自己选项集合的组件自行解析查询，至少按每个选项所显示标签做不区分大小写的匹配，并暴露一个布尔值来开启查询输入框。所呈现的选项**就是**查询结果的组件，接受一个必填的 `searchSource`。两类组件都到达相同的可观察状态：缩小后的列表、空结果，以及 `emptyText`。                                            | DEC-2；`spec:AST-002` FR16                                                   | 提议中；行为已发布，但未被规定    |
+| FR5 | 离开键入查询就无法工作的能力，必须恰好有一个开关，并且必须通过组件的主变更回调报告，携带一个说明变更种类的描述符，而不是通过它自己的处理函数 prop。调用方绝不能表达出一种什么都不渲染、也什么都不报告的配置——`hasCreate && hasSearch && onCreate != null` 在任一片段缺失时正是允许了这种配置。在没有查询输入的组件上启用它，必须在开发环境给出警告，而不是静默失败。 | DEC-3；`spec:AST-002` FR15（绝不静默渲染破损状态）                           | 提议中；`main` 上无证据           |
+| FR6 | 新的搜索相关能力，要么依据本记录在 `spec:AST-002` 下被接纳，要么根本不被接纳。名称中带有 `search` 一词的新顶层 prop，必须用本记录所固定的词汇来命名它所管辖的状态或能力，且不得为这些 prop 中某个已表达的状态引入第二个名称。                                                                                                                                        | DEC-4；`spec:AST-002` FR1、FR5、DEC-1                                        | 提议中；`main` 上无证据           |
+| FR7 | 本记录重命名的每个 prop 都是有使用方受损的已发布公共表面，因此必须遵循 `spec:AST-017` FR28–FR31：替代项先发布，旧用法在重叠期内保持等价，移除发生在已声明的小版本中，并附上点名替代项的 `[breaking]` Changeset。两者并存期间，同时收到两者的组件必须解析到新 prop，并必须触发开发警告。                                                                              | `architecture:public-component-api` INV9；`spec:AST-017` FR1、FR3、FR28–FR31 | 提议中；周期尚未开始              |
 
 ### Accessibility contract
 
-- **AR1 — The empty-result message reaches assistive technology as written.**
-  Whatever `emptySearchText` renders on screen MUST be what a screen reader
-  receives when the panel becomes empty. Today it is not: `Selector` and
-  `MultiSelector` announce `typeof emptySearchText === 'string' ? emptySearchText
-: t('@astryx.selector.emptySearchResults')`, so a caller who passes an element
-  — which the `ReactNode` type invites — is silently announced the default
-  string instead of their own message. Accepting `ReactNode` (FR1) obliges the
-  component to derive an announceable string from it, or to document and
-  require a separate announceable form; it may not announce something the
-  person on screen is not reading.
-- **AR2 — The query input has an accessible name that is not its placeholder.**
-  A placeholder is placeholder text and MUST NOT be the input's only
-  accessible name. The component supplies the name: a localized "Search
-  options" in `Selector` and `MultiSelector`, and a localized "Search commands"
-  in `CommandPaletteInput`.
+- **AR1 — 空结果消息按书写原样到达辅助技术。** `emptySearchText` 在屏幕上渲染的任何内容，必须就是面板变空时屏幕阅读器收到的内容。今天并非如此：`Selector` 与 `MultiSelector` 播报的是 `typeof emptySearchText === 'string' ? emptySearchText : t('@astryx.selector.emptySearchResults')`，因此传入元素的调用方——`ReactNode` 类型正是邀请这么做——会被静默播报默认字符串，而不是自己的消息。接受 `ReactNode`（FR1）即要求组件从中推导出一个可播报的字符串，或记录并要求一个单独的可播报形式；它不得播报屏幕上的人并未在读的内容。
+- **AR2 — 查询输入框具有不是其占位符的无障碍名称。** 占位符就是占位文本，绝不能成为输入框唯一的无障碍名称。名称由组件提供：`Selector` 与 `MultiSelector` 中本地化的“搜索选项”，以及 `CommandPaletteInput` 中本地化的“搜索命令”。
 
 ### Platform support
 
-- Supported feature/engine floor: every supported renderer and every supported
-  browser. Nothing here is behind a capability check.
-- Unsupported behavior: none. A component that cannot satisfy FR3's
-  required/optional rule does not partially adopt the prop; it keeps its
-  current API until the rule is settled for it.
-- Browser evidence: DOM live-region assertions prove the rendered content source,
-  but they do not prove what assistive technology announces or when. Any adopter
-  that changes announcement content or timing proves its routing, text, and
-  occasion count at the DOM and accessibility-tree layers; real-AT observation is
-  recommended follow-up under `spec:AST-009`.
+- 支持的功能/引擎底线：每个受支持的渲染器与每个受支持的浏览器。这里没有任何东西位于能力检测之后。
+- 不支持的行为：无。无法满足 FR3 的必填/可选规则的组件，不会部分采用该 prop；在规则对其确定之前，它保持当前的 API。
+- 浏览器证据：DOM 实时区域断言证明了所渲染内容的来源，但它们并不证明辅助技术播报什么、何时播报。任何改变播报内容或时机的采用方，都要在 DOM 与无障碍树层面证明其路由、文本与场合计数；真实辅助技术观察是 `spec:AST-009` 下建议的后续工作。
 
 ## Migration and compatibility
 
-This is not additive, and the cost is concentrated in one place.
+这并非纯增量，且代价集中在一处。
 
-**What is shipped and has a released victim.** Nine public props across seven
-core components: `hasSearch`, `searchPlaceholder`, and `emptySearchText` on
-`Selector` and `MultiSelector`; `searchSource` and `emptySearchResultsText` on
-`Tokenizer`, `Typeahead`, and `BaseTypeahead`; `searchSource` and
-`emptySearchText` on `CommandPalette`; `onChangeQuery` on the three typeaheads;
-`hasCreate` on `Tokenizer`; `emptySearchResultsText` on every
-`ChatComposerTrigger`. Under `spec:AST-017` FR1 and FR3, and
-`architecture:public-component-api` INV9, removing or retyping any of them is a
-breaking change.
+**已发布、且有使用方受损的部分。** 七个核心组件上的九个公共 prop：`Selector` 与 `MultiSelector` 上的 `hasSearch`、`searchPlaceholder` 与 `emptySearchText`；`Tokenizer`、`Typeahead` 与 `BaseTypeahead` 上的 `searchSource` 与 `emptySearchResultsText`；`CommandPalette` 上的 `searchSource` 与 `emptySearchText`；三个 typeahead 上的 `onChangeQuery`；`Tokenizer` 上的 `hasCreate`；每个 `ChatComposerTrigger` 上的 `emptySearchResultsText`。根据 `spec:AST-017` FR1 与 FR3 以及 `architecture:public-component-api` INV9，移除或重新定型其中任何一项都是破坏性变更。
 
-**Nothing required moves.** An earlier draft would have folded the **required**
-`searchSource` on `Tokenizer`, `Typeahead`, `BaseTypeahead` and
-`CommandPalette` into an object, failing every existing callsite of those four
-components at type-check. DEC-2 rejected that, so the whole migration is now
-one optional prop renamed on four surfaces, with its type widened.
+**没有任何必填项被移动。** 更早的一版草稿会把 `Tokenizer`、`Typeahead`、`BaseTypeahead` 与 `CommandPalette` 上**必填**的 `searchSource` 折进一个对象，从而让这四个组件的每个现有调用点在类型检查时失败。DEC-2 否决了它，因此整个迁移现在只是在一个可选 prop 上、于四个表面重命名，并放宽其类型。
 
-**This record's recommendation: deprecate with a replacement-first cycle.** Not
-coexist indefinitely, not replace.
+**本记录的建议：以替代优先的周期进行弃用。** 不是无限期共存，也不是直接替换。
 
-- A patch ships `emptySearchText` on each renaming component while the old prop keeps working,
-  carries `@deprecated` naming its replacement, and behaves exactly as before
-  (`spec:AST-017` FR28, FR29). During the overlap a component reads both and
-  the new prop wins, with one development warning on conflict (FR7).
-- Removal happens in a later declared minor with a `[breaking]` Changeset that
-  names the replacement (`spec:AST-017` FR31). This record sets no clock; FR30
-  forbids reading release cadence as one.
-- A caller who passed a `string` needs no edit beyond the name: the type only
-  widens, so every existing value stays valid.
+- 一个补丁在每个重命名的组件上发布 `emptySearchText`，同时旧 prop 继续工作、带有 `@deprecated` 并点名其替代项，行为与之前完全一致（`spec:AST-017` FR28、FR29）。重叠期间组件同时读取两者，新 prop 胜出，并在冲突时给出一次开发警告（FR7）。
+- 移除发生在之后已声明的小版本中，并附上点名替代项的 `[breaking]` Changeset（`spec:AST-017` FR31）。本记录不设定时钟；FR30 禁止把发布节奏读作时钟。
+- 传入 `string` 的调用方除了名称之外无需任何修改：类型只是放宽，因此每个现有值仍然有效。
 
-**What each option actually costs.**
+**每种选项的实际代价。**
 
-- **Deprecate with a cycle (recommended).** One prop doubles for the length of
-  the overlap, on `Tokenizer`, `Typeahead`, `BaseTypeahead` and
-  `ChatComposerTrigger`: `emptySearchResultsText` and `emptySearchText` both
-  present in the types, both in `.doc.mjs`, both in the consumer docs. Four
-  `DEP-*` records and four `CLN-*` ids. The rename is mechanically
-  codemoddable, including where a caller spreads props, because the value's
-  meaning does not change and the type only widens. Then one minor that breaks
-  unmigrated callsites of those four surfaces.
-- **Coexist indefinitely.** Nothing breaks, ever. The drift survives in the
-  type signature: a builder still meets `emptySearchResultsText` on one
-  component and `emptySearchText` on another, and the standard governs only
-  components built after it. That answers "so when we add it later on other
-  components we match the pattern" and leaves today's inconsistency in place.
-- **Replace outright.** A minor that renames with no overlap. Rejected: the
-  deprecation costs little here and no user problem justifies breaking
-  callsites that a cycle would carry.
+- **带周期地弃用（推荐）。** 在重叠期内，`Tokenizer`、`Typeahead`、`BaseTypeahead` 与 `ChatComposerTrigger` 上有一个 prop 成对出现：`emptySearchResultsText` 与 `emptySearchText` 都出现在类型中、都出现在 `.doc.mjs` 中、都出现在使用方文档中。四条 `DEP-*` 记录与四个 `CLN-*` id。这次重命名可机械地用 codemod 完成，包括调用方展开 props 的地方，因为值的含义不变，类型只是放宽。随后一个次要版本会破坏这四个表面上未迁移的调用点。
+- **无限期共存。** 永远不会破坏任何东西。漂移在类型签名中存续：构建者在某个组件上仍会遇到 `emptySearchResultsText`，在另一个组件上遇到 `emptySearchText`，而标准只管辖在其之后构建的组件。这回答了“所以当我们后来在其他组件上加它时，就对齐这个模式”，却把今天的不一致留在原地。
+- **直接替换。** 一个没有任何重叠的、执行重命名的小版本。已否决：弃用在这里代价很小，也没有任何用户问题足以证成破坏调用点，而一个周期本可以承载它们。
 
-**`Tokenizer.hasCreate` needs no migration.** An earlier reading treated it as
-a collision, because `Tokenizer`'s `hasCreate` is a boolean with no callback
-while #6829 proposed a handler for `MultiSelector`. OQ5 settles it the other
-way: `Tokenizer` mints the token itself and reports it through
-`onChange(items, {item, type: 'create'})`, which is exactly the shape DEC-3
-describes, so `Tokenizer` already conforms and changes nothing.
-`MultiSelector` converges on it when #6829 returns.
+**`Tokenizer.hasCreate` 无需迁移。** 更早的一种读法把它当作冲突，因为 `Tokenizer` 的 `hasCreate` 是一个没有回调的布尔值，而 #6829 为 `MultiSelector` 提议了一个处理函数。OQ5 以另一种方式裁定：`Tokenizer` 自行铸造 token，并通过 `onChange(items, {item, type: 'create'})` 报告它，这恰好是 DEC-3 所描述的形状，因此 `Tokenizer` 已经符合，什么也不用改。当 #6829 回来时，`MultiSelector` 会收敛到它。
 
 ## Current-state impact
 
-- `architecture:public-component-api` gains `spec:AST-056` in its
-  `deciding_specs` and a line in its `Deciding specs` list when this record
-  becomes `current`. No invariant of that record changes: FR1–FR7 sit inside
-  its INV2, INV3, and INV9 grammar rather than amending it.
-- `contributing:api-conventions` and the wiki's `Prop Naming` section gain the
-  state-naming rule: one observable state has one prop name and one type
-  across every component that has it, and a new prop may not introduce a
-  second name for a state an existing one already expresses. Neither surface
-  rules on this today.
-- `component:Selector`, `component:MultiSelector`, `component:Tokenizer`,
-  `component:Typeahead`, `component:BaseTypeahead`, and
-  `component:CommandPalette` cite this record instead of each recording a
-  private copy. `component:MultiSelector` is `authority: draft` and is drafting
-  exactly such a copy; that claim is withdrawn in favour of FR5 and FR6 here.
-- [#6829](https://github.com/meta/astryx/pull/6829) is blocked on this
-  ruling. Its `hasCreate` + `onCreate` pair is rejected by FR5, which admits
-  the same user need as `hasCreate` alone, reported through the component's
-  existing `onChange` with a descriptor naming the creation — the shape
-  `Tokenizer` already ships — so the capability cannot be half-configured and
-  one word does not carry two contracts.
-- `family:input-fields`, `spec:AST-002`, and `spec:AST-017` are read, not
-  changed: field chrome, admission, and the deprecation lifecycle keep their
-  owners.
-- No shipped public API changes on this record's own merge. Every component
-  keeps every prop and every default until an adoption change lands.
-- While this record is `draft` its `review-applicability:v1` block routes
-  nothing: global routing loads `current` claims only
-  (`architecture:knowledge-contracts` INV20). It becomes live on approval.
+- 当本记录成为 `current` 时，`architecture:public-component-api` 会在其 `deciding_specs` 中获得 `spec:AST-056`，并在其 `Deciding specs` 列表中增加一行。该记录的任何不变式都不改变：FR1–FR7 位于其 INV2、INV3 与 INV9 语法之内，而不是对其修正。
+- `contributing:api-conventions` 与 wiki 的 `Prop Naming` 小节将获得状态命名规则：一个可观察状态在每个具有它的组件上只有一个 prop 名称和一个类型，新 prop 不得为现有 prop 已表达的状态引入第二个名称。今天这两个表面都没有对此作出规定。
+- `component:Selector`、`component:MultiSelector`、`component:Tokenizer`、`component:Typeahead`、`component:BaseTypeahead` 与 `component:CommandPalette` 引用本记录，而不是各自记录一份私有副本。`component:MultiSelector` 是 `authority: draft`，并且正在起草的正是这样一份副本；该声明撤回，让位于此处的 FR5 与 FR6。
+- [#6829](https://github.com/meta/astryx/pull/6829) 被这条裁定阻塞。它的 `hasCreate` + `onCreate` 组合被 FR5 否决，FR5 以单独的 `hasCreate` 接纳同样的用户需求，并通过组件现有的 `onChange` 报告，携带一个点名创建行为的描述符——即 `Tokenizer` 已经发布的形状——因此该能力无法被半配置，一个词也不会承载两套契约。
+- `family:input-fields`、`spec:AST-002` 与 `spec:AST-017` 只被阅读，不被修改：字段外观、接纳与弃用生命周期仍归其所有者。
+- 本记录自身合并时不改变任何已发布的公共 API。在每个采用变更落地之前，每个组件都保留每个 prop 与每个默认值。
+- 当本记录处于 `draft` 时，它的 `review-applicability:v1` 块不路由任何东西：全局路由只加载 `current` 声明（`architecture:knowledge-contracts` INV20）。它在获批后生效。
 
 ## Verification
 
-| Contract  | Verification                                                                                      | Representative states                                                                                     | Mutation or failure expectation                                                                                                                                     |
-| --------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1, FR2  | Per-adopter prop-surface suites plus the repository's exported-surface and `.doc.mjs` prop checks | Each adopter's declared props; the exported object type imported from the package entry point             | A top-level prop whose name carries `search`, a key repeating the prefix, or an unexported object type fails.                                                       |
-| FR3       | Per-adopter rendering suites                                                                      | `search` absent; `search={{}}`; `search` omitted on a component that requires it                          | A query input rendering with the prop absent, residual query state, or a required/optional declaration that contradicts whether the component holds choices, fails. |
-| FR4       | Per-adopter suites in both modes                                                                  | No `source`, with choices the component holds; a `source` supplied; a query matching nothing in each mode | Divergent observable states between the two modes, or a component re-filtering what a `source` returned, fails.                                                     |
-| FR5, AR1  | Per-adopter suites plus their live-region assertions                                              | A string `emptyText`; an element `emptyText`; the adjacent "no choices at all" state                      | A differently named or typed key, or an announcement that does not carry what the element rendered, fails. This is the gap AR1 names on `main` today.               |
-| FR6, FR7  | Type-level checks plus per-adopter suites                                                         | `onCreate` given with `search` present; `onCreate` given with `search` absent                             | A create affordance reachable without search, a boolean gating a handler, or a silently inert configuration, fails.                                                 |
-| FR8       | Per-adopter suites                                                                                | Typing; clearing; programmatic change                                                                     | A callback that suppresses the component's own resolution, or a component requiring it, fails.                                                                      |
-| FR9       | Overlap suites on each adopter plus the declared-tier Changeset check                             | Old prop alone; key alone; both given; neither                                                            | Old usage changing behavior, a silent win for the old prop, a missing `DEP-*`/`CLN-*` pair, or a removal absent from the frozen minor manifest, fails.              |
-| FR10, AR2 | Public-API review against this record; per-adopter accessible-name assertions                     | A proposed new search capability; each adopter's query input, named and unnamed                           | A new top-level `search*` prop admitted, or a query input whose only name is its placeholder, fails.                                                                |
+| 契约      | 验证                                                                  | 代表性状态                                                                           | 变更或失败预期                                                                                          |
+| --------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| FR1、FR2  | 每个采用方的 prop 表面套件，加上仓库的导出表面与 `.doc.mjs` prop 检查 | 每个采用方所声明的 prop；从包入口点导入的导出对象类型                                | 名称带有 `search` 的顶层 prop、重复前缀的键，或未导出的对象类型，即失败。                               |
+| FR3       | 每个采用方的渲染套件                                                  | `search` 缺失；`search={{}}`；在需要它的组件上省略 `search`                          | 在 prop 缺失时仍渲染出查询输入框、残留的查询状态，或与组件是否持有选项相矛盾的必填/可选声明，即失败。   |
+| FR4       | 两种模式下每个采用方的套件                                            | 无 `source`，且组件持有选项；提供 `source`；每种模式下都有一个匹配不到任何结果的查询 | 两种模式之间出现不一致的可观察状态，或组件对 `source` 返回的结果重新过滤，即失败。                      |
+| FR5、AR1  | 每个采用方的套件加上其实时区域断言                                    | 字符串 `emptyText`；元素 `emptyText`；相邻的“完全没有选项”状态                       | 名称或类型不同的键，或播报没有携带元素所渲染内容的，即失败。这就是 AR1 今天在 `main` 上指出的缺口。     |
+| FR6、FR7  | 类型层检查加上每个采用方的套件                                        | 在 `search` 存在时提供 `onCreate`；在 `search` 缺失时提供 `onCreate`                 | 不经过搜索就能触达的创建能力、门控处理函数的布尔值，或静默失效的配置，即失败。                          |
+| FR8       | 每个采用方的套件                                                      | 键入；清空；程序化变更                                                               | 抑制组件自身解析的回调，或要求该回调的组件，即失败。                                                    |
+| FR9       | 每个采用方上的重叠套件，加上已声明层级 Changeset 检查                 | 仅旧 prop；仅新键；两者都提供；两者都不提供                                          | 旧用法改变行为、旧 prop 静默胜出、缺失 `DEP-*`/`CLN-*` 配对，或移除未出现在冻结的小版本清单中，即失败。 |
+| FR10、AR2 | 依据本记录进行公共 API 审查；每个采用方的无障碍名称断言               | 提议的搜索新能力；每个采用方的查询输入框，有名称与无名称                             | 接纳新的顶层 `search*` prop，或查询输入框唯一的名称是其占位符，即失败。                                 |
 
-Known verification gap: none of the suites above exist on `main`, and no
-component implements `search`. This record is `draft`, does not govern review,
-and names no implementation. AR1 additionally records a defect in current
-shipped behavior rather than a passing contract.
+已知验证缺口：上述套件在 `main` 上一个都不存在，也没有任何组件实现 `search`。本记录是 `draft`，不管辖审查，也不点名任何实现。AR1 另外记录的是当前已发布行为中的一个缺陷，而不是一条通过的契约。
 
 ## Decision log
 
-Every decision below was ruled by `cixzhang` on 2026-10-02, on this record's
-pull request.
+以下每项决策均由 `cixzhang` 于 2026-10-02 在本记录的 pull request 上裁定。
 
 ### DEC-1 — One name and one type for "the query matched nothing"
 
 **Reference:** `spec:AST-056/DEC-1`
+
 **Decider:** `cixzhang`, `2026-10-02`
 
-`emptySearchText`, accepting `ReactNode`, everywhere.
+`emptySearchText`，接受 `ReactNode`，处处如此。
 
-This is the drift that reached people. A person who searches a `Selector` and
-a `Tokenizer` in the same product meets the same dead end, and today the two
-components do not even agree what to call it, let alone what a caller may put
-there. `Selector`, `MultiSelector` and `CommandPalette` say `emptySearchText`
-and accept a `ReactNode`; `Tokenizer`, `Typeahead`, `BaseTypeahead` and
-`ChatComposerInput` say `emptySearchResultsText` and accept a `string` — so
-the same product cannot offer the same "no results, try X" row in both, and a
-builder who learns one component has to discover the other.
+这正是触及了人的那种漂移。在同一款产品里搜索 `Selector` 和 `Tokenizer` 的人，会遇到同一个死胡同，而今天这两个组件连该叫它什么都无法一致，更不用说调用方可以往里放什么。`Selector`、`MultiSelector` 与 `CommandPalette` 说 `emptySearchText` 并接受 `ReactNode`；`Tokenizer`、`Typeahead`、`BaseTypeahead` 与 `ChatComposerInput` 说 `emptySearchResultsText` 并接受 `string`——因此同一款产品无法在两者中都提供同一行“没有结果，试试 X”，而学会了一个组件的构建者还得再去发现另一个。
 
-The name resolves toward `emptySearchText` rather than a shorter one, and the
-reason is load-bearing: `Selector` and `MultiSelector` already declare BOTH
-`emptyText` and `emptySearchText`, for two genuinely different sentences —
-"there is nothing here at all" and "nothing matched what you typed". Shortening
-the search state's name would collide with a shipped prop meaning the other
-thing, on the two components with the most search surface. So three components
-rename toward the majority spelling instead of seven renaming away from it.
+这个名称朝向 `emptySearchText` 而不是更短的名字，理由是承重的：`Selector` 与 `MultiSelector` 已经同时声明了 `emptyText` 与 `emptySearchText`，对应两句确实不同的话——“这里根本什么都没有”与“没有东西匹配你所键入的内容”。把搜索状态的名称缩短，就会与一个含义是另一件事的已发布 prop 在这两个搜索表面最大的组件上相撞。因此三个组件朝向多数拼法重命名，而不是七个组件背离它重命名。
 
-The type resolves toward `ReactNode`, not toward `string`. A dead end is
-exactly where a product wants a link, an illustration, or a create
-affordance, and narrowing the four components that already allow it would
-remove a shipped capability to win consistency. Widening the other three is
-what lets a product offer the same dead end everywhere, which is the whole
-point of agreeing on the name.
+类型朝向 `ReactNode`，而不是朝向 `string`。死胡同恰恰是产品想要放链接、插图或创建能力的地方，而收窄那四个已经允许这么做的组件，会为了赢得一致性而移除一项已发布能力。放宽另外三个，才让产品能在每个地方提供同一个死胡同，而这正是就名称达成一致的全部意义。
 
 ### DEC-2 — No `search` configuration object
 
 **Reference:** `spec:AST-056/DEC-2`
+
 **Decider:** `cixzhang`, `2026-10-02`
 
-An earlier draft of this record proposed collecting every search-related prop
-into one object-valued `search` prop, with `placeholder`, `emptyText`,
-`onChange` and `onCreate` as keys. Rejected.
+本记录更早的一版草稿提议把每个搜索相关 prop 收集进一个对象取值的 `search` prop，以 `placeholder`、`emptyText`、`onChange` 与 `onCreate` 作为键。已否决。
 
-The object would have solved tidiness rather than anything a person using an
-Astryx product meets. Three flat props are not hard to pass, and the survey
-below shows the repository has no settled convention to appeal to: every
-`*Config` object in core configures a hook, and the only object-valued
-component props are `collapsible` and `button`.
+这个对象解决的会是整洁性，而不是使用 Astryx 产品的人会遇到的任何东西。三个扁平 prop 并不难传，而下面的调查显示仓库没有任何已确立的约定可供援引：core 中每个 `*Config` 对象配置的都是一个 Hook，而仅有的对象取值组件 prop 是 `collapsible` 与 `button`。
 
-Against that, the cost was concrete. Nine shipped props would have entered a
-deprecation cycle, four of them a **required** `searchSource`, breaking every
-callsite of four components in the cleanup minor. `ComplexSelector` would
-have taken a `search` object with one meaningful key, since it owns its own
-content. And autocomplete gets worse, not better: typing inside a component's
-tag lists flat props immediately, while `search={{` has to be known about
-first.
+与此相对，代价是具体的。九个已发布 prop 将进入弃用周期，其中四个是**必填**的 `searchSource`，会在清理小版本中破坏四个组件的每个调用点。`ComplexSelector` 会拿到一个只有一个有意义键的 `search` 对象，因为它拥有自己的内容。而自动补全变得更糟而不是更好：在组件的标签列表里键入会立即展开扁平 prop，而 `search={{` 必须先被知道才存在。
 
-What the drift actually called for was a shared vocabulary, which DEC-1 and
-FR6 give without restructuring anything.
+漂移真正需要的是一套共享词汇，DEC-1 与 FR6 在不重构任何东西的情况下就给出了它。
 
 ### DEC-3 — A query-only capability is enabled by a boolean and reported through the existing change callback
 
 **Reference:** `spec:AST-056/DEC-3`
+
 **Decider:** `cixzhang`, `2026-10-02`
 
-A capability that only exists while a query does — creating a value from text
-that matched nothing — is enabled by one boolean and reported through the
-component's primary change callback, carrying a descriptor that says what kind
-of change it was.
+只在查询存在时才存在的能力——从没有匹配到任何结果的文字中创建一个值——由单个布尔值启用，并通过组件的主变更回调报告，携带一个说明这是哪一类变更的描述符。
 
-`Tokenizer` already does this: `hasCreate` turns the row on, and
-`onChange(items, change)` reports `{item, type: 'create'}` beside `'add'`,
-`'remove'` and `'reorder'`. A caller learns about a creation on the channel it
-already listens to for every other change, and nothing can be half-configured,
-because there is only one switch.
+`Tokenizer` 已经这么做：`hasCreate` 打开那一行，而 `onChange(items, change)` 在 `'add'`、`'remove'` 与 `'reorder'` 之外报告 `{item, type: 'create'}`。调用方在它已经为其他每种变更监听的通道上得知一次创建，而且什么都不可能被半配置，因为只有一个开关。
 
-The shape this rules out is a boolean and a handler gating each other, which
-is what `hasCreate && hasSearch && onCreate != null` produces: three ways to
-be half-set, every one of them rendering nothing, reporting nothing, and
-warning about nothing. A builder sets the boolean, sees no create row, and has
-no way to learn why.
+这条裁定排除的形状是一个布尔值与一个处理函数互相门控，而这正是 `hasCreate && hasSearch && onCreate != null` 所产生的结果：三种半设置的方式，每一种都什么都不渲染、什么都不报告、也什么都不警告。构建者设了布尔值，看不到创建行，也没有任何办法知道为什么。
 
-A component whose value does not carry the created object — `MultiSelector`
-holds `options` separately from `value: string[]` — reports the next value and
-the creation together, so the caller adds the option and accepts the value in
-one update. That obligation is the caller's and must be stated where the
-capability lands; it does not justify a second shape for the same capability.
+一个其值不携带所创建对象的组件——`MultiSelector` 把 `options` 与 `value: string[]` 分开持有——会把下一个值与创建一起报告，因此调用方在一次更新中同时添加选项并接受值。那项义务属于调用方，并且必须在能力落地之处写明；它并不证成为同一能力另设一种形状。
 
-The one case a boolean cannot prevent is enabling creation on a component
-whose query input is switched off. That warns in development (FR5) rather than
-rendering nothing in silence.
+布尔值无法防止的一种情况，是在查询输入框已关闭的组件上启用创建。那会在开发环境警告（FR5），而不是静默地什么都不渲染。
 
 ### DEC-4 — The vocabulary is fixed; new capabilities join it
 
 **Reference:** `spec:AST-056/DEC-4`
+
 **Decider:** `cixzhang`, `2026-10-02`
 
-Every prop in the survey below was a reasonable local decision. The drift came
-from each one being made alone: two names for one state, two types for one
-name, `searchLabel` in lab, `maxSearchResults` on one component.
+下面调查中的每个 prop 都是一个合理的局部决策。漂移来自每一个都独自做出：一个状态两个名字、一个名字两种类型、lab 里的 `searchLabel`、某个组件上的 `maxSearchResults`。
 
-So the standard is a vocabulary rather than a structure. A new search-related
-prop names its state in the words this record fixes, and does not introduce a
-second name for something an existing prop already says. That is checkable in
-review without anybody restructuring a component.
+因此标准是一套词汇，而不是一种结构。新的搜索相关 prop 用本记录所固定的词语来命名其状态，并且不为现有 prop 已经说过的某样东西引入第二个名字。这在审查中可检查，而无需任何人重构组件。
 
 ## Open questions
 
-- **OQ1 — ANSWERED. Two concepts, split by who owns the choices.** (`human-api`)
+- **OQ1 — 已回答。两个概念，按谁拥有选项来划分。**（`human-api`）
 
-  `cixzhang`, 2026-10-02: a component that holds its own choices takes the
-  `search` object; a component whose choices arrive from the caller keeps
-  `searchSource`. The shared matching rule and `createStaticSource` show the
-  two can be unified, but unifying them would make `source` a required member
-  of an otherwise-optional object on four components, and would move a shipped
-  required prop for no gain to its callers. FR1 and FR4 record the split, and
-  DEC-1 carries the reasoning.
+  `cixzhang`，2026-10-02：持有自己选项的组件接受 `search` 对象；其选项来自调用方的组件保留 `searchSource`。共享的匹配规则与 `createStaticSource` 表明两者可以统一，但统一会使 `source` 成为四个组件上一个本来可选的对象中的必填成员，并会为了对其调用方毫无收益而移动一个已发布的必填 prop。FR1 与 FR4 记录了这种划分，DEC-1 承载了理由。
 
-- **OQ2 — ANSWERED. Deprecate with a cycle.** (`human-api`)
+- **OQ2 — 已回答。带周期地弃用。**（`human-api`）
 
-  `cixzhang`, 2026-10-02: `emptySearchResultsText` is marked `@deprecated`
-  pointing at `emptySearchText`, both work through the overlap, and removal
-  happens in a later minor under `spec:AST-017` FR28–FR31. The cost is one
-  doubled prop on three components, which is
-  what FR7 already describes — far less than the nine pairs the rejected
-  object form would have cost. The rename is codemoddable even where a caller
-  spreads props, because the value's meaning does not change and the type only
-  widens.
+  `cixzhang`，2026-10-02：`emptySearchResultsText` 被标记为 `@deprecated` 并指向 `emptySearchText`，两者在重叠期内都工作，移除发生在 `spec:AST-017` FR28–FR31 下的之后一个小版本中。代价是三个组件上有一个成对的 prop，而这正是 FR7 已经描述的内容——远小于被否决的对象形式本会带来的九对。这次重命名即使调用方展开 props 也可用 codemod 完成，因为值的含义不变，类型只是放宽。
 
-- **OQ3 — ANSWERED. No.** (`human-api`)
+- **OQ3 — 已回答。不。**（`human-api`）
 
-  `cixzhang`, 2026-10-02: observing the query does not become public on
-  `Selector` or `MultiSelector` as part of this record. `searchQuery` stays
-  internal state on both. A caller who needs to act on the query gets a
-  capability that names what it is for — creation, below — rather than a raw
-  query feed they must then re-implement the component's own behavior around.
+  `cixzhang`，2026-10-02：作为本记录的一部分，观察查询不会在 `Selector` 或 `MultiSelector` 上成为公共能力。`searchQuery` 在两个组件上仍是内部状态。需要基于查询采取行动的调用方，得到的是一项点明其用途的能力——下面所述的创建——而不是一条原始查询流，然后还得围绕它重新实现组件自身的行为。
 
-- **OQ4 — ANSWERED. Three adopters; the rest are governed by FR1 only.** (`human-api`)
+- **OQ4 — 已回答。三个采用方；其余只受 FR1 管辖。**（`human-api`）
+  `cixzhang`, 2026-10-02：`Selector`、`MultiSelector` 和 `ComplexSelector` 正是原本会放置 `search` 对象的地方，因此它们是本记录最直接涉及的组件；在对象被否决（DEC-2）之后，这一区别基本消解。`Tokenizer`、`Typeahead`、`BaseTypeahead`、`CommandPalette` 和 `ChatComposerInput` 保留 `searchSource`，并受 FR1（“查询没有匹配到任何内容”只有一个名字、一种类型）与 FR6（不为这些 props 已经表达的状态另起名字）约束。`PowerSearch` 仍被引用并排除在外：结构化的字段/操作符/值表达式不是对列表的类型化查询。
 
-  `cixzhang`, 2026-10-02: `Selector`, `MultiSelector` and `ComplexSelector`
-  are where a `search` object would have gone, so they are the components this
-  record most directly addresses; with the object rejected (DEC-2) the
-  distinction mostly dissolves. `Tokenizer`, `Typeahead`, `BaseTypeahead`,
-  `CommandPalette` and `ChatComposerInput` keep `searchSource` and are bound by
-  FR1 (one name, one type for "the query matched nothing") and FR6 (no second
-  name for a state these props already express). `PowerSearch` stays cited and
-  excluded: a structured field/operator/value expression is not a typed query
-  over a list.
+- **OQ5 — 已答复。一项能力，一个布尔值加一个变更描述符。** (`human-api`)
 
-- **OQ5 — ANSWERED. One capability, a boolean plus a change descriptor.** (`human-api`)
+  `cixzhang`, 2026-10-02：创建式可供性由一个布尔值启用，并通过组件既有的变更回调上报，回调携带一个说明本次变更是一次创建的描述符。没有单独的处理函数 prop，也没有 `create` 配置对象。
 
-  `cixzhang`, 2026-10-02: a create affordance is enabled by a boolean and
-  reported through the component's existing change callback, carrying a
-  descriptor that says the change was a creation. No separate handler prop,
-  and no `create` configuration object.
+  `Tokenizer` 已经是这样工作的：`onChange(items, change)`，其中 `change` 是 `{item, type: 'create'}`，与 `'add'`、`'remove'` 和 `'reorder'` 并列。
 
-  `Tokenizer` already works this way: `onChange(items, change)` where `change`
-  is `{item, type: 'create'}`, alongside `'add'`, `'remove'` and `'reorder'`.
-  `MultiSelector` can report the same way — the next value together with a
-  descriptor naming the created query — so the caller adds the option and
-  accepts the value in one update, learning about creation on the channel it
-  already listens to for every other selection change.
+  `MultiSelector` 可以用同样的方式上报——下一个值连同指明所创建查询的描述符——因此调用方在一次更新中既添加选项又接受该值，并在它已经为其他所有选择变更监听的通道上得知创建的发生。
 
-  This supersedes an earlier answer here that treated the two as different
-  capabilities needing different shapes, on the grounds that `MultiSelector`
-  splits `options` from `value: string[]` and so cannot mint an option the way
-  `Tokenizer` mints a token. That difference is real but does not force a
-  separate handler: reporting the value and the creation together is exactly
-  what the descriptor is for. `hasCreate` therefore means one thing in both
-  components, which is FR1's rule applied to a verb rather than a state.
+  这取代了此处早先的一个答复：该答复把两者视为需要不同形态的不同能力，理由是 `MultiSelector` 将 `options` 与 `value: string[]` 分开，因而无法像 `Tokenizer` 铸造 token 那样铸造一个选项。这一差异确实存在，但并不强制要求一个单独的处理函数：把值和创建一起上报，正是描述符的用途所在。因此 `hasCreate` 在两个组件中含义一致，这是把 FR1 的规则应用于动词而非状态。
 
-  Two things the contract owes, to be settled where the capability lands
-  rather than here: the descriptor's shape as a public type, and the caller's
-  obligation to add the created option — `Tokenizer` has no such obligation
-  because its value carries the object itself, while a `MultiSelector` caller
-  who accepts the value without adding the option holds an id that matches
-  nothing.
+  契约还欠两件事，且应在该能力落地之处而非在此处解决：描述符作为公共类型的形态，以及调用方添加所创建选项的义务——`Tokenizer` 没有这种义务，因为它的值本身就携带该对象，而一个 `MultiSelector` 调用方若接受了值却不添加选项，就持有一个匹配不到任何东西的 id。
 
-  `minQueryLength`, `debounceMs` and the trigger-menu `loadingText` stay where
-  they are. They describe fetching, which only exists where the caller owns
-  the choices, and this record does not reorganize shipped props.
+  `minQueryLength`、`debounceMs` 和触发菜单的 `loadingText` 保持原位。它们描述的是抓取，而抓取只在调用方拥有选项的地方存在，本记录也不重排已发布的 props。
 
 ## Content boundary
 
-This record does not duplicate any component's anatomy, prop table, theming
-targets, or consumer examples; the admission argument in `spec:AST-002`; the
-deprecation, cleanup, and release-manifest mechanics in `spec:AST-017`; the
-shared naming grammar in `architecture:public-component-api`; the field chrome
-in `family:input-fields`; or the matching, debouncing, and cancellation
-behavior each component's own record owns. It links their canonical owners.
+本记录不重复任何组件的结构、prop 表、主题化目标或使用方示例；`spec:AST-002` 中的准入论证；`spec:AST-017` 中的弃用、清理和发布清单机制；`architecture:public-component-api` 中的共享命名语法；`family:input-fields` 中的字段外壳；以及各组件自身记录所拥有的匹配、防抖和取消行为。它链接它们的权威所有者。

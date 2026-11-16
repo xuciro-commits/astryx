@@ -31,230 +31,108 @@ affects_consumer_docs: []
 
 ## Intent
 
-People using Astryx components should get the keyboard, focus, meaning, and state
-promised by [WCAG 2.2](https://www.w3.org/TR/WCAG22/) and the
-[WAI-ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/) widget pattern
-Astryx adopts. Reusable accessibility spec tests turn those promises into
-reviewable contracts instead of requiring each component author to reinterpret
-the standards.
+使用 Astryx 组件的人，应当获得 [WCAG 2.2](https://www.w3.org/TR/WCAG22/) 与 Astryx 所采用的 [WAI-ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/) 控件模式所承诺的键盘、焦点、含义和状态。可复用的无障碍规格测试把这些承诺转化为可审查的契约，而不需要每位组件作者重新解释标准。
 
-A spec test states one user-observable requirement, cites its source, names the
-evidence layer that can prove it, and runs unchanged against every conforming
-binding. The test suite complements axe, browser checks, and assistive-technology
-review. It does not claim that one automated pass proves complete accessibility.
+一项规格测试陈述一项用户可观察的需求，引用其来源，指明能够证明它的证据层，并对每个符合规范的绑定原样运行。该测试套件补充 axe、浏览器检查和辅助技术审查。它并不声称一次自动通过就能证明完整的无障碍性。
 
 ## Non-goals
 
-- Implementing the spec-test package or CI jobs in this specification pull request.
-- Defining how existing component tests migrate; that is owned by
-  [AST-021](../AST-021/spec.md).
-- Publishing the first implementation as a supported package.
-- Reimplementing axe rules or replacing browser, visual, manual, or real-AT
-  verification.
-- Treating WAI-ARIA Authoring Practices as a substitute for WCAG conformance.
-- Using the WCAG 3.0 working draft as a pass/fail baseline before it is ready.
-- Encoding page-owned requirements in an isolated component contract when the
-  component cannot satisfy them.
+- 在本规格 pull request 中实现 spec-test 包或 CI 任务。
+- 定义现有组件测试如何迁移；这由 [AST-021](../AST-021/spec.md) 负责。
+- 把首个实现作为受支持的包发布。
+- 重新实现 axe 规则，或取代浏览器、视觉、手动或真实 AT 验证。
+- 把 WAI-ARIA Authoring Practices 当作 WCAG 符合性的替代品。
+- 在 WCAG 3.0 工作草案就绪之前，把它用作通过/不通过的基线。
+- 当组件无法满足由页面负责的需求时，把这类需求编码进孤立的组件契约。
 
 ## Requirements
 
 ### Normative basis and scope
 
-- **FR1 — WCAG 2.2 A and AA are the conformance baseline.** Every WCAG
-  conformance expectation MUST cite an applicable WCAG 2.2 Level A or AA success
-  criterion. A pattern expectation MAY instead cite an exact APG requirement when
-  APG supplies the interaction detail. In that case it MUST identify the WCAG 2.2
-  user outcome it supports without inventing a success-criterion mapping. WCAG 3.0
-  principles MAY inform plain-language intent, user needs, and future research, but
-  a WCAG 3.0 draft requirement MUST NOT create or clear a pass/fail check without a
-  later current Astryx record.
-- **FR2 — APG defines an adopted widget pattern, not universal conformance.** When
-  Astryx adopts a WAI-ARIA APG pattern, the pattern contract MUST cite the exact APG
-  roles, states, properties, or keyboard interaction it adopts and the WCAG 2.2
-  outcome those mechanics support. A component MAY use another standards-valid
-  model only when its current component, family, or system contract records that
-  choice; the spec test MUST follow the owning contract rather than forcing an APG
-  example mechanically.
-- **FR3 — Contracts have two layers.** Every pattern review MUST consider both:
-  broad component-owned requirements that apply across patterns, and
-  pattern-specific role, state, relationship, keyboard, and focus requirements.
-  A component part may bind to more than one pattern. A whole component MUST NOT be
-  forced into one pattern when its parts have distinct roles.
-- **FR15 — Adoption follows the role a component already plays.** Where a
-  component part already plays an APG pattern's role, Astryx adopts that pattern's
-  required parts for it: the role, the accessible name, the state and relationship
-  properties, and activation by Tab plus Enter or Space. The pattern's optional
-  keyboard extras — arrow-key movement between parts, Home and End — are adopted
-  only where the component already acts as one composite control; a set of
-  independently focusable controls does not gain them. The owning component record
-  names the parts it adopts, any required part it does not adopt with the reason,
-  and any extra it adopts beyond this rule as a named exception.
+- **FR1 — WCAG 2.2 的 A 级与 AA 级是符合性基线。** 每一项 WCAG 符合性期望都必须引用一条适用的 WCAG 2.2 A 级或 AA 级成功标准。当 APG 提供了交互细节时，模式期望也可以改为引用一条确切的 APG 需求。在这种情况下，它必须指明其支持的 WCAG 2.2 用户结果，而不得虚构成功标准映射。WCAG 3.0 原则可以为通俗语言意图、用户需求和未来研究提供参考，但若没有后续的当前 Astryx 记录，WCAG 3.0 草案需求不得创建或清除一项通过/不通过的检查。
+- **FR2 — APG 定义的是被采用的控件模式，而不是通用符合性。** 当 Astryx 采用某个 WAI-ARIA APG 模式时，模式契约必须引用它所采用的确切 APG 角色、状态、属性或键盘交互，以及这些机制所支持的 WCAG 2.2 结果。只有当组件当前的组件契约、family 契约或系统契约记录了这一选择时，组件才可以使用另一种符合标准的模型；规格测试必须遵循拥有该契约的记录，而不是机械地套用某个 APG 示例。
+- **FR3 — 契约有两层。** 每次模式审查都必须同时考虑两者：适用于多种模式的、宽泛的组件自有需求，以及模式特有的角色、状态、关系、键盘和焦点需求。一个组件部件可以绑定到多个模式。当组件的各个部件具有不同角色时，不得把整个组件强行归入一个模式。
+- **FR15 — 采用跟随组件已经承担的角色。** 当某个组件部件已经承担某个 APG 模式的角色时，Astryx 为它采用该模式的必需部件：角色、可访问名称、状态与关系属性，以及通过 Tab 加 Enter 或 Space 激活。模式的可选键盘扩展——部件之间的方向键移动、Home 和 End——仅在组件已经作为一个复合控件运作时才被采用；一组可独立聚焦的控件不会获得这些扩展。拥有该组件的记录要列出它所采用的部件、它未采用的任何必需部件及原因，以及它在本规则之外采用的任何扩展（作为具名例外）。
 
 ### Expectation contract
 
-- **FR4 — Every expectation is traceable.** An expectation MUST have a stable id,
-  a short user outcome, an exact normative source (WCAG 2.2 success criterion, APG
-  requirement, current Astryx contract, or an applicable combination),
-  applicability conditions, an evidence layer, and an enforcement class. The test
-  name and failure output MUST expose the expectation id and source reference so a
-  failure can be understood without opening the runner implementation.
-- **FR5 — Applicability is explicit.** For every checklist dimension, an author
-  MUST either encode an applicable expectation or record why the dimension is not
-  owned by this pattern, binding, or evidence layer. Silence is not an exemption.
-  An exemption MUST name the actual owner or verification method; it MUST NOT be a
-  generic “not applicable” escape hatch.
-- **FR6 — Evidence layers keep distinct proof boundaries.** Expectations are
-  classified as unit, DOM, accessibility-tree, axe, real-browser, visual, lint,
-  manual, or real-AT checks. A lower layer MUST NOT claim a result only a higher
-  layer observes. Announcement wording or timing, virtual-cursor entry, and known
-  AT/browser divergence follow [AST-009](../AST-009/spec.md); an accessibility-tree
-  snapshot does not prove spoken output.
-- **FR7 — Contracts assert outcomes, not Astryx internals.** A reusable expectation
-  MUST query and act through public semantics and observable behavior. It MUST NOT
-  depend on Astryx class names, private DOM wrappers, implementation callbacks, or
-  source layout unless an owning current record makes that structure contractual.
-  Component-specific API effects remain in component tests.
-- **FR8 — Interactive expectations prove the complete transition.** Keyboard,
-  pointer, state, and focus expectations MUST exercise the relevant starting state,
-  action, resulting state, and reverse or dismissal path when the pattern supports
-  one. Merely finding a role or proving one direction of a toggle is insufficient.
-- **FR9 — Enforcement is separate from severity and tool coverage.** A directly
-  applicable WCAG 2.2 Level A or AA expectation is `required`. An APG or
-  Astryx-specific expectation is `required` only when a current Astryx record adopts
-  that outcome. `Advisory` expectations report best practice, an unsettled choice,
-  or an outcome not yet adopted as an Astryx contract. `Advisory` expectations
-  report only; `required` expectations gate new or changed behavior at a layer that
-  can objectively verify them. A coverage score, tool capability, or ease of
-  automation MUST NOT promote or demote either class.
-  WCAG 2.5.2 (pointer cancellation) is met by cancelling a press that slides
-  off its control before the lift, with one narrow exception: an instantly
-  reversible single-step toggle, where a second activation undoes the first,
-  may complete on a lift after the pointer slid off, meeting 2.5.2 through its
-  undo path. The exception covers Switch, Checkbox, and CheckboxListItem. It
-  does not cover Radio, SegmentedControl, DropdownMenuCheckboxItem (whose menu
-  rows act on nothing after a lift off the row), SelectableCard, or any
-  control that selects rather than toggles; other controls join only by a
-  later decision, and every other control that activates on a lift keeps
-  slide-off cancelling (DEC-5) unless DEC-6 covers it. SegmentedControl, a
-  one-axis control, tracks a press along its axis instead (DEC-6): returning
-  to the current choice, or Escape, takes the press back before the lift.
+- **FR4 — 每项期望都可追溯。** 一项期望必须具备稳定的 id、简短的用户结果、确切的规范来源（WCAG 2.2 成功标准、APG 需求、当前 Astryx 契约，或适用的组合）、适用条件、证据层和强制类别。测试名称和失败输出必须暴露期望 id 与来源引用，使失败无需打开运行器实现即可被理解。
+- **FR5 — 适用性是显式的。** 对于每一项检查表维度，作者必须要么编码一项适用的期望，要么记录该维度为何不由该模式、绑定或证据层负责。沉默不是豁免。豁免必须指明实际所有者或验证方法；它不得是笼统的“不适用”逃生口。
+- **FR6 — 证据层保持各自不同的证明边界。** 期望被归类为单元、DOM、无障碍树、axe、真实浏览器、视觉、lint、手动或真实 AT 检查。较低层不得声称只有较高层才能观察到的结果。播报措辞或时机、虚拟光标进入，以及已知的 AT/浏览器差异遵循 [AST-009](../AST-009/spec.md)；无障碍树快照不能证明语音输出。
+- **FR7 — 契约断言结果，而非 Astryx 内部实现。** 可复用的期望必须通过公共语义和可观察行为进行查询与操作。它不得依赖 Astryx 类名、私有 DOM 包装、实现回调或源码布局，除非某个负责的当前记录把该结构定为契约。组件特有的 API 效果仍留在组件测试中。
+- **FR8 — 交互期望证明完整的状态转换。** 当模式支持时，键盘、指针、状态和焦点期望必须演练相关的起始状态、动作、结果状态，以及反向或关闭路径。仅仅找到一个角色或证明开关的一个方向是不够的。
+- **FR9 — 强制与严重程度及工具覆盖范围分离。** 直接适用的 WCAG 2.2 A 级或 AA 级期望为 `required`。APG 或 Astryx 特有的期望，只有在当前 Astryx 记录采用该结果时才为 `required`。`Advisory` 期望报告最佳实践、尚未确定的选择，或尚未作为 Astryx 契约采用的结果。`Advisory` 期望仅作报告；`required` 期望在能够客观验证它们的层上把关新增或变更的行为。覆盖分数、工具能力或自动化难易程度不得提升或降低这两类中的任何一类。WCAG 2.5.2（指针取消）通过取消在抬起之前滑出其控件的按压来满足，但有一个范围很窄的例外：可即时逆转的单步开关（第二次激活会撤销第一次）可以在指针滑出后于抬起时完成，从而通过其撤销路径满足 2.5.2。该例外涵盖 Switch、Checkbox 和 CheckboxListItem。它不涵盖 Radio、SegmentedControl、DropdownMenuCheckboxItem（其菜单行在抬起并离开该行后不作用于任何内容）、SelectableCard，或任何选择而非开关的控件；其他控件只能通过后续决策加入，而每个其他在抬起时激活的控件，除非被 DEC-6 涵盖，否则仍保持滑出取消（DEC-5）。SegmentedControl 是一个单轴控件，改为沿其轴跟踪按压（DEC-6）：在抬起前返回当前选项，或按 Escape，即可撤回该按压。
 
 ### Completeness and review
 
-- **FR10 — Every pattern uses one completeness review.** The review starts with
-  the source map below, then adds applicable WCAG 2.2 component outcomes such as
-  focus not obscured, status messages, target size, contrast, forced colors, and
-  the pattern's APG interactions. Page-owned rows are considered only for fixtures
-  or surfaces that own a page. Every row follows FR5 and FR6 rather than being
-  forced into the reusable runtime contract.
+- **FR10 — 每个模式都使用同一次完整性审查。** 审查从下方的来源映射开始，然后加入适用的 WCAG 2.2 组件结果，例如焦点未被遮挡、状态消息、目标尺寸、对比度、强制颜色，以及该模式的 APG 交互。由页面负责的行仅在拥有页面的测试夹具或界面中被考虑。每一行都遵循 FR5 和 FR6，而不是被强行纳入可复用的运行时契约。
 
-| WCAG 2.2 source                     | Outcome to consider                                                                        | Usual ownership                       |
-| ----------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------- |
-| 1.1.1 Non-text Content              | Informative non-text content has an equivalent alternative; decorative content is ignored. | Component or content                  |
-| 1.3.1 Info and Relationships        | Visual structure and relationships are programmatically available.                         | Component or composition              |
-| 1.3.2 Meaningful Sequence           | Programmatic reading sequence preserves meaning.                                           | Component or composition              |
-| 1.4.1 Use of Color                  | Color is not the only way to convey information or state.                                  | Component, theme, and caller content  |
-| 1.4.3 Contrast (Minimum)            | Text and images of text meet the required contrast.                                        | Component and theme                   |
-| 1.4.11 Non-text Contrast            | Controls, states, and meaningful graphics meet non-text contrast.                          | Component and theme                   |
-| 2.1.1 Keyboard                      | Every component-owned function is operable by keyboard.                                    | Component                             |
-| 2.1.2 No Keyboard Trap              | Keyboard focus can leave any component unless the user has a documented exit.              | Component or composition              |
-| 2.4.2 Page Titled                   | A page has a descriptive title.                                                            | Page only                             |
-| 2.4.3 Focus Order                   | Sequential focus preserves meaning and operation.                                          | Component or composition              |
-| 2.4.4 Link Purpose (In Context)     | A link's purpose is determinable.                                                          | Component and caller content          |
-| 2.4.6 Headings and Labels           | Headings and labels describe their topic or purpose.                                       | Component and caller content          |
-| 2.4.7 Focus Visible                 | Keyboard focus has a visible indicator.                                                    | Component and theme                   |
-| 2.4.11 Focus Not Obscured (Minimum) | Focused content is not entirely hidden by author-created content.                          | Component or composition              |
-| 2.5.8 Target Size (Minimum)         | Pointer targets meet the minimum size or an allowed exception.                             | Component or composition              |
-| 3.1.1 Language of Page              | The page language is programmatically available.                                           | Page only                             |
-| 3.2.4 Consistent Identification     | Repeated functions are identified consistently.                                            | System, component, and caller content |
-| 3.3.2 Labels or Instructions        | Inputs have persistent labels or needed instructions.                                      | Component and caller content          |
-| 4.1.2 Name, Role, Value             | Name, role, state, value, and changes are programmatically available.                      | Component                             |
-| 4.1.3 Status Messages               | Status changes are exposed without moving focus.                                           | Component or composition              |
+| WCAG 2.2 来源                | 需要考虑的结果                                         | 常见归属               |
+| ---------------------------- | ------------------------------------------------------ | ---------------------- |
+| 1.1.1 非文本内容             | 信息性非文本内容具有等效替代；装饰性内容被忽略。       | 组件或内容             |
+| 1.3.1 信息与关系             | 视觉结构和关系可通过程序获得。                         | 组件或组合             |
+| 1.3.2 有意义的顺序           | 程序化阅读顺序保留含义。                               | 组件或组合             |
+| 1.4.1 颜色的使用             | 颜色不是传达信息或状态的唯一方式。                     | 组件、主题和调用方内容 |
+| 1.4.3 对比度（最低）         | 文本和文本图像满足所要求的对比度。                     | 组件和主题             |
+| 1.4.11 非文本对比度          | 控件、状态和有意义的图形满足非文本对比度。             | 组件和主题             |
+| 2.1.1 键盘                   | 每项组件自有功能都可通过键盘操作。                     | 组件                   |
+| 2.1.2 无键盘陷阱             | 除非用户有已记录的退出方式，键盘焦点可以离开任何组件。 | 组件或组合             |
+| 2.4.2 页面标题               | 页面具有描述性标题。                                   | 仅页面                 |
+| 2.4.3 焦点顺序               | 顺序焦点保留含义与操作。                               | 组件或组合             |
+| 2.4.4 链接目的（在上下文中） | 链接的目的可以被确定。                                 | 组件和调用方内容       |
+| 2.4.6 标题和标签             | 标题和标签描述其主题或目的。                           | 组件和调用方内容       |
+| 2.4.7 焦点可见               | 键盘焦点具有可见指示器。                               | 组件和主题             |
+| 2.4.11 焦点未被遮挡（最低）  | 获得焦点的内容不会被作者创建的内容完全隐藏。           | 组件或组合             |
+| 2.5.8 目标尺寸（最低）       | 指针目标满足最小尺寸或获准的例外。                     | 组件或组合             |
+| 3.1.1 页面语言               | 页面语言可通过程序获得。                               | 仅页面                 |
+| 3.2.4 一致的标识             | 重复出现的功能被一致地标识。                           | 系统、组件和调用方内容 |
+| 3.3.2 标签或说明             | 输入具有持久标签或所需说明。                           | 组件和调用方内容       |
+| 4.1.2 名称、角色、值         | 名称、角色、状态、值和变更可通过程序获得。             | 组件                   |
+| 4.1.3 状态消息               | 状态变更无需移动焦点即可被暴露。                       | 组件或组合             |
 
-- **FR11 — The contract itself has positive and negative proof.** Each expectation
-  MUST pass against a minimally conforming fixture or binding and fail when its
-  required outcome is deliberately removed. Pattern-level tests MUST distinguish a
-  real violation from an unsupported harness operation or fixture error.
-- **FR12 — Completion requires an independent accessibility review.** A pattern is
-  complete only when every checklist dimension is encoded or explicitly assigned
-  elsewhere, all expectations are traceable, representative bindings pass or expose
-  exact known gaps, mutation evidence proves required expectations can fail, and an
-  accessibility subject-matter reviewer finds no unaccounted contract-encodable
-  requirement.
-- **FR13 — The pull request describes the spec test in readable form.** A new or
-  materially changed pattern pull request MUST state who is affected, the adopted
-  pattern and scope, the expectation table with source and evidence layer, explicit
-  exemptions, representative bindings and states, known component gaps, and the
-  mutations or failures that prove the contract. The description is the readable
-  specification of the test; the executable contract remains the checked source of
-  truth.
-- **FR14 — Stable ids survive refactors.** Renaming files, helpers, or harnesses MUST
-  preserve expectation ids. Splitting, combining, narrowing, or changing the user
-  outcome creates an explicit contract change and migration for every binding and
-  known-gap record that refers to the affected ids.
+- **FR11 — 契约本身具有正向和负向证明。** 每项期望必须在最低限度符合规范的测试夹具或绑定上通过，并在其必需结果被刻意移除时失败。模式级测试必须把真实违规与不受支持的运行器操作或测试夹具错误区分开。
+- **FR12 — 完成需要独立的无障碍审查。** 只有当每一项检查表维度都被编码或被显式分配到别处、所有期望都可追溯、代表性绑定通过或暴露确切的已知缺口、变异证据证明必需的期望能够失败，并且无障碍主题专家审查者未发现任何未记录的、可编码进契约的需求时，模式才算完成。
+- **FR13 — pull request 以可读形式描述规格测试。** 新增或实质性变更的模式 pull request 必须说明受影响者、所采用的模式与范围、带有来源和证据层的期望表、显式豁免、代表性绑定和状态、已知组件缺口，以及证明契约的变异或失败。描述是测试的可读规格；可执行契约仍是经检查的事实来源。
+- **FR14 — 稳定的 id 在重构后依然存在。** 重命名文件、辅助函数或运行器必须保留期望 id。拆分、合并、收窄或更改用户结果会构成显式的契约变更，并为引用受影响 id 的每个绑定和已知缺口记录进行迁移。
 
 ### Platform support
 
-- Supported feature/engine floor: the affected component's current browser-support
-  contract under [AST-013](../AST-013/spec.md).
-- Unsupported behavior: a harness that cannot observe an assigned evidence layer
-  reports that limitation; it does not pass, skip silently, or substitute a lower
-  layer.
-- Browser evidence: browser-class expectations run in a real shipping engine. A
-  DOM emulator cannot prove focus navigation, native top-layer behavior, computed
-  accessibility-tree exposure, contrast, target geometry, or forced-color paint.
+- 支持的功能/引擎下限：受影响组件在 [AST-013](../AST-013/spec.md) 下当前的浏览器支持契约。
+- 不受支持的行为：无法观察所分配证据层的运行器会报告该限制；它不会通过、静默跳过，或替换为较低层。
+- 浏览器证据：浏览器类期望在真实发布引擎中运行。DOM 模拟器无法证明焦点导航、原生顶层行为、计算后的无障碍树暴露、对比度、目标几何或强制颜色绘制。
 
 ## Current-state impact
 
-[Issue #4112](https://github.com/meta/astryx/issues/4112) established the
-reusable pattern-contract direction. The closed
-[Switch prototype](https://github.com/meta/astryx/pull/4113) demonstrated one
-contract running through jsdom and Chromium bindings, source-linked expectation ids,
-and exact known failures. It also showed why axe and pattern contracts are
-complementary: axe finds broad markup violations, while the contract verifies the
-state and interaction that make a switch behave as a switch.
+[Issue #4112](https://github.com/meta/astryx/issues/4112) 确立了可复用的模式契约方向。已关闭的 [Switch 原型](https://github.com/meta/astryx/pull/4113) 演示了一个契约在 jsdom 与 Chromium 绑定中运行、期望 id 与来源关联，以及确切的已知失败。它还说明为什么 axe 与模式契约是互补的：axe 发现宽泛的标记违规，而契约验证那些使开关真正像开关的状态和交互。
 
-The prototype is evidence, not current policy. Its package name, scoring model,
-priority names, and harness shape remain implementation choices unless this or
-another current record adopts them. This spec keeps the proven contract boundary
-while correcting two risks before scale-out: a numeric score must not stand in for
-conformance, and each expectation must name the evidence layer that can actually
-observe its outcome.
+原型是证据，而非当前策略。除非本记录或其他当前记录采用它们，其包名、评分模型、优先级名称和运行器形态仍属实现选择。本规格保留了已验证的契约边界，同时在规模扩展前纠正两个风险：数值分数不得代替符合性，并且每项期望必须指明能够真正观察其结果的证据层。
 
-The completeness review incorporates recurrent component-owned failures such as
-text alternatives, semantic relationships and order, focus order and visibility,
-descriptive labels and links, consistent identification, persistent instructions,
-and name/role/value/state. It updates that review to WCAG 2.2 and keeps page-owned,
-browser-owned, and real-AT-owned checks outside a component runtime contract when
-that is the honest boundary.
+完整性审查纳入了反复出现的组件自有失败，例如文本替代、语义关系与顺序、焦点顺序与可见性、描述性标签和链接、一致的标识、持久说明，以及名称/角色/值/状态。它把该审查更新到 WCAG 2.2，并在诚实边界如此要求时，把由页面负责、由浏览器负责和由真实 AT 负责的检查保留在组件运行时契约之外。
 
-This accepted spec creates no tests, package, CLI documentation, component behavior,
-or CI gate. Those changes follow in implementation work governed by this record.
+本项已接受的规格不创建任何测试、包、CLI 文档、组件行为或 CI 门禁。这些变更将在本记录管辖的实现工作中随后进行。
 
 ## Verification
 
-| Contract  | Verification                                                                  | Representative states                                                                                                                                                                                                             | Mutation or failure expectation                                                                                                                                                                                                        |
-| --------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1–FR3   | Source and ownership review against WCAG 2.2, APG, and current Astryx records | component-owned A/AA criterion; page-owned criterion; one component with multiple parts                                                                                                                                           | A draft WCAG 3.0 statement gates CI, an APG example is treated as universal WCAG, or one component is forced into one pattern                                                                                                          |
-| FR4–FR9   | Contract schema and runner self-tests                                         | required/advisory; unit/DOM/tree/axe/browser/manual/AT; toggle round trip; component-specific callback; a slide-off lift on Switch, Checkbox, CheckboxListItem, Radio, and DropdownMenuCheckboxItem; a drift off SegmentedControl | A check lacks a source or layer, passes from an unsupported harness, depends on private markup, or one-way behavior hides a reverse-path failure, a slide-off lift that completes a lift-activated control outside the exception fails |
-| FR10–FR12 | Completed checklist, positive/negative fixture suite, and independent review  | simple control; composite widget; overlay; page-owned criterion                                                                                                                                                                   | A dimension disappears silently, a mutation still passes, or review finds an unrecorded contract-encodable requirement                                                                                                                 |
-| FR15      | Adoption review against the component's current role claims                   | a disclosure set adopting required parts only; a composite control adopting arrow keys; a named exception                                                                                                                         | A required part is skipped without the owning record's reason, or arrow keys are added to independently focusable controls without a named exception                                                                                   |
-| FR13–FR14 | Pull-request template check plus id migration tests                           | new pattern; narrowed expectation; file-only refactor                                                                                                                                                                             | Reviewers cannot understand the test from the PR, or an id change orphans bindings and gaps                                                                                                                                            |
-| Platform  | Real-browser and AST-009 evidence-boundary checks                             | focus navigation; accessibility tree; forced colors; announcement timing                                                                                                                                                          | jsdom or a tree snapshot is credited with pixels, browser behavior, or spoken output it cannot observe                                                                                                                                 |
+| 契约      | 验证                                                  | 代表性状态                                                                                                                                                                              | 变异或失败期望                                                                                                                           |
+| --------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1–FR3   | 针对 WCAG 2.2、APG 和当前 Astryx 记录的来源与归属审查 | 组件自有的 A/AA 标准；页面自有标准；一个具有多个部件的组件                                                                                                                              | 一份草案 WCAG 3.0 陈述把关 CI、某个 APG 示例被当作通用 WCAG，或一个组件被强行归入一个模式                                                |
+| FR4–FR9   | 契约 schema 与运行器自测                              | required/advisory；单元/DOM/树/axe/浏览器/手动/AT；开关往返；组件特有回调；在 Switch、Checkbox、CheckboxListItem、Radio 和 DropdownMenuCheckboxItem 上的滑出抬起；偏离 SegmentedControl | 一项检查缺少来源或证据层、从不受支持的运行器通过、依赖私有标记，或单向行为掩盖了反向路径失败；在例外之外完成抬起激活控件的滑出抬起会失败 |
+| FR10–FR12 | 已完成的检查表、正/负测试夹具套件和独立审查           | 简单控件；复合控件；浮层；页面自有标准                                                                                                                                                  | 某个维度无声消失、某个变异仍然通过，或审查发现未记录的、可编码进契约的需求                                                               |
+| FR15      | 针对组件当前角色声明的采用审查                        | 仅采用必需部件的展开集合；采用方向键的复合控件；一个具名例外                                                                                                                            | 某个必需部件在拥有该组件的记录未给出原因的情况下被跳过，或在独立可聚焦控件上添加方向键而无具名例外                                       |
+| FR13–FR14 | pull request 模板检查加上 id 迁移测试                 | 新模式；收窄的期望；仅文件级重构                                                                                                                                                        | 审查者无法从 PR 理解该测试，或 id 变更使绑定与缺口失去关联                                                                               |
+| Platform  | 真实浏览器与 AST-009 证据边界检查                     | 焦点导航；无障碍树；强制颜色；播报时机                                                                                                                                                  | jsdom 或树快照被记上它无法观察到的像素、浏览器行为或语音输出                                                                             |
 
 ### Completion criteria
 
-This spec moves from `accepted` to `shipped` only when:
+只有当以下各项满足时，本规格才从 `accepted` 变为 `shipped`：
 
-- the reusable contract schema enforces FR4–FR6 and FR9;
-- the authoring guide and pull-request template implement FR10–FR13;
-- contract self-tests include conforming and deliberately violating fixtures under
-  FR11;
-- at least one pattern runs against representative jsdom and browser bindings
-  without relying on Astryx-private structure;
-- unsupported harness capabilities fail honestly rather than passing or skipping;
-- no aggregate coverage score is presented as proof of conformance; and
-- the shipped guide links AST-009 for real-AT claims and AST-021 for migration.
+- 可复用契约 schema 强制 FR4–FR6 和 FR9；
+- 创作指南和 pull request 模板实现 FR10–FR13；
+- 契约自测在 FR11 下包含符合规范和刻意违规的测试夹具；
+- 至少一个模式针对代表性 jsdom 与浏览器绑定运行，而不依赖 Astryx 私有结构；
+- 不受支持的运行器能力如实失败，而不是通过或跳过；
+- 不把任何汇总覆盖分数当作符合性证明；且
+- 已发布的指南链接 AST-009 以说明真实 AT 声明，并链接 AST-021 以说明迁移。
 
 ## Decision log
 
@@ -263,89 +141,58 @@ This spec moves from `accepted` to `shipped` only when:
 **Reference:** `spec:AST-020/DEC-1`
 **Decider:** `cixzhang`, `2026-09-03`
 
-WCAG 2.2 Level A and AA provide the current testable baseline. WCAG 3.0 may help
-frame user needs, assistive-technology experience, and future evaluation, but its
-working draft does not decide current pass/fail results.
+WCAG 2.2 的 A 级和 AA 级提供当前可测试的基线。WCAG 3.0 可以帮助勾勒用户需求、辅助技术体验和未来评估，但其工作草案不决定当前的通过/不通过结果。
 
-Rejected: waiting for WCAG 3.0 or treating a draft outcome as a current conformance
-requirement.
+已否决：等待 WCAG 3.0，或把草案结果当作当前的符合性需求。
 
 ### DEC-2 — Author one reusable outcome contract per adopted pattern
 
 **Reference:** `spec:AST-020/DEC-2`
 **Decider:** `cixzhang`, `2026-09-03`
 
-Separate the standards-derived pattern contract from component bindings. This lets
-multiple components share one interpretation while allowing a component's parts to
-bind to different patterns and keeping component-specific API behavior local.
+把源自标准的模式契约与组件绑定分开。这样多个组件可以共享同一种解释，同时允许组件的各个部件绑定到不同模式，并把组件特有的 API 行为保持在本地。
 
-Rejected: copying APG assertions into every component test or forcing all
-accessibility checks into one global scanner.
+已否决：把 APG 断言复制进每个组件测试，或把所有无障碍检查强行塞进一个全局扫描器。
 
 ### DEC-3 — Make the pull request a readable specification of the executable test
 
 **Reference:** `spec:AST-020/DEC-3`
 **Decider:** `cixzhang`, `2026-09-03`
 
-A reviewer must be able to judge the user outcome, standards basis, evidence layer,
-exemptions, bindings, and mutation proof without reverse-engineering runner code.
-The checked contract remains executable truth; the pull request makes that truth
-reviewable by accessibility specialists and maintainers.
+审查者必须能够在不逆向分析运行器代码的情况下评判用户结果、标准依据、证据层、豁免、绑定和变异证明。经检查的契约仍是可执行的事实；pull request 使该事实可被无障碍专家和维护者审查。
 
-Rejected: code-only review or a generic accessibility checklist with no exact
-mapping to executable expectations.
+已否决：仅审查代码，或使用与可执行期望没有确切映射的通用无障碍检查表。
 
 ### DEC-4 — Adopt what the component already is
 
 **Reference:** `spec:AST-020/DEC-4`
 **Decider:** `cixzhang`, `2026-10-13`
 
-A pattern's required parts belong to any component part that already plays the
-pattern's role, because a user who meets that role expects its name, state, and
-activation. Its optional keyboard extras belong only to one composite control,
-because arrow keys and Home/End move within one widget; independent controls keep
-the page Tab order. A component that already ships an extra records it as a named
-exception rather than losing it.
+模式的必需部件属于任何已经承担该模式角色的组件部件，因为遇到该角色的用户期望它具有名称、状态和激活能力。其可选键盘扩展只属于一个复合控件，因为方向键和 Home/End 在一个控件内移动；独立控件保持页面的 Tab 顺序。已经发布某项扩展的组件把它记录为具名例外，而不是失去它。
 
-Rejected: adopting every part of a pattern wherever its role appears (arrow keys on
-independent controls); adopting nothing until a component matches an APG example in
-full.
+已否决：只要模式角色出现就采用该模式的每个部件（在独立控件上使用方向键）；在组件完全符合某个 APG 示例之前什么都不采用。
 
 ### DEC-5 — Reversible toggles may complete after a slide-off
 
 **Reference:** `spec:AST-020/DEC-5`
 **Decider:** `cixzhang`, `2026-10-26`
 
-A Switch or Checkbox that completes on a lift after the finger slid off can be
-undone by activating it again, which WCAG 2.5.2 accepts, and it matches
-UIKit's UISwitch. The exception names its kinds so it cannot widen without a
-decision; controls that select, such as Radio and SegmentedControl, keep
-slide-off cancelling because a second activation does not undo them.
+手指滑出后在抬起时完成的 Switch 或 Checkbox 可以通过再次激活来撤销，WCAG 2.5.2 接受这一点，并且这与 UIKit 的 UISwitch 一致。该例外列出了它的类型，因此不经决策就无法扩大；选择类控件（如 Radio 和 SegmentedControl）保持滑出取消，因为第二次激活不会撤销它们。
 
-Rejected: slide-off cancelling for every control without exception.
+已否决：对每个控件都无例外地采用滑出取消。
 
 ### DEC-6 — A one-axis control keeps choosing along its axis after a drift
 
 **Reference:** `spec:AST-020/DEC-6`
-**Decider:** `cixzhang`, `2026-11-09`; mouse and pen, `2026-11-10`
+**Decider:** `cixzhang`, `2026-11-09`; 鼠标与笔，`2026-11-10`
 
-Design review asked for it in these words:
-"I would actually like for it to be more forgoving though" and
-"like dragging the segmented control vertically off the control should still let me set the balue after i left".
-That is, a drag that leaves the control vertically still chooses a value at
-the lift. So a control whose options sit along one axis tracks a press along
-that axis.
-A drift off it never cancels, and the lift chooses the option under the
-pointer's position along the axis, clamped to the end options. It meets WCAG
-2.5.2 by abort and undo: returning to the current choice before the lift, or
-Escape, takes the press back, and choosing the original option undoes it. A
-browser cancel (`pointercancel`) also takes it back. The decision covers
-SegmentedControl only; other controls join by a later decision. It replaces
-DEC-5's SegmentedControl clause, and DEC-5 stands for the other controls it
-names. The rule holds for a mouse and a pen as for a finger.
+设计审查用这些话提出了这一要求：
+“不过我其实希望它更宽容一些”，以及
+“比如把分段控件垂直拖出该控件后，我离开它时仍应能设定这个值”。
+也就是说，垂直离开控件的拖动在抬起时仍会选择一个值。因此，选项沿单一轴排列的控件会沿该轴跟踪按压。
+偏离它永远不会取消，抬起时按指针沿该轴的位置选择其下方选项，并钳制在两端选项。它通过中止与撤销满足 WCAG 2.5.2：在抬起前返回当前选择，或按 Escape，会撤回该按压，而选择原选项则撤销它。浏览器取消（`pointercancel`）也会撤回它。该决策仅涵盖 SegmentedControl；其他控件通过后续决策加入。它取代 DEC-5 中关于 SegmentedControl 的条款，而 DEC-5 对它列出的其他控件仍然有效。该规则对手指、鼠标和笔同样成立。
 
-Rejected: a cancel zone a fixed distance off the control; slide-off cancelling
-for one-axis controls.
+已否决：在控件外固定距离处设置取消区；对单轴控件采用滑出取消。
 
 ## Open questions
 

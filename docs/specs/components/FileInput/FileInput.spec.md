@@ -28,103 +28,82 @@ system_specs: []
 
 ## Intent
 
-FileInput presents a labelled file-selection field in compact input or dropzone
-form. This contract records its current consumer anatomy and approves separate theme
-ownership for the upload affordance that FileInput paints through Icon.
+FileInput 以紧凑的输入形式或拖放区形式呈现一个带标签的文件选择字段。本契约记录其当前的使用方解剖结构，并为 FileInput 通过 Icon 绘制的上传提示元素批准独立的主题所有权。
 
 ## Compatibility and migration
 
-- Released default preserved: `no`; in dropzone mode an unset
-  `statusVariant` resolves to `detached` (FR6, DEC-2)
-- Compatibility class: additive public theming target; no existing target,
-  DOM, prop, interaction, or accessibility behavior changes
-- Controlled/uncontrolled behavior: unchanged; FileInput remains controlled
-- Migration decision: `component:FileInput/DEC-1`
-- Dropzone status placement (FR6): a dropzone defaults to `detached`; an
-  explicit `statusVariant="attached"` keeps the released attached rendering
-  until the next minor release (DEC-2)
+- 已发布的默认值保持不变：`no`；在拖放区模式下，未设置的 `statusVariant` 解析为 `detached` (FR6, DEC-2)
+- 兼容性类别：新增式公共主题目标；不改变任何现有目标、DOM、prop、交互或无障碍行为
+- 受控/非受控行为：不变；FileInput 仍为受控组件
+- 迁移决策：`component:FileInput/DEC-1`
+- 拖放区状态放置 (FR6)：拖放区默认 `detached`；显式的 `statusVariant="attached"` 保留已发布的 attached 渲染，直到下一个次版本发布 (DEC-2)
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明应放在使用方文档与发布说明中。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The visible file-selection surface and its input/dropzone mode.
-- Whether, where, and at what default size the upload affordance appears.
-- Reflecting FileInput's mode on its locally owned theme targets.
+- 可见的文件选择表面及其输入/拖放区模式。
+- 上传提示元素是否出现、出现在何处，以及以何种默认尺寸出现。
+- 在由其本地拥有的主题目标上反映 FileInput 的模式。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- The upload artwork or Icon's base color, size, and accessibility semantics —
-  owned by `component:Icon`.
-- Label, description, clear-control, and validation-message presentation — owned
-  by `component:Field` and `component:FieldStatus`.
-- Loading-indicator presentation — owned by `component:Spinner`.
-- A new prop, variant, icon slot, or custom property.
+- 上传图形，或 Icon 的基础颜色、尺寸与无障碍语义——由 `component:Icon` 拥有。
+- 标签、描述、清除控件与校验消息的呈现——由 `component:Field` 与 `component:FieldStatus` 拥有。
+- 加载指示器的呈现——由 `component:Spinner` 拥有。
+- 新增 prop、变体、图标插槽或自定义属性。
 
 ## Public concepts
 
-No consumer prop changes. The `file-input-icon` target gives themes a
-same-element seam for the Upload icon and reflects the existing `mode` axis. The
-existing `file-input` target remains on the visible selection surface and keeps
-its `mode` and `status` axes.
+使用方 prop 无变化。`file-input-icon` 目标为主题在同一元素上提供了一个接缝来定位上传图标，并反映现有的 `mode` 轴。现有的 `file-input` 目标仍位于可见的选择表面上，并保留其 `mode` 与 `status` 轴。
 
 ## Behavioral and layout contract
 
-| ID  | Candidate invariant                                                                                                                                                                                                                                                                                                                                                                                                            | Basis                                                                                                 | Review state                                                                                                        |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| FR1 | The visible selection surface carries `file-input` and reflects the existing `mode` and resolved status.                                                                                                                                                                                                                                                                                                                       | Current source, public docs, and focused tests                                                        | Verified current behavior                                                                                           |
-| FR2 | When not loading, input mode renders an upload affordance at the small Icon size. Dropzone mode renders it at the medium Icon size only while no file is selected.                                                                                                                                                                                                                                                             | Current source and focused tests                                                                      | Verified current behavior                                                                                           |
-| FR3 | Icon owns the rendered glyph's base size, color, and accessibility semantics; FileInput owns the affordance's mode-dependent placement and default size.                                                                                                                                                                                                                                                                       | Current composition and component boundaries                                                          | Verified current composition                                                                                        |
-| FR4 | The rendered upload affordance MUST carry `file-input-icon` with the existing `mode` reflected, so a theme can restyle the glyph box without structural selectors or changing every Icon that uses the same artwork.                                                                                                                                                                                                           | Owner-approved target contract                                                                        | Approved additive contract                                                                                          |
-| FR5 | Adding the target MUST NOT change the default artwork, computed layout, interaction, file-selection behavior, accessible name, or decorative Icon semantics.                                                                                                                                                                                                                                                                   | Compatibility policy and focused regression tests                                                     | Required compatibility behavior                                                                                     |
-| FR6 | Dropzone mode does not offer `attached` status placement: its tall, custom surface cannot meet the attached conditions of `family:input-fields` FR8, so under AV6 it offers `detached` and `tooltip`. Dropzone defaults to `detached`; an explicit `attached` keeps the released attached rendering until the next minor release, when dropzone resolves `attached` to `detached`. Input mode keeps `attached` as its default. | Owner direction 2026-11-10: the default changes in a patch; the attached cleanup waits for the minor. | Approved; the default ships in a patch, explicit `attached` resolves at the next minor (owner direction 2026-11-10) |
+| ID  | 候选不变式                                                                                                                                                                                                                                                                                                                             | 依据                                                                      | 审查状态                                                                                     |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| FR1 | 可见的选择表面携带 `file-input`，并反映现有的 `mode` 与解析后的状态。                                                                                                                                                                                                                                                                  | 当前源码、公共文档与聚焦测试                                              | 已验证为当前行为                                                                             |
+| FR2 | 未处于加载状态时，输入模式以 Icon 的小尺寸渲染上传提示元素。拖放区模式仅在没有选中文件时以 Icon 的中等尺寸渲染它。                                                                                                                                                                                                                     | 当前源码与聚焦测试                                                        | 已验证为当前行为                                                                             |
+| FR3 | Icon 拥有渲染字形的基础尺寸、颜色与无障碍语义；FileInput 拥有提示元素随模式变化的放置位置与默认尺寸。                                                                                                                                                                                                                                  | 当前组合关系与组件边界                                                    | 已验证为当前组合                                                                             |
+| FR4 | 渲染出的上传提示元素 MUST 携带 `file-input-icon` 并反映现有的 `mode`，以便主题无需结构化选择器、也无需改动每个使用同一图形的 Icon 就能重新设置字形盒的样式。                                                                                                                                                                           | 所有者批准的目标契约                                                      | 已批准的附加契约                                                                             |
+| FR5 | 新增该目标 MUST NOT 改变默认图形、计算布局、交互、文件选择行为、无障碍名称或装饰性 Icon 语义。                                                                                                                                                                                                                                         | 兼容性策略与聚焦回归测试                                                  | 必需的兼容性行为                                                                             |
+| FR6 | 拖放区模式不提供 `attached` 状态放置：其高大的自定义表面无法满足 `family:input-fields` FR8 的 attached 条件，因此在 AV6 下它提供 `detached` 与 `tooltip`。拖放区默认 `detached`；显式的 `attached` 保留已发布的 attached 渲染，直到下一个次版本发布，届时拖放区会把 `attached` 解析为 `detached`。输入模式仍以 `attached` 作为默认值。 | 所有者 2026-11-10 指示：默认值在补丁版本中变更；attached 清理留待次版本。 | 已批准；默认值在补丁版本中发布，显式 `attached` 在下一个次版本解析（所有者 2026-11-10 指示） |
 
 ### Allowed variation
 
-- **AV1 — Theme paint.** A theme may change standard visual
-  properties such as the upload glyph's size or color through
-  `file-input-icon`; FileInput still owns whether and where the affordance renders.
-- **AV2 — Artwork.** Icon registry and future icon-slot decisions may change the
-  artwork without changing this CSS target's ownership of the painted glyph box.
+- **AV1 — 主题绘制。** 主题可以通过 `file-input-icon` 更改上传字形尺寸或颜色等标准视觉属性；FileInput 仍拥有提示元素是否渲染以及渲染在何处。
+- **AV2 — 图形。** Icon 注册表与未来的图标插槽决策可以更改图形，而不会改变该 CSS 目标对绘制字形盒的所有权。
 
 ### Representative states
 
-| State                    | Required invariant                                                       | Allowed variation                       |
-| ------------------------ | ------------------------------------------------------------------------ | --------------------------------------- |
-| Input, empty or selected | Small upload affordance renders on the input surface when not loading.   | Files, placeholder, status, theme paint |
-| Dropzone, empty          | Medium upload affordance renders above the placeholder when not loading. | Drag state, placeholder, theme paint    |
-| Dropzone, selected       | File names replace the upload affordance.                                | File names and status                   |
-| Loading                  | Spinner replaces the upload affordance.                                  | Mode and loading presentation           |
+| 状态                 | 必需不变式                                 | 允许的变体                   |
+| -------------------- | ------------------------------------------ | ---------------------------- |
+| 输入模式，空或已选中 | 未加载时，输入表面渲染小型上传提示元素。   | 文件、占位符、状态、主题绘制 |
+| 拖放区，空           | 未加载时，占位符上方渲染中型上传提示元素。 | 拖拽状态、占位符、主题绘制   |
+| 拖放区，已选中       | 文件名替换上传提示元素。                   | 文件名与状态                 |
+| 加载中               | Spinner 替换上传提示元素。                 | 模式与加载呈现               |
 
 ### Transformation and precedence order
 
-- **ORD1 — Content selection.** Resolve loading and selected-file state, choose
-  input or dropzone content, then render the mode-sized upload affordance only in
-  the states recorded by FR2.
-- **ORD2 — Theme composition.** Icon applies its base size and color, then the
-  same-element FileInput target participates in the existing theme layer and
-  standard Icon styling merge order.
+- **ORD1 — 内容选择。** 先解析加载与选中文件状态，选择输入或拖放区内容，然后仅在 FR2 记录的状态中渲染与模式尺寸对应的上传提示元素。
+- **ORD2 — 主题合成。** Icon 先应用其基础尺寸与颜色，然后同一元素上的 FileInput 目标参与现有的主题层与标准 Icon 样式合并顺序。
 
 ### Performance and resources
 
-- **PR1 — No new work.** The additive target performs no measurement, listener,
-  observer, state update, or additional render pass.
+- **PR1 — 无新增工作。** 该附加目标不执行任何测量、监听器、观察器、状态更新或额外渲染趟次。
 
 ## Accessibility contract
 
-The upload affordance remains decorative. The existing focusable file-selection
-trigger, label, description, required/invalid state, disabled explanation, and
-selection announcements remain unchanged.
+上传提示元素仍为装饰性。现有的可聚焦文件选择触发器、标签、描述、必填/无效状态、禁用说明以及选择播报均保持不变。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                                                  | Representation authority                 | Hierarchy role | Component contract |
-| ---------------- | ----------------------------------------------------------------------------------- | ---------------------------------------- | -------------- | ------------------ |
-| Drop zone        | Presents the visible file-selection surface in input or dropzone form.              | Current source and public docs           | Prominent      | FR1                |
-| Upload icon      | Hints at the upload action and changes default size with the selected mode.         | Current source and owner-approved target | Supporting     | FR2, FR3, FR4      |
-| Shared feedback  | Uses Field, FieldStatus, and Spinner for labels, validation, and loading treatment. | Current shared composition               | Supporting     | FR5                |
+| 解剖结构或状态 | 设计要求                                                  | 呈现权威                   | 层级角色 | 组件契约      |
+| -------------- | --------------------------------------------------------- | -------------------------- | -------- | ------------- |
+| 拖放区         | 以输入或拖放区形式呈现可见的文件选择表面。                | 当前源码与公共文档         | 显著     | FR1           |
+| 上传图标       | 提示上传操作，并随所选模式改变默认尺寸。                  | 当前源码与所有者批准的目标 | 辅助     | FR2, FR3, FR4 |
+| 共享反馈       | 使用 Field、FieldStatus 与 Spinner 处理标签、校验与加载。 | 当前共享组合               | 辅助     | FR5           |
 
 ### Theming anatomy
 
@@ -162,58 +141,47 @@ selection announcements remain unchanged.
 }
 ```
 
-The `file-input-icon` disposition records the approved target state. Icon still
-owns the general `icon` target and base glyph semantics; FileInput's narrower
-target owns only this stable upload position and its existing mode distinction.
+`file-input-icon` 的处置记录的是已批准的目标状态。Icon 仍拥有通用的 `icon` 目标与基础字形语义；FileInput 更窄的目标仅拥有这个稳定的上传位置及其现有的模式区分。
 
 ## Family and system relationships
 
-- `family:input-fields` owns shared labelled-field and validation behavior.
-- `architecture:component-theming-surface` owns target qualification, anatomy
-  mapping, and the requirement that public targets sit on stable painted parts.
-- Field, FieldStatus, Icon, and Spinner retain their existing public target
-  contracts when composed by FileInput.
+- `family:input-fields` 拥有共享的带标签字段与校验行为。
+- `architecture:component-theming-surface` 拥有目标资格认定、解剖结构映射，以及“公共目标位于稳定的绘制部件上”这一要求。
+- Field、FieldStatus、Icon 与 Spinner 在被 FileInput 组合时，保留其现有的公共目标契约。
 
 ## Verification map
 
-| Contract            | Verification                                                                                                                                                                                                                 | Representative states                              | Mutation or failure expectation                                                                                                                                                                                       | Audit section             |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| FR1, FR2            | `FileInput.test.tsx` rendering and target suites                                                                                                                                                                             | Input/dropzone; empty/selected/loading             | Moving the root target or changing when/at what size the affordance renders breaks focused assertions.                                                                                                                | `audit:FileInput/theming` |
-| FR3, FR4, FR5       | `FileInput.test.tsx`, `themingTargets.test.ts`, probe-theme check                                                                                                                                                            | Both modes and same-element Icon target            | Missing the target, reflecting the wrong mode, or moving it off the glyph fails source/docs/probe coverage.                                                                                                           | `audit:FileInput/theming` |
-| FR6                 | `FileInput.test.tsx` "defaults a dropzone status to detached" and "keeps an explicit attached on a dropzone until the next minor release"; `FileInput.doc.mjs` `statusVariant` entry and the prop's JSDoc in `FileInput.tsx` | Dropzone unset and explicit `attached`; input mode | A dropzone whose unset placement is not detached, a dropzone that drops an explicit `attached` before the minor, or a doc or JSDoc that offers `attached` as the dropzone default or drops it from input mode, fails. | —                         |
-| Theming anatomy map | `scripts/check-knowledge.mjs`                                                                                                                                                                                                | Nine anatomy entries and two locally owned targets | Missing, extra, prefixed, stale, or unclaimed current mappings fail validation.                                                                                                                                       | `audit:FileInput/anatomy` |
+| 契约             | 验证                                                                                                                                                                                                                            | 代表性状态                                | 变异或失败预期                                                                                                                                              | 审计章节                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| FR1, FR2         | `FileInput.test.tsx` 的渲染与目标测试套件                                                                                                                                                                                       | 输入/拖放区；空/已选中/加载中             | 移动根部目标，或改变提示元素渲染的时机与尺寸，都会破坏聚焦断言。                                                                                            | `audit:FileInput/theming` |
+| FR3, FR4, FR5    | `FileInput.test.tsx`、`themingTargets.test.ts`、探测主题检查                                                                                                                                                                    | 两种模式与同一元素上的 Icon 目标          | 缺少该目标、反映错误的模式，或将其移出字形，都会导致源码/文档/探测覆盖失败。                                                                                | `audit:FileInput/theming` |
+| FR6              | `FileInput.test.tsx` 的 "defaults a dropzone status to detached" 与 "keeps an explicit attached on a dropzone until the next minor release"；`FileInput.doc.mjs` 的 `statusVariant` 条目以及 `FileInput.tsx` 中该 prop 的 JSDoc | 未设置的拖放区与显式 `attached`；输入模式 | 拖放区未设置的放置不是 detached、拖放区在次版本之前就丢弃显式 `attached`，或文档/JSDoc 把 `attached` 当作拖放区默认值、或将其从输入模式中移除，均视为失败。 | —                         |
+| 主题解剖结构映射 | `scripts/check-knowledge.mjs`                                                                                                                                                                                                   | 九个解剖结构条目与两个本地拥有的目标      | 缺失、多余、带前缀、过时或未声明的当前映射都会导致校验失败。                                                                                                | `audit:FileInput/anatomy` |
 
 ## Decision log
 
 ### DEC-1 — Upload icon is stable FileInput theme anatomy
 
-**Reference:** `component:FileInput/DEC-1`
-**Decider:** cixzhang, 2026-09-14
+**参考：** `component:FileInput/DEC-1`
 
-The upload icon is a stable, consumer-recognizable FileInput affordance whose
-mode-dependent placement and default size belong to FileInput. It receives the
-`file-input-icon` target on the same Icon element that paints the glyph, while
-Icon retains its general target and base glyph semantics.
+**决策者：** cixzhang, 2026-09-14
+
+上传图标是稳定的、使用方可识别的 FileInput 提示元素，其随模式变化的放置位置与默认尺寸属于 FileInput。它在绘制字形的同一个 Icon 元素上获得 `file-input-icon` 目标，同时 Icon 保留其通用目标与基础字形语义。
 
 ### DEC-2 — The dropzone default changes in a patch; the attached cleanup waits for the minor
 
-**Reference:** `component:FileInput/DEC-2`
-**Decider:** cixzhang, 2026-11-10
+**参考：** `component:FileInput/DEC-2`
 
-A dropzone defaults to `detached`. An explicit
-`attached` keeps its released rendering until the next minor release, which
-resolves it to `detached`. The owner asked: "9259 can we have a non breaking
-version that just updates thw default then saves the cleanup of the attached
-version for the minor".
+**决策者：** cixzhang, 2026-11-10
 
-Rejected: one breaking change in the next minor for both the default and the
-explicit `attached`.
+拖放区默认 `detached`。显式的 `attached` 保留其已发布的渲染，直到下一个次版本发布，届时它会被解析为 `detached`。所有者问道：“9259 能否有一个不破坏兼容的版本，只更新默认值，然后把 attached 版本的清理留到次版本”。
+
+已否决：在下一个次版本中为默认值和显式 `attached` 同时做一次破坏性变更。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables, examples, implementation
-steps, or shared-component contracts. It links to their owners.
+本文件不重复使用方 prop 表、示例、实现步骤或共享组件契约。它链接到这些内容的所有者。

@@ -28,128 +28,120 @@ system_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Public contract         | `CommandPaletteGroup` with a required string `heading`, `children`, `ref`, `xstyle`, `className`, `style`, and root DOM props. |
-| Behavior                | A `group` of command results named by `heading`, with the heading shown as a visual label above them.                          |
-| End-user impact         | Related commands appear under a visible heading, and screen-reader users hear the group's name when they move into it.         |
-| Builder impact          | None.                                                                                                                          |
-| Compatibility/readiness | Records shipped behavior; no public change.                                                                                    |
-| Review checks           | Reject an unnamed group, a heading read twice, or a heading target that merges with the group target.                          |
-| Governing rules         | `component:CommandPalette`; `architecture:public-component-api` INV5; `architecture:component-theming-surface`.                |
+| 领域          | 契约                                                                                                                  |
+| ------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 公共契约      | `CommandPaletteGroup`，以及必需的字符串 `heading`、`children`、`ref`、`xstyle`、`className`、`style` 与根 DOM props。 |
+| 行为          | 由 `heading` 命名的一组命令结果，标题在这些结果上方显示为视觉标签。                                                   |
+| 最终用户影响  | 相关命令出现在可见标题之下，屏幕阅读器用户进入该组时会听到组名。                                                      |
+| 构建者影响    | 无。                                                                                                                  |
+| 兼容性/就绪度 | 记录已发布行为；无公共变更。                                                                                          |
+| 审查检查      | 拒绝未命名的组、被朗读两次的标题，或与组目标合并的标题目标。                                                          |
+| 治理规则      | `component:CommandPalette`；`architecture:public-component-api` INV5；`architecture:component-theming-surface`。      |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；下方正文具有权威性。
 
 ## Intent
 
-CommandPaletteGroup gathers related command results under a heading inside a
-CommandPalette list. Consumer usage lives in `CommandPaletteGroup.doc.mjs`.
+CommandPaletteGroup 在 CommandPalette 列表内把一个标题下的相关命令结果汇集起来。使用方的用法见 `CommandPaletteGroup.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public change
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 保留已发布的默认值：`yes`
+- 兼容性类别：记录已发布行为；无公共变更
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Current-state impact
 
-None.
+无。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The group root, its role and name, and the `command-palette-group` target
-  (FR1, FR3).
-- The visual heading and its `command-palette-group-heading` target (FR2, FR3).
-- Root ref, DOM props, and styling (FR4).
+- 组根、它的角色与名称，以及 `command-palette-group` 目标（FR1、FR3）。
+- 视觉标题及其 `command-palette-group-heading` 目标（FR2、FR3）。
+- 根 ref、DOM props 与样式（FR4）。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Option semantics and activation — owned by `component:CommandPaletteItem`.
-- The list, search, and keyboard navigation — owned by
-  `component:CommandPalette` and `component:CommandPaletteList`.
+- 选项语义与激活 —— 由 `component:CommandPaletteItem` 拥有。
+- 列表、搜索与键盘导航 —— 由 `component:CommandPalette` 与 `component:CommandPaletteList` 拥有。
 
 ## Public concepts
 
-No component-local concept beyond the consumer props.
+除使用方 props 之外，没有组件本地概念。
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                         | Basis                    |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| FR1 | The root has `role="group"` and is named by `heading` through `aria-label`, unless the caller supplies its own `role` or `aria-label` (FR4), and lays its heading and children out in one column. | Current source and tests |
-| FR2 | The heading renders `heading` as supporting text before the children and is hidden from assistive technology, so the name is read once.                                                           | Current source and tests |
-| FR3 | The root carries `command-palette-group` and the heading carries the separate `command-palette-group-heading` target.                                                                             | Current source and tests |
-| FR4 | `ref`, DOM props, `className`, `style`, and `xstyle` reach the root, and a caller's explicit `role` or `aria-label` reaches it (`architecture:public-component-api` INV5).                        | Current source           |
+| ID  | 不变式                                                                                                                                                | 依据           |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| FR1 | 根具有 `role="group"`，并通过 `aria-label` 由 `heading` 命名，除非调用方提供自己的 `role` 或 `aria-label`（FR4）；根把标题与子项排布在一列中。        | 当前源码与测试 |
+| FR2 | 标题在子项之前把 `heading` 渲染为辅助文本，并对辅助技术隐藏，因此名称只被朗读一次。                                                                   | 当前源码与测试 |
+| FR3 | 根携带 `command-palette-group`，标题携带单独的 `command-palette-group-heading` 目标。                                                                 | 当前源码与测试 |
+| FR4 | `ref`、DOM props、`className`、`style` 与 `xstyle` 到达根，调用方显式的 `role` 或 `aria-label` 也到达根（`architecture:public-component-api` INV5）。 | 当前源码       |
 
 ### Allowed variation
 
-- **AV1 — Content.** The heading text and the grouped items vary.
-- **AV2 — Theme.** Themes restyle the group and the heading separately.
+- **AV1 — 内容。** 标题文本与分组条目可变。
+- **AV2 — 主题。** 主题分别重新设置组与标题的样式。
 
 ### Representative states
 
-| State           | Required invariant                          | Allowed variation |
-| --------------- | ------------------------------------------- | ----------------- |
-| Grouped results | A named group with a hidden visual heading. | Items.            |
+| 状态     | 必需不变式                       | 允许的变化 |
+| -------- | -------------------------------- | ---------- |
+| 分组结果 | 具名的组，带一个隐藏的视觉标题。 | 条目。     |
 
 ### Transformation and precedence order
 
-- No precedence rule.
+- 无优先级规则。
 
 ### Performance and resources
 
-- No resource rule.
+- 无资源规则。
 
 ## Accessibility contract
 
-- **AR1 — Named group.** The group is named by `heading` (FR1), unless the
-  caller supplies its own `aria-label` (FR4).
-- **AR2 — One reading.** The visual heading is hidden from assistive
-  technology, so the name is not repeated (FR2).
+- **AR1 — 具名的组。** 组由 `heading` 命名（FR1），除非调用方提供自己的 `aria-label`（FR4）。
+- **AR2 — 单次朗读。** 视觉标题对辅助技术隐藏，因此名称不会被重复（FR2）。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                     | Representation authority | Hierarchy role | Component contract |
-| ---------------- | -------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Group            | Gathers related results in one column. | Current source           | Supporting     | FR1, FR3           |
-| Group heading    | Labels the group with supporting text. | Current source           | Supporting     | FR2, FR3           |
+| 解剖结构或状态 | 设计要求               | 表示权威 | 层级角色 | 组件契约 |
+| -------------- | ---------------------- | -------- | -------- | -------- |
+| 组             | 在一列中汇集相关结果。 | 当前源码 | 支撑     | FR1、FR3 |
+| 组标题         | 用辅助文本标记该组。   | 当前源码 | 支撑     | FR2、FR3 |
 
-The aggregate CommandPalette anatomy map, owned by `component:CommandPalette`,
-maps the Group and Group heading parts to these targets.
+由 `component:CommandPalette` 拥有的聚合 CommandPalette 解剖结构图，把 Group 与 Group heading 部分映射到这些目标。
 
 ## Family and system relationships
 
-- `component:CommandPalette` owns the aggregate anatomy and the composite
-  keyboard model; `component:CommandPaletteItem` owns the options inside.
+- `component:CommandPalette` 拥有聚合解剖结构与复合键盘模型；`component:CommandPaletteItem` 拥有其中的选项。
 
 ## Verification map
 
-| Contract | Verification                                                                        | Representative states | Mutation or failure expectation                                                                           | Audit section                             |
-| -------- | ----------------------------------------------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| FR1, AR1 | `CommandPaletteGroup.test.tsx` "has group role with aria-label"                     | grouped results       | A missing role or name fails.                                                                             | `audit:CommandPaletteGroup/accessibility` |
-| FR2, AR2 | `CommandPaletteGroup.test.tsx` heading, `aria-hidden`, and decorative-heading tests | grouped results       | A heading exposed to assistive technology fails.                                                          | `audit:CommandPaletteGroup/accessibility` |
-| FR3      | `CommandPaletteGroup.test.tsx` heading-target tests; `themingTargets.test.ts`       | grouped results       | A missing or merged target fails.                                                                         | `audit:CommandPaletteGroup/theming`       |
-| FR4      | Source review                                                                       | Caller inputs         | Gap: no test covers `ref`, DOM props, `className`, `style`, `xstyle`, or a caller `role` or `aria-label`. | `audit:CommandPaletteGroup/api`           |
+| 契约     | 验证                                                                      | 代表状态   | 变异或失败预期                                                                                           | 审计章节                                  |
+| -------- | ------------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| FR1、AR1 | `CommandPaletteGroup.test.tsx` "has group role with aria-label"           | 分组结果   | 缺少 role 或名称会失败。                                                                                 | `audit:CommandPaletteGroup/accessibility` |
+| FR2、AR2 | `CommandPaletteGroup.test.tsx` 的 heading、`aria-hidden` 与装饰性标题测试 | 分组结果   | 暴露给辅助技术的标题会失败。                                                                             | `audit:CommandPaletteGroup/accessibility` |
+| FR3      | `CommandPaletteGroup.test.tsx` 的标题目标测试；`themingTargets.test.ts`   | 分组结果   | 缺失或合并的目标会失败。                                                                                 | `audit:CommandPaletteGroup/theming`       |
+| FR4      | 源码审查                                                                  | 调用方输入 | 缺口：没有测试覆盖 `ref`、DOM props、`className`、`style`、`xstyle`，或调用方的 `role` 或 `aria-label`。 | `audit:CommandPaletteGroup/api`           |
 
-Read from source, with no focused test yet:
+从源码读取，尚无聚焦测试：
 
-- FR1: the one-column layout.
-- FR4: `ref`, DOM props, `className`, `style`, and `xstyle` on the root.
+- FR1：单列布局。
+- FR4：根上的 `ref`、DOM props、`className`、`style` 与 `xstyle`。
 
 ## Decision log
 
-No component-local decision is recorded.
+未记录组件本地决策。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables or examples, or
-CommandPalette's search and keyboard behavior. It links to their owners.
+本文件不重复使用方 props 表或示例，也不重复 CommandPalette 的搜索与键盘行为。它链接到这些内容的所有者。

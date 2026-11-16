@@ -68,322 +68,118 @@ deciding_specs: [spec:AST-100/DEC-1, spec:AST-094/DEC-17, spec:AST-020/DEC-6]
 
 ## Purpose
 
-Astryx components behave predictably when people move between keyboard, pointer,
-touch, pen, and programmatic focus. Essential actions remain perceivable and
-reachable while their controlled state or task context is presented, and newer user
-intent remains authoritative over stale work, and every Core and Lab gesture of one kind, dragged or scrolling, reads the
-same release velocity, and scroll-linked motion reads one scroll progress. This record defines those shared interaction invariants, the
-one gesture velocity source, the one scroll-progress source, the shared modality state, the boundary between modality and
-component focus ownership, and the evidence required when any of them changes.
+当人们在键盘、指针、触摸、笔和程序化焦点之间切换时，Astryx 组件表现可预测。必要操作在其受控状态或任务上下文呈现时保持可感知且可到达，较新的用户意图优先于过时的工作，同类的每个 Core 和 Lab 手势（拖动或滚动）读取相同的释放速度，滚动链接的动效读取同一个滚动进度。本记录定义这些共享交互不变量、唯一的手势速度来源、唯一的滚动进度来源、共享模态状态、模态与组件焦点所有权之间的边界，以及其中任何一项更改时所需的证据。
 
-It does not define focus-ring appearance, hover paint, press treatment, or new
-component APIs. Those remain with Design Conventions, theme tokens, and the
-owning component family.
+它不定义焦点环外观、悬停绘制、按压处理或新的组件 API。这些仍由设计约定、主题 token 和所属组件家族负责。
 
 ## System model
 
-Astryx tracks the last input modality as one shared state:
+Astryx 将最后输入模态跟踪为一个共享状态：
 
-- a key press without Meta, Alt, or Control held sets `keyboard`;
-- a pointer press, including mouse, touch, or pen, sets `pointer`;
-- a key press with Meta, Alt, or Control held does not change modality; and
-- before any input, the state is `keyboard` so initial or restored focus remains
-  perceivable.
+- 在未按住 Meta、Alt 或 Control 的情况下按键，会设为 `keyboard`；
+- 指针按压（包括鼠标、触摸或笔）会设为 `pointer`；
+- 在按住 Meta、Alt 或 Control 的情况下按键不会改变模态；以及
+- 在任何输入之前，状态为 `keyboard`，因此初始或恢复的焦点保持可感知。
 
-The same state records whether every key since the last pointer press typed
-into a text-entry field. Those keys still set `keyboard`; only a touch
-trigger's focus guard reads the record, because an on-screen keyboard sends a
-key press for each typed character. The record reads text-entry fields in
-the page's own window only.
+同一状态还记录自上次指针按压以来的每次按键是否都输入到了文本输入字段。这些按键仍然设为 `keyboard`；只有触摸触发器的焦点保护会读取该记录，因为屏幕键盘会为每个输入的字符发送一次按键。该记录只读取页面自身窗口中的文本输入字段。
 
-Programmatic focus does not create a new modality. Its focus indicator follows
-the last input modality: it is hidden after pointer input and shown after
-keyboard input. Components use the browser's `:focus-visible` behavior together
-with the shared modality state where `:focus-visible` alone cannot distinguish
-the initiating input.
+程序化焦点不会创建新的模态。其焦点指示器遵循最后输入模态：在指针输入后隐藏，在键盘输入后显示。组件将浏览器的 `:focus-visible` 行为与共享模态状态结合使用，在 `:focus-visible` 单独无法区分发起输入时使用后者。
 
-Modality answers **whether the shared focus indicator should be visible**.
-Component ownership answers **which element paints it**. The semantic focus
-owner may paint on itself, delegate paint to an owning wrapper, or paint on a
-visual proxy when the focusable element is intentionally hidden. That ownership
-does not change the modality state.
+模态回答**共享焦点指示器是否应可见**。组件所有权回答**由哪个元素绘制它**。语义焦点所有者可以在自身上绘制、将绘制委托给所属包装器，或在可聚焦元素被有意隐藏时绘制在视觉代理上。该所有权不会改变模态状态。
 
-Hover capability is separate from modality history. Hover behavior is available
-only to hover-capable pointers and remains an enhancement over keyboard, click,
-and touch paths. Touch and pen presses participate in pointer modality even when
-a family gives them different gesture behavior.
+悬停能力与模态历史分离。悬停行为仅对具备悬停能力的指针可用，并且始终是键盘、点击和触摸路径之上的增强。触摸和笔按压参与指针模态，即使某个家族给予它们不同的手势行为。
 
-Disabled, busy, read-only, intentionally hidden, and intentionally unavailable
-semantics are separate from modality. Their current component, family, or system
-contracts decide whether an action is present, focusable, or operable; modality only
-controls the focus indicator on an eligible focus owner.
+禁用、忙碌、只读、有意隐藏和有意不可用的语义与模态分离。它们当前的组件、家族或系统契约决定某个操作是否存在、可聚焦或可操作；模态只控制合格焦点所有者上的焦点指示器。
 
-An action is **essential for a supported state and modality** when it is the only
-supported control that can continue, reverse, dismiss, or change the component-owned
-context at the point where that context is offered for interaction. Layout and
-composition may move or proxy that action, but MUST NOT remove or separate every
-supported path from that interaction point. This does not require an action to remain
-continuously onscreen, sticky, or visually prominent. Ordinary scrolling is valid
-unless the supported composition keeps the controlled context at the interaction
-point while stranding its sole action.
+当某个操作是在提供该上下文的交互点上，唯一能够继续、反转、关闭或改变组件拥有的上下文的受支持控件时，该操作**对受支持的状态和模态而言是必要的**。布局和组合可以移动或代理该操作，但不得从该交互点移除或分隔所有受支持的路径。这不要求操作持续在屏幕上、保持吸顶或视觉上突出。除非受支持的组合在交互点保持受控上下文却使其唯一操作搁浅，否则普通滚动是有效的。
 
-Current component and family contracts define accepted intent, owner replacement,
-pending presentation, and which close, cancellation, disablement, or unmount
-transitions supersede the same interaction outcome. Once that owner defines
-supersession, completion of older pending, deferred, or asynchronous work MUST NOT
-change the current outcome's content, selection, status or announcement, visibility,
-focus, or activation. This rule does not cancel or reassign unrelated background
-work.
+当前组件和家族契约定义接受的意图、所有者替换、待定呈现，以及哪些关闭、取消、禁用或卸载转换会取代同一交互结果。一旦该所有者定义了取代关系，较旧的待定、延迟或异步工作的完成不得改变当前结果的内容、选择、状态或公告、可见性、焦点或激活。此规则不会取消或重新分配无关的后台工作。
 
 ## Boundaries and invariants
 
-- **INV1 — Last input owns programmatic focus visibility.** Programmatic focus
-  preserves the current modality. After pointer input it does not show the shared
-  focus indicator; after keyboard input it does. A wrapper whose content would
-  cover a ring it draws, such as a masked scroller that is its own stacking
-  context, draws the shared ring as the focus-owner overlay
-  (`focusWithinOwnerOverlay` in `privateAttributes/focusOwner.stylex.ts`), keyed
-  on the owner attribute as INV3 says.
-- **INV2 — Modality and focus ownership stay separate.** Shared modality decides
-  visibility. Each component family decides the semantic focus owner and the
-  element that paints on its behalf.
-- **INV3 — One focus move has one owning indicator.** A wrapper or visual proxy
-  may paint for the semantic owner, but sibling controls paint their own focus
-  and replacement content cannot silently remove the owner's indicator. A Core
-  wrapper that paints the ring for one primary control among other tab stops
-  takes the one shared focus-owner style and owner attribute from
-  `privateAttributes/focusOwner.stylex.ts`, so the wrapper rings only while that control
-  has keyboard focus, and a nested owner or a sibling control rings itself;
-  no component writes the attribute or its selector itself. Implementation
-  gap: Item, Token, the clickable and selectable cards, Thumbnail,
-  MultiSelector, SideNavItem, and ChatComposer's body write their own ring
-  conditions.
-- **INV4 — Every modality has an operable path.** Keyboard, pointer, and touch or
-  pen can reach each supported interaction. Hover is never the only discovery or
-  activation path. A tooltip's scrolling overflow is the one exception, as
-  `spec:AST-025` FR12 records: a tooltip never takes focus under the ARIA
-  tooltip pattern, so content too tall for the viewport scrolls inside it with
-  no keyboard path; its full content stays available to assistive technology
-  through the trigger's accessible description, and long or essential content
-  belongs in a HoverCard or Popover. A tooltip that labels an action trigger
-  whose accessible name already carries its text is not a separate
-  interaction, so a tap on that trigger performs the action and does not open
-  the tooltip; a hint-only trigger that performs no action opens its tooltip
-  on a tap under the default `touchTrigger="auto"`, and help behind an info
-  icon pins through `component:InfoTip` (`component:Tooltip` DEC-1).
-- **INV5 — Existing state semantics win.** Disabled controls do not become
-  interactive because of modality. Read-only and busy controls preserve their
-  documented focus and activation behavior.
-- **INV6 — Modality remains internal.** Components derive modality from shared
-  browser input state. A public focus-visibility or modality prop requires a
-  separate public-API decision.
-- **INV7 — Essential actions remain reachable.** At the interaction point where a
-  component offers an essential action's controlled context, every supported
-  modality has a perceivable and operable path to that action. Layout, scrolling,
-  overflow, reflow, responsive composition, replacement content, or a
-  custom-renderer seam MUST NOT separate every path from that context. This does not
-  require continuous visibility, sticky behavior, or increased prominence. A
-  current component, family, or system contract MAY intentionally hide, disable, or
-  make the action unavailable in a named state.
-- **INV8 — Newer owner-accepted intent owns the current outcome.** Current component
-  and family contracts define intent acceptance, pending presentation, and
-  supersession for the same interaction outcome. Once superseded, completion of
-  older work MUST NOT change the current outcome's content, selection, status or
-  announcement, visibility, focus, or activation. Unrelated background work keeps
-  its existing owner and lifetime.
-- **INV9 — Interaction findings require observable harm.** A shared interaction
-  violation requires concrete user harm in a reproducible supported state and
-  modality. Evidence names the lost or stale outcome and verifies representative
-  normal or legacy paths remain unchanged by the remedy. Aesthetic preference,
-  speculative unsupported states, and a claim that an action merely could be easier
-  to discover do not establish an interaction violation. This does not bar a visual
-  correction already settled by current component, family, design, theme, or
-  objective accessibility authority; that correction uses rendered-pixel evidence
-  and its direct owner rather than being recast as interaction reachability.
-- **INV10 — Gesture velocity has one owner.** In `@astryxdesign/core`, one
-  internal velocity tracker owns a gesture's pointer samples and reports
-  velocity, and its one release filter is the only lift velocity a Core
-  component reads (`spec:AST-100`). The filter is iOS's measured blend: a
-  pan's velocity is 0.2 times the newest interval's velocity plus 0.8 times
-  the previous interval's, updated on each moved sample, and a scrolling
-  surface's release is 0.25 times the newest pan value plus 0.75 times the
-  previous one; a contact
-  still for longer than the stillness interval before lifting reads 0. It is not exported. No Core component keeps its own sample
-  buffer, velocity math, or alternative release filter; a component's flick
-  threshold compares the tracker's release velocity. Lab keeps no copy of
-  it: no Lab component has its own sample buffer, velocity math, or release
-  filter, so Lab reports the same velocity as Core for the same motion.
-- **INV11 — Hover intent is a recognizer setting.** The hover recognizer,
-  `HoverGestureRecognizer`, takes `intent: {enterMs, exitMs, group}`: an entry delay
-  against brush-over, which an owner's record may set to zero, an exit guard, and a
-  group across which a pointer moving from one open trigger to the next shows
-  the next at once. Keyboard focus shows at once, and a finger is never gated
-  or served by it: intent answers mouse and pen hover only. The hover recognizer attaches only for hover-capable
-  pointers, since a finger cannot hover, and registers no touch listener. `useTooltip`,
-  `useHoverCard`, and `useMenuHover` take their hover timing from it;
-  `useContainerReveal` keeps its CSS-only dwell (`component:Thumbnail` PR1) and
-  takes only its delay values from the owner's intent. Enter and exit animation, hover tint, and the default delay
-  itself stay with their owners. The setting adds no module and is internal
-  (`spec:AST-017` FR21).
+- **INV1 — 最后输入决定程序化焦点可见性。** 程序化焦点保留当前模态。指针输入后不显示共享焦点指示器；键盘输入后则显示。内容会遮住其绘制环的包装器（例如作为自身层叠上下文的蒙版滚动器）将共享环绘制为焦点所有者覆盖层（`privateAttributes/focusOwner.stylex.ts` 中的 `focusWithinOwnerOverlay`），并以 INV3 所述的所有者属性为键。
+- **INV2 — 模态和焦点所有权保持分离。** 共享模态决定可见性。每个组件家族决定语义焦点所有者和代表其绘制的元素。
+- **INV3 — 一次焦点移动有一个所属指示器。** 包装器或视觉代理可以为语义所有者绘制，但同级控件绘制自己的焦点，替换内容不能悄悄移除所有者的指示器。为其他 Tab 停靠点中的某个主控件绘制环的 Core 包装器，从 `privateAttributes/focusOwner.stylex.ts` 获取唯一的共享焦点所有者样式和所有者属性，因此包装器仅在该控件拥有键盘焦点时显示环，而嵌套所有者或同级控件则自行绘制环；任何组件都不会自己写入该属性或其选择器。实现差距：Item、Token、可点击和可选择的卡片、Thumbnail、MultiSelector、SideNavItem 以及 ChatComposer 的主体写入了自己的环条件。
+- **INV4 — 每种模态都有可操作路径。** 键盘、指针以及触摸或笔都能到达每个受支持的交互。悬停绝不是唯一的发现或激活路径。工具提示的滚动溢出是唯一例外，正如 `spec:AST-025` FR12 所记录：在 ARIA 工具提示模式下，工具提示从不获取焦点，因此对视口来说过高的内容在其中滚动，没有键盘路径；其完整内容通过触发器的可访问描述保持对辅助技术可用，而长内容或必要内容应放在 HoverCard 或 Popover 中。为动作触发器提供标签且该触发器的可访问名称已包含其文本的工具提示不是独立的交互，因此对这类触发器的轻点会执行操作而不会打开工具提示；不执行任何操作的纯提示触发器在默认 `touchTrigger="auto"` 下会在轻点时打开其工具提示，而信息图标背后的帮助通过 `component:InfoTip` 固定（`component:Tooltip` DEC-1）。
+- **INV5 — 现有状态语义优先。** 禁用控件不会因为模态而变为可交互。只读和忙碌控件保留其文档化的焦点和激活行为。
+- **INV6 — 模态保持内部。** 组件从共享的浏览器输入状态派生模态。公共的焦点可见性或模态 prop 需要单独的公共 API 决策。
+- **INV7 — 必要操作保持可达。** 在组件提供必要操作受控上下文的交互点上，每种受支持的模态都有到该操作的可感知且可操作的路径。布局、滚动、溢出、重排、响应式组合、替换内容或自定义渲染器接缝不得将每条路径与该上下文分隔。这不要求持续可见性、吸顶行为或提高突出程度。当前的组件、家族或系统契约可以有意在指定状态下隐藏、禁用或使该操作不可用。
+- **INV8 — 更新的、所有者接受的意图拥有当前结果。** 当前组件和家族契约定义对同一交互结果的意图接受、待定呈现和取代。一旦被取代，较旧工作的完成不得改变当前结果的内容、选择、状态或公告、可见性、焦点或激活。无关的后台工作保留其现有所有者和生命周期。
+- **INV9 — 交互问题需要可观察的伤害。** 共享交互违规需要可复现的受支持状态和模态中的具体用户伤害。证据要指出丢失或过时的结果，并验证代表性的正常或旧有路径在补救后保持不变。审美偏好、推测性的不支持状态，以及仅声称某个操作本可以更容易被发现，都不构成交互违规。这不禁止已经由当前组件、家族、设计、主题或客观可访问性权威裁定的视觉修正；该修正使用渲染像素证据及其直接所有者，而不是被重新表述为交互可达性。
+- **INV10 — 手势速度有一个所有者。** 在 `@astryxdesign/core` 中，一个内部速度跟踪器拥有手势的指针样本并报告速度，其唯一的释放过滤器是 Core 组件读取的唯一抬升速度（`spec:AST-100`）。该过滤器是 iOS 的实测混合：平移的速度为最新区间速度的 0.2 倍加上前一区间速度的 0.8 倍，在每个移动样本上更新；滚动表面的释放为最新平移值的 0.25 倍加上前一个值的 0.75 倍；在抬升前静止超过静止区间的接触读为 0。它不被导出。任何 Core 组件都不保留自己的样本缓冲区、速度计算或替代释放过滤器；组件的轻扫阈值比较跟踪器的释放速度。Lab 不保留它的副本：没有 Lab 组件拥有自己的样本缓冲区、速度计算或释放过滤器，因此对于相同运动，Lab 报告与 Core 相同的速度。
+- **INV11 — 悬停意图是识别器设置。** 悬停识别器 `HoverGestureRecognizer` 接受 `intent: {enterMs, exitMs, group}`：针对掠过而设的进入延迟（所有者的记录可将其设为零）、退出保护，以及一个分组，指针从一个打开的触发器移动到下一个时，该分组让下一个立即显示。键盘焦点立即显示，手指永远不会被它门控或服务：意图只回应鼠标和笔的悬停。悬停识别器仅针对具备悬停能力的指针附加，因为手指无法悬停，并且不注册 touch 监听器。`useTooltip`、`useHoverCard` 和 `useMenuHover` 从中获取悬停计时；`useContainerReveal` 保留其仅 CSS 的停留（`component:Thumbnail` PR1），只从所有者的意图中获取延迟值。进入和退出动画、悬停色调以及默认延迟本身仍由其所有者负责。该设置不添加模块，并且是内部的（`spec:AST-017` FR21）。
 
-- **INV12 — Native scroll reports progress.** The native-scroll module also
-  reports progress: `progress(range)` turns a scroll position into a value from
-  0 to 1 over a range, an element's span or a distance, with its edges, and a
-  subscription delivers it off the render path to the animator or a CSS custom
-  property, never React state. Native `animation-timeline: scroll()` is
-  preferred where the platform supports it, with this as the fallback. Progress
-  still reports under reduced motion, and travel it drives stops there on every
-  path, through the animator or a CSS custom property alike. Scroll snapping and momentum stay native. It adds no
-  module and is internal (`spec:AST-017` FR21).
+- **INV12 — 原生滚动报告进度。** 原生滚动模块还报告进度：`progress(range)` 将滚动位置转换为一个在范围（元素的跨度或一段距离）上从 0 到 1 的值，并包含其边缘，订阅会将其在渲染路径之外传递给动画器或 CSS 自定义属性，绝不通过 React 状态。在平台支持的地方优先使用原生 `animation-timeline: scroll()`，以此作为回退。进度在减少动效下仍然报告，而它驱动的行程在每条路径上都会停在那里，无论是通过动画器还是 CSS 自定义属性。滚动吸附和动量保持原生。它不添加模块，并且是内部的（`spec:AST-017` FR21）。
 
-- **INV13 — Press tracking across a group has one owner.** In
-  `@astryxdesign/core`, one internal module, `actionGroupTracker`, tracks a
-  held pointer across a group's actions for every `family:action-groups`
-  member other than menus and Selector's and MultiSelector's options, whose
-  tracking and public `menuPressStep` belong to
-  `module:DropdownMenu/useMenuPress` (OQ1; implementation gap: MultiSelector
-  does not mount it yet). No other member keeps its own copy of the tracking. It is not exported (`spec:AST-017`
-  FR21).
-- **INV14 — A one-axis group that chooses tracks a press along its axis.** A
-  group that chooses, whose options sit in one row or one column and whose lift
-  selects one, may track a press along that axis (`tracksAlong`). Button groups
-  and menus do not: `family:action-groups` FR3 still binds them.
-  `actionGroupTracker` then counts a held pointer on the group's center line,
-  clamped to its ends. A drift off the group never cancels the press: the
-  option under the pointer's position along the axis stays highlighted, and
-  the lift selects it. Only a cancel ends the press with no selection: the
-  browser takes the pointer (`pointercancel`), or the person presses Escape.
-  The highlight then returns at once. SegmentedControl, the family's named
-  exception, is the one such group (`spec:AST-020` DEC-6).
+- **INV13 — 跨组的按压跟踪有一个所有者。** 在 `@astryxdesign/core` 中，一个内部模块 `actionGroupTracker` 为除菜单以及 Selector 和 MultiSelector 的选项之外的每个 `family:action-groups` 成员跟踪跨组操作的持有指针，这些成员的跟踪和公共 `menuPressStep` 属于 `module:DropdownMenu/useMenuPress`（OQ1；实现差距：MultiSelector 尚未挂载它）。任何其他成员都不保留自己的跟踪副本。它不被导出（`spec:AST-017` FR21）。
+- **INV14 — 沿单轴选择的分组沿其轴跟踪按压。** 一个进行选择的分组，其选项位于一行或一列中，且其抬升选择一个，可以沿该轴跟踪按压（`tracksAlong`）。按钮组和菜单不可以：`family:action-groups` FR3 仍然约束它们。`actionGroupTracker` 随后在分组的中心线上计数持有的指针，并钳制到其两端。偏离分组永远不会取消按压：指针位置沿轴下方的选项保持高亮，抬升会选择它。只有取消才会在没有选择的情况下结束按压：浏览器接管指针（`pointercancel`），或用户按下 Escape。高亮随后立即返回。SegmentedControl 是该家族指定的例外，也是唯一这样的分组（`spec:AST-020` DEC-6）。
 
 ## Allowed variation
 
-Component families keep their shipped interaction models:
+组件家族保留其已发布的交互模型：
 
-- actions may paint the shared outline on the focusable action;
-- bordered fields may paint their established field-focus treatment on an owning
-  wrapper;
-- hidden native inputs may have owner code paint on the visible indicator;
-- menus may move focus with mouse hover so pointer and keyboard share one
-  highlighted item; and
-- spatial controls may move focus during a pointer gesture without showing the
-  keyboard focus indicator.
+- 操作可以在可聚焦操作上绘制共享轮廓；
+- 带边框的字段可以在所属包装器上绘制其既有的字段焦点处理；
+- 隐藏的原生输入可以让所有者代码在可见指示器上绘制；
+- 菜单可以随鼠标悬停移动焦点，使指针和键盘共享一个高亮项；以及
+- 空间控件可以在指针手势期间移动焦点，而不显示键盘焦点指示器。
 
-These are ownership and behavior choices, not alternate modality definitions.
-A new visual representation still requires design review; this record does not
-authorize one.
+这些是所有权和行为选择，不是替代的模态定义。新的视觉表示仍需要设计评审；本记录不授权任何新的视觉表示。
 
 ## Restorative-change routing
 
-`architecture:knowledge-contracts` alone defines change disposition. INV7 and INV8
-may supply the current outcome a change restores, but they do not authorize another
-observable public delta. New APIs, exceptions, defaults, interaction models, icon or
-control sizing, sticky behavior, caller-owned layout, and new visual representations
-remain with their direct current owner unless evidence proves that exact mechanism is
-necessary to restore the invariant and representative unaffected paths remain
-unchanged. A separable delta is removed or split before this interaction restoration
-is asked to carry a new decision, except an undeclared public API row, which goes
-to human review for an owner's decision rather than being removed or split by
-review (`architecture:knowledge-contracts` change coupling step 6).
+只有 `architecture:knowledge-contracts` 定义变更处置。INV7 和 INV8 可以提供变更所恢复的当前结果，但它们不授权另一个可观察的公共增量。新 API、例外、默认值、交互模型、图标或控件尺寸、吸顶行为、调用方拥有的布局以及新的视觉表示仍由其直接的当前所有者负责，除非证据证明该确切机制是恢复不变量所必需的，并且代表性的未受影响路径保持不变。可分离的增量会先被移除或拆分，然后才要求此交互恢复承载新的决策，但未声明的公共 API 行除外，它进入人工评审以由所有者决定，而不是由评审移除或拆分（`architecture:knowledge-contracts` 变更耦合第 6 步）。
 
 ## Change coupling
 
-- A change to modality tracking, focus-return visibility, shared focus styles, or
-  visual-proxy ownership updates the relevant representative tests in the same
-  pull request.
-- Moving a component's semantic focus owner or paint owner verifies keyboard
-  order, programmatic focus after both modalities, one-indicator ownership, and
-  disabled, busy, and read-only behavior where applicable.
-- Adding pointer-dependent behavior verifies mouse, touch, and pen as applicable,
-  including a non-hover path.
-- Moving, hiding, clipping, replacing, or asynchronously updating an essential
-  action verifies each supported modality in the affected state, close and
-  supersession where applicable, and a representative unaffected state.
-- A change presented as an interaction restoration inventories every additional
-  public behavior delta. Layout, sizing, API, default, and exception changes that
-  are not proven necessary remain separately routed.
-- Changing focus appearance remains coupled to Design Conventions and theme
-  verification. Exposing modality through public API remains coupled to
-  `architecture:public-component-api`.
+- 对模态跟踪、焦点返回可见性、共享焦点样式或视觉代理所有权的更改，会在同一个拉取请求中更新相关的代表性测试。
+- 移动组件的语义焦点所有者或绘制所有者时，要验证键盘顺序、两种模态后的程序化焦点、单指示器所有权，以及适用时的禁用、忙碌和只读行为。
+- 添加依赖指针的行为时，要验证适用的鼠标、触摸和笔，包括非悬停路径。
+- 移动、隐藏、裁剪、替换或异步更新必要操作时，要验证受影响状态下的每种受支持模态、适用时的关闭和取代，以及一个代表性的未受影响状态。
+- 作为交互恢复提出的变更会清点每一个额外的公共行为增量。未证明必要的布局、尺寸、API、默认值和例外更改仍需单独路由。
+- 更改焦点外观仍与设计约定和主题验证耦合。通过公共 API 暴露模态仍与 `architecture:public-component-api` 耦合。
 
 ## Owning code
 
-- `utils/interactionModality.ts` — records and exposes the shared last-input
-  modality.
-- `utils/focusOutline.stylex.ts` and focus tokens — provide the shared focus
-  indicator mechanics and theme seam without choosing component ownership.
-- `privateAttributes/focusOwner.stylex.ts` — owns the private focus-owner attribute, its
-  selector, and the one shared wrapper ring for INV3's primary-control owners;
-  it is not exported from the package.
-- `hooks/useFocusReturnVisibility.ts` — applies last-input visibility when focus
-  returns from adaptive surfaces.
-- `hooks/useIndicatorFocusRing.tsx` — lets the semantic owner guarantee paint on
-  a replaceable visual indicator.
-- Current component and family records define focus destination, keyboard and pointer
-  behavior, essential-action availability, accepted intent, supersession, pending
-  lifetimes, and focus-paint ownership.
-- `architecture:react-component-runtime` owns shared lifecycle and resource
-  mechanisms. This record owns only the cross-cutting modality-path,
-  no-stale-interaction-outcome, gesture-velocity-source, hover-intent
-  (INV11), scroll-progress-source (INV12), and group press-tracking (INV13,
-  INV14) requirements.
-- The Core velocity tracker and its release filter (INV10) — the one source of
-  gesture velocity for Core components; not exported.
-- The hover recognizer, `HoverGestureRecognizer`, and its `intent` setting
-  (INV11) — the one source of hover-show timing for Core components; not
-  exported.
-- The native-scroll module's progress and its subscription (INV12) — the one
-  source of scroll progress for Core components; not exported.
-- The action-group tracker (INV13) — the one press tracker for action groups
-  outside menus and Selector's and MultiSelector's options, with its one-axis
-  tracking (INV14); not exported.
-- `useTapStop` in `Layer/useTouchTrigger.ts` — swallows the click or mousedown
-  that follows a touch press on a control that must not act on taps; not
-  exported. Tokenizer runs it on every press and passes it a token's remove
-  button's mousedown only after a finger's press with the keyboard down. A pen's
-  press keeps its default, as a mouse's does.
+- `utils/interactionModality.ts` —— 记录并暴露共享的最后输入模态。
+- `utils/focusOutline.stylex.ts` 和焦点 token —— 提供共享焦点指示器机制和主题接缝，而不选择组件所有权。
+- `privateAttributes/focusOwner.stylex.ts` —— 拥有私有焦点所有者属性、其选择器，以及 INV3 的主控件所有者的唯一共享包装器环；它不从包中导出。
+- `hooks/useFocusReturnVisibility.ts` —— 当焦点从自适应表面返回时应用最后输入可见性。
+- `hooks/useIndicatorFocusRing.tsx` —— 让语义所有者保证在可替换的视觉指示器上绘制。
+- 当前组件和家族记录定义焦点目标、键盘和指针行为、必要操作可用性、接受的意图、取代、待定生命周期和焦点绘制所有权。
+- `architecture:react-component-runtime` 拥有共享生命周期和资源机制。本记录只拥有横切的模态路径、无过时交互结果、手势速度来源、悬停意图（INV11）、滚动进度来源（INV12）和组按压跟踪（INV13、INV14）要求。
+- Core 速度跟踪器及其释放过滤器（INV10）—— Core 组件手势速度的唯一来源；不导出。
+- 悬停识别器 `HoverGestureRecognizer` 及其 `intent` 设置（INV11）—— Core 组件悬停显示计时的唯一来源；不导出。
+- 原生滚动模块的进度及其订阅（INV12）—— Core 组件滚动进度的唯一来源；不导出。
+- 操作组跟踪器（INV13）—— 菜单以及 Selector 和 MultiSelector 的选项之外的操作组的唯一按压跟踪器，具有其单轴跟踪（INV14）；不导出。
+- `Layer/useTouchTrigger.ts` 中的 `useTapStop` —— 吞掉在不得对轻点执行操作的控件上触摸按压后跟随的 click 或 mousedown；不导出。Tokenizer 在每次按压时运行它，并仅在手指按压且键盘按下之后将 token 的移除按钮的 mousedown 传给它。笔的按压保留其默认值，与鼠标相同。
 
 ## Deciding specs
 
-`spec:AST-100/DEC-1` decides one release velocity per kind of surface (INV10),
-and `spec:AST-094/DEC-17` decides one press tracking for every action group
-(INV13). `spec:AST-020/DEC-6` decides one-axis tracking (INV14). Otherwise no separate specification changes this record. The last-input rule was approved as
-a system architecture decision by `cixzhang` on 2026-08-30. Essential-action
-reachability, newer-intent precedence, and the evidence/scope guard were approved by
-`cixzhang` on 2026-09-10.
+`spec:AST-100/DEC-1` 决定每种表面类型的一个释放速度（INV10），`spec:AST-094/DEC-17` 决定每个操作组的一种按压跟踪（INV13）。`spec:AST-020/DEC-6` 决定单轴跟踪（INV14）。除此之外没有单独的规范更改本记录。最后输入规则由 `cixzhang` 于 2026-08-30 批准为系统架构决策。必要操作可达性、较新意图优先以及证据/范围保护由 `cixzhang` 于 2026-09-10 批准。
 
 ## Verification
 
-| Invariant  | Evidence                                                                                                                                                                                                                                                                              | Failure signal                                                                                                                                                                                                                                                                                              |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| INV1, INV2 | Programmatic-focus cases after keyboard and pointer input in representative component tests                                                                                                                                                                                           | Programmatic focus invents a modality, or pointer history paints the keyboard indicator                                                                                                                                                                                                                     |
-| INV3       | Direct-owner, wrapper-owner, replaceable-indicator, and nested-action cases, including a Token inside an Item and a control inside a card; `FocusRingOwner.a11y.chromium.spec.ts` covers the shared module in Selector, and the other wrappers that the gap names are not covered yet | No indicator, two indicators, replacement content that can opt out, or a component that writes the focus-owner attribute or selector itself                                                                                                                                                                 |
-| INV4       | Keyboard, mouse, touch, and pen browser paths where applicable; tap cases on an action trigger with a label tooltip and on a hint-only trigger under `touchTrigger="auto"`                                                                                                            | Hover-only behavior, sticky touch hover, unreachable action, a tap on an action trigger that opens its label tooltip, or hint-only information with no touch path                                                                                                                                           |
-| INV5       | Disabled, busy, and read-only DOM and activation assertions                                                                                                                                                                                                                           | Inactive control reacts, eligible control loses focus, or state changes with modality                                                                                                                                                                                                                       |
-| INV6       | Public API review and representative source inspection                                                                                                                                                                                                                                | A component adds caller-controlled modality without a separate API decision                                                                                                                                                                                                                                 |
-| INV7       | Rendered-browser affected-state checks across geometry, clipping, scrolling, hit testing, built-in and custom-renderer paths                                                                                                                                                          | At an offered interaction point one modality loses every essential path, or evidence substitutes class equality for reachability/perceptibility                                                                                                                                                             |
-| INV8       | Owner-defined intent order, pending, close, cancellation, disablement, and unmount mutations                                                                                                                                                                                          | Older work changes current content, selection, status or announcement, visibility, focus, or activation after owner-defined supersession                                                                                                                                                                    |
-| INV9       | Concrete-harm reproduction, representative normal/legacy/no-new-prop paths, and coincident public-delta inventory                                                                                                                                                                     | Unsupported or aesthetic preference is treated as harm, unaffected behavior changes, or an API, layout, sizing, default, sticky, or exception delta escapes direct authority                                                                                                                                |
-| INV10      | Source boundary check over Core and Lab, a Lab-to-Core comparison on one recorded stream, and release-filter unit tests over recorded iOS pan and scroll-view streams                                                                                                                 | A Core component with its own sample buffer, velocity math, or release filter; a Lab component with its own sample buffer, velocity math, or release filter; a Lab component reporting a different velocity than Core for the same stream; an export of the tracker; a non-zero release after a still pause |
-| INV11      | Evidence gap: not implemented yet; the shared hover recognizer and its adopters' move onto it are pending. Then: unit tests of the hover recognizer's intent and browser tests of its adopters with a mouse, a pen, a finger, and the keyboard                                        | A show without the owner's entry delay, a missed handoff within a group, a delayed keyboard show, a hover-shown surface that closes before the pointer reaches it, a finger served by it, or a second hover-timing implementation fails                                                                     |
-| INV12      | Unit tests of native scroll's progress and real-browser proofs of its adopters                                                                                                                                                                                                        | Progress routed through React state, a missing edge, travel under Reduce Motion, use where native scroll-driven animation is supported, or a public export fails                                                                                                                                            |
-| INV13      | Source boundary check over Core and each family member's pointer-stream tests                                                                                                                                                                                                         | A member outside menus and Selector's and MultiSelector's options that tracks a held pointer across its actions with its own code, or a public export of the tracker, fails                                                                                                                                 |
-| INV14      | `actionGroupTracker.test.ts` one-axis cases and SegmentedControl's drift, past-the-end, cancel and Escape browser cases                                                                                                                                                               | A one-axis group that cancels a press on a drift off it, loses its end action past an end, or keeps its highlight after a cancel or Escape, fails                                                                                                                                                           |
+| 不变量     | 证据                                                                                                                                                                                         | 失败信号                                                                                                                                                                            |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| INV1、INV2 | 代表性组件测试中键盘和指针输入后的程序化焦点用例                                                                                                                                             | 程序化焦点发明了一种模态，或指针历史绘制键盘指示器                                                                                                                                  |
+| INV3       | 直接所有者、包装器所有者、可替换指示器和嵌套操作用例，包括 Item 内的 Token 和卡片内的控件；`FocusRingOwner.a11y.chromium.spec.ts` 覆盖 Selector 中的共享模块，差距中提到的其他包装器尚未覆盖 | 没有指示器、两个指示器、可退出的替换内容，或组件自己写入焦点所有者属性或选择器                                                                                                      |
+| INV4       | 适用时的键盘、鼠标、触摸和笔浏览器路径；带标签工具提示的动作触发器以及 `touchTrigger="auto"` 下纯提示触发器上的轻点用例                                                                      | 仅悬停行为、粘性触摸悬停、不可达的操作、对动作触发器的轻点打开了其标签工具提示，或纯提示信息没有触摸路径                                                                            |
+| INV5       | 禁用、忙碌和只读的 DOM 及激活断言                                                                                                                                                            | 非活动控件有反应、合格控件失去焦点，或状态随模态改变                                                                                                                                |
+| INV6       | 公共 API 评审和有代表性的源码检查                                                                                                                                                            | 组件在未单独做 API 决策的情况下添加调用方控制的模态                                                                                                                                 |
+| INV7       | 在几何、裁剪、滚动、命中测试、内置和自定义渲染器路径上对受影响状态进行渲染浏览器检查                                                                                                         | 在提供的交互点上，一种模态失去了所有必要路径，或证据用类名相等代替可达性/可感知性                                                                                                   |
+| INV8       | 所有者定义的意图顺序、待定、关闭、取消、禁用和卸载变更                                                                                                                                       | 在所有者定义的取代之后，较旧工作改变了当前内容、选择、状态或公告、可见性、焦点或激活                                                                                                |
+| INV9       | 具体伤害复现、代表性的正常/旧有/无新 prop 路径，以及同步的公共增量清单                                                                                                                       | 不支持或审美偏好被当作伤害，未受影响的行为发生变化，或 API、布局、尺寸、默认值、吸顶或例外增量绕过直接权威                                                                          |
+| INV10      | 对 Core 和 Lab 的源码边界检查、在一个已记录流上的 Lab 到 Core 对比，以及对已记录 iOS 平移和滚动视图流的释放过滤器单元测试                                                                    | Core 组件拥有自己的样本缓冲区、速度计算或释放过滤器；Lab 组件拥有自己的样本缓冲区、速度计算或释放过滤器；Lab 组件对同一流报告与 Core 不同的速度；导出跟踪器；静止暂停后释放速度非零 |
+| INV11      | 证据差距：尚未实现；共享悬停识别器及其采用者迁移尚未完成。之后：悬停识别器意图的单元测试及其采用者使用鼠标、笔、手指和键盘的浏览器测试                                                       | 没有所有者进入延迟的显示、组内错过交接、键盘显示延迟、悬停显示的表面在指针到达之前关闭、手指被它服务，或第二个悬停计时实现失败                                                      |
+| INV12      | 原生滚动进度的单元测试及其采用者的真实浏览器证明                                                                                                                                             | 进度通过 React 状态路由、缺少边缘、Reduce Motion 下的行程、在支持原生滚动驱动动画的地方使用它，或公共导出失败                                                                       |
+| INV13      | 对 Core 及每个家族成员指针流测试的源码边界检查                                                                                                                                               | 菜单以及 Selector 和 MultiSelector 的选项之外的成员用自己的代码跟踪跨其操作的持有指针，或跟踪器的公共导出失败                                                                       |
+| INV14      | `actionGroupTracker.test.ts` 单轴用例以及 SegmentedControl 的漂移、越过末端、取消和 Escape 浏览器用例                                                                                        | 单轴分组在偏离时取消按压、越过末端后失去其末端操作，或在取消或 Escape 后保持高亮，则失败                                                                                            |
 
-Real-browser evidence is required when the behavior depends on
-`:focus-visible`, pointer capability, touch or pen synthesis, rendered focus
-ownership, scrolling, clipping, hit testing, or whether an essential control remains
-perceivable in the supported presentation. Unit tests prove event routing, DOM state,
-and deterministic intent ordering but do not replace those browser outcomes.
+当行为依赖 `:focus-visible`、指针能力、触摸或笔合成、渲染焦点所有权、滚动、裁剪、命中测试，或必要控件在受支持呈现中是否保持可感知时，需要真实浏览器证据。单元测试证明事件路由、DOM 状态和确定性意图排序，但不能替代这些浏览器结果。
 
-A composed editor surface is the record's verification benchmark: it covers
-keyboard-owned editor focus, pointer suppression, clearing an existing keyboard
-indicator on pointer press, and keeping internal action focus owned by the
-action. The benchmark also verifies programmatic editor focus after both
-keyboard and pointer input before the behavior is treated as complete. A
-benchmark demonstrates the invariants; it does not carry authority for them.
+组合编辑器表面是本记录的验证基准：它覆盖键盘拥有的编辑器焦点、指针抑制、在指针按压时清除现有键盘指示器，以及保持内部操作焦点由该操作拥有。该基准还在行为被视为完成之前验证键盘和指针输入后的程序化编辑器焦点。基准展示不变量；它不为其承载权威。
 
 ## Open questions
 
-- **OQ1 — When do menus and Selector's and MultiSelector's options move onto
-  the shared tracker?** (`engineering`) Open.
+- **OQ1 — 菜单以及 Selector 和 MultiSelector 的选项何时迁移到共享跟踪器？**（`engineering`）开放。

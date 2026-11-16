@@ -20,265 +20,134 @@ affects_consumer_docs: []
 
 ## Intent
 
-People using existing Astryx components should gain the same standards-traceable
-protection as new components without waiting for a repository-wide rewrite. Astryx
-migrates accessibility assertions progressively into reusable spec-test contracts,
-locks in behavior that already passes, and exposes each existing failure as owned
-work instead of hiding it behind missing or skipped tests.
+使用现有 Astryx 组件的人应当获得与新组件相同的、可追溯至标准的保护，而不必等待整个仓库重写。Astryx 把无障碍断言逐步迁移进可复用的规格测试契约，锁定已经通过的行为，并把每个既有失败公开为有归属的工作，而不是把它藏在缺失或跳过的测试之后。
 
-Migration separates shared pattern behavior from component-specific behavior. A
-component binding says which pattern and states it implements. The reusable contract
-owns the shared WCAG 2.2/APG outcome; the component suite keeps API, composition, and
-implementation-specific regression coverage.
+迁移把共享模式行为与组件特有行为分开。组件绑定说明它实现了哪个模式与哪些状态。可复用契约拥有共享的 WCAG 2.2/APG 结果；组件测试套件保留 API、组合与实现特有的回归覆盖。
 
 ## Non-goals
 
-- Defining how accessibility spec tests are authored; that is owned by
-  [AST-020](../AST-020/spec.md).
-- Fixing every accessibility defect in the same pull request that reveals it.
-- Deleting component-specific tests merely because they mention ARIA or keyboard
-  input.
-- Treating a known failure, skipped expectation, or high coverage percentage as a
-  passing accessibility result.
-- Blocking all existing components on every historical gap before migration can
-  begin.
-- Migrating page-level, visual, or real-AT requirements into a component runtime
-  contract that cannot prove them.
+- 定义无障碍规格测试如何编写；该职责由 [AST-020](../AST-020/spec.md) 拥有。
+- 在揭示某个无障碍缺陷的同一个 pull request 中修复所有无障碍缺陷。
+- 仅因为组件特有测试提到 ARIA 或键盘输入就删除它们。
+- 把已知失败、被跳过的期望或高覆盖率百分比当作通过的无障碍结果。
+- 在迁移开始之前，以每一个历史缺口为由阻塞所有现有组件。
+- 把页面级、视觉或真实 AT 要求迁移进无法证明它们的组件运行时契约。
 
 ## Requirements
 
 ### Migration inventory and unit of work
 
-- **FR1 — Migration depends on the authoring contract.** This spec MUST NOT become
-  `current` before AST-020 is `current`. Every migrated pattern and binding MUST
-  satisfy AST-020's traceability, applicability, evidence-layer, review, and
-  readable-pull-request requirements.
-- **FR2 — Inventory precedes deletion.** Before changing tests for a component, the
-  migration MUST record each interactive part, its adopted pattern or patterns,
-  representative states, existing shared-pattern assertions, component-specific
-  assertions, assigned evidence layers, and known failures. A component with
-  multiple interactive parts MUST map each part separately.
-- **FR3 — Migration pull requests stay bounded.** A pull request SHOULD add or
-  materially revise one reusable pattern contract and its first representative
-  bindings, or migrate one bounded set of bindings to an already-current contract.
-  It MUST NOT combine unrelated patterns, broad component remediation, or visual
-  redesign merely to raise coverage.
-- **FR4 — Representative states are explicit.** Each binding MUST cover every
-  component state that can change the adopted pattern outcome. Depending on the
-  component, that includes default and changed value, controlled and uncontrolled,
-  enabled and disabled, focusable-disabled, required or invalid, open and closed,
-  orientation, direction, loading, error, and relevant composed parts. The inventory
-  records why omitted states cannot change the shared outcome.
+- **FR1 — Migration depends on the authoring contract.** 本规格在 AST-020 成为 `current` 之前不得成为 `current`。每个迁移的模式与绑定都必须满足 AST-020 的可追溯性、适用性、证据层、审查以及可读 pull request 要求。
+- **FR2 — Inventory precedes deletion.** 在改动某个组件的测试之前，迁移必须记录每个交互部件、它采用的模式（一个或多个）、代表性状态、现有的共享模式断言、组件特有断言、指派的证据层以及已知失败。拥有多个交互部件的组件必须分别映射每个部件。
+- **FR3 — Migration pull requests stay bounded.** 一个 pull request 应当添加或实质性修订一个可复用模式契约及其首批代表性绑定，或者把一组有界绑定迁移到一个已为 current 的契约。它不得把无关模式、大范围组件修复或视觉重新设计仅仅为了提升覆盖率而合并在一起。
+- **FR4 — Representative states are explicit.** 每个绑定必须覆盖所有能改变所采用模式结果的组件状态。取决于组件，这包括默认值与改变后的值、受控与非受控、启用与禁用、可聚焦的禁用、必填或无效、打开与关闭、朝向、书写方向、加载、错误以及相关的组合部件。清单要记录为什么被省略的状态无法改变共享结果。
 
 ### Moving and retaining coverage
 
-- **FR5 — Move only equivalent assertions.** An existing test moves into the shared
-  contract only when its user outcome, applicability, and evidence layer are the
-  same for every binding. Tests for callback payloads, public props, form submission,
-  component-owned composition, styling, or a deliberate component exception remain
-  local even when they also inspect ARIA or keyboard events.
-- **FR6 — Duplicate ownership ends in the migration pull request.** Once a contract
-  and binding prove an existing shared outcome at the same or stronger layer, the
-  exact local assertion MUST be removed or rewritten to cover only the remaining
-  component-specific contract. Temporary duplication requires a named removal
-  blocker; “extra coverage” is not a permanent reason to keep two owners.
-- **FR7 — Existing behavior is preserved unless a separate change authorizes it.**
-  A migration pull request records observed failures but does not silently change
-  component API, interaction, focus, semantics, visuals, or compatibility. A small
-  prerequisite fix may land first or in a separately reviewable commit and pull
-  request under its owning current records.
+- **FR5 — Move only equivalent assertions.** 现有测试只有在它的用户结果、适用性和证据层对每个绑定都相同时，才移入共享契约。针对回调负载、公共 props、表单提交、组件自有组合、样式或某组件刻意例外的测试仍留在本地，即使它们也检查 ARIA 或键盘事件。
+- **FR6 — Duplicate ownership ends in the migration pull request.** 一旦契约与绑定在相同或更强的层上证明了某个既有共享结果，就必须在该迁移 pull request 中删除或重写完全相同的本地断言，使其只覆盖剩余的组件特有契约。临时重复需要具名的移除阻塞项；“额外覆盖”不是保留两个所有者的永久理由。
+- **FR7 — Existing behavior is preserved unless a separate change authorizes it.** 迁移 pull request 记录观察到的失败，但不悄悄改变组件 API、交互、焦点、语义、视觉或兼容性。小的前置修复可以先落地，或放在其所属 current 记录管辖下、可单独审查的提交与 pull request 中。
 
 ### Known failures and regression gates
 
-- **FR8 — Every known failure is exact and actionable.** A checked-in
-  known-failure record MUST name the expectation id, component binding and state,
-  observed user impact, standards reference, evidence layer, exact failure, and
-  reason the migration does not fix it. Wildcards, whole-pattern suppression, and
-  unowned text reasons are prohibited. Operational tracking MUST keep one durable,
-  owned gap record for that exact expectation/binding/state tuple. That gap record
-  MUST state whether current authority or an objective standard settles the required
-  outcome, or whether API, behavior, ownership, compatibility, or design direction
-  remains a human decision. Recording a gap does not approve remediation. Unsettled
-  direction stops implementation and routes one exact owner question. A private
-  tracker identifier or URL MUST NOT be copied into public source, commits, or
-  pull-request text; the operational registry maintains that external mapping.
-- **FR9 — A known failure changes only its exact gate result.** A binding with a
-  known failure still runs the expectation and reports `known-failure`, never
-  `pass`. Only that exact expected result stops gating the first migration. A
-  different error, another state, a new expectation, or a wider failure MUST fail.
-  When the expectation starts passing, CI MUST report an unexpected pass and
-  require removal of the stale record rather than continuing to count it as debt.
-- **FR10 — Migration locks the baseline without calling debt conformance.** Required
-  expectations that pass gate immediately for that binding. Recorded historical
-  failures remain visibly failing debt but do not prevent the first migration.
-  New components and newly supported states MUST NOT add a required known failure.
-  Adding or widening a known failure after the baseline requires an explicit owner
-  decision and a durable owned gap record; it is not a routine test update.
-- **FR11 — Reports show facts, not one quality score.** Coverage output MUST report
-  patterns, bindings, applicable expectations, passes, known failures, unrun layers,
-  and exemptions separately. It MUST NOT collapse those states into one percentage
-  or grade presented as component accessibility or conformance. A pattern with one
-  required failure is not “mostly conformant.”
+- **FR8 — Every known failure is exact and actionable.** 签入的已知失败记录必须指明期望 id、组件绑定与状态、观察到的用户影响、标准引用、证据层、确切失败，以及迁移不修复它的原因。禁止使用通配符、整模式抑制和无归属的文字理由。运营跟踪必须为该确切的期望/绑定/状态元组保留一条持久、有归属的缺口记录。该缺口记录必须说明所需结果是由当前权威还是客观标准来判定，抑或 API、行为、归属、兼容性或设计方向仍属人工决策。记录缺口并不批准修复。未定的方向会停止实现，并转交一个确切的负责人问题。私有跟踪器标识符或 URL 不得复制到公开源码、提交或 pull request 文本中；运营登记表维护该外部映射。
+- **FR9 — A known failure changes only its exact gate result.** 存在已知失败的绑定仍会运行该期望并报告 `known-failure`，绝不报告 `pass`。只有那个确切的期望结果会停止对首次迁移的门禁。不同的错误、另一个状态、新的期望或更宽的失败都必须失败。当该期望开始通过时，CI 必须报告一次意外通过，并要求移除过期记录，而不是继续把它计为债务。
+- **FR10 — Migration locks the baseline without calling debt conformance.** 对某个绑定，通过的必需期望立即生效门禁。已记录的历史失败保持为可见地失败的债务，但不阻止首次迁移。新组件和新支持的状态不得新增必需的已知失败。在基线之后添加或扩大已知失败需要明确的负责人决策和持久的、有归属的缺口记录；这不是例行的测试更新。
+- **FR11 — Reports show facts, not one quality score.** 覆盖率输出必须分别报告模式、绑定、适用期望、通过、已知失败、未运行的层和豁免。它不得把这些状态合并成一个百分比或等级，并作为组件无障碍性或合规性呈现。一个带有一个必需失败的模式不是“大体合规”。
 
 ### Repository integration and review
 
-- **FR12 — Current component records point to the new owner.** When a migrated
-  component has a current component or module record, its `verified_by` metadata and
-  verification map MUST name the binding and keep separate evidence for outcomes the
-  shared contract does not own. Migration does not create a component record solely
-  to satisfy this backlink.
-- **FR13 — New work uses an existing contract first.** Once a pattern contract is
-  current, a new component or newly added component part that adopts that pattern
-  MUST bind to it from its first implementation. Authors MUST NOT create a parallel
-  ad hoc copy of the shared assertions. If the contract is incomplete, extend and
-  review the contract before relying on local tests.
-- **FR14 — The migration pull request is a readable ledger.** Its description MUST
-  name the affected users and pattern, component parts and states bound, assertions
-  moved, local tests retained and why, exact known failures and their authority
-  classification, evidence layers run, and mutation or before/after evidence. The
-  description MUST distinguish test migration from component remediation and MUST
-  NOT expose a private operational tracker.
-- **FR15 — Progress is ordered by user leverage.** The first binding remains the
-  Switch reference proven by the prototype. Later work prioritizes widely reused
-  interactive patterns, components with known keyboard/focus/semantic failures, and
-  shared primitives whose correction protects multiple components. Repository order
-  or ease of producing a high count MUST NOT override user impact.
+- **FR12 — Current component records point to the new owner.** 当被迁移的组件存在 current 的组件或模块记录时，其 `verified_by` 元数据和验证映射必须指明该绑定，并为共享契约不拥有的结果保留单独的证据。迁移不会仅仅为了满足这个反向链接而创建组件记录。
+- **FR13 — New work uses an existing contract first.** 一旦某个模式契约为 current，采用该模式的新组件或新增组件部件必须从其首次实现起绑定到它。作者不得创建共享断言的并行临时副本。如果契约不完整，先扩展并审查契约，再依赖本地测试。
+- **FR14 — The migration pull request is a readable ledger.** 其描述必须指明受影响的用户与模式、绑定的组件部件与状态、被移动的断言、保留的本地测试及原因、确切的已知失败及其权威分类、运行的证据层，以及变异或前后对比证据。描述必须区分测试迁移与组件修复，且不得暴露私有运营跟踪器。
+- **FR15 — Progress is ordered by user leverage.** 首个绑定仍是原型所证明的 Switch 参照。后续工作优先处理广泛复用的交互模式、存在已知键盘/焦点/语义失败的组件，以及修正后能保护多个组件的共享原语。仓库顺序或产出高数量的难易程度不得凌驾于用户影响之上。
 
 ### Platform support
 
-- Supported feature/engine floor: each binding follows its component's current
-  support contract and AST-020's assigned evidence layer.
-- Unsupported behavior: an unrun browser, visual, manual, or real-AT layer remains
-  explicitly unrun; jsdom success does not clear it.
-- Browser evidence: component changes that can affect browser-owned pattern behavior
-  run the relevant real-browser binding. Real-AT outcomes follow
-  [AST-009](../AST-009/spec.md) as recommended follow-up with durable receipts.
+- 支持的功能/引擎下限：每个绑定遵循其组件当前的支持契约以及 AST-020 指派的证据层。
+- 不支持的行为：未运行的浏览器、视觉、人工或真实 AT 层保持显式未运行；jsdom 的成功不能清除它。
+- 浏览器证据：可能影响浏览器所拥有模式行为的组件改动会运行相关的真实浏览器绑定。真实 AT 结果按 [AST-009](../AST-009/spec.md) 作为推荐的后续工作执行，并附持久回执。
 
 ## Current-state impact
 
-Current component suites mix shared accessibility outcomes with public API,
-implementation, visual, and regression tests. For example, Switch currently tests
-role, accessible name and description, checked and disabled states, activation,
-form participation, loading and error semantics, disabled-reason composition,
-forced-color CSS, callback payloads, and layout details in one file. The shared
-Switch pattern can own only the standards-derived role, name, state, focusability,
-and activation outcomes. Form data, callback payloads, tooltip composition, and
-component styling remain Switch-owned.
+当前组件测试套件把共享无障碍结果与公共 API、实现、视觉和回归测试混在一起。例如，Switch 目前在一个文件中测试角色、可访问名称与描述、选中与禁用状态、激活、表单参与、加载与错误语义、禁用原因组合、强制颜色 CSS、回调负载以及布局细节。共享的 Switch 模式只能拥有源自标准的角色、名称、状态、可聚焦性与激活结果。表单数据、回调负载、提示框组合以及组件样式仍归 Switch 所有。
 
-The first implementation proved that an existing component can bind to one reusable
-contract in jsdom and Chromium. Its expected-failure mechanism is retained only with
-FR8–FR10's exactness: a known failure is visible debt, never a pass or a broad skip.
+首次实现证明了一个现有组件可以在 jsdom 和 Chromium 中绑定到一个可复用契约。其预期失败机制只有在符合 FR8–FR10 的确切性时才保留：已知失败是可见的债务，绝不是通过或大范围跳过。
 
-Operational gap tracking is separate from the public contract source. The public
-known-failure record remains self-contained and reviewable, while the project's
-configured gap registry maps the same expectation, binding, and state to its owner,
-triage, and later remediation. Migration work MUST NOT create a public issue solely
-to carry known-failure debt, and private tracker references MUST NOT enter this
-public repository.
+运营缺口跟踪与公开契约源码分离。公开的已知失败记录保持自包含、可审查，而项目配置的缺口登记表把同一期望、绑定和状态映射到其负责人、分诊以及后续修复。迁移工作不得仅为承载已知失败债务而创建公开 issue，私有跟踪器引用不得进入这个公开仓库。
 
 ### Progressive rollout
 
-1. **Reference pattern.** Rebuild the Switch prototype under current AST-020 types,
-   self-tests, evidence boundaries, and reporting. Bind the current Switch states
-   without changing behavior.
-2. **Simple controls.** Migrate other single-control patterns where role, name,
-   state, disabled behavior, and keyboard activation can be isolated cleanly.
-3. **Composite widgets.** Migrate selection, navigation, grid, tree, and menu parts
-   with orientation, direction, roving focus, typeahead, and open/closed states.
-4. **Overlays and async outcomes.** Add browser-owned focus, top-layer, inert, and
-   dismissal checks, while routing announcement and virtual-cursor claims through
-   AST-009.
+1. **Reference pattern** —— 在当前 AST-020 类型、自测、证据边界和报告下重建 Switch 原型。绑定当前 Switch 状态而不改变行为。
+2. **Simple controls** —— 迁移其他单控件模式，其中角色、名称、状态、禁用行为和键盘激活可以被干净地隔离。
+3. **Composite widgets** —— 迁移选择、导航、网格、树和菜单部件，涵盖朝向、书写方向、游走焦点、首字符检索以及打开/关闭状态。
+4. **Overlays and async outcomes** —— 增加浏览器所拥有的焦点、顶层、inert 和关闭检查，同时把播报与虚拟光标声明经由 AST-009 处理。
 
-The tracker may reorder components within these phases by user impact. A later phase
-MUST NOT weaken the evidence boundaries or known-failure rules to increase throughput.
+跟踪器可以按用户影响在这些阶段内重排组件。后续阶段不得为了提升吞吐量而削弱证据边界或已知失败规则。
 
-This accepted spec changes no component test, behavior, package, public API, or CI
-gate. Those changes follow in implementation work governed by this record.
+本已接受的规格不改变任何组件测试、行为、包、公共 API 或 CI 门禁。这些改动在受本记录管辖的实现工作中跟进。
 
 ## Verification
 
-| Contract  | Verification                                                               | Representative states                                                                         | Mutation or failure expectation                                                                                                             |
-| --------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1–FR4   | Migration inventory schema and review                                      | one control; component with trigger and popup; controlled/disabled/error/RTL states           | Migration starts without an applicable current contract, treats a whole component as one part, or omits a state that changes semantics      |
-| FR5–FR7   | Before/after assertion ownership review and unchanged component suites     | shared role/state check; callback payload; form data; style rule; discovered component defect | Shared assertion remains duplicated, component-specific proof is deleted, or migration silently changes behavior                            |
-| FR8–FR10  | Runner tests for exact known failures, new failures, and unexpected passes | one historical gap; wrong error; second state; fixed expectation                              | A wildcard masks regression, a stale gap remains, or new work adds debt without decision                                                    |
-| FR11      | Coverage-report snapshot and assertions                                    | pass; known failure; exemption; unrun browser layer                                           | One percentage hides a required failure or reports an unrun layer as pass                                                                   |
-| FR12–FR14 | Knowledge validation, component verification map, and PR-template check    | current component record; component with no record; first new adopter                         | Backlink points to deleted local tests, parallel ad hoc assertions appear, or the PR hides migration/remediation scope                      |
-| FR15      | Durable gap-registry review                                                | high-use control; known keyboard defect; easy low-impact component                            | Work is ordered only to maximize migrated counts, duplicate gap records are created, or unresolved direction is treated as an automatic fix |
-| Platform  | Existing unit/axe/browser checks plus AST-009 classification               | jsdom behavior; real focus; tree exposure; spoken announcement                                | A lower layer clears browser pixels or real-AT output it cannot observe                                                                     |
+| 契约      | 验证                                           | 代表性状态                                                      | 变异或失败预期                                                                      |
+| --------- | ---------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| FR1–FR4   | 迁移清单 schema 与审查                         | 单一控件；带触发器与弹出层的组件；受控/禁用/错误/RTL 状态       | 迁移在没有适用的 current 契约时开始、把整个组件当作一个部件，或省略会改变语义的状态 |
+| FR5–FR7   | 前后断言归属审查与未改变的组件测试套件         | 共享角色/状态检查；回调负载；表单数据；样式规则；发现的组件缺陷 | 共享断言仍被重复、组件特有的证明被删除，或迁移悄悄改变行为                          |
+| FR8–FR10  | 针对确切已知失败、新失败和意外通过的运行器测试 | 一个历史缺口；错误的报错类型；第二个状态；已修复的期望          | 通配符掩盖回归、过期的缺口留存，或新工作未经决策就增加债务                          |
+| FR11      | 覆盖率报告快照与断言                           | 通过；已知失败；豁免；未运行的浏览器层                          | 一个百分比隐藏了必需失败，或把未运行的层报告为通过                                  |
+| FR12–FR14 | 知识校验、组件验证映射与 PR 模板检查           | current 组件记录；无记录的组件；首个新采用方                    | 反向链接指向已删除的本地测试、出现并行临时断言，或 PR 隐藏迁移/修复范围             |
+| FR15      | 持久缺口登记表审查                             | 高使用率控件；已知键盘缺陷；易做的低影响组件                    | 工作仅为了最大化迁移数量而排序、产生重复缺口记录，或把未定方向当作自动修复          |
+| Platform  | 现有单元/axe/浏览器检查加上 AST-009 分类       | jsdom 行为；真实焦点；树暴露；语音播报                          | 较低层清除了它无法观察的浏览器像素或真实 AT 输出                                    |
 
 ### Completion criteria
 
-A pattern migration is complete only when:
+只有当以下条件满足时，模式迁移才算完成：
 
-- its contract is current under AST-020 and passes its positive and negative
-  self-tests;
-- every affected component part and relevant state has a binding or an explicit
-  ownership reason for exclusion;
-- equivalent shared assertions have one owner and component-specific tests remain;
-- every historical failure has the exact public-safe known-failure record and the
-  separate durable owned gap record required by FR8;
-- required passing expectations gate regressions and unexpected passes remove stale
-  debt;
-- reporting separates passes, known failures, exemptions, and unrun layers;
-- current component or module records point to the new binding when those records
-  exist; and
-- the pull request presents the readable migration ledger required by FR14.
+- 其契约在 AST-020 下为 current，并通过其正向与负向自测；
+- 每个受影响的组件部件与相关状态都有绑定，或有明确的归属理由说明被排除；
+- 等价的共享断言只有一个所有者，组件特有测试仍然保留；
+- 每个历史失败都有 FR8 要求的、公开安全的已知失败记录，以及单独的持久有归属缺口记录；
+- 必需的通过期望对回归生效门禁，意外通过会移除过期债务；
+- 报告把通过、已知失败、豁免和未运行的层分开；
+- 当 current 的组件或模块记录存在时，它们指向新绑定；以及
+- pull request 呈现 FR14 所要求的可读迁移账本。
 
-The repository migration is complete only when every shipped interactive component
-part is mapped to a current pattern contract or explicitly records why no reusable
-pattern applies, and no duplicate ad hoc test remains for a shared expectation.
+只有当每个已发布的交互组件部件都映射到 current 模式契约，或明确记录为什么没有可复用模式适用，且共享期望不再残留重复的临时测试时，仓库迁移才算完成。
 
 ## Decision log
 
 ### DEC-1 — Migrate progressively with exact known failures
 
 **Reference:** `spec:AST-021/DEC-1`
+
 **Decider:** `cixzhang`, `2026-09-03`
 
-Apply contracts one pattern and bounded binding set at a time. Preserve historical
-failures as exact, runnable known-failure debt while immediately gating outcomes that
-already pass. This adds protection now without pretending existing defects are
-conformant or waiting for a repository-wide remediation.
+一次只应用一个模式与一组有界绑定的契约。把历史失败保留为确切、可运行的已知失败债务，同时立即对已经通过的结果生效门禁。这在不为现有缺陷伪装合规、也不等待全仓库修复的前提下，立即增加保护。
 
-Rejected: all-or-nothing migration, silent skips, and enabling one broad report-only
-suite that cannot stop regressions.
+已否决：全有或全无的迁移、静默跳过，以及启用一个无法阻止回归的宽泛的仅报告套件。
 
 ### DEC-2 — Keep one owner for shared tests and preserve historical failures exactly
 
 **Reference:** `spec:AST-021/DEC-2`
+
 **Decider:** `cixzhang`, `2026-09-03`
 
-Keep test migration separate from component remediation. Move only reusable
-standards-derived outcomes into pattern contracts; retain component-specific API,
-composition, form, styling, and callback tests with the component. Existing defects
-stay as exact runnable `known-failure` results tied to one expectation, binding, and
-state, with a separate durable owned gap record. They never count as passing, cannot
-mask a different or wider failure, and become unexpected passes when fixed so stale
-debt is removed.
+让测试迁移与组件修复彼此分离。只把可复用的、源自标准的结果移入模式契约；把组件特有的 API、组合、表单、样式和回调测试留在组件中。现有缺陷保持为确切、可运行的 `known-failure` 结果，绑定到一个期望、一个绑定和一个状态，并配有单独的持久有归属缺口记录。它们绝不计为通过，不能掩盖不同或更宽的失败，并在修复后成为意外通过，以便移除过期债务。
 
-Report passes, known failures, exemptions, and unrun layers as separate facts rather
-than averaging them into one accessibility score.
+把通过、已知失败、豁免和未运行的层作为单独的事实报告，而不是把它们平均成一个无障碍评分。
 
-Rejected: changing component behavior inside migration work, deleting
-component-owned tests, broad skips, and a percentage that can make a required
-failure look conformant.
+已否决：在迁移工作中改变组件行为、删除组件自有的测试、大范围跳过，以及用一个百分比让必需的失败看起来合规。
 
 ### DEC-3 — Gap tracking does not turn every mismatch into an approved fix
 
 **Reference:** `spec:AST-021/DEC-3`
+
 **Decider:** `cixzhang`, `2026-09-08`
 
-Keep the checked-in known-failure record public-safe and self-contained. Track its
-operational ownership separately in the project's durable gap registry. The gap
-records the current authority result: an objective requirement may settle the
-outcome, while a new API, behavior, ownership, compatibility, or design choice
-remains a human decision. Recording the mismatch does not authorize remediation.
+让签入的已知失败记录保持公开安全、自包含。在项目的持久缺口登记表中单独跟踪其运营归属。缺口记录当前的权威判定结果：客观要求可以判定该结果，而新的 API、行为、归属、兼容性或设计选择仍属人工决策。记录不一致并不授权修复。
 
-Rejected: creating public issues only to carry test debt, exposing private tracker
-identifiers in the public repository, and treating every accessibility finding as an
-obvious bug fix.
+已否决：仅为承载测试债务而创建公开 issue、在公开仓库中暴露私有跟踪器标识符，以及把每个无障碍发现都当作显然的缺陷修复。
 
 ## Open questions
 
-None.
+无。

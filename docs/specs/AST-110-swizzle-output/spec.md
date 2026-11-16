@@ -33,238 +33,96 @@ affects_consumer_docs: [cli, styling-overview]
 
 ## Intent
 
-A product team runs `astryx swizzle <Name>` to own a component's source. The
-copy builds in their app with no edits, answers to the same theme targets and
-class names, and behaves like the package component it came from until they
-change it. Core and the CLI keep that true for every component swizzle offers,
-and the repository proves it before a change that could break it merges.
+产品团队运行 `astryx swizzle <Name>` 来拥有某个组件的源码。副本在其应用中无需任何修改即可构建，响应相同的主题目标与类名，并且在被改动之前表现得与它来源的包组件一致。Core 与 CLI 对 swizzle 提供的每个组件都保持这一点成立，仓库会在可能破坏它的改动合并之前加以证明。
 
 ## Non-goals
 
-- Which component a name copies and what `swizzle --list` reports:
-  `spec:AST-035` FR11–FR12 and `architecture:cli-surface` INV28.
-- Where the command runs: `spec:AST-081` FR3.
-- How a product configures StyleX for its own code: the build package's
-  options and the product's StyleX configuration own that.
-- Keeping a copy the product has edited in step with later Core releases.
-- Making Core's internal helpers public API (`spec:AST-017` FR21,
-  `architecture:public-component-api` INV12).
-- Equivalent internal implementations remain valid when they satisfy this
-  contract.
-- Internal modules, files, function names, algorithms, data structures, storage
-  layouts, manifests, journals, locks, transaction protocols, and CI job/workflow
-  topology belong in architecture or implementation unless callers or
-  interoperating systems intentionally depend on that exact mechanism as a public
-  protocol. In that case, state who depends on it and why an equivalent
-  implementation would not satisfy the contract.
+- 某个名称复制哪个组件，以及 `swizzle --list` 报告什么：`spec:AST-035` FR11–FR12 与 `architecture:cli-surface` INV28。
+- 命令在哪里运行：`spec:AST-081` FR3。
+- 产品如何为自己的代码配置 StyleX：这由构建包的选项与产品自身的 StyleX 配置负责。
+- 让产品已改动过的副本与后续 Core 发行版保持同步。
+- 把 Core 的内部辅助函数变成公共 API（`spec:AST-017` FR21、`architecture:public-component-api` INV12）。
+- 满足本契约的等价内部实现仍然有效。
+- 内部模块、文件、函数名、算法、数据结构、存储布局、清单、日志、锁、事务协议以及 CI 作业/工作流拓扑都属于架构或实现范畴，除非调用方或互操作系统的确有意把这一确切机制作为公共协议依赖。在那种情况下，应说明谁依赖它，以及为什么等价的实现无法满足契约。
 
 ## Requirements
 
-- **FR1 — An ejected component builds on its own.** In a project with the same
-  Core version and a StyleX compiler, the output of
-  `astryx swizzle <Name>` type-checks and bundles with no edits. It imports from
-  its owner package only paths that package's `exports` lists, and never a
-  `./internal/*` path, except a StyleX module that another Astryx package
-  exports under `./internal/` in its package exports, which the copy keeps
-  importing by that exported path, since its identity is its path. The npm packages the copied files import are the owner
-  package's own dependencies; swizzle reports each one with the version range the
-  owner package declares, and the copy builds once the product installs them.
-- **FR2 — The helpers it needs come with it.** Every module the component
-  reaches that is not reachable through a public export is copied into the
-  output, keeping its folder layout relative to the component, and copied files
-  import each other by relative path. A module from another Astryx package goes
-  under a folder named after that package, at its path in that package's
-  source. A symbol the owner package exports publicly
-  is imported from that public path. Nested folders the component imports are
-  copied with it. The output holds only source the component runs: tests,
-  stories, spec records, and component docs are not copied. When a helper the
-  copy needs already exists in the output from an earlier swizzle, an identical
-  file is reused; a different file is never overwritten, even with
-  `--overwrite`, which replaces only the component's own files: the new helper
-  is written alongside under a version-suffixed name, and only the new copy's
-  imports point at it, except a private attribute owner module and the
-  unexported style modules it imports, which FR4 governs.
-- **FR3 — Shared runtime state stays single.** A module whose state coordinates
-  components with each other (the layer stack, the modal outlet, interaction
-  modality, the bottom-sheet stack, the announcement channel of `spec:AST-086`
-  FR9) keeps that state in one store per document, under a registered key that
-  carries the store's protocol version. A copy and the package component on the
-  same protocol version use the same store, so stacking, Escape, focus return,
-  modality, and announcements behave as they do with the package
-  alone. A copy on another protocol version keeps a store of its own and never
-  reads a store of a different shape. A context that connects a provider to its
-  consumers is coordinating state too: its context object lives under the same
-  kind of versioned key, so a copied `useToast` reaches the package's
-  `LayerProvider`. Copies of Core on one React share each context; a context
-  is never shared across two Reacts in one process, so one request never reads
-  another's provided value. A symbol that identifies objects across modules, such as a
-  brand or a context key, is registered under the same kind of key, so a copy
-  and the package agree on it. Each such store, brand or registry has one
-  versioned slot per page, and one that holds React components or elements has
-  one per React. The rule holds in both directions: a copy inside
-  a package overlay, and package components inside a copied Dialog or other
-  overlay. A package component inside an open copied modal delivers its
-  announcements inside that modal (`spec:AST-086` FR14), and package group and
-  layout context stops at the copy's layer boundary as it does at a package one
-  (`spec:AST-038` FR7). A module whose state only caches work may be duplicated
-  by a copy.
-- **FR4 — Private attributes stay contained.** Each private data attribute's
-  owner module (`architecture:public-component-api` INV23) that the component
-  imports travels with the copy, so callers, the copy included, still never
-  write the attribute by hand. Swizzle copies an imported owner module, and any
-  unexported style module it imports, whole: the copy is unedited except that
-  imports of modules the package exports are rewritten to their package
-  subpaths, as the component's own files are; unexported dependencies keep
-  their relative imports in the same layout. Re-swizzling skips an identical
-  existing copy and refuses a changed one without `--overwrite`.
-- **FR5 — Theme targets and class names are unchanged.** The copy answers to the
-  same theme targets and emits the same documented class names, data attributes,
-  and custom properties as the package component of that version, so a theme,
-  `xstyle`, and product CSS reach it the same way. Swizzle marks its output
-  directory as Astryx source with an `astryx-swizzle.json` file that names the
-  owner package and its version. It writes the marker only into an output
-  directory it owns: one the copy creates, an empty one, or one it marked
-  before. For any other directory it writes no marker, and the `swizzle.copy`
-  result and the command's output name what the directory holds and how to add
-  the marker by hand. `@astryxdesign/build` compiles every module
-  under a marked directory in its library pass, with the library class prefix,
-  into `astryx-base` below `astryx-theme`, so a theme's component overrides
-  apply to the copy as they do to the package component. This placement holds
-  for products that build with `@astryxdesign/build`. The marker is a protocol
-  between the swizzle copy and the build package; a path rule alone cannot
-  tell a copy from the product's own code.
-- **FR6 — Behavior matches the package.** Until the product edits it, the copy's
-  keyboard handling, focus, roles, names, states, announcements, and events match
-  the package component of the same version.
-- **FR7 — Every offered component is proven before merge.** Before a change to
-  a component package's source or to the swizzle copy merges, every component
-  swizzle can copy is ejected into a clean
-  project, type-checked, bundled with a StyleX compiler, and rendered once on the
-  server; a failure blocks the merge through a required check. Release checks run
-  the same proof for every component and also render each copy in a real
-  browser. The proof adds no required context and no wall-clock time to a pull
-  request's slowest required check.
-  Every component swizzle can copy means Core's components as `swizzle --list`
-  offers them (`spec:AST-035` FR12) and every component of each integration
-  package in the repository, copied with `--package`.
-  A source check fails when a module that FR3 covers creates a module-local
-  Symbol, WeakMap or registry instead of a registered shared key.
+- **FR1 — 被弹出（swizzle）的组件可独立构建。** 在与副本使用同一 Core 版本并带有 StyleX 编译器的项目中，`astryx swizzle <Name>` 的输出无需任何修改即可通过类型检查并打包。它只从所属包导入该包 `exports` 列出的路径，绝不导入 `./internal/*` 路径；例外是另一个 Astryx 包在其包导出中通过 `./internal/` 导出的 StyleX 模块，副本继续按该导出路径导入它，因为它的标识就是它的路径。被复制文件所导入的 npm 包是所属包自身的依赖；swizzle 按所属包声明的版本范围逐一报告它们，产品安装这些包之后副本即可构建。
+- **FR2 — 它所需的辅助模块随之而来。** 组件所触及、且无法通过公共导出到达的每个模块都会被复制到输出中，并保持其相对于组件的文件夹布局，被复制的文件之间通过相对路径相互导入。来自另一个 Astryx 包的模块放在以该包命名的文件夹下，位于它在那个包源码中的路径处。所属包公开导出的符号从该公共路径导入。组件所导入的嵌套文件夹随它一同复制。输出只包含组件运行所需的源码：测试、story、spec 记录与组件文档不会被复制。当副本所需的某个辅助文件已由更早的 swizzle 存在于输出中时，完全相同的文件会被复用；不同的文件绝不覆盖，即使使用 `--overwrite` 也是如此，该选项只替换组件自身的文件：新辅助文件以带版本后缀的名称写在旁边，并且只有新副本的导入指向它；例外是私有属性所属模块及其导入的未导出样式模块，这些由 FR4 管辖。
+- **FR3 — 共享运行时状态保持单一。** 其状态用于协调组件之间关系的模块（层栈、模态出口、交互模态、底部面板栈、`spec:AST-086` FR9 的通知通道）把该状态保存在每个文档一个的存储中，位于一个携带该存储协议版本的已注册键之下。处于同一协议版本的副本与包组件使用同一个存储，因此堆叠、Escape、焦点返回、模态与通知的表现与仅使用包组件时一致。处于另一协议版本的副本保有自己的存储，绝不读取形状不同的存储。把 provider 与其使用方连接起来的上下文也是协调状态：它的上下文对象位于同一种带版本的键之下，因此被复制的 `useToast` 能到达包中的 `LayerProvider`。同一个 React 上的多个 Core 副本共享每个上下文；上下文绝不跨同一进程中的两个 React 共享，因此一个请求绝不会读到另一个请求提供的值。跨模块标识对象的符号，例如 brand 或上下文键，注册在同一种键之下，因此副本与包对它的理解一致。每个这样的存储、brand 或注册表在每个页面上有一个带版本的槽位，而持有 React 组件或元素的槽位每个 React 一个。该规则在两个方向上都成立：包覆盖层中的副本，以及被复制 Dialog 或其他覆盖层中的包组件。已打开的复制模态中的包组件在该模态内部投递它的通知（`spec:AST-086` FR14），包的分组与布局上下文在副本的层边界处停止，正如在包的层边界处一样（`spec:AST-038` FR7）。状态仅用于缓存工作的模块可以由副本复制多份。
+- **FR4 — 私有属性保持受控。** 组件所导入的每个私有 data 属性的所属模块（`architecture:public-component-api` INV23）随副本一同携带，因此调用方（包括副本自身）仍然绝不手写该属性。Swizzle 完整地复制所导入的所属模块，以及它导入的任何未导出样式模块：副本不被修改，只是对被包导出的模块的导入会像组件自身文件那样被重写为其包内子路径；未导出的依赖保持相同布局中的相对导入。重新 swizzle 会跳过已存在的相同副本，并在没有 `--overwrite` 时拒绝已改动的副本。
+- **FR5 — 主题目标与类名保持不变。** 副本响应与该版本的包组件相同的主题目标，并输出相同的、有文档的类名、data 属性与自定义属性，因此主题、`xstyle` 与产品 CSS 以同样的方式到达它。Swizzle 用一个 `astryx-swizzle.json` 文件把其输出目录标记为 Astryx 源码，该文件写明所属包及其版本。它只向自己拥有的输出目录写入标记：副本自己创建的目录、空目录，或它此前标记过的目录。对于任何其他目录，它不写标记，并且 `swizzle.copy` 结果与命令的输出会说明该目录中有什么，以及如何手动添加标记。`@astryxdesign/build` 在其 library 通道中以库类名前缀编译已标记目录下的每个模块，输出到 `astryx-theme` 之下的 `astryx-base`，因此主题的组件覆盖对副本的作用与对包组件一致。这一位置安排适用于用 `@astryxdesign/build` 构建的产品。该标记是 swizzle 副本与构建包之间的协议；单靠路径规则无法区分副本与产品自身的代码。
+- **FR6 — 行为与包一致。** 在产品改动它之前，副本的键盘处理、焦点、角色、名称、状态、通知与事件都与同一版本的包组件一致。
+- **FR7 — 每个提供的组件都在合并之前得到证明。** 在组件包源码或 swizzle 副本的改动合并之前，swizzle 能复制的每个组件都会被弹出一个干净项目，做类型检查、用 StyleX 编译器打包，并在服务端渲染一次；失败通过一个必需检查阻断合并。发布检查对每个组件运行相同的证明，还会在真实浏览器中渲染每个副本。该证明不给 pull request 最慢的必需检查增加任何必需上下文，也不增加任何实际耗时。每个 swizzle 能复制的组件，指的是 `swizzle --list` 所提供的 Core 组件（`spec:AST-035` FR12），以及仓库中每个集成包的每个组件，以 `--package` 复制。当 FR3 所管辖的模块创建模块局部的 Symbol、WeakMap 或注册表，而不是已注册的共享键时，源码检查失败。
 
 ### Platform support
 
-- Supported feature/engine floor: the product uses the same Core version the
-  copy came from and a StyleX compiler; FR5's cascade placement needs
-  `@astryxdesign/build`. Browser support is Core's.
-- Unsupported behavior: a project without a StyleX compiler fails at import, as
-  the command's output states. On the stock StyleX plugins a copy builds and
-  behaves as FR1 and FR6 state, but its rules land in the product's layer, above
-  `astryx-theme`. A copy kept across a Core upgrade is outside FR1 and FR6.
-- Browser evidence: a real-browser render of every copy at release time (FR7);
-  server rendering is the pull-request smoke evidence.
+- 支持的功能/引擎下限：产品使用副本来源的同一 Core 版本，以及一个 StyleX 编译器；FR5 的层叠位置需要 `@astryxdesign/build`。浏览器支持范围即 Core 的支持范围。
+- 不受支持的行为：没有 StyleX 编译器的项目在导入时失败，正如命令的输出所述。在原版 StyleX 插件上，副本的构建与行为符合 FR1 与 FR6 所述，但其规则落在产品的层中，位于 `astryx-theme` 之上。跨 Core 升级保留下来的副本不在 FR1 与 FR6 的范围之内。
+- 浏览器证据：发布时对每个副本做真实浏览器渲染（FR7）；服务端渲染是 pull request 的冒烟证据。
 
 ## Current-state impact
 
-- The CLI's swizzle copy follows the component's module graph (FR1–FR2, FR4),
-  and writes no test, story, spec, or doc file. The CLI owner implements and
-  owns these changes.
-- The FR7 proof joins the repository's existing required test lane
-  (`spec:AST-030` FR11), selected by the shared change-scope classification and
-  reported in the single pull-request report, with the full proof at release
-  time.
-- `architecture:layer-runtime`: the layer stack, the modal outlet, and the
-  layer contexts (`LayerProvider` and its consumers, such as `useToast`) keep
-  their state and context objects under versioned keys (FR3, DEC-2).
-- `useAnnounce` keeps the announcement channel of `spec:AST-086` FR9 under a
-  versioned key, so a copied Dialog joins the package's announcer instead of
-  mounting a second pair of live regions (FR3, DEC-2).
-- The `swizzle.copy` result lists each helper with whether it was written,
-  reused, or written under a version-suffixed name (FR2), and each npm
-  dependency the copy imports with the owner package's declared range (FR1).
-  An existing component file still fails with `ERR_FILE_EXISTS` unless
-  `--overwrite` is passed; an existing helper never fails the command and is
-  never replaced, with or without `--overwrite` (FR2), except an owner module
-  and its unexported style modules, which a changed copy refuses without
-  `--overwrite` and replaces with it (FR4).
-- `@astryxdesign/build`'s Next integration under Turbopack compiles modules
-  under an `astryx-swizzle.json` directory in the library pass (FR5).
-- The `swizzle` command doc states FR1 and FR6 for product teams.
+- CLI 的 swizzle 副本沿组件的模块图进行（FR1–FR2、FR4），并且不写入任何测试、story、spec 或文档文件。CLI owner 实现并拥有这些改动。
+- FR7 证明加入仓库现有的必需测试通道（`spec:AST-030` FR11），由共享的改动范围分类选出，并在单一的 pull request 报告中报告，完整证明在发布时执行。
+- `architecture:layer-runtime`：层栈、模态出口以及层上下文（`LayerProvider` 及其使用方，例如 `useToast`）把其状态与上下文对象保存在带版本的键之下（FR3、DEC-2）。
+- `useAnnounce` 把 `spec:AST-086` FR9 的通知通道保存在带版本的键之下，因此被复制的 Dialog 加入包的通知器，而不是挂载第二对 live region（FR3、DEC-2）。
+- `swizzle.copy` 结果列出每个辅助文件，并说明它是被写入、被复用，还是以带版本后缀的名称写入（FR2），还列出副本所导入的每个 npm 依赖及其所属包声明的版本范围（FR1）。已存在的组件文件仍会以 `ERR_FILE_EXISTS` 失败，除非传入 `--overwrite`；已存在的辅助文件绝不会使命令失败，也绝不会被替换，无论是否传入 `--overwrite`（FR2），例外是所属模块及其未导出的样式模块，对于已改动的这些文件，命令在没有 `--overwrite` 时拒绝、有它时替换（FR4）。
+- `@astryxdesign/build` 在 Turbopack 下的 Next 集成会在 library 通道中编译 `astryx-swizzle.json` 目录下的模块（FR5）。
+- `swizzle` 命令文档为产品团队说明 FR1 与 FR6。
 
 ### Known gaps
 
-- The copy sends `../X/file` imports to the public `X` entry, which lacks the
-  internal helpers, and deep StyleX modules are missing from Core's exports
-  (FR1, FR2).
-- Copies include spec records and test files and leave out nested folders
-  (FR2), and `swizzle --list` offers folders that are not components
-  (`spec:AST-035` FR12).
-- In the reverse direction, a package picker inside a copied Dialog announces
-  outside the copied modal (`spec:AST-086` FR14) (FR3).
-- The result does not yet report whether each shared module was written,
-  reused or replaced (FR2's impact bullet); adding that receipt field is the CLI
-  owner's call.
-- Core's private type additions, such as `focusVisible`, do not travel with a
-  copy, and a unique symbol splits identity between a copied and a package
-  AppShell (FR1, FR3).
-- Copies of components that import npm packages, such as d3 and vega-util, do
-  not build until the product installs them, and swizzle does not name them
-  (FR1).
-- Some names `swizzle --list` offers differ from their folder's export names
-  (Chat, NavMenu, Indicator, Resizable) (`spec:AST-035` FR12).
-- Products on the stock StyleX plugins have no library-pass setting, so a
-  copy's rules land above `astryx-theme` there and theme component overrides do
-  not reach it (FR5).
-- The pull request that makes this record current adds the
-  `architecture:cli-surface` pointer to this record.
+- 副本把 `../X/file` 导入发送到公共的 `X` 入口，而该入口缺少内部辅助函数，并且深层 StyleX 模块不在 Core 的导出中（FR1、FR2）。
+- 副本包含 spec 记录与测试文件，却漏掉嵌套文件夹（FR2），而且 `swizzle --list` 提供不是组件的文件夹（`spec:AST-035` FR12）。
+- 在反方向上，被复制 Dialog 内部的包选择器在被复制的模态之外做通知（`spec:AST-086` FR14）（FR3）。
+- 结果尚未报告每个共享模块是被写入、复用还是替换（FR2 的影响条目）；添加该回执字段由 CLI owner 决定。
+- Core 的私有类型补充，例如 `focusVisible`，不随副本一同携带，而 unique symbol 在被复制的与被包的 AppShell 之间拆分标识（FR1、FR3）。
+- 导入 npm 包（例如 d3 与 vega-util）的组件副本，在产品安装这些包之前无法构建，而 swizzle 不会列出它们（FR1）。
+- `swizzle --list` 提供的某些名称与其文件夹的导出名称不同（Chat、NavMenu、Indicator、Resizable）（`spec:AST-035` FR12）。
+- 使用原版 StyleX 插件的产品没有 library 通道设置，因此在那里副本的规则落在 `astryx-theme` 之上，主题的组件覆盖到达不了它（FR5）。
+- 使本记录成为 current 的那个 pull request 会向本记录添加 `architecture:cli-surface` 指针。
 
 ## Verification
 
-| Contract | Verification                                                                                                                                                                                                                                                                                                                                                                                                      | Representative states                                                                                                                                                                                                                                                                                                                                                                                                                            | Mutation or failure expectation                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1      | Eject every offered component into a clean project; type-check and bundle                                                                                                                                                                                                                                                                                                                                         | Every component in `swizzle --list`; Core, Lab, Charts, RichText, Vega; a component that imports an npm dependency                                                                                                                                                                                                                                                                                                                               | A type or resolve error, or an import of a path the owner's `exports` lacks or of `./internal/*`, other than a StyleX module another Astryx package exports there (FR1), fails, or a dependency the copy imports goes unreported                                                                                                                                                                                                                            |
-| FR2      | Import graph of each output                                                                                                                                                                                                                                                                                                                                                                                       | Helpers in `utils`, `hooks`, `Layer`; nested folders; colocated tests and docs; a helper an earlier swizzle wrote, identical and different                                                                                                                                                                                                                                                                                                       | A copied file imports a module that is neither in the output nor a public export, or a test, story, spec, or doc is copied, or an existing helper other than an owner module (FR4) is overwritten                                                                                                                                                                                                                                                           |
-| FR3      | Render a copied and a package layer component together; inspect stores; open, stack, and Escape                                                                                                                                                                                                                                                                                                                   | Dialog over package Popover; BottomSheet over package Dialog; modality; a copied `useToast` under the package `LayerProvider`; a symbol-branded object passed between copy and package; a swizzled Outline type-checked against the package's `MarkdownPluginEntry`; a copied Dialog announcing beside a package component; a package picker inside a copied Dialog announcing a result count; a package grouped control inside a copied overlay | In either direction (copy under package, package under copy): two stores of one protocol version exist in a document, Escape and focus return differ from the package alone, a copied consumer misses the package provider, a brand check fails, a second live region appears instead of one announcer (`spec:AST-086` FR9), an announcement escapes the open modal (`spec:AST-086` FR14), or group context crosses the layer boundary (`spec:AST-038` FR7) |
-| FR3      | `sharedContexts.test.tsx` "gives each React its own context under a key, and one per React": a second React instance loads a copy of the shared-context module                                                                                                                                                                                                                                                    | Two copies on one React; a copy on a second React in the same process                                                                                                                                                                                                                                                                                                                                                                            | Two copies on one React getting different contexts, or a copy on a second React getting the same context object, fails                                                                                                                                                                                                                                                                                                                                      |
-| FR3      | `sharedRealm.test.ts` and `sharedContexts.test.tsx`: two loads of each shared-state shape resolve one slot, and a React-bound slot is one per React; FR7's source check fails on module-scope state outside a registered shared key unless its baseline lists it with a reason or a fix group. Slots use literal stable names; React-bound slots use the per-React form; brands carry the required phantom member | Two loads on one React; a load on a second React                                                                                                                                                                                                                                                                                                                                                                                                 | A second load gets its own slot, or a React-bound slot crosses Reacts                                                                                                                                                                                                                                                                                                                                                                                       |
-| FR4      | Scan each output for private data-attribute names and selectors; compare copied owner modules with the package's                                                                                                                                                                                                                                                                                                  | Components that reach an owner module                                                                                                                                                                                                                                                                                                                                                                                                            | A hand-written private attribute name or selector, or an edited owner module, in the output                                                                                                                                                                                                                                                                                                                                                                 |
-| FR5      | Render package and copy side by side under a theme with component overrides; compare                                                                                                                                                                                                                                                                                                                              | Default; each variant; a theme component override; a copy built by `@astryxdesign/build`                                                                                                                                                                                                                                                                                                                                                         | A theme override, documented class name, data attribute, or theme target reaches one and not the other                                                                                                                                                                                                                                                                                                                                                      |
-| FR5      | Swizzle into a new folder, an empty one, a marked one, and one holding a product module; read the folder and the `swizzle.copy` result                                                                                                                                                                                                                                                                            | Default output; `--output` to a product folder; a folder of earlier copies with no marker                                                                                                                                                                                                                                                                                                                                                        | A marker lands in a folder that holds a product module, a new, empty or marked folder is left unmarked, or the result omits what a skipped folder holds                                                                                                                                                                                                                                                                                                     |
-| FR6      | The component's own interaction and accessibility checks run against the copy                                                                                                                                                                                                                                                                                                                                     | Keyboard, pointer, screen-reader tree                                                                                                                                                                                                                                                                                                                                                                                                            | A check that passes on the package fails on the copy                                                                                                                                                                                                                                                                                                                                                                                                        |
-| FR7      | The required test lane's swizzle proof and the release-time proof; both cover Core's list and every integration package's components through `--package`                                                                                                                                                                                                                                                          | A change to component source; a change to the swizzle copy; an unrelated change; Core, Lab, Charts, RichText, Vega                                                                                                                                                                                                                                                                                                                               | An offered component missing from the proof, a failure that does not block, a new required context, the proof adding wall-clock time to the slowest required check, or the proof pushing its job past the pull-request time budget                                                                                                                                                                                                                          |
-| FR7      | `scripts/shared-identity.test.mjs` over the source of the packages swizzle copies from, against its baseline                                                                                                                                                                                                                                                                                                      | A module-local `Symbol()` brand in an FR3 module; the same brand under `sharedKey`; a module-scope registry an exported register function writes                                                                                                                                                                                                                                                                                                 | The module-local brand or registry passes, the `sharedKey` brand fails, or a baseline entry the source no longer has stays listed                                                                                                                                                                                                                                                                                                                           |
+| Contract | Verification                                                                                                                                                                                                                                                                                                                  | Representative states                                                                                                                                                                                                                                                                                                     | Mutation or failure expectation                                                                                                                                                                                                                                                                                                  |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1      | 把每个提供的组件弹出到一个干净项目；做类型检查并打包                                                                                                                                                                                                                                                                          | `swizzle --list` 中的每个组件；Core、Lab、Charts、RichText、Vega；一个导入 npm 依赖的组件                                                                                                                                                                                                                                 | 类型或解析错误，或导入了所属包 `exports` 中缺失的路径、或导入 `./internal/*`（除另一个 Astryx 包在那里导出的 StyleX 模块外，FR1），即失败；或副本所导入的某个依赖未被报告                                                                                                                                                        |
+| FR2      | 每个输出的导入图                                                                                                                                                                                                                                                                                                              | `utils`、`hooks`、`Layer` 中的辅助模块；嵌套文件夹；同目录的测试与文档；更早的 swizzle 写下的辅助文件，相同的与不同的                                                                                                                                                                                                     | 被复制的文件导入了一个既不在输出中、也不是公共导出的模块，或复制了测试、story、spec 或文档，或覆盖了除所属模块（FR4）之外的既有辅助文件                                                                                                                                                                                          |
+| FR3      | 一起渲染被复制的与包的层组件；检查存储；打开、堆叠并 Escape                                                                                                                                                                                                                                                                   | 包 Popover 之上的 Dialog；包 Dialog 之上的 BottomSheet；模态；包 `LayerProvider` 之下的被复制 `useToast`；在副本与包之间传递的带符号 brand 的对象；针对包的 `MarkdownPluginEntry` 做类型检查的已 swizzle Outline；在包组件旁做通知的被复制 Dialog；被复制 Dialog 内部报告结果计数的包选择器；被复制覆盖层内部的包分组控件 | 在任一方向（包之下有副本、副本之下有包）：一个文档中存在同一协议版本的两个存储，Escape 与焦点返回不同于仅使用包时，被复制的使用方错过了包的 provider，brand 检查失败，出现第二个 live region 而不是一个通知器（`spec:AST-086` FR9），通知逃出已打开的模态（`spec:AST-086` FR14），或分组上下文跨越了层边界（`spec:AST-038` FR7） |
+| FR3      | `sharedContexts.test.tsx` 的“为每个 React 在其键下提供各自的上下文，且每个 React 一个”：第二个 React 实例加载共享上下文模块的一个副本                                                                                                                                                                                         | 同一 React 上的两个副本；同一进程中第二个 React 上的一个副本                                                                                                                                                                                                                                                              | 同一 React 上的两个副本得到不同的上下文，或第二个 React 上的副本得到同一个上下文对象，即失败                                                                                                                                                                                                                                     |
+| FR3      | `sharedRealm.test.ts` 与 `sharedContexts.test.tsx`：每种共享状态形状的两次加载解析到同一个槽位，且绑定 React 的槽位每个 React 一个；FR7 的源码检查在遇到注册共享键之外的模块作用域状态时失败，除非其基线以原因或修复分组列出它。槽位使用字面量稳定名称；绑定 React 的槽位使用每个 React 的形式；brand 携带必需的 phantom 成员 | 同一 React 上的两次加载；第二个 React 上的一次加载                                                                                                                                                                                                                                                                        | 第二次加载得到自己的槽位，或绑定 React 的槽位跨越了 React                                                                                                                                                                                                                                                                        |
+| FR4      | 扫描每个输出中的私有 data 属性名称与选择器；把被复制的所属模块与包中的对比                                                                                                                                                                                                                                                    | 触及所属模块的组件                                                                                                                                                                                                                                                                                                        | 输出中出现手写的私有属性名称或选择器，或被改动过的所属模块                                                                                                                                                                                                                                                                       |
+| FR5      | 在带组件覆盖的主题下并排渲染包与副本；做比较                                                                                                                                                                                                                                                                                  | 默认；每个变体；一个主题组件覆盖；由 `@astryxdesign/build` 构建的副本                                                                                                                                                                                                                                                     | 主题覆盖、有文档的类名、data 属性或主题目标到达其中一个而未到达另一个                                                                                                                                                                                                                                                            |
+| FR5      | 分别 swizzle 到新文件夹、空文件夹、已标记的文件夹，以及存放产品模块的文件夹；读取该文件夹与 `swizzle.copy` 结果                                                                                                                                                                                                               | 默认输出；`--output` 指向产品文件夹；一个装有不带标记的更早副本的文件夹                                                                                                                                                                                                                                                   | 标记落在存放产品模块的文件夹中，新的、空的或已标记的文件夹未被标记，或结果遗漏了被跳过文件夹中有什么                                                                                                                                                                                                                             |
+| FR6      | 组件自身的交互与无障碍检查针对副本运行                                                                                                                                                                                                                                                                                        | 键盘、指针、屏幕阅读器树                                                                                                                                                                                                                                                                                                  | 在包上通过的检查在副本上失败                                                                                                                                                                                                                                                                                                     |
+| FR7      | 必需测试通道的 swizzle 证明与发布时证明；两者都覆盖 Core 的清单，以及通过 `--package` 覆盖每个集成包的组件                                                                                                                                                                                                                    | 对组件源码的改动；对 swizzle 副本的改动；无关改动；Core、Lab、Charts、RichText、Vega                                                                                                                                                                                                                                      | 提供的组件在证明中缺失，失败未阻断，新增所需的上下文，证明为最慢的必需检查增加实际耗时，或证明使其作业超出 pull request 的时间预算                                                                                                                                                                                               |
+| FR7      | `scripts/shared-identity.test.mjs` 针对 swizzle 所复制来源包的源码，对照其基线运行                                                                                                                                                                                                                                            | FR3 模块中模块局部的 `Symbol()` brand；`sharedKey` 下的同一个 brand；被导出的注册函数所写入的模块作用域注册表                                                                                                                                                                                                             | 模块局部的 brand 或注册表通过，`sharedKey` 的 brand 失败，或源码已不再拥有的基线条目仍被列出                                                                                                                                                                                                                                     |
 
-Known verification gap: only FR3's shared-context checks (`sharedContexts.test.tsx`) and FR7's source check (`scripts/shared-identity.test.mjs`) exist; the other rows have no check on `main`.
+Known verification gap: 只有 FR3 的共享上下文检查（`sharedContexts.test.tsx`）与 FR7 的源码检查（`scripts/shared-identity.test.mjs`）存在；其余行在 `main` 上没有检查。
 
 ## Decision log
 
 ### DEC-1 — Swizzle copies what a component needs and imports what is public
 
 **Reference:** `spec:AST-110/DEC-1`
+
 **Decider:** `cixzhang`, `2026-10-31`
 
-A copy that builds is the whole value of swizzle, and the helpers a component
-reaches are internal by `spec:AST-017` FR21. The copy therefore carries those
-helpers with it and imports only public paths, so no internal helper becomes
-public API to make a copy build.
+能构建的副本是 swizzle 的全部价值所在，而组件所触及的辅助函数按 `spec:AST-017` FR21 属于内部。因此副本随身携带这些辅助函数，并且只导入公共路径，这样就不会为了让副本构建而把任何内部辅助函数变成公共 API。
 
-Rejected: exporting the helpers copies need, because anything reachable from a
-package path is public (`architecture:public-component-api` INV12).
+已否决：导出副本所需的辅助函数，因为任何能从包路径到达的内容都是公共的（`architecture:public-component-api` INV12）。
 
 ### DEC-2 — Shared runtime state lives in versioned document stores
 
 **Reference:** `spec:AST-110/DEC-2`
+
 **Decider:** `cixzhang`, `2026-10-31`
 
-A copy is a second bundle of the same modules. Core already keeps interaction
-modality and the bottom-sheet stack in a per-document store under a registered,
-versioned key so that duplicate bundles share one state; FR3 applies that rule
-to every coordinating module, so copying a module never splits a stack and no
-new public entry is needed.
+副本是相同模块的第二份打包产物。Core 已经把交互模态与底部面板栈保存在每个文档一个的存储中，位于一个已注册且带版本的键之下，使重复的打包产物共享同一状态；FR3 把该规则应用到每个协调模块，因此复制模块绝不会拆分栈，也不需要新的公共入口。
 
-Rejected: never copying stateful modules and importing a contained package
-instance instead, because it needs a public runtime entry with a compatibility
-promise only copies need, and leaves a copy on another version without the
-state it needs.
+已否决：绝不复制有状态模块，改为导入一个受控的包实例，因为这需要一个带兼容性承诺的公共运行时入口，而只有副本需要它；并且会让处于另一版本的副本缺少它所需的状态。
 
 ## Open questions
 
-- None.
+- 无。

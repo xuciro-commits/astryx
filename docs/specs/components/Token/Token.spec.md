@@ -36,238 +36,163 @@ system_specs: [spec:AST-005, spec:AST-009, spec:AST-085]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                      |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | An inline chip with a required string `label`, `size`, theme-extensible `color`, optional `icon` and `endContent`, and optional `onClick`, `href`, and `onRemove` interactions.                               |
-| Behavior                | `href` renders a link, `onClick` (or an enclosing trigger context) renders a container whose inner button wraps the label, and `onRemove` adds a separate remove button beside, never inside, them.           |
-| End-user impact         | Pointer users can activate the whole chip; keyboard and screen-reader users reach the chip's action and its remove action as separate, named controls.                                                        |
-| Builder impact          | None; the record describes shipped behavior.                                                                                                                                                                  |
-| Compatibility/readiness | Released behavior recorded as current; no API, default, or output changes. Four implementation gaps are listed under Current-state impact.                                                                    |
-| Review checks           | Reject a remove button nested in the link or the inner button, a remove target smaller than 24 by 24 CSS pixels, a native `disabled` attribute, or a token that navigates around the shared destination rule. |
-| Governing rules         | `family:navigation-destinations`; `spec:AST-005`; `spec:AST-085/FR1,FR2,FR5`; `architecture:public-component-api/INV5,INV6,INV8`; `architecture:component-theming-surface/INV6,INV14`.                        |
+| 领域            | 契约                                                                                                                                                                                    |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共契约        | 一个内联 chip，包含必填字符串 `label`、`size`、主题可扩展的 `color`、可选的 `icon` 与 `endContent`，以及可选的 `onClick`、`href` 与 `onRemove` 交互。                                   |
+| 行为            | `href` 渲染为链接；`onClick`（或外层触发上下文）渲染为一个容器，其内部 button 包裹标签；`onRemove` 在它们旁边（绝不嵌套在其中）添加一个独立的 Remove 按钮。                             |
+| 最终用户影响    | 指针用户可以激活整个 chip；键盘与屏幕阅读器用户会把 chip 的动作与其移除动作作为两个独立、具名的控件来触达。                                                                             |
+| 构建者影响      | 无；本记录描述的是已发布行为。                                                                                                                                                          |
+| 兼容性/就绪状态 | 以当前状态记录已发布行为；没有 API、默认值或输出变更。四个实现缺口列在 Current-state impact 一节下。                                                                                    |
+| 审查检查        | 拒绝以下情形：嵌套在链接或内部 button 中的移除按钮、小于 24 by 24 CSS 像素的移除目标、原生 `disabled` 属性，或绕过共享目标地址规则的 token。                                            |
+| 管辖规则        | `family:navigation-destinations`；`spec:AST-005`；`spec:AST-085/FR1,FR2,FR5`；`architecture:public-component-api/INV5,INV6,INV8`；`architecture:component-theming-surface/INV6,INV14`。 |
 
-This table is a review projection; the body below is authoritative.
+本表是审查用的投影；以下正文具有权威性。
 
 ## Intent
 
-Token represents one discrete piece of associated data — a tag, a filter, a
-selected recipient — as a compact inline chip. It owns the chip's geometry and
-tones, the choice of a static, clickable, or link structure, and the remove
-action beside the chip's own action.
+Token 把一条离散的关联数据——一个标签、一个过滤器、一个已选收件人——表示为一个紧凑的内联 chip。它拥有该 chip 的几何与色调、静态/可点击/链接三种结构的选择，以及 chip 自身动作旁边的移除动作。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: no public prop or default change. The DOM and styling
-  output change: a plain-text label with no right-to-left letter gets
-  `dir="ltr"`, and the label isolates its text (`unicode-bidi: isolate`)
-- Controlled/uncontrolled behavior: not applicable; Token holds no state
-- Migration decision: none
+- 已发布默认值保留：`yes`
+- 兼容性分类：没有公开 prop 或默认值变更。DOM 与样式输出有变化：不含从右到左字母的纯文本标签会获得 `dir="ltr"`，并且标签会隔离其文本（`unicode-bidi: isolate`）
+- 受控/非受控行为：不适用；Token 不持有状态
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Current-state impact
 
-- **`onClick` with `href` (FR3).** When a token renders as a link, a supplied
-  `onClick` is not attached or called, where
-  `architecture:public-component-api` INV5 preserves accepted event inputs.
-- **Hidden-label name on a generic container (AR3).** With `isLabelHidden`, a
-  static, clickable, or link-and-remove token puts `aria-label` on a `span` that
-  has no role, where WAI-ARIA 1.2 prohibits naming the generic role. The
-  visually hidden label text still reaches assistive technology.
-- **Two focus indicators on Remove (AR4).** In clickable and link-and-remove
-  tokens, keyboard focus on the Remove button draws the token's outline and the
-  button's own, where `architecture:interaction-modality` INV3 allows one
-  indicator per focus move.
-- **Small remove target (AR6).** At `size="sm"` the token's 20px block size and
-  clipped overflow cut the Remove button's hit area to 24 by 20 CSS pixels,
-  below the 24 by 24 of WCAG 2.2 2.5.8.
+- **`onClick` 与 `href` 同时提供（FR3）。** 当 token 渲染为链接时，提供的 `onClick` 不会被附加或调用，而 `architecture:public-component-api` INV5 要求保留已接受的事件输入。
+- **通用容器上的隐藏标签名称（AR3）。** 使用 `isLabelHidden` 时，静态、可点击或链接加移除的 token 会把 `aria-label` 放在一个没有 role 的 `span` 上，而 WAI-ARIA 1.2 禁止为通用 role 命名。视觉隐藏的标签文本仍能到达辅助技术。
+- **Remove 上的两个焦点指示器（AR4）。** 在可点击与链接加移除的 token 中，键盘焦点落在 Remove 按钮上时会同时绘制 token 的轮廓与按钮自身的轮廓，而 `architecture:interaction-modality` INV3 规定每次焦点移动只允许一个指示器。
+- **过小的移除目标（AR6）。** 在 `size="sm"` 时，token 的 20px 块高与被裁剪的溢出会把 Remove 按钮的命中区域压到 24 by 20 CSS 像素，低于 WCAG 2.2 2.5.8 要求的 24 by 24。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The token root, its Icon and End content slots, the Label, and the Remove
-  button.
-- Size geometry, tones, label overflow, and the disabled treatment.
-- Choosing the static, clickable, link, or link-and-remove structure, and the
-  surface-click delegation in the clickable and link-and-remove structures.
-- The Remove button's name, target size, and isolation from the token's own
-  action.
-- Marking its own Remove button for a field that holds tokens. Token writes the
-  private attribute `data-astryx-token-remove` only through its owner module,
-  `privateAttributes/tokenRemove.stylex.ts` (`architecture:public-component-api`
-  INV23). Tokenizer reads the mark to tell Token's own Remove from a control a
-  custom `renderToken` draws.
+- token 根元素、其 Icon 与 End content 插槽、Label，以及 Remove 按钮。
+- 尺寸几何、色调、标签溢出，以及禁用态处理。
+- 选择静态、可点击、链接或链接加移除结构，以及可点击与链接加移除结构中的表面点击委托。
+- Remove 按钮的名称、目标尺寸，以及它与 token 自身动作的隔离。
+- 为承载 token 的字段标记自身的 Remove 按钮。Token 只通过其所有方模块 `privateAttributes/tokenRemove.stylex.ts`（`architecture:public-component-api` INV23）写入私有属性 `data-astryx-token-remove`。Tokenizer 读取该标记，以区分 Token 自身的 Remove 与自定义 `renderToken` 绘制的控件。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Navigation-destination safety and router substitution — owned by
-  `family:navigation-destinations` and `spec:AST-005`; Token renders its link
-  through the shared link component.
-- Which enclosing contexts make a token a trigger — owned by the shared
-  interactive-role context; Token only consumes the resolved role.
-- Hover and press overlays and touch press timing — owned by the shared
-  interaction overlay used by every pressable surface.
-- The supplied icon's and end content's own semantics — owned by those nodes.
-- Collections of tokens, token entry, and keyboard deletion — owned by
-  `component:Tokenizer` and other composing components.
+- 导航目标地址的安全与路由替换——由 `family:navigation-destinations` 与 `spec:AST-005` 拥有；Token 通过共享链接组件渲染其链接。
+- 哪些外层上下文会使 token 成为触发器——由共享的交互 role 上下文拥有；Token 只消费已解析的 role。
+- 悬停与按下覆盖层以及触摸按下时序——由每个可按压表面使用的共享交互覆盖层拥有。
+- 所提供 icon 与 end content 自身的语义——由这些节点拥有。
+- token 集合、token 输入以及键盘删除——由 `component:Tokenizer` 与其他组合组件拥有。
 
 ## Public concepts
 
-| Concept          | Closed values or states                                                                                          | Meaning                                                        | Availability by variant/orientation/state                                       | Default   | Owner             | Stability | Invalid-value behavior                                                                                                       |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------- | ----------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Structure        | static; clickable; link; link-and-remove                                                                         | Which element owns the token's own action (FR2–FR4).           | Resolved from `href`, `onClick`, `isDisabled`, and an enclosing trigger context | static    | `component:Token` | Stable    | A disabled link token stays a focusable control that exposes its disabled state (FR5).                                       |
-| Size             | `sm`, `md`, `lg`                                                                                                 | Selects the block size.                                        | All structures                                                                  | `md`      | `component:Token` | Stable    | TypeScript rejects other values.                                                                                             |
-| Tone (`color`)   | `default`, `red`, `orange`, `yellow`, `green`, `teal`, `cyan`, `blue`, `purple`, `pink`, `gray`; theme additions | Selects fill and text color.                                   | All structures                                                                  | `default` | `component:Token` | Stable    | A theme-added value is reflected on `token` and receives no component fill or color; TypeScript rejects unregistered values. |
-| Removable        | present when `onRemove` is supplied; absent                                                                      | Adds the Remove button after the label and end content.        | All structures                                                                  | absent    | `component:Token` | Stable    | —                                                                                                                            |
-| Label visibility | visible; visually hidden                                                                                         | Hides the label visually while keeping it as the token's name. | All structures                                                                  | visible   | `component:Token` | Stable    | —                                                                                                                            |
-| Disabled         | enabled; disabled                                                                                                | Blocks every token and remove action.                          | All structures                                                                  | enabled   | `component:Token` | Stable    | —                                                                                                                            |
+| 概念            | 封闭值或状态                                                                                                | 含义                                                | 按变体/朝向/状态的可用性                                  | 默认值    | 拥有者            | 稳定性 | 非法值行为                                                                                   |
+| --------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | --------------------------------------------------------- | --------- | ----------------- | ------ | -------------------------------------------------------------------------------------------- |
+| 结构            | 静态；可点击；链接；链接加移除                                                                              | 由哪个元素拥有 token 自身的动作（FR2–FR4）。        | 由 `href`、`onClick`、`isDisabled` 以及外层触发上下文解析 | 静态      | `component:Token` | 稳定   | 禁用链接 token 仍是一个可聚焦控件，并暴露其禁用状态（FR5）。                                 |
+| 尺寸            | `sm`、`md`、`lg`                                                                                            | 选择块高。                                          | 所有结构                                                  | `md`      | `component:Token` | 稳定   | TypeScript 会拒绝其他值。                                                                    |
+| 色调（`color`） | `default`、`red`、`orange`、`yellow`、`green`、`teal`、`cyan`、`blue`、`purple`、`pink`、`gray`；主题新增值 | 选择填充色与文字颜色。                              | 所有结构                                                  | `default` | `component:Token` | 稳定   | 主题新增值会反映在 `token` 上，且不会获得组件填充色或文字颜色；TypeScript 会拒绝未注册的值。 |
+| 可移除          | 提供 `onRemove` 时存在；否则不存在                                                                          | 在标签与 end content 之后添加 Remove 按钮。         | 所有结构                                                  | 不存在    | `component:Token` | 稳定   | —                                                                                            |
+| 标签可见性      | 可见；视觉隐藏                                                                                              | 在视觉上隐藏标签，同时保留其作为 token 名称的作用。 | 所有结构                                                  | 可见      | `component:Token` | 稳定   | —                                                                                            |
+| 禁用            | 启用；禁用                                                                                                  | 阻止所有 token 动作与移除动作。                     | 所有结构                                                  | 启用      | `component:Token` | 稳定   | —                                                                                            |
 
 ## Behavioral and layout contract
 
-| ID   | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Basis                    |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| FR1  | Content renders in logical inline order: Icon, Label, End content, Remove button. The root is inline-flex with `--spacing-1` gaps, inline padding `--spacing-2`, `--radius-inner` corners, `--text-supporting-size` type at `--font-weight-medium`, and a minimum block size of `--size-element-sm`, `-md`, or `-lg` minus 8px for `sm`, `md`, and `lg`. That size grows with a set text size under `spec:AST-102` FR4; today's fixed size is a gap.                                                                                                                                                                                                                                                                  | Current source and tests |
-| FR2  | With no `href`, `onClick`, or enclosing trigger context, the token is a static `span` holding its content directly.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Current source and tests |
-| FR3  | With an enabled `href` and no `onRemove`, the token root is the shared link component carrying the destination; it takes the root ref, passthrough props, and its own focus-visible outline. A supplied `onClick`, as an accepted event input, reaches the element that owns the contract (`architecture:public-component-api` INV5). Implementation gap: in both link structures `onClick` is not attached or called (Current-state impact).                                                                                                                                                                                                                                                                         | Current source and tests |
-| FR4  | With `onClick`, or an enclosing trigger context that resolves the token to a button, the root is a `span` container holding an inner `button` that wraps only the Label and calls `onClick`; a click on the container outside any nested button or link also calls `onClick`, except a click inside an open Tooltip or HoverCard surface (`component:Tooltip` FR11). With an enabled `href` and `onRemove`, the container instead holds an inner link wrapping only the Label; a plain click on the surface outside the Remove button follows that link, and a Cmd/Ctrl-click or middle click on the surface opens it in a new tab. A caller `onMouseUp` on the link-and-remove container runs before its delegation. | Current source and tests |
-| FR5  | A disabled token renders at half opacity with pointer events off and fires neither `onClick` nor `onRemove` from pointer, Enter, or Space; inner and Remove buttons stay focusable with `aria-disabled="true"` and never receive native `disabled`. A disabled control keeps its tab stop and exposes its disabled state (`spec:AST-085` FR1, FR5), and the disabled state is reflected on the owning target (`architecture:component-theming-surface` INV6). A disabled token with `href` and no `onClick` or trigger context renders a focusable link with `aria-disabled="true"` and no `href`, and every structure reflects the disabled state on the `token` target.                                             | Current source and tests |
-| FR6  | `onRemove` renders a `type="button"` Remove button holding a close glyph; a click stops propagation before `onRemove` runs, so it never triggers the token's own action or link. The button is a sibling of the inner button or link, never nested in it. A finger press that starts on the Remove button, or on a control in end content, paints no press on the token, since it does not run the token's own action; a mouse press keeps the token's `:active` paint.                                                                                                                                                                                                                                               | Current source and tests |
-| FR7  | The label never wraps: the root is capped at its container's inline size and clips overflow. In the static and link structures the Label ends in an ellipsis; in the clickable and link-and-remove structures the inner control clips the Label without an ellipsis. `isLabelHidden` keeps the Label in the DOM with a visually hidden clip treatment.                                                                                                                                                                                                                                                                                                                                                                | Current source and tests |
-| FR8  | `color` defaults to `default`, painting `--color-neutral` with primary text; every other built-in tone paints its tinted background with its matching colored text. The `token` target reflects the resolved `color` and `size` for every value, including a theme-added color, which receives no component fill or text color until a theme paints it.                                                                                                                                                                                                                                                                                                                                                               | Current source and tests |
-| FR9  | Clickable and link structures paint the shared hover overlay under a hover-capable pointer and the shared pressed overlay for mouse and touch presses; the static structure paints neither.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Current source           |
-| FR10 | `ref` reaches the root element of every structure. Supported DOM, ARIA, data, and event props reach the root, except that in the clickable structure `aria-labelledby`, `aria-describedby`, `aria-haspopup` and `aria-expanded` reach the inner button, the element that owns the token's action (`architecture:public-component-api` INV5); `data-testid` reaches the root; `xstyle`, `className`, and `style` merge in that order after component styles.                                                                                                                                                                                                                                                           | Current source and tests |
+| ID   | 不变式                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | 依据           |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| FR1  | 内容按逻辑行内顺序渲染：Icon、Label、End content、Remove 按钮。根元素是 inline-flex，间距为 `--spacing-1`，行内内边距为 `--spacing-2`，圆角为 `--radius-inner`，字体为 `--text-supporting-size`、字重为 `--font-weight-medium`，最小块高为 `--size-element-sm`、`-md` 或 `-lg` 在 `sm`、`md`、`lg` 下减去 8px。该尺寸应随设定文本尺寸按 `spec:AST-102` FR4 增长；当前的固定尺寸是一个缺口。                                                                                                                           | 当前源码与测试 |
+| FR2  | 在没有 `href`、`onClick` 或外层触发上下文时，token 是一个直接承载其内容的静态 `span`。                                                                                                                                                                                                                                                                                                                                                                                                                                | 当前源码与测试 |
+| FR3  | 在有启用的 `href` 且没有 `onRemove` 时，token 根元素是承载目标地址的共享链接组件；它接受根 ref、透传 props，并拥有自己的 focus-visible 轮廓。提供的 `onClick` 作为已接受的事件输入，会到达拥有该契约的元素（`architecture:public-component-api` INV5）。实现缺口：在两种链接结构中 `onClick` 都未被附加或调用（见 Current-state impact）。                                                                                                                                                                            | 当前源码与测试 |
+| FR4  | 在提供 `onClick`，或外层触发上下文把 token 解析为 button 时，根元素是一个 `span` 容器，内部 `button` 只包裹 Label 并调用 `onClick`；在容器上、任何嵌套 button 或链接之外的点击也会调用 `onClick`，但在打开的 Tooltip 或 HoverCard 表面内的点击除外（`component:Tooltip` FR11）。在有启用的 `href` 和 `onRemove` 时，容器改为持有只包裹 Label 的内部链接；在 Remove 按钮之外的表面上普通点击会跟随该链接，Cmd/Ctrl 点击或中键点击表面会在新标签页中打开它。调用方在链接加移除容器上的 `onMouseUp` 会在其委托之前运行。 | 当前源码与测试 |
+| FR5  | 禁用 token 以半透明渲染、关闭指针事件，并且不会因指针、Enter 或 Space 触发 `onClick` 或 `onRemove`；内部按钮与 Remove 按钮保持可聚焦，带 `aria-disabled="true"`，且绝不获得原生 `disabled`。禁用控件保留其 Tab 停靠点并暴露其禁用状态（`spec:AST-085` FR1、FR5），且禁用状态反映在所属目标上（`architecture:component-theming-surface` INV6）。带 `href` 且没有 `onClick` 或触发上下文的禁用 token 会渲染为可聚焦链接，带 `aria-disabled="true"` 且没有 `href`，并且每种结构都会在 `token` 目标上反映禁用状态。       | 当前源码与测试 |
+| FR6  | `onRemove` 会渲染一个 `type="button"` 的 Remove 按钮，内含关闭字形；点击会在 `onRemove` 运行之前停止传播，因此它绝不会触发 token 自身的动作或链接。该按钮是内部 button 或链接的兄弟节点，绝不嵌套在其中。从 Remove 按钮或 end content 中的控件开始的指压不会在 token 上绘制按压效果，因为它不会运行 token 自身的动作；鼠标按压则保留 token 的 `:active` 绘制。                                                                                                                                                        | 当前源码与测试 |
+| FR7  | 标签绝不换行：根元素以容器的行内尺寸为上限并裁剪溢出。在静态与链接结构中，Label 以省略号结尾；在可点击与链接加移除结构中，内部控件裁剪 Label 但不加省略号。`isLabelHidden` 会让 Label 以视觉隐藏的裁剪处理保留在 DOM 中。                                                                                                                                                                                                                                                                                             | 当前源码与测试 |
+| FR8  | `color` 默认为 `default`，以主文本色绘制 `--color-neutral`；其他每个内置色调都会以带色调的背景搭配与之匹配的彩色文本绘制。`token` 目标会为每个值反映已解析的 `color` 和 `size`，包括主题新增的颜色，在主题为其上色之前，它不会获得组件填充色或文字颜色。                                                                                                                                                                                                                                                              | 当前源码与测试 |
+| FR9  | 可点击与链接结构会在支持悬停的指针下绘制共享悬停覆盖层，并为鼠标与触摸按压绘制共享按压覆盖层；静态结构两者都不绘制。                                                                                                                                                                                                                                                                                                                                                                                                  | 当前源码       |
+| FR10 | `ref` 会到达每种结构的根元素。受支持的 DOM、ARIA、data 与事件 props 会到达根元素，但在可点击结构中，`aria-labelledby`、`aria-describedby`、`aria-haspopup` 和 `aria-expanded` 会到达内部 button，即拥有 token 动作的元素（`architecture:public-component-api` INV5）；`data-testid` 到达根元素；`xstyle`、`className` 和 `style` 按此顺序在组件样式之后合并。                                                                                                                                                         | 当前源码与测试 |
 
 ### Allowed variation
 
-- **AV1 — Theme paint.** A theme may change visual properties of `token` per
-  `color` and `size` without changing structure, slot order, or the Remove
-  button's target.
-- **AV2 — Router link.** A `LinkProvider` link component may replace the native
-  anchor in the link structures under `family:navigation-destinations`.
+- **AV1 — 主题绘制。** 主题可以按 `color` 和 `size` 更改 `token` 的视觉属性，而不改变结构、插槽顺序或 Remove 按钮的目标。
+- **AV2 — 路由链接。** `LinkProvider` 的链接组件可以在 `family:navigation-destinations` 下的链接结构中替换原生锚点。
 
 ### Representative states
 
-| State              | Required invariant                                                                                                                                                        | Allowed variation           |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| Static             | `span` root; Token adds no focusable element except a Remove button.                                                                                                      | Tone, size, slots.          |
-| Clickable          | One inner button named by the label, by a caller `aria-labelledby`, or inside PowerSearch by the filter token's full visible text (AR2); container click calls `onClick`. | End content.                |
-| Link               | Root is the link; focus outline on the link itself.                                                                                                                       | Router link component.      |
-| Link and remove    | Container holds a link and a sibling Remove button; surface click activates the link.                                                                                     | Modified and middle clicks. |
-| Removable          | Remove button named "Remove {label}" (inside PowerSearch, over the full visible text, AR2) with a 24 by 24 CSS pixel target.                                              | Locale wording.             |
-| Disabled clickable | Buttons focusable with `aria-disabled="true"`; no callback fires; half opacity.                                                                                           | Tone.                       |
-| Hidden label       | Label text visually hidden; the root's `aria-label` equals the label.                                                                                                     | Structure.                  |
+| 状态       | 必需不变式                                                                                                                                         | 允许的变化             |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| 静态       | `span` 根元素；除 Remove 按钮外，Token 不添加任何可聚焦元素。                                                                                      | 色调、尺寸、插槽。     |
+| 可点击     | 一个内部 button，其名称来自标签、调用方的 `aria-labelledby`，或在 PowerSearch 内部来自过滤 token 的完整可见文本（AR2）；容器点击会调用 `onClick`。 | End content。          |
+| 链接       | 根元素即链接；焦点轮廓绘制在链接自身上。                                                                                                           | 路由链接组件。         |
+| 链接加移除 | 容器持有链接与兄弟 Remove 按钮；表面点击会激活链接。                                                                                               | 修饰键点击与中键点击。 |
+| 可移除     | Remove 按钮名为 “Remove {label}”（在 PowerSearch 内部，基于完整可见文本，AR2），目标为 24 by 24 CSS 像素。                                         | 语言区域措辞。         |
+| 禁用可点击 | 按钮可聚焦且带 `aria-disabled="true"`；不触发任何回调；半透明。                                                                                    | 色调。                 |
+| 隐藏标签   | 标签文本视觉隐藏；根元素的 `aria-label` 等于标签内容。                                                                                             | 结构。                 |
 
 ### Transformation and precedence order
 
-- **ORD1 — Structure.** Enabled `href` → `onClick` → enclosing trigger context →
-  disabled `href` → static. `onRemove` with an `href` that wins selects the
-  link-and-remove container. A disabled `href` yields to `onClick` and a
-  trigger context; otherwise it keeps the link structure, rendered disabled
-  (FR5).
-- **ORD2 — Root attributes.** Component class and `data-color`/`data-size`/`data-disabled` →
-  component styles → `xstyle` → `className` → `style` → caller props → `data-testid`, hidden-label
-  `aria-label`, and `aria-description`. A hidden label's `aria-label` replaces
-  a caller `aria-label`.
-- **ORD3 — Remove click.** Stop propagation → `onRemove`.
+- **ORD1 — 结构。** 启用的 `href` → `onClick` → 外层触发上下文 → 禁用的 `href` → 静态。当 `onRemove` 与胜出的 `href` 同时存在时，选择链接加移除容器。禁用的 `href` 会让位于 `onClick` 和触发上下文；否则它保留链接结构，并渲染为禁用（FR5）。
+- **ORD2 — 根属性。** 组件类名与 `data-color`/`data-size`/`data-disabled` → 组件样式 → `xstyle` → `className` → `style` → 调用方 props → `data-testid`、隐藏标签的 `aria-label` 与 `aria-description`。隐藏标签的 `aria-label` 会替换调用方的 `aria-label`。
+- **ORD3 — Remove 点击。** 停止传播 → `onRemove`。
 
 ### Performance and resources
 
-- **PR1 — Shared press controller.** Every structure installs the shared
-  document-level press controller once per mount through its counted
-  installer; Token adds no per-token listener, observer, or timer. Only the
-  link-and-remove container holds refs for click delegation.
+- **PR1 — 共享按压控制器。** 每种结构都会通过其计数安装器在每次挂载时安装一次共享的文档级按压控制器；Token 不添加任何按 token 计的监听器、观察器或定时器。只有链接加移除容器持有用于点击委托的 ref。
 
 ## Accessibility contract
 
-- **AR1 — Separate controls.** The token's own action and the Remove button are
-  separate focusable controls in DOM order; neither is nested in the other, so
-  the HTML interactive-content rule holds.
-- **AR2 — Names.** In the clickable and link-and-remove structures the inner
-  button or link takes its name from the Label, or, in the clickable structure,
-  from a caller `aria-labelledby` (FR10). In the link structure the link
-  is the root and takes its name from all of its content, including End content
-  (a label "Inbox" with a count reads "Inbox 12"). The
-  Remove button is named by the translated "Remove {label}" string. Inside
-  PowerSearch, whose filter tokens show their value after the Label, a filter
-  token's inner button is named by its full visible text, and its Remove button
-  by the same translated string over that text.
-- **AR3 — Hidden label.** With `isLabelHidden`, the Label text stays in the
-  accessibility tree and names the token, and no element with the generic role
-  carries a name (WAI-ARIA 1.2). The root carries `aria-label` equal to the
-  label. Implementation gap: on the static, clickable, and link-and-remove
-  structures that root is a role-less `span`.
-- **AR4 — One focus indicator per focus move.** Each focus move shows one
-  owning indicator (`architecture:interaction-modality` INV3). The link root
-  draws its own focus-visible outline; clickable and link-and-remove containers
-  draw the outline for the inner control, which draws none of its own; the
-  Remove button draws its own outline. Implementation gap: the containers draw
-  their outline while any descendant has `:focus-visible`, so focusing Remove in
-  those structures shows the container outline and the button's own.
-- **AR5 — Disabled.** A disabled token's controls stay focusable, expose
-  `aria-disabled="true"`, and ignore pointer, Enter, and Space (`spec:AST-085`
-  FR1, FR2, FR5), the disabled link included.
-- **AR6 — Remove target size.** The Remove button's glyph box is 16 by 16 CSS
-  pixels and its hit area extends 4 pixels on every side to 24 by 24 at `md`
-  and `lg`, meeting WCAG 2.2 2.5.8, while a press on the adjacent label still
-  runs the token's own action, in both text directions. Implementation gap: at
-  `size="sm"` the 20px-tall root clips the extension, leaving a 24 by 20 target.
-- **AR7 — Description.** `description` sets `aria-description` on the root.
+- **AR1 — 独立控件。** token 自身的动作与 Remove 按钮是按 DOM 顺序排列的两个独立可聚焦控件；二者互不嵌套，因此 HTML 的交互内容规则成立。
+- **AR2 — 名称。** 在可点击与链接加移除结构中，内部 button 或链接的名称来自 Label，或在可点击结构中来自调用方的 `aria-labelledby`（FR10）。在链接结构中，链接即根元素，其名称来自其全部内容，包括 End content（一个带计数的标签 “Inbox” 读作 “Inbox 12”）。Remove 按钮的名称由已翻译的 “Remove {label}” 字符串提供。在 PowerSearch 内部，其过滤 token 会在 Label 之后显示值，过滤 token 的内部 button 以完整可见文本命名，其 Remove 按钮则以作用于该文本的同一翻译字符串命名。
+- **AR3 — 隐藏标签。** 使用 `isLabelHidden` 时，Label 文本仍留在无障碍树中并为 token 命名，且没有通用 role 的元素携带名称（WAI-ARIA 1.2）。根元素携带等于标签的 `aria-label`。实现缺口：在静态、可点击和链接加移除结构上，该根元素是一个没有 role 的 `span`。
+- **AR4 — 每次焦点移动一个焦点指示器。** 每次焦点移动只显示一个所属指示器（`architecture:interaction-modality` INV3）。链接根元素绘制自己的 focus-visible 轮廓；可点击与链接加移除容器为内部控件绘制轮廓，而内部控件自身不绘制；Remove 按钮绘制自己的轮廓。实现缺口：容器在任何后代具有 `:focus-visible` 时都会绘制其轮廓，因此在那些结构中聚焦 Remove 会同时显示容器轮廓与按钮自身的轮廓。
+- **AR5 — 禁用。** 禁用 token 的控件保持可聚焦、暴露 `aria-disabled="true"`，并忽略指针、Enter 与 Space（`spec:AST-085` FR1、FR2、FR5），禁用链接也不例外。
+- **AR6 — Remove 目标尺寸。** Remove 按钮的字形盒为 16 by 16 CSS 像素，其命中区域在每侧外扩 4 像素，在 `md` 和 `lg` 下达到 24 by 24，满足 WCAG 2.2 2.5.8，同时在其相邻标签上的按压在两个文本方向下仍会运行 token 自身的动作。实现缺口：在 `size="sm"` 时，20px 高的根元素裁剪了外扩部分，只留下 24 by 20 的目标。
+- **AR7 — 描述。** `description` 会在根元素上设置 `aria-description`。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                           | Representation authority | Hierarchy role | Component contract |
-| ---------------- | ------------------------------------------------------------ | ------------------------ | -------------- | ------------------ |
-| Token root       | A compact chip whose tone identifies the data it represents. | Current source           | Prominent      | FR1, FR7, FR8      |
-| Icon             | Optional leading glyph identifying the token type.           | Current source and docs  | Supporting     | FR1                |
-| Label            | The visible text and the default accessible name.            | Current source and docs  | Prominent      | FR7, AR2, AR3      |
-| End content      | Optional trailing content such as a count or status dot.     | Current source and docs  | Supporting     | FR1                |
-| Remove button    | A trailing close control that dismisses the token.           | Current source and docs  | Supporting     | FR6, AR1, AR2, AR6 |
+| 解剖或状态   | 设计要求                                  | 表示权威       | 层级角色 | 组件契约           |
+| ------------ | ----------------------------------------- | -------------- | -------- | ------------------ |
+| token 根元素 | 一个紧凑 chip，其色调标识它所表示的数据。 | 当前源码       | 显著     | FR1, FR7, FR8      |
+| Icon         | 可选的前置字形，标识 token 类型。         | 当前源码与文档 | 辅助     | FR1                |
+| Label        | 可见文本与默认无障碍名称。                | 当前源码与文档 | 显著     | FR7, AR2, AR3      |
+| End content  | 可选的后置内容，例如计数或状态圆点。      | 当前源码与文档 | 辅助     | FR1                |
+| Remove 按钮  | 一个后置关闭控件，用于关闭 token。        | 当前源码与文档 | 辅助     | FR6, AR1, AR2, AR6 |
 
-Theming: the root is the single `token` target and reflects `color`, `size`, and the disabled state.
-The Label, End content, and Icon add no targets; the Remove button inherits the
-token's text color.
+主题化：根元素是唯一的 `token` 目标，并反映 `color`、`size` 与禁用状态。Label、End content 和 Icon 不添加目标；Remove 按钮继承 token 的文字颜色。
 
 ## Family and system relationships
 
-- `family:navigation-destinations` and `spec:AST-005` own destination checks
-  for both link structures, including delegated surface clicks; Token adopts
-  them through the shared link component and clickable-container delegation.
-- `spec:AST-085` owns focusable disabled controls; FR5 and AR5 record Token's
-  conformance.
-- `architecture:public-component-api` owns ref, passthrough, and styling-input
-  rules; FR3 records one gap against INV5.
-- `architecture:component-theming-surface` owns the `token` target and the
-  extensible `color` axis; FR8 records the unthemed fallback.
-- `architecture:interaction-modality` owns modality and focus-indicator
-  ownership; AR4 records which element draws Token's indicator.
+- `family:navigation-destinations` 与 `spec:AST-005` 拥有两种链接结构的目标地址检查（包括委托的表面点击）；Token 通过共享链接组件与可点击容器委托采用它们。
+- `spec:AST-085` 拥有可聚焦的禁用控件；FR5 与 AR5 记录 Token 的符合情况。
+- `architecture:public-component-api` 拥有 ref、透传与样式输入规则；FR3 记录了一处针对 INV5 的缺口。
+- `architecture:component-theming-surface` 拥有 `token` 目标与可扩展的 `color` 轴；FR8 记录了未主题化时的回退。
+- `architecture:interaction-modality` 拥有模态与焦点指示器所有权；AR4 记录了由哪个元素绘制 Token 的指示器。
 
 ## Verification map
 
-| Contract                      | Verification                                                                           | Representative states                                                                                              | Mutation or failure expectation                                                                                                                                                                                            | Audit section          |
-| ----------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| FR2, FR10                     | `Token.test.tsx` render, ref, and pass-through suites                                  | Static, clickable, and link roots; caller props; caller naming on a clickable and a disabled link token            | A wrong root element, a detached ref, a dropped caller prop, or a clickable token's `aria-labelledby` left on its root fails DOM assertions. Gap: no test covers the ref on the link-and-remove container.                 | `audit:Token/behavior` |
-| FR1, FR7                      | `Token.stories.tsx` size, icon, and end-content fixtures in a browser                  | Sizes, icon and end content                                                                                        | Gap: the size and overflow unit tests assert presence only, and no story renders a long label; slot order and block size are visible only in the rendered fixtures, and the ellipsis has no check.                         | `audit:Token/layout`   |
-| FR3, FR4, FR6, AR1            | `Token.test.tsx` link, clickable, and link-with-remove suites                          | Link, clickable, link and remove, modified and middle clicks                                                       | Nesting the Remove button, firing the token action from Remove, or losing delegation fails. Gap: no test asserts that `onClick` is dropped with `href`.                                                                    | `audit:Token/behavior` |
-| FR5, AR5                      | `Token.test.tsx` disabled tests                                                        | Disabled clickable with remove; disabled static; disabled link with and without remove                             | A native `disabled`, a lost tab stop, a disabled link with a destination, an unreflected disabled state, or a fired callback fails.                                                                                        | `audit:Token/a11y`     |
-| AR2, AR3, AR7                 | `Token.test.tsx` accessibility suite                                                   | Remove name, hidden label, description                                                                             | A missing remove name, lost hidden label, or missing description fails. Gap: no test asserts the link structure's content-derived name.                                                                                    | `audit:Token/a11y`     |
-| AR6                           | `TokenRemoveTarget.a11y.chromium.spec.ts`                                              | Pre-set filter tokens (default size), LTR and RTL                                                                  | A remove target that misses its X edge or swallows a label press fails in real Chromium. Gap: the `sm` clipping is not covered.                                                                                            | `audit:Token/a11y`     |
-| FR8                           | `Token.test.tsx` custom-color test; `extensibleAxes.test.ts`; `themingTargets.test.ts` | Theme-added color; map wiring                                                                                      | Dropping the `color` reflection fails. Gap: no test asserts `data-size` or any tone's paint; those are visible only in `Token.stories.tsx`.                                                                                | `audit:Token/theming`  |
-| FR9, AR4                      | `Token.stories.tsx` clickable and link fixtures in a browser                           | Hover, press, keyboard focus on the token                                                                          | Gap: no automated check covers overlays or indicators, and no story renders a clickable or link token with Remove, so the double indicator on Remove has no fixture.                                                       | `audit:Token/design`   |
-| PR1                           | Source review                                                                          | Every structure                                                                                                    | Gap: no automated check fails if Token adds a per-token listener, observer, or timer.                                                                                                                                      | `audit:Token/behavior` |
-| AR2, AR3, AR5, AR7            | Accessibility-tree evidence (`spec:AST-009` FR3)                                       | Every structure; hidden label; description; disabled                                                               | Gap: no accessibility-tree check proves the computed names, the hidden-label name, the description, or the disabled state; the unit tests assert DOM attributes only.                                                      | `audit:Token/a11y`     |
-| `design:bidirectionality` DR2 | `MixedDirectionText.a11y.chromium.spec.ts`                                             | `https://`, `.com`, `+3`, `@alice`, `iPhone جديد` and `example.com موقع` under RTL and LTR (Mixed Direction story) | A label whose weak or neutral characters reorder under RTL (`//:https`, `com.`, `3+`, `alice@`), or right-to-left text with a leading Latin word that lays out left to right, fails on each character's rendered position. | `audit:Token/layout`   |
+| 契约                          | 验证                                                                                  | 代表性状态                                                                                                          | 变异或失败预期                                                                                                                                                     | 审计小节               |
+| ----------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
+| FR2, FR10                     | `Token.test.tsx` 的渲染、ref 与透传测试套件                                           | 静态、可点击与链接根元素；调用方 props；在可点击 token 与禁用链接 token 上的调用方命名                              | 错误的根元素、脱离的 ref、被丢弃的调用方 prop，或可点击 token 的 `aria-labelledby` 留在其根元素上，都会使 DOM 断言失败。缺口：没有测试覆盖链接加移除容器上的 ref。 | `audit:Token/behavior` |
+| FR1, FR7                      | 浏览器中 `Token.stories.tsx` 的尺寸、icon 与 end-content 测试夹具                     | 尺寸、icon 与 end content                                                                                           | 缺口：尺寸与溢出的单元测试只断言存在，且没有 story 渲染长标签；插槽顺序与块高仅在渲染后的测试夹具中可见，省略号没有检查。                                          | `audit:Token/layout`   |
+| FR3, FR4, FR6, AR1            | `Token.test.tsx` 的链接、可点击与链接加移除测试套件                                   | 链接、可点击、链接加移除、修饰键点击与中键点击                                                                      | 嵌套 Remove 按钮、从 Remove 触发 token 动作，或丢失委托都会失败。缺口：没有测试断言 `onClick` 在带 `href` 时被丢弃。                                               | `audit:Token/behavior` |
+| FR5, AR5                      | `Token.test.tsx` 的禁用测试                                                           | 带移除的禁用可点击；禁用静态；带与不带移除的禁用链接                                                                | 原生 `disabled`、丢失的 Tab 停靠点、带目标地址的禁用链接、未反映的禁用状态，或被触发的回调，都会失败。                                                             | `audit:Token/a11y`     |
+| AR2, AR3, AR7                 | `Token.test.tsx` 的无障碍测试套件                                                     | Remove 名称、隐藏标签、描述                                                                                         | 缺失的移除名称、丢失的隐藏标签或缺失的描述都会失败。缺口：没有测试断言链接结构的内容派生名称。                                                                     | `audit:Token/a11y`     |
+| AR6                           | `TokenRemoveTarget.a11y.chromium.spec.ts`                                             | 预设的过滤 token（默认尺寸）、LTR 与 RTL                                                                            | 未覆盖自身 X 边缘或吞掉标签按压的移除目标会在真实 Chromium 中失败。缺口：未覆盖 `sm` 的裁剪。                                                                      | `audit:Token/a11y`     |
+| FR8                           | `Token.test.tsx` 的自定义颜色测试；`extensibleAxes.test.ts`；`themingTargets.test.ts` | 主题新增颜色；映射接线                                                                                              | 丢弃 `color` 反映会失败。缺口：没有测试断言 `data-size` 或任何色调的绘制；这些仅在 `Token.stories.tsx` 中可见。                                                    | `audit:Token/theming`  |
+| FR9, AR4                      | 浏览器中 `Token.stories.tsx` 的可点击与链接测试夹具                                   | 悬停、按压、token 上的键盘焦点                                                                                      | 缺口：没有自动化检查覆盖覆盖层或指示器，且没有 story 渲染带 Remove 的可点击或链接 token，因此 Remove 上的双重指示器没有测试夹具。                                  | `audit:Token/design`   |
+| PR1                           | 源码审查                                                                              | 每种结构                                                                                                            | 缺口：如果 Token 添加了按 token 计的监听器、观察器或定时器，没有自动化检查会失败。                                                                                 | `audit:Token/behavior` |
+| AR2, AR3, AR5, AR7            | 无障碍树证据（`spec:AST-009` FR3）                                                    | 每种结构；隐藏标签；描述；禁用                                                                                      | 缺口：没有无障碍树检查能证明计算名称、隐藏标签名称、描述或禁用状态；单元测试只断言 DOM 属性。                                                                      | `audit:Token/a11y`     |
+| `design:bidirectionality` DR2 | `MixedDirectionText.a11y.chromium.spec.ts`                                            | 在 RTL 与 LTR 下的 `https://`、`.com`、`+3`、`@alice`、`iPhone جديد` 与 `example.com موقع`（Mixed Direction story） | 若标签中的弱字符或中性字符在 RTL 下重排（`//:https`、`com.`、`3+`、`alice@`），或含前导拉丁词的从右到左文本被按从左到右排版，都会在逐字符的渲染位置上失败。        | `audit:Token/layout`   |
 
 ## Decision log
 
-None recorded. The record describes shipped behavior.
+无记录。本记录描述的是已发布行为。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不重复使用方 prop 表/示例、当前审计结果、实现步骤或 family/system 规则。它链接到它们的拥有者。

@@ -38,143 +38,127 @@ system_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                           |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `children`, `scope`, `headers`, `colSpan`, `rowSpan`, `contextMenuActions`, `xstyle` (one style or a list), root `BaseProps`, and a `ref`.                                         |
-| Behavior                | A native `td` carrying the `table-cell` target that takes the enclosing Table's density, overflow, alignment, and divider treatment, optionally inside a context menu.             |
-| End-user impact         | People read cell content with consistent spacing that lines up with the surrounding container, and can open row or cell actions from the cell.                                     |
-| Builder impact          | None; the record describes shipped behavior.                                                                                                                                       |
-| Compatibility/readiness | Released behavior recorded as current; no API, default, or output changes. One implementation gap is listed under Current-state impact.                                            |
-| Review checks           | Reject a lost target or density reflection, edge padding that ignores the container inset, a context menu trigger that does not fill the cell, or caller props that miss the cell. |
-| Governing rules         | `architecture:container-padding`; `architecture:public-component-api` INV5–INV8; `architecture:component-theming-surface`.                                                         |
+| 领域          | 契约                                                                                                                                           |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共契约      | `children`、`scope`、`headers`、`colSpan`、`rowSpan`、`contextMenuActions`、`xstyle`（一个样式或一个列表）、根级 `BaseProps`，以及一个 `ref`。 |
+| 行为          | 一个原生 `td`，承载 `table-cell` target，接受所在 Table 的密度、溢出、对齐与分隔线处理，可选地处于上下文菜单之内。                             |
+| 最终用户影响  | 人们以与周围容器对齐的一致间距读取单元格内容，并且可以从单元格打开行或单元格操作。                                                             |
+| 构建者影响    | 无；该记录描述已发布的行为。                                                                                                                   |
+| 兼容性/就绪度 | 已发布行为记录为 current；无 API、默认值或输出变更。一处实现缺口列在 Current-state impact 下。                                                 |
+| 审查检查      | 拒绝丢失的 target 或密度反映、忽略容器 inset 的边缘内边距、未填满单元格的上下文菜单触发器，或未到达单元格的调用方 props。                      |
+| 治理规则      | `architecture:container-padding`；`architecture:public-component-api` INV5–INV8；`architecture:component-theming-surface`。                    |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；下文正文具有权威性。
 
 ## Intent
 
-TableCell is the body cell a caller composes inside a children-mode Table, and
-the cell Table renders in data mode. It owns the `td` and the cell treatment
-the Table asks for; the caller owns the content.
+TableCell 是调用方在 children 模式 Table 中组合的正文单元格，也是 Table 在 data 模式下渲染的单元格。它拥有 `td` 以及 Table 所要求的单元格处理；内容由调用方拥有。
 
-Consumer syntax and examples belong in `TableCell.doc.mjs`.
+使用方语法与示例属于 `TableCell.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public prop, default, DOM,
-  target, or styling output changes.
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 已发布的默认值保留：yes
+- 兼容性类别：记录已发布的行为；无公开 prop、默认值、DOM、target 或样式输出的变更。
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Current-state impact
 
-- **Edge cells with actions keep their edge padding outside the trigger (FR3,
-  FR4).** In the first and last cells of a row, the container-inset padding
-  stays on the `td` while the context menu trigger carries its own density
-  padding, so a secondary click on that strip opens the browser's menu and the
-  content sits one density padding inside the inset.
+- **带操作的边缘单元格将边缘内边距保留在触发器之外（FR3、FR4）。** 在一行的第一个和最后一个单元格中，容器 inset 内边距留在 `td` 上，而上下文菜单触发器携带自己的密度内边距，因此在该区域上的次要点击会打开浏览器菜单，内容位于 inset 内部一个密度内边距处。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The `td` element, which carries the `table-cell` target that `component:Table`
-  owns and maps.
-- Applying the Table's density, overflow, vertical alignment, and dividers, and
-  wrapping content in a context menu when actions are given.
+- `td` 元素，它承载 `component:Table` 拥有并映射的 `table-cell` target。
+- 应用 Table 的密度、溢出、垂直对齐与分隔线，并在给出操作时将内容包进上下文菜单。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Density, overflow, alignment, and divider settings — owned by
-  `component:Table`.
-- The context menu's behavior — owned by `component:ContextMenu`.
-- Cell content — owned by the caller.
+- 密度、溢出、对齐与分隔线设置 — 由 `component:Table` 拥有。
+- 上下文菜单的行为 — 由 `component:ContextMenu` 拥有。
+- 单元格内容 — 由调用方拥有。
 
 ## Public concepts
 
-| Concept             | Closed values or states                  | Meaning                                      | Availability by variant/orientation/state | Default | Owner  | Stability | Invalid-value behavior         |
-| ------------------- | ---------------------------------------- | -------------------------------------------- | ----------------------------------------- | ------- | ------ | --------- | ------------------------------ |
-| Table relationships | `scope`, `headers`, `colSpan`, `rowSpan` | Native cell associations and spans.          | Always                                    | none    | caller | Stable    | —                              |
-| Context actions     | action list or getter; unset             | Actions shown in a context menu on the cell. | Always                                    | none    | caller | Stable    | An empty list renders no menu. |
-| Content             | ReactNode                                | The cell's content.                          | Always                                    | —       | caller | Stable    | —                              |
+| 概念       | 封闭取值或状态                           | 含义                               | 按变体/方向/状态的可用性 | 默认值 | 所有者 | 稳定性 | 无效值行为         |
+| ---------- | ---------------------------------------- | ---------------------------------- | ------------------------ | ------ | ------ | ------ | ------------------ |
+| 表格关系   | `scope`、`headers`、`colSpan`、`rowSpan` | 原生单元格关联与跨行跨列。         | 始终                     | 无     | 调用方 | 稳定   | —                  |
+| 上下文操作 | 操作列表或 getter；未设置                | 在单元格的上下文菜单中显示的操作。 | 始终                     | 无     | 调用方 | 稳定   | 空列表不渲染菜单。 |
+| 内容       | ReactNode                                | 单元格的内容。                     | 始终                     | —      | 调用方 | 稳定   | —                  |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Basis                                                                   |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| FR1 | TableCell renders one `td` carrying the `table-cell` target, which reflects the Table's density, and holds its content. Outside a Table it adds no cell treatment.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Current source and tests                                                |
-| FR2 | Inside a Table, the cell pads by density (`compact` `--spacing-1` by `--spacing-2`, `balanced` `--spacing-2` by `--spacing-3`, `spacious` `--spacing-3` by `--spacing-4`) at body size, wraps or truncates text per the Table's `textOverflow`, aligns vertically per its `verticalAlign`, and draws dividers per its `dividers`: with `rows` or `grid`, a `--border-width` bottom border in `--color-border`, none in the section's last row; with `columns` or `grid`, an inline-end border, none on the row's last cell. While a glide moves its row, the bottom border goes transparent and one cell of the row draws a stand-in across the row's bottom edge (`component:Table` FR14). | Current source and tests                                                |
-| FR3 | The first and last cells of a row pad their outer inline edge to the enclosing container's published inset, at least `--spacing-2`, falling back to the density padding outside a container. Implementation gap: in a first or last cell with context actions, the edge padding stays on the `td` outside the trigger, so the content sits one density padding inside the inset (FR4; Current-state impact).                                                                                                                                                                                                                                                                                | Current source; `architecture:container-padding`                        |
-| FR4 | With context actions (a non-empty list or a getter), the content sits in a context menu trigger that fills the cell and carries the density padding, so the whole cell opens the menu; a getter resolves the actions when the menu opens. Implementation gap: in the first and last cells, the edge padding stays on the `td` outside the trigger, so a secondary click on that strip opens the browser's menu instead (Current-state impact).                                                                                                                                                                                                                                              | Current source and tests                                                |
-| FR5 | `ref` reaches the `td`; supported DOM, data, ARIA, and event props reach it before the component's target and styles; `xstyle` (one style or a list), `className`, and `style` compose after component styles.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Current source and tests; `architecture:public-component-api` INV5–INV8 |
+| ID  | 不变式                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 依据                                                          |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| FR1 | TableCell 渲染一个承载 `table-cell` target 的 `td`，该 target 反映 Table 的密度，并容纳其内容。在 Table 之外，它不添加任何单元格处理。                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 当前源码与测试                                                |
+| FR2 | 在 Table 内部，单元格在正文尺寸下按密度填充（`compact` 为 `--spacing-1` 乘 `--spacing-2`，`balanced` 为 `--spacing-2` 乘 `--spacing-3`，`spacious` 为 `--spacing-3` 乘 `--spacing-4`），按 Table 的 `textOverflow` 换行或截断文本，按其 `verticalAlign` 垂直对齐，并按其 `dividers` 绘制分隔线：使用 `rows` 或 `grid` 时，以 `--color-border` 绘制 `--border-width` 的底边框，section 的最后一行不绘制；使用 `columns` 或 `grid` 时，绘制 inline-end 边框，该行的最后一个单元格不绘制。当 glide 移动其行时，底边框变为透明，该行的一个单元格在整行底边绘制一个替代线（`component:Table` FR14）。 | 当前源码与测试                                                |
+| FR3 | 一行的第一个和最后一个单元格将其外侧 inline 边缘填充到所在容器发布的 inset，至少为 `--spacing-2`；在容器之外回退到密度内边距。实现缺口：在带上下文操作的第一个或最后一个单元格中，边缘内边距留在触发器之外的 `td` 上，因此内容位于 inset 内部一个密度内边距处（FR4；Current-state impact）。                                                                                                                                                                                                                                                                                                     | 当前源码；`architecture:container-padding`                    |
+| FR4 | 存在上下文操作（非空列表或 getter）时，内容位于填满单元格并承载密度内边距的上下文菜单触发器中，因此整个单元格都会打开菜单；getter 在菜单打开时解析操作。实现缺口：在第一个和最后一个单元格中，边缘内边距留在触发器之外的 `td` 上，因此在该区域上的次要点击会打开浏览器菜单（Current-state impact）。                                                                                                                                                                                                                                                                                             | 当前源码与测试                                                |
+| FR5 | `ref` 到达 `td`；受支持的 DOM、data、ARIA 与事件 props 在组件的 target 与样式之前到达它；`xstyle`（一个样式或一个列表）、`className` 与 `style` 在组件样式之后合成。                                                                                                                                                                                                                                                                                                                                                                                                                             | 当前源码与测试；`architecture:public-component-api` INV5–INV8 |
 
 ### Allowed variation
 
-- **AV1 — Content.** Any content may fill the cell.
+- **AV1 — 内容。** 任意内容均可填充单元格。
 
 ### Representative states
 
-| State          | Required invariant                             | Allowed variation |
-| -------------- | ---------------------------------------------- | ----------------- |
-| Standalone     | A `td` with the target and no treatment.       | —                 |
-| Each density   | Density padding and `data-density`.            | —                 |
-| In a container | Outer edge cells align to the container inset. | —                 |
-| With actions   | A full-cell context menu trigger.              | Actions.          |
+| 状态     | 必需的不变式                       | 允许的变体 |
+| -------- | ---------------------------------- | ---------- |
+| 独立     | 一个带 target 且无处理的 `td`。    | —          |
+| 每种密度 | 密度内边距与 `data-density`。      | —          |
+| 在容器内 | 外侧边缘单元格与容器 inset 对齐。  | —          |
+| 带操作   | 一个填满单元格的上下文菜单触发器。 | 操作。     |
 
 ### Transformation and precedence order
 
-- **ORD1 — Styles.** Table treatment → context-menu adjustment → the glide's
-  divider handling → caller `xstyle`, `className`, and `style`.
+- **ORD1 — 样式。** Table 处理 → 上下文菜单调整 → glide 的分隔线处理 → 调用方的 `xstyle`、`className` 与 `style`。
 
 ### Performance and resources
 
-- **PR1 — No resources.** TableCell reads the Table's appearance; a context
-  menu loads only when actions are given.
+- **PR1 — 无资源。** TableCell 读取 Table 的外观；仅当给出操作时才加载上下文菜单。
 
 ## Accessibility contract
 
-- **AR1 — Native cell semantics.** The `td` keeps its native cell role and the
-  caller's `scope`, `headers`, and spans; TableCell adds no role.
+- **AR1 — 原生单元格语义。** `td` 保留其原生单元格角色以及调用方的 `scope`、`headers` 与跨度；TableCell 不添加任何角色。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                             | Representation authority | Hierarchy role | Component contract |
-| ---------------- | ---------------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Cell             | A body cell with density padding and dividers. | Current source and docs  | Supporting     | FR1–FR4            |
+| 解剖结构或状态 | 设计要求                           | 表示权威       | 层级角色 | 组件契约 |
+| -------------- | ---------------------------------- | -------------- | -------- | -------- |
+| 单元格         | 带密度内边距与分隔线的正文单元格。 | 当前源码与文档 | 支撑     | FR1–FR4  |
 
-Theming: the `td` carries the `table-cell` target, which `Table.doc.mjs` maps as
-the Cell part of `component:Table`. `TableCell.doc.mjs` declares no anatomy of
-its own, so no anatomy-theming block is declared here.
+主题化：`td` 承载 `table-cell` target，`Table.doc.mjs` 将其映射为 `component:Table` 的 Cell 部件。`TableCell.doc.mjs` 不声明自己的解剖结构，因此此处不声明解剖-主题化块。
 
 ## Family and system relationships
 
-- `component:Table` owns appearance settings and the target mapping.
-- `architecture:container-padding` owns the published inset FR3 reads.
-- `component:ContextMenu` owns the context menu.
+- `component:Table` 拥有外观设置与 target 映射。
+- `architecture:container-padding` 拥有 FR3 读取的已发布 inset。
+- `component:ContextMenu` 拥有上下文菜单。
 
 ## Verification map
 
-| Contract     | Verification                                                                                                                                           | Representative states                                                                                                             | Mutation or failure expectation                                                                                                                                                                                                                                                                                                                                           | Audit section              |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| FR1, AR1     | `Table.test.tsx` children-mode and density-reflection tests; `themingTargets.test.ts`                                                                  | Children mode; each density                                                                                                       | A missing cell, a lost target, or a missing `data-density` fails. `themingTargets.test.ts` catches only a renamed or undocumented target.                                                                                                                                                                                                                                 | `audit:TableCell/anatomy`  |
-| FR2          | `Table.test.tsx` density, overflow, divider, and vertical-alignment tests; `TableRowGlide.a11y.browser.spec.ts`; `useTableRowExpansion.glide.test.tsx` | Densities; wrap and truncate; dividers; mid-glide, pinned cells, themed and overridden dividers                                   | A mid-glide divider that does not move with its row, or the line on the wrong cell, fails in the glide checks. A truncating Table whose data-mode cells lose their truncating text wrapper, or a cell without the requested `vertical-align`, fails. Gap: the density and divider tests assert only that the table renders, and no test covers the cell's own truncation. | `audit:TableCell/layout`   |
-| FR3          | Source review                                                                                                                                          | Inside Card, Section, Layout                                                                                                      | Gap: no test covers edge cells aligning to the container inset.                                                                                                                                                                                                                                                                                                           | `audit:TableCell/layout`   |
-| FR4          | `tableContextMenu.test.tsx` body-cell row-actions and full-cell tests; `useTableRowExpansion.test.tsx` context-menu action test                        | Body cell with a list; body cell with a getter (expandable rows); full-cell trigger                                               | A body cell that ignores its action list or getter fails. Gap: the full-cell test checks only that the trigger has a class, so a trigger that does not fill the cell passes; no test covers an empty list or the edge-cell padding outside the trigger.                                                                                                                   | `audit:TableCell/behavior` |
-| FR5, ORD1    | `Table.test.tsx` TableCell ref, `colSpan`, and `rowSpan` tests                                                                                         | `ref`; `colSpan`, `rowSpan`                                                                                                       | A ref off the `td` or a dropped `colSpan` or `rowSpan` fails. Gap: no TableCell test covers event props, `xstyle`, `className`, `style`, or the order in which caller styles follow the Table's treatment.                                                                                                                                                                | `audit:TableCell/api`      |
-| PR1          | Source review                                                                                                                                          | Every state                                                                                                                       | Gap: no automated check covers lazy context-menu loading.                                                                                                                                                                                                                                                                                                                 | `audit:TableCell/behavior` |
-| RTL relation | RTL audit curated D2 and D8 targets (`apps/storybook/rtl-audit/targets.json`) on the `In Card` story                                                   | A Card with `padding={0}`, where the first column's logical inline-start padding differs from its inline-end padding; LTR and RTL | A first column not at the inline start, or an edge padding that stays on the same physical side in RTL, fails D2 or D8.                                                                                                                                                                                                                                                   | `audit:TableCell/i18n-rtl` |
+| 契约      | 验证                                                                                                                             | 代表性状态                                                                                             | 变更或失败预期                                                                                                                                                                                                                                         | 审计章节                   |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- |
+| FR1, AR1  | `Table.test.tsx` 的 children 模式与密度反映测试；`themingTargets.test.ts`                                                        | children 模式；每种密度                                                                                | 缺少单元格、丢失 target 或缺少 `data-density` 会失败。`themingTargets.test.ts` 只能捕获被重命名或未记录的 target。                                                                                                                                     | `audit:TableCell/anatomy`  |
+| FR2       | `Table.test.tsx` 的密度、溢出、分隔线与垂直对齐测试；`TableRowGlide.a11y.browser.spec.ts`；`useTableRowExpansion.glide.test.tsx` | 各密度；换行与截断；分隔线；glide 过程中、固定单元格、主题化与被覆盖的分隔线                           | 分隔线在 glide 过程中不随其行移动，或画在错误的单元格上，会在 glide 检查中失败。截断的 Table 中 data 模式单元格丢失其截断文本包装，或单元格缺少所要求的 `vertical-align`，会失败。缺口：密度与分隔线测试只断言表格渲染，没有测试覆盖单元格自身的截断。 | `audit:TableCell/layout`   |
+| FR3       | 源码审查                                                                                                                         | 在 Card、Section、Layout 内                                                                            | 缺口：没有测试覆盖边缘单元格与容器 inset 的对齐。                                                                                                                                                                                                      | `audit:TableCell/layout`   |
+| FR4       | `tableContextMenu.test.tsx` 的正文单元格行操作与整单元格测试；`useTableRowExpansion.test.tsx` 的上下文菜单操作测试               | 带列表的正文单元格；带 getter 的正文单元格（可展开行）；整单元格触发器                                 | 忽略其操作列表或 getter 的正文单元格会失败。缺口：整单元格测试只检查触发器是否有 class，因此未填满单元格的触发器会通过；没有测试覆盖空列表或触发器之外的边缘单元格内边距。                                                                             | `audit:TableCell/behavior` |
+| FR5, ORD1 | `Table.test.tsx` 的 TableCell `ref`、`colSpan` 与 `rowSpan` 测试                                                                 | `ref`；`colSpan`、`rowSpan`                                                                            | `ref` 不在 `td` 上，或 `colSpan`、`rowSpan` 被丢弃，会失败。缺口：没有 TableCell 测试覆盖事件 props、`xstyle`、`className`、`style`，或调用方样式跟随 Table 处理的顺序。                                                                               | `audit:TableCell/api`      |
+| PR1       | 源码审查                                                                                                                         | 每个状态                                                                                               | 缺口：没有自动化检查覆盖上下文菜单的惰性加载。                                                                                                                                                                                                         | `audit:TableCell/behavior` |
+| RTL 关系  | `In Card` story 上 RTL 审计选定的 D2 与 D8 target（`apps/storybook/rtl-audit/targets.json`）                                     | 一个 `padding={0}` 的 Card，其中第一列的逻辑 inline-start 内边距与其 inline-end 内边距不同；LTR 与 RTL | 第一列不在 inline 起始处，或边缘内边距在 RTL 中仍停留在同一物理侧，会使 D2 或 D8 失败。                                                                                                                                                                | `audit:TableCell/i18n-rtl` |
 
 ## Decision log
 
-None recorded. The record describes shipped behavior.
+未记录。该记录描述已发布的行为。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or Table rules. It links to their owners.
+本文件不重复使用方 prop 表/示例、当前审计结果、实现步骤或 Table 规则。它链接到它们的所有者。

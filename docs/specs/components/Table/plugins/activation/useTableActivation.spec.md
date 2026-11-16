@@ -33,221 +33,200 @@ references:
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                          |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `useTableActivation<T>` returns one `TablePlugin<T>`; its only configuration fields are controlled `activeKey`, `onActivate`, and optional `getIsItemActivatable`.                                                |
-| Behavior                | Eligible flat product rows request activation on primary click or Enter/Space after non-owning handlers; canonical identity, cancellation, descendant controls, and intersecting text selection gate the request. |
-| End-user impact         | One product row anchors adjacent detail or preview state without becoming selection, navigation, or focus ownership.                                                                                              |
-| Builder impact          | The caller supplies explicit stable unique `idKey`, controls the active key, and owns adjacent content; no second extractor, interaction mode, or theme state is public.                                          |
-| Compatibility/readiness | Additive and unreleased. The normative module and parent contracts are complete; implementation and release verification remain separate requirements.                                                            |
-| Review checks           | Reject implicit identity, multiple whole-row owners, non-flat opt-in, nested-control activation, competing paint writers, a colour-only active cue, pinned-cell divergence, or invented approval/evidence.        |
-| Governing rules         | `component:Table` owns composition, including FR16-FR21 and DEC-4/DEC-5; shared modality, public API, theming, and evidence rules retain their owners.                                                            |
+| Area                    | Contract                                                                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public contract         | `useTableActivation<T>` 返回一个 `TablePlugin<T>`；其唯一的配置字段是受控的 `activeKey`、`onActivate` 以及可选的 `getIsItemActivatable`。   |
+| Behavior                | 符合条件的扁平产品行在主体点击时，或在非归属处理器之后按 Enter/Space 时请求激活；规范身份、取消、后代控件以及相交的文本选区会对此请求设门。 |
+| End-user impact         | 一个产品行锚定相邻的详情或预览状态，但不会成为选区、导航或焦点的所有者。                                                                    |
+| Builder impact          | 调用方提供显式、稳定且唯一的 `idKey`，控制活动键，并拥有相邻内容；不存在第二个提取器、交互模式或主题状态作为公共内容。                      |
+| Compatibility/readiness | 增量的且未发布。规范性模块与父级契约已完成；实现与发布验证仍是独立要求。                                                                    |
+| Review checks           | 拒绝隐式身份、多个整行所有者、非扁平 opt-in、嵌套控件激活、竞争的绘制写入者、仅靠颜色的活动提示、固定单元格分歧，或杜撰的批准/证据。        |
+| Governing rules         | `component:Table` 拥有组合，包括 FR16-FR21 与 DEC-4/DEC-5；共享的模态、公共 API、主题与证据规则保留其各自所有者。                           |
 
-This table is a review projection; the body below defines the current contract.
+此表是审查投影；下文正文定义当前契约。
 
 ## Intent
 
-`useTableActivation` gives a flat data-driven Table one controlled current product row for master-detail, preview, and inspector layouts. It consumes parent-resolved identity, requests activation, and reflects state through existing row anatomy. Activation is neither a selected-set operation, a navigation promise, nor focus.
+`useTableActivation` 为扁平的数据驱动 Table 提供一个受控的当前产品行，用于主从、预览与检查器布局。它消费父级解析出的身份、请求激活，并通过既有的行解剖结构反映状态。激活既不是选中集合操作，也不是导航承诺，更不是焦点。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`; the capability is opt-in and legacy callbacks retain their existing arguments and behavior.
-- Compatibility class: additive unreleased hook; unsupported new-capability combinations are neutralised without disabling legacy plugins.
-- Migration decision: `module:Table/useTableActivation/DEC-1` and DEC-5.
+- 保留的发布默认值：`yes`；该能力为 opt-in，旧回调保留其既有参数与行为。
+- 兼容性类别：增量的未发布 hook；不受支持的新能力组合会被中和，但不会禁用旧插件。
+- 迁移决策：`module:Table/useTableActivation/DEC-1` 与 DEC-5。
 
-Consumer signatures, imports, examples, and migration instructions belong in the module's consumer docs. This current record defines the complete normative module contract; implementation and release verification remain separate from owner approval.
+使用方签名、导入、示例与迁移说明属于该模块的使用方文档。本当前记录定义完整的规范性模块契约；实现与发布验证仍与所有者批准相互独立。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- Controlled activation, product-row eligibility, request boundaries, and module-owned active-state reflection.
-- Primary-click and Enter/Space parity, existing-handler-first cancellation, and descendant/portal/text-selection isolation.
-- Contributions to the parent row-paint resolver, the active cue, bounded updates, and evidence obligations.
+- 受控激活、产品行资格判定、请求边界，以及模块所拥有的活动状态反映。
+- 主体点击与 Enter/Space 的对等性、既有处理器优先的取消，以及后代/portal/文本选区隔离。
+- 对父级行绘制解析器、活动提示、有界更新与证据义务的贡献。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Aggregate plugin ordering, canonical identity validation, row-kind/admission metadata, whole-row ownership, render planning, viewport, and paint coordination: `component:Table`.
-- Selection and `aria-selected` remain selection-owned; navigation-specific `aria-current` values such as `page`, `step` or `location` remain navigation-owned. This module owns only `aria-current="true"` identifying the eligible product row driving adjacent content; detail content and its loading remain caller-owned.
-- Tree, grouped, expanded-detail, custom-row, or children-mode activation; hover activation; automatic focus movement or prefetching.
-- A new public theme target or theme-authored `active` state in v1.
+- 插件聚合排序、规范身份校验、行种类/准入元数据、整行所有权、渲染计划、视口与绘制协调：`component:Table`。
+- 选区与 `aria-selected` 仍归选区所拥有；导航专用的 `aria-current` 值（如 `page`、`step` 或 `location`）仍归导航所拥有。本模块只拥有 `aria-current="true"`，用以标识驱动相邻内容的符合条件产品行；详情内容及其加载仍归调用方所拥有。
+- 树形、分组、展开详情、自定义行或子级模式的激活；悬停激活；自动焦点移动或预取。
+- v1 中新增的公共主题目标，或由主题编写的 `active` 状态。
 
 ## Public API and concepts
 
-The public hook returns `TablePlugin<T>`. `activeKey` accepts `string | number | null`; `onActivate(item, key)` returns `void`; optional `getIsItemActivatable(item)` returns `boolean`. There are no other v1 configuration fields. The caller never needs a second key extractor or DOM marker convention.
+公开 hook 返回 `TablePlugin<T>`。`activeKey` 接受 `string | number | null`；`onActivate(item, key)` 返回 `void`；可选的 `getIsItemActivatable(item)` 返回 `boolean`。v1 没有其他配置字段。调用方从不需要第二个键提取器或 DOM 标记约定。
 
-| Concept      | Closed values or states                         | Meaning                                                     | Default                            | Owner                              | Stability                     |
-| ------------ | ----------------------------------------------- | ----------------------------------------------------------- | ---------------------------------- | ---------------------------------- | ----------------------------- |
-| Active key   | Valid canonical string/finite number, or `null` | Strict equality to the parent key; `null` means inactive.   | Controlled                         | Caller through this module         | Unreleased; contract complete |
-| Eligibility  | Eligible or inert                               | Valid, admitted product row plus caller predicate.          | All admitted product rows eligible | This module and parent admission   | Unreleased; contract complete |
-| Request      | `(item, key)`                                   | Emits the same canonical key without mutating caller state. | No implicit update                 | Caller through this module         | Unreleased; contract complete |
-| Input        | Primary click, Enter, Space                     | Press-only activation; no hover or navigation mode.         | All three                          | This module                        | Unreleased; contract complete |
-| Presentation | Inactive or active                              | Existing anatomy, resolved fill, and non-colour marker.     | Inactive                           | This module; parent paint resolver | Unreleased; contract complete |
+| Concept      | Closed values or states              | Meaning                                  | Default                | Owner                  | Stability          |
+| ------------ | ------------------------------------ | ---------------------------------------- | ---------------------- | ---------------------- | ------------------ |
+| Active key   | 有效的规范字符串/有限数字，或 `null` | 与父级键严格相等；`null` 表示非活动。    | 受控                   | 通过本模块的调用方     | 未发布；契约已完成 |
+| Eligibility  | 合格或惰性                           | 有效且已准入的产品行，加上调用方谓词。   | 所有已准入产品行均合格 | 本模块与父级准入       | 未发布；契约已完成 |
+| Request      | `(item, key)`                        | 发出同一个规范键，且不修改调用方状态。   | 无隐式更新             | 通过本模块的调用方     | 未发布；契约已完成 |
+| Input        | 主体点击、Enter、Space               | 仅按压激活；没有悬停或导航模式。         | 三者皆可               | 本模块                 | 未发布；契约已完成 |
+| Presentation | 非活动或活动                         | 既有解剖结构、解析后的填充与非颜色标记。 | 非活动                 | 本模块；父级绘制解析器 | 未发布；契约已完成 |
 
 ## Behavioral contract
 
-| ID   | Approved invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Basis                           | Verification obligation                                       |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------- |
-| FR1  | One mounted hook returns one stable plugin; mounted composed row handlers remain stable while reading current configuration.                                                                                                                                                                                                                                                                                                                                                                                                           | Parent identity contract; DEC-1 | Contract complete; implementation evidence pending            |
-| FR2  | Activation requires explicit stable unique `idKey` and parent-supplied valid canonical identity. Property-name keys convert valid raw strings or finite numbers with `String`; function keys preserve their string/finite-number type. Comparison is strict and the callback emits exactly that key. Missing, invalid, duplicate, or unknown identity is inert in every build, with parent-owned deduplicated development diagnostics.                                                                                                 | Parent FR16; DEC-1              | Contract complete; parent review and evidence pending         |
-| FR3  | Only an eligible row matching `activeKey` exposes module-owned `data-active`, `aria-current="true"` and active presentation. Other rows remove only those module-owned contributions. The current-item state expresses which row drives adjacent content, not selection or navigation; no `aria-selected`, `aria-current="page"` or replacement row role is inferred. A pre-existing incompatible current-state owner makes activation inactive for that row with a development diagnostic rather than overwriting its semantic state. | DEC-1/DEC-3                     | Contract complete; evidence pending                           |
-| FR4  | Eligibility governs both interaction and presentation. A matching row that becomes ineligible loses activation handlers, module keyboard affordances, active attributes, fill, and marker; it preserves prior props and never mutates `activeKey`. Synthetic rows remain inert regardless of the predicate.                                                                                                                                                                                                                            | DEC-1/DEC-5                     | Contract complete; evidence pending                           |
-| FR5  | A permitted primary click or non-repeated Enter/Space calls `onActivate` once after every composed non-owning handler. `preventDefault` cancels activation while preserving earlier side effects; accumulated handlers are not replaced.                                                                                                                                                                                                                                                                                               | Parent FR17; DEC-4              | Contract complete; evidence pending                           |
-| FR6  | Nested native controls, including readonly controls, editable content, canonical interactive-role boundaries, and portalled events whose target is outside the row never activate it. A non-collapsed selection suppresses click activation when any selected range intersects this row; an unrelated or standing selection does not suppress Enter or Space.                                                                                                                                                                          | DEC-4                           | Contract complete; evidence pending                           |
-| FR7  | An eligible row defaults to `tabIndex=0` only when earlier props omit it; explicit `-1` or other focus ownership survives. Programmatically focused eligible rows activate. `Enter Space` is composed with existing `aria-keyshortcuts`, without duplicate tokens or a replacement row role.                                                                                                                                                                                                                                           | DEC-2                           | Contract complete; evidence pending                           |
-| FR8  | Auxiliary clicks, hover, and repeated Enter never activate. Repeated Space prevents scrolling without activation after the same boundary/cancellation gates. A permitted non-repeated Space prevents its scrolling default.                                                                                                                                                                                                                                                                                                            | DEC-4                           | Contract complete; evidence pending                           |
-| FR9  | V1 admits only the parent's flat product-row render plan and one declared whole-row owner. Tree/grouped/detail/custom models and competing expansion/navigation ownership neutralise activation in all builds, independent of plugin names or insertion order, with deduplicated development diagnostics. Legacy behavior remains available.                                                                                                                                                                                           | Parent FR17-FR18; DEC-5         | Contract complete; parent review and evidence pending         |
-| FR10 | One parent row-paint resolver applies the matrix below to normal and pinned cells. Selection wash dominates active fill when selected and `hasRowHighlight=true`; otherwise active fill dominates hover/striping. The active marker and focus indication remain independent. No second imperative background/overlay writer is permitted.                                                                                                                                                                                              | Parent FR21; DEC-3              | Contract complete; parent implementation and evidence pending |
-| FR11 | Children mode, empty-state rows, synthetic rows, and excluded rows receive no activation additions. Detaching rows or the hook releases resources and leaves no callbacks or painting on a new row generation.                                                                                                                                                                                                                                                                                                                         | DEC-5; resource boundary        | Contract complete; evidence pending                           |
-| FR12 | With valid unique keys, changing only `activeKey` does not replace plugins, handlers, columns, or product data or React-rerender unrelated rows. Only the old/new active mounted rows change activation reflection; an offscreen row reflects current state when mounted.                                                                                                                                                                                                                                                              | Bounded update contract         | Contract complete; evidence pending                           |
+| ID   | Approved invariant                                                                                                                                                                                                                                                                                                                                      | Basis                 | Verification obligation          |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | -------------------------------- |
+| FR1  | 一个已挂载的 hook 返回一个稳定插件；已挂载的组合行处理器在读取当前配置时保持稳定。                                                                                                                                                                                                                                                                      | 父级身份契约；DEC-1   | 契约已完成；实现证据待补充       |
+| FR2  | 激活要求显式、稳定且唯一的 `idKey`，以及父级提供的有效规范身份。属性名键用 `String` 转换有效的原始字符串或有限数字；函数键保留其字符串/有限数字类型。比较为严格比较，回调发出的正是该键。缺失、无效、重复或未知身份在所有构建中都保持惰性，并伴随父级拥有的去重开发诊断。                                                                               | 父级 FR16；DEC-1      | 契约已完成；父级审查与证据待补充 |
+| FR3  | 只有与 `activeKey` 匹配的合格行才暴露模块拥有的 `data-active`、`aria-current="true"` 与活动呈现。其他行只移除这些模块拥有的贡献。当前项状态表达的是哪一行驱动相邻内容，而不是选区或导航；不会推断出 `aria-selected`、`aria-current="page"` 或替换的行角色。若已存在不兼容的当前状态所有者，则该行的激活变为非活动并给出开发诊断，而不是覆盖其语义状态。 | DEC-1/DEC-3           | 契约已完成；证据待补充           |
+| FR4  | 资格判定同时管辖交互与呈现。匹配行一旦变为不合格，就失去激活处理器、模块键盘可供性、活动属性、填充与标记；它保留先前的 props，且绝不修改 `activeKey`。合成行无论谓词如何都保持惰性。                                                                                                                                                                    | DEC-1/DEC-5           | 契约已完成；证据待补充           |
+| FR5  | 被允许的主体点击，或不重复的 Enter/Space，会在每个已组合的非归属处理器之后调用一次 `onActivate`。`preventDefault` 取消激活，同时保留先前的副作用；已累积的处理器不会被替换。                                                                                                                                                                            | 父级 FR17；DEC-4      | 契约已完成；证据待补充           |
+| FR6  | 嵌套的原生控件（含只读控件）、可编辑内容、规范的交互角色边界，以及目标位于行之外的 portal 事件，都不会激活该行。当任一选中范围与本行相交时，未折叠的选区会抑制点击激活；无关的或持续存在的选区不会抑制 Enter 或 Space。                                                                                                                                 | DEC-4                 | 契约已完成；证据待补充           |
+| FR7  | 只有当先前的 props 省略了 `tabIndex` 时，合格行才默认 `tabIndex=0`；显式的 `-1` 或其他焦点所有权得以保留。以编程方式获得焦点的合格行可以激活。`Enter Space` 与既有的 `aria-keyshortcuts` 组合，不产生重复令牌，也不替换行角色。                                                                                                                         | DEC-2                 | 契约已完成；证据待补充           |
+| FR8  | 辅助点击、悬停与重复的 Enter 永不激活。重复的 Space 在通过相同的边界/取消门槛后阻止滚动，但不激活。被允许的不重复 Space 会阻止其滚动默认行为。                                                                                                                                                                                                          | DEC-4                 | 契约已完成；证据待补充           |
+| FR9  | V1 只准入父级的扁平产品行渲染计划与一个已声明的整行所有者。树形/分组/详情/自定义模型以及竞争的展开/导航所有权，会在所有构建中中和激活，且与插件名称或插入顺序无关，并给出去重的开发诊断。旧有行为仍然可用。                                                                                                                                             | 父级 FR17-FR18；DEC-5 | 契约已完成；父级审查与证据待补充 |
+| FR10 | 单一父级行绘制解析器将下矩阵应用于普通单元格与固定单元格。当行被选中且 `hasRowHighlight=true` 时，选区淡染优先于活动填充；否则活动填充优先于悬停/条纹。活动标记与焦点指示保持独立。不允许第二个命令式背景/覆盖层写入者。                                                                                                                                | 父级 FR21；DEC-3      | 契约已完成；父级实现与证据待补充 |
+| FR11 | 子级模式、空状态行、合成行与被排除的行不会获得任何激活增添。卸载行或 hook 会释放资源，且不会在新行代际上留下回调或绘制。                                                                                                                                                                                                                                | DEC-5；资源边界       | 契约已完成；证据待补充           |
+| FR12 | 在键有效且唯一时，仅改变 `activeKey` 不会替换插件、处理器、列或产品数据，也不会让无关行发生 React 重渲染。只有旧/新活动的已挂载行会改变激活反映；离屏行在被挂载时反映当前状态。                                                                                                                                                                         | 有界更新契约          | 契约已完成；证据待补充           |
 
 ### Transformation and precedence order
 
-- **ORD1 — Admission and eligibility.** Consume the parent's validated identity, product/synthetic kind, and flat/ownership admission before applying the caller predicate. Unsupported or ineligible rows preserve prior contributions and remove only activation-owned state.
-- **ORD2 — Controlled state.** Compare the supplied canonical key strictly; emit that same key. Do not coerce in activation, use index fallback, or infer active state from focus or events.
-- **ORD3 — Existing handlers.** Compose non-owning handlers first, preserving their side effects and cancellation regardless of named-plugin order.
-- **ORD4 — Event boundary.** Check target containment and shared interactive/editable boundaries before accepting a press. Check selected-range intersection for clicks only; standing text selection does not block Enter or Space. Reuse or extract the canonical shared guard; do not copy a selector catalog or import a complete navigation hook for it.
-- **ORD5 — Accepted press.** Accept primary click and non-repeated Enter/Space once; apply FR8's Space default handling only for an otherwise eligible row gesture.
-- **ORD6 — Presentation.** Contribute activation state to the parent's sole paint resolver; preserve prior refs, children, classes, styles, attributes, and focus ownership.
-- **ORD7 — Parent pipeline.** Declare `rowModel: 'flat'` and `wholeRowOwner: 'activation'`; use parent sequential transforms and declarative ownership/admission, not a private pipeline or plugin-name inspection.
+- **ORD1 — 准入与资格判定。** 在应用调用方谓词之前，先消费父级校验过的身份、产品/合成种类以及扁平/所有权准入。不受支持或不合格的行保留先前贡献，只移除激活所拥有的状态。
+- **ORD2 — 受控状态。** 严格比较所提供的规范键；发出同一个键。不要在激活中强制转换、使用索引兜底，或从焦点或事件推断活动状态。
+- **ORD3 — 既有处理器。** 先组合非归属处理器，无论命名插件的顺序如何，都保留其副作用与取消能力。
+- **ORD4 — 事件边界。** 在接受按压之前，检查目标包含关系以及共享的交互/可编辑边界。仅对点击检查选中范围相交；持续存在的文本选区不阻止 Enter 或 Space。复用或抽取规范的共享守卫；不要复制选择器目录，也不要为此导入完整的导航 hook。
+- **ORD5 — 已接受的按压。** 只接受一次主体点击与不重复的 Enter/Space；仅对在其他方面合格的行手势应用 FR8 的 Space 默认处理。
+- **ORD6 — 呈现。** 向父级唯一的绘制解析器贡献激活状态；保留先前的 refs、children、classes、styles、属性与焦点所有权。
+- **ORD7 — 父级管线。** 声明 `rowModel: 'flat'` 与 `wholeRowOwner: 'activation'`；使用父级的顺序变换与声明式所有权/准入，而不是私有管线或插件名检查。
 
 ### Active, selection, and focus matrix
 
-| Selection  | Activation | `hasRowHighlight` | Effective normal/pinned fill and cue                                                        |
-| ---------- | ---------- | ----------------- | ------------------------------------------------------------------------------------------- |
-| Unselected | Inactive   | Either            | Existing base, striping, hover, and independent focus treatment.                            |
-| Selected   | Inactive   | `true`            | Existing selection wash; selection semantics remain.                                        |
-| Selected   | Inactive   | `false`           | No selection wash; base/striping/hover and selection semantics remain.                      |
-| Unselected | Active     | Either            | Component-owned active fallback above hover/striping, plus inline-start marker.             |
-| Selected   | Active     | `true`            | Selection-dominant wash plus inline-start active marker; selection semantics remain.        |
-| Selected   | Active     | `false`           | Active fallback plus marker; no selection wash is reintroduced; selection semantics remain. |
+| Selection  | Activation | `hasRowHighlight` | Effective normal/pinned fill and cue                        |
+| ---------- | ---------- | ----------------- | ----------------------------------------------------------- |
+| Unselected | Inactive   | Either            | 既有的基础、条纹、悬停以及独立的焦点处理。                  |
+| Selected   | Inactive   | `true`            | 既有的选区淡染；选区语义保留。                              |
+| Selected   | Inactive   | `false`           | 无选区淡染；基础/条纹/悬停与选区语义保留。                  |
+| Unselected | Active     | Either            | 组件拥有的活动兜底填充（高于悬停/条纹），外加行内起始标记。 |
+| Selected   | Active     | `true`            | 选区主导的淡染加行内起始活动标记；选区语义保留。            |
+| Selected   | Active     | `false`           | 活动兜底填充加标记；不会重新引入选区淡染；选区语义保留。    |
 
-Every row applies the same result for selection-first and activation-first updates,
-including toggling `hasRowHighlight` while both states are present. Focus is always
-separate: a focus outline is never the active cue. The marker is a visible
-inline-start decoration on existing row/cell anatomy, independent of colour,
-with no extra data column, control, or public target. It follows text direction,
-survives pinned-cell occlusion, and remains distinguishable in light, dark, and
-forced-colors modes. `hasRowHighlight=false` reclaims only selection-owned wash;
-it does not disable activation or change any selection semantics.
+每个行在“选区优先”与“激活优先”的更新中都应用相同结果，包括在两种状态同时存在时切换 `hasRowHighlight`。焦点始终独立：焦点轮廓从不是活动提示。标记是既有行/单元格解剖结构上的可见行内起始装饰，独立于颜色，不引入额外的数据列、控件或公共目标。它遵循文本方向，在固定单元格遮挡下仍可见，并在浅色、深色与强制颜色模式下保持可区分。`hasRowHighlight=false` 只回收选区所拥有的淡染；它不会禁用激活，也不改变任何选区语义。
 
 ### Performance and resources
 
-- **PR1 — Constant local work.** Key comparison, state reflection, and ordinary event guards add O(1) row-local coordination; selected-range checks scale with selected ranges, not dataset size. Resolve eligibility at most once per relevant row update. Parent full-dataset validation is not repeated by activation.
-- **PR2 — Stable identities.** Plugin and mounted handlers remain stable across key/callback/predicate changes while observing their current values.
-- **PR3 — Bounded active updates.** FR12's old/new-row bound applies to key-only updates; eligibility, data, selection, or theme changes retain their own scopes.
-- **PR4 — Bounded lifetime.** Retained resources scale with mounted rows and are completely released on row/hook detach, including virtual row recycling.
+- **PR1 — 恒定的本地工作。** 键比较、状态反映与普通事件守卫增加 O(1) 的行本地协调；选中范围检查随选中范围的数量缩放，而不随数据集规模缩放。每次相关的行更新最多解析一次资格。激活不会重复父级的全数据集校验。
+- **PR2 — 稳定身份。** 插件与已挂载处理器在键/回调/谓词变化时保持稳定，同时观察其当前值。
+- **PR3 — 有界的活动更新。** FR12 的旧/新行界限适用于仅键更新；资格、数据、选区或主题变化保留各自的作用域。
+- **PR4 — 有界生命周期。** 保留的资源随已挂载行缩放，并在行/hook 卸载时完全释放，包括虚拟行回收。
 
 ## Accessibility contract
 
-- **AR1 — Native semantics.** Rows retain native table roles; activation adds no button/link role or selection semantics. `aria-current="true"` on the active eligible row exposes its current-item relationship without a navigation-specific value. DOM and computed accessibility-tree checks verify that exposure; no particular spoken phrase or virtual-cursor behavior is promised.
-- **AR2 — Keyboard parity.** Default sequential focus, earlier roving/programmatic focus, composed shortcuts, Enter/Space, and visible unobscured focus satisfy the admitted keyboard model. Representative large unvirtualized tables require browser focus-order evidence.
-- **AR3 — Independent controls.** Native readonly controls, interactive-role descendants, editable content, and portals remain independently reachable and operable without row activation.
-- **AR4 — State honesty.** Ineligible, missing or unmatched rows expose no module-owned current state; at most one eligible uniquely keyed row exposes `aria-current="true"`. Changing the controlled key moves both current-state exposure and the visible marker together; `activeKey=null` removes both. Existing selection/navigation semantics remain independently owned.
-- **AR5 — Non-colour state.** The inline-start marker communicates active state independently of fill and focus in light/dark/forced-colors and normal/pinned states (WCAG 2.2 SC 1.4.1).
-- **AR6 — Modality parity.** Primary pointer, touch-generated click, and keyboard share press-owned activation; hover never changes active state.
-- **AR7 — Evidence layers.** Unit, DOM, accessibility-tree, axe, and browser evidence remain pending. Real AT is required only for an AT-dependent outcome or recorded divergence under `spec:AST-009`; this module introduces no announcement claim.
+- **AR1 — 原生语义。** 行保留原生 table 角色；激活不添加 button/link 角色或选区语义。活动合格行上的 `aria-current="true"` 暴露其当前项关系，而不使用导航专用值。DOM 与计算无障碍树检查会验证该暴露；不承诺任何特定的朗读短语或虚拟光标行为。
+- **AR2 — 键盘对等。** 默认顺序焦点、更早的 roving/编程焦点、组合快捷键、Enter/Space，以及可见且未被遮挡的焦点，满足所准入的键盘模型。有代表性的大型未虚拟化表格需要浏览器焦点顺序证据。
+- **AR3 — 独立控件。** 原生只读控件、交互角色后代、可编辑内容与 portal 保持可独立到达并可操作，无需激活行。
+- **AR4 — 状态诚实。** 不合格、缺失或不匹配的行不暴露任何模块拥有的当前状态；最多一个合格且键唯一的行暴露 `aria-current="true"`。改变受控键会同时移动当前状态暴露与可见标记；`activeKey=null` 会移除两者。既有的选区/导航语义仍由各自所有者独立拥有。
+- **AR5 — 非颜色状态。** 行内起始标记在浅色/深色/强制颜色以及普通/固定状态下，独立于填充与焦点传达活动状态（WCAG 2.2 SC 1.4.1）。
+- **AR6 — 模态对等。** 主体指针、触摸生成的点击与键盘共享按压所拥有的激活；悬停永不改变活动状态。
+- **AR7 — 证据层次。** 单元、DOM、无障碍树、axe 与浏览器证据仍待补充。只有在 `spec:AST-009` 下出现依赖 AT 的结果或已记录分歧时，才需要真实 AT；本模块不引入任何播报声明。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                          | Representation authority           | Module contract  |
-| ---------------- | ----------------------------------------------------------- | ---------------------------------- | ---------------- |
-| Activatable row  | Native structure and independent cell controls.             | This module; shared modality owner | FR5-FR9, AR1-AR3 |
-| Active row       | Traceable marker and one coherent normal/pinned fill.       | DEC-3; current contract            | FR3, FR10, AR5   |
-| Focused row      | Focus remains distinguishable from controlled active state. | Existing focus owner               | FR7, AR2, AR5    |
-| Selection        | Wash opt-out and semantics remain independent.              | Selection owner; parent resolver   | FR9-FR10         |
+| Anatomy or state | Design requirement                      | Representation authority | Module contract  |
+| ---------------- | --------------------------------------- | ------------------------ | ---------------- |
+| 可激活行         | 原生结构与独立的单元格控件。            | 本模块；共享模态所有者   | FR5-FR9, AR1-AR3 |
+| 活动行           | 可追溯的标记与一个一致的普通/固定填充。 | DEC-3；当前契约          | FR3, FR10, AR5   |
+| 获得焦点的行     | 焦点与受控活动状态保持可区分。          | 既有焦点所有者           | FR7, AR2, AR5    |
+| 选区             | 淡染的退出机制与语义保持独立。          | 选区所有者；父级解析器   | FR9-FR10         |
 
 ### Design decisions
 
 <!-- design-decisions:v1 -->
 
-| ID  | Decision                                                                         | Intent or reason                                                                       | Applies to               | Allowed variation                                                                                             |
-| --- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| DD1 | An active row has a visible inline-start marker independent of colour and focus. | Current detail-driving state stays identifiable beside selected rows and pinned cells. | All active eligible rows | Token/pixel tuning within existing anatomy; no extra column, control, target, or public `active` theme state. |
+| ID  | Decision                                         | Intent or reason                                   | Applies to       | Allowed variation                                                                   |
+| --- | ------------------------------------------------ | -------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------- |
+| DD1 | 活动行具有可见的行内起始标记，独立于颜色与焦点。 | 当前驱动详情的状态在选中行与固定单元格旁仍可识别。 | 所有活动的合格行 | 在既有解剖结构内进行 token/像素调优；不新增列、控件、目标或公共 `active` 主题状态。 |
 
 ## Parent and system relationships
 
-- `component:Table` FR16 and DEC-4 own full-dataset identity validation and deduplicated diagnostics. The new-capability path distinguishes function keys `0` and `"0"` with typed internal React keys; activation still emits the original canonical key. Legacy key behavior is unchanged.
-- Parent FR17 supplies optional fourth `TableRowContext` to `transformBodyRow`: canonical `key`, `identityStatus`, `kind` (`product`, `synthetic`, `unknown`), `logicalIndex`, `logicalRowCount`, `headerRowCount`, and render context. FR18 owns pre-cell planning/flat admission. Only admitted flat rows have product kind; unsupported structural models disable flat capabilities before transforms and may expose unknown kind. Missing/unknown context or non-product kind leaves activation inert; legacy callbacks remain unchanged.
-- Parent optional `rowModel: 'flat' | 'tree' | 'grouped' | 'detail' | 'custom'` and `wholeRowOwner: 'activation' | 'expansion' | 'navigation'` declarations decide admission without names/order. Undeclared custom body modifiers require an explicit parent-compatible declaration. This module does not invent its syntax.
-- Parent FR19-FR21 and DEC-5 own the shared both-axis viewport, virtual full logical metadata, and sole paint coordination. Required source changes remain unimplemented evidence targets, not proof from existing parallel selection writers.
-- Parent and module contracts define joint flat selection, sorting, filtering, sticky columns, context menus, row indices, loading and windowing admission. Non-flat legacy plugins retain their own behavior outside activation admission.
-- Shared modality, public API, theming, and `spec:AST-009` evidence rules retain the owners listed in frontmatter. Parent additions remain owned by `component:Table`.
+- `component:Table` FR16 与 DEC-4 拥有全数据集身份校验与去重诊断。新能力路径用带类型的内部 React 键区分函数键 `0` 与 `"0"`；激活仍发出原始规范键。旧有键行为不变。
+- 父级 FR17 向 `transformBodyRow` 提供可选的第四个 `TableRowContext`：规范 `key`、`identityStatus`、`kind`（`product`、`synthetic`、`unknown`）、`logicalIndex`、`logicalRowCount`、`headerRowCount` 以及渲染上下文。FR18 拥有单元格前的计划/扁平准入。只有已准入的扁平行具有产品种类；不受支持的结构模型会在变换之前禁用扁平能力，并且可能暴露未知种类。缺失/未知的上下文或非产品种类会让激活保持惰性；旧回调保持不变。
+- 父级可选的 `rowModel: 'flat' | 'tree' | 'grouped' | 'detail' | 'custom'` 与 `wholeRowOwner: 'activation' | 'expansion' | 'navigation'` 声明在没有名称/顺序的情况下决定准入。未声明的自定义 body 修饰符需要显式的父级兼容声明。本模块不发明其语法。
+- 父级 FR19-FR21 与 DEC-5 拥有共享的双轴视口、虚拟的完整逻辑元数据以及唯一的绘制协调。必需的源码改动仍是未实现的证据目标，而不是来自既有并行选区写入者的证明。
+- 父级与模块契约共同定义联合的扁平选区、排序、过滤、固定列、上下文菜单、行索引、加载与窗口化准入。非扁平的旧插件在激活准入之外保留其自身行为。
+- 共享模态、公共 API、主题与 `spec:AST-009` 证据规则保留 frontmatter 中所列的所有者。父级新增内容仍归 `component:Table` 拥有。
 
 ## Verification map
 
-Every entry below is a required verification target, not completed implementation
-evidence; the frontmatter file list retains those targets without claiming they exist or pass.
+下文每个条目都是必需的验证目标，而不是已完成的实现证据；frontmatter 的文件列表保留这些目标，但不声称它们已存在或通过。
 
-| Contract                    | Verification                                                                                             | Representative states                                                                                                                                                                     | Mutation or failure expectation                                                                                                             |
-| --------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1-FR4, FR11-FR12, PR1-PR4 | Pending activation unit suite and `Table.perf.test.tsx`: identities, counts, controlled state, lifetime. | Null/missing/invalid/duplicate keys; property `"42"` versus `42`; function `0` versus `"0"`; eligibility flips; recycle.                                                                  | Churn, coercion, multiple active duplicates, ineligible presentation, unrelated rerenders, more than two key-only mutations, or leaks fail. |
-| FR5-FR9, ORD1-ORD7          | Pending unit/browser composition and shipped interaction-path tests.                                     | Primary/auxiliary click, Enter/Space/repeat; readonly/editable/portal controls; selection ranges anchored outside but intersecting the row; unrelated selection; cancellation.            | Replacing handlers, duplicate requests, repeated Space scrolling, nested activation, anchor-only suppression, or lost prior `-1` fails.     |
-| FR10, DD1, AR5-AR6          | Pending canonical visual coverage and browser evidence.                                                  | All six matrix rows, both update orders, highlight toggles, hover/focus, light/dark/forced-colors, LTR/RTL, normal/pinned.                                                                | Order-dependent wash, hidden/colour-only marker, focus used as active cue, or pinned mismatch fails.                                        |
-| AR1-AR7                     | Pending `TableActivation.a11y.chromium.spec.ts`, DOM/tree, axe, browser keyboard/touch.                  | Small/large flat tables; default, roving, programmatic focus; controls; active/null/ineligible/removed key, single current-state exposure, incompatible pre-existing current-state owner. | False roles/state, unavailable shortcuts, incoherent focus order, or descendant activation fails.                                           |
-| Plugin composition          | Pending focused integration plus existing selection/sort/filter/sticky/context-menu suites.              | Both plugin orders; flat load/window combination; non-flat and custom modifiers; competing owners.                                                                                        | Admission by names/order, unsupported new capability, or lost legacy handlers/props fails.                                                  |
-| Public API and docs         | Pending compile fixture, inventory, `.doc.mjs`, Storybook, and recipe.                                   | Three-field generic controlled config; explicit identity; all press paths.                                                                                                                | A second extractor, public mode/theme state, missing export, or hover promise fails.                                                        |
-| Structural ownership        | `pnpm check:knowledge` structural check; implementation evidence is separate.                            | Current module, parent backlink, schema 3/template 4.                                                                                                                                     | Missing, orphaned, duplicate, wrong-kind, or misnamed record must fail.                                                                     |
+| Contract                    | Verification                                                                       | Representative states                                                                                                    | Mutation or failure expectation                                                                |
+| --------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| FR1-FR4, FR11-FR12, PR1-PR4 | 待补充的激活单元测试套件与 `Table.perf.test.tsx`：身份、计数、受控状态、生命周期。 | 空/缺失/无效/重复键；属性 `"42"` 与 `42`；函数 `0` 与 `"0"`；资格翻转；回收。                                            | 频繁变动、强制转换、多个活动重复项、不合格呈现、无关重渲染、超过两次仅键改动或泄漏均判定失败。 |
+| FR5-FR9, ORD1-ORD7          | 待补充的单元/浏览器组合测试与已发布的交互路径测试。                                | 主体/辅助点击，Enter/Space/重复；只读/可编辑/portal 控件；锚点在行外但与本行相交的选中范围；无关选区；取消。             | 替换处理器、重复请求、重复 Space 滚动、嵌套激活、仅按锚点抑制，或丢失先前的 `-1` 均判定失败。  |
+| FR10, DD1, AR5-AR6          | 待补充的规范视觉覆盖与浏览器证据。                                                 | 所有六个矩阵行、两种更新顺序、高亮切换、悬停/焦点、浅色/深色/强制颜色、LTR/RTL、普通/固定。                              | 依赖顺序的淡染、隐藏或仅靠颜色的标记、用焦点作为活动提示，或固定状态不匹配均判定失败。         |
+| AR1-AR7                     | 待补充的 `TableActivation.a11y.chromium.spec.ts`、DOM/树、axe、浏览器键盘/触摸。   | 小型/大型扁平表格；默认、roving、编程焦点；控件；活动/空/不合格/已移除键、单一当前状态暴露、不兼容的既有当前状态所有者。 | 虚假角色/状态、不可用快捷键、不一致的焦点顺序，或后代激活均判定失败。                          |
+| Plugin composition          | 待补充的聚焦集成测试，加上既有的选区/排序/过滤/固定/上下文菜单套件。               | 两种插件顺序；扁平加载/窗口组合；非扁平与自定义修饰符；竞争所有者。                                                      | 按名称/顺序准入、不受支持的新能力，或丢失旧处理器/props 均判定失败。                           |
+| Public API and docs         | 待补充的编译测试夹具、清单、`.doc.mjs`、Storybook 与 recipe。                      | 三字段的泛型受控配置；显式身份；所有按压路径。                                                                           | 第二个提取器、公共模式/主题状态、缺失导出，或悬停承诺均判定失败。                              |
+| Structural ownership        | `pnpm check:knowledge` 结构检查；实现证据另行处理。                                | 当前模块、父级反向链接、schema 3/template 4。                                                                            | 缺失、孤立、重复、种类错误或命名错误的记录必须判定失败。                                       |
 
 ## Decision log
 
 ### DEC-1 — Controlled canonical identity and eligibility
 
-**Reference:** `module:Table/useTableActivation/DEC-1`
-**Decider:** `humbertovirtudes`, `2026-11-03`
+**参考：** `module:Table/useTableActivation/DEC-1`
 
-One caller-owned active key matches and emits the parent's validated canonical key
-strictly. Eligibility controls both requests and presentation without changing the
-caller key. Missing, invalid, unknown, and duplicate identity is inert.
-Rejected: a second extractor, index fallback, activation-side coercion, or deriving active state from selection/focus.
+**决策者：** `humbertovirtudes`，`2026-11-03`
+
+一个由调用方拥有的活动键严格匹配并发出父级已校验的规范键。资格判定同时控制请求与呈现，但不改变调用方键。缺失、无效、未知与重复身份均保持惰性。已否决：第二个提取器、索引兜底、激活侧强制转换，或从选区/焦点推导活动状态。
 
 ### DEC-2 — Native rows support press activation
 
-**Reference:** `module:Table/useTableActivation/DEC-2`
-**Decider:** `humbertovirtudes`, `2026-11-03`
+**参考：** `module:Table/useTableActivation/DEC-2`
 
-Eligible rows retain native semantics, default sequential focus only when no earlier
-focus owner exists, and composed Enter/Space shortcuts. Focus remains independent.
-Rejected: row button/link roles, pointer-only operation, `aria-current="page"`, or inferred selection attributes.
+**决策者：** `humbertovirtudes`，`2026-11-03`
+
+合格行保留原生语义，仅当不存在更早的焦点所有者时才默认顺序焦点，并使用组合的 Enter/Space 快捷键。焦点保持独立。已否决：行 button/link 角色、仅指针操作、`aria-current="page"`，或推断的选区属性。
 
 ### DEC-3 — Selection-dominant fill and a separate active marker
 
-**Reference:** `module:Table/useTableActivation/DEC-3`
-**Decider:** `humbertovirtudes`, `2026-11-03`
+**参考：** `module:Table/useTableActivation/DEC-3`
 
-The six-state matrix fixes fill precedence; active state has an inline-start
-non-colour marker and matching `aria-current="true"` on the native row. The same
-controlled key drives both visual and computed semantic exposure, even when
-selection wins the fill. One parent resolver coordinates selection, activation and
-pinned overlays in either update order. No public `active` theme state is admitted
-in v1. Navigation-specific current values and selection state remain independent.
-Rejected: competing imperative paint writers, a focus-only active cue, or a new activation target/column.
+**决策者：** `humbertovirtudes`，`2026-11-03`
+
+六状态矩阵固定了填充优先级；活动状态具有行内起始的非颜色标记，以及原生行上匹配的 `aria-current="true"`。同一个受控键同时驱动视觉暴露与计算语义暴露，即使选区在填充上胜出。一个父级解析器以任一更新顺序协调选区、激活与固定覆盖层。v1 不接纳任何公共 `active` 主题状态。导航专用的当前值与选区状态保持独立。已否决：竞争的命令式绘制写入者、仅靠焦点的活动提示，或新的激活目标/列。
 
 ### DEC-4 — Earlier handlers and gesture boundaries precede activation
 
-**Reference:** `module:Table/useTableActivation/DEC-4`
-**Decider:** `humbertovirtudes`, `2026-11-03`
+**参考：** `module:Table/useTableActivation/DEC-4`
 
-Non-owning handlers run first and may cancel. Shared interactive guards, portal
-containment gate primary-click and Enter/Space. Selected-range intersection
-suppresses clicks only; standing selection does not block keyboard activation.
-Rejected: hover activation, copied selector catalogs, whole-navigation-hook imports, or anchor-only selection checks.
+**决策者：** `humbertovirtudes`，`2026-11-03`
+
+非归属处理器先运行，且可以取消。共享交互守卫与 portal 包含关系对主体点击和 Enter/Space 设门。选中范围相交只抑制点击；持续存在的选区不阻止键盘激活。已否决：悬停激活、复制的选择器目录、整份导航 hook 导入，或仅按锚点的选区检查。
 
 ### DEC-5 — Flat admission and declarative ownership
 
-**Reference:** `module:Table/useTableActivation/DEC-5`
-**Decider:** `humbertovirtudes`, `2026-11-03`
+**参考：** `module:Table/useTableActivation/DEC-5`
 
-The parent context and declarations admit flat product rows with one whole-row
-owner. Non-flat, unknown custom-body, and competing-owner combinations neutralise
-activation deterministically while preserving legacy plugin behavior.
-Rejected: inferring row kind/ownership from plugin names, insertion order, key prefixes, or DOM markers.
+**决策者：** `humbertovirtudes`，`2026-11-03`
+
+父级上下文与声明准入带有单一整行所有者的扁平产品行。非扁平、未知自定义 body 与竞争所有者的组合会确定性地中和激活，同时保留旧插件行为。已否决：从插件名称、插入顺序、键前缀或 DOM 标记推断行种类/所有权。
 
 ## Open questions
 
-None. The normative contract is complete. Implementation and release verification
-remain separate from contract approval.
+无。规范性契约已完成。实现与发布验证仍与契约批准相互独立。
 
 ## Content boundary
 
-This record links rather than duplicates consumer examples, parent protocol, shared modality/theming rules, audit results, implementation plans, or product selection/navigation/detail/loading ownership.
+本记录以链接方式引用而不复制使用方示例、父级协议、共享模态/主题规则、审计结果、实现计划，或产品选区/导航/详情/加载的所有权。

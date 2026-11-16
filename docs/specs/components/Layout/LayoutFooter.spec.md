@@ -38,146 +38,129 @@ system_specs: [spec:AST-038]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `children`, `hasDivider`, `height`, `padding`, `label`, `role`, root `BaseProps`, and a root `ref`.                                     |
-| Behavior                | A non-shrinking footer region whose inner wrapper applies and publishes the Layout inset and aligns to the Layout's content width.      |
-| End-user impact         | People see a footer that keeps its height below scrolling content, with content aligned to the page's readable width.                   |
-| Builder impact          | None; the record describes shipped behavior.                                                                                            |
-| Compatibility/readiness | Released behavior recorded as current; no API, default, or output changes. No implementation gap is open (Current-state impact).        |
-| Review checks           | Reject a footer that shrinks, a published inset that differs from the applied padding, an inferred landmark, or a lost divider default. |
-| Governing rules         | `family:layout-regions` FR1, FR4–FR6, FR8; `architecture:container-padding`; `architecture:public-component-api` INV5–INV8.             |
+| 方面          | 契约                                                                                                                         |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 公开契约      | `children`、`hasDivider`、`height`、`padding`、`label`、`role`、根级 `BaseProps`，以及根级 `ref`。                           |
+| 行为          | 一个不收缩的页脚区域，其内部包装元素应用并发布 Layout 的内边距，并对齐到 Layout 的内容宽度。                                 |
+| 最终用户影响  | 用户看到的页脚在滚动内容下方保持自身高度，其内容对齐到页面的可读宽度。                                                       |
+| 构建者影响    | 无；本记录描述的是已发布行为。                                                                                               |
+| 兼容性/就绪度 | 已发布行为记录为现行；无 API、默认值或输出变更。没有未决的实现缺口（当前状态影响）。                                         |
+| 审查检查      | 拒绝以下情况：页脚收缩、发布的内边距与应用的内边距不一致、推断出的地标，或丢失的分隔线默认值。                               |
+| 管辖规则      | `family:layout-regions` FR1、FR4–FR6、FR8；`architecture:container-padding`；`architecture:public-component-api` INV5–INV8。 |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；下方正文具有权威性。
 
 ## Intent
 
-LayoutFooter is the optional footer region a caller places in a Layout's
-`footer` slot. It owns the footer's size, inset, divider, and caller-supplied
-landmark semantics; the caller owns its content.
+LayoutFooter 是使用方放置在 Layout 的 `footer` 插槽中的可选页脚区域。它拥有页脚的尺寸、内边距、分隔线以及使用方提供的地标语义；而内容由使用方拥有。
 
-Consumer syntax and examples belong in `LayoutFooter.doc.mjs`.
+使用方语法与示例属于 `LayoutFooter.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes` — no divider unless a Layout default says
-  so, automatic inset, no landmark role.
-- Compatibility class: records shipped behavior; no public prop, default, DOM,
-  target, or styling output changes.
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 保留的发布默认值：`yes` —— 除非 Layout 的默认值另有规定，否则无分隔线；自动内边距；无地标角色。
+- 兼容性类别：记录已发布行为；无公开 prop、默认值、DOM、target 或样式输出的变更。
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方的迁移说明属于使用方文档与发布说明。
 
 ## Current-state impact
 
-None.
+无。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The footer root, which carries the `layout-footer` target that
-  `component:Layout` maps, and its inner padding wrapper.
-- Footer height, divider, inset, and caller-supplied role and label.
+- 页脚根元素，它承载 `component:Layout` 所映射的 `layout-footer` target，以及其内部的 padding 包装元素。
+- 页脚高度、分隔线、内边距，以及使用方提供的 role 与 label。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Slot placement, the Layout-edge inset, content width, and the divider
-  default — owned by `component:Layout`.
-- Footer content and its meaning — owned by the caller.
+- 插槽位置、Layout 边缘内边距、内容宽度与分隔线默认值 —— 由 `component:Layout` 拥有。
+- 页脚内容及其含义 —— 由使用方拥有。
 
 ## Public concepts
 
-| Concept  | Closed values or states               | Meaning                                                                     | Availability by variant/orientation/state | Default                   | Owner                    | Stability | Invalid-value behavior           |
-| -------- | ------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------- | ------------------------- | ------------------------ | --------- | -------------------------------- |
-| Divider  | `true`, `false`, unset                | Draws a line on the footer's block-start edge.                              | Always                                    | Layout default, else none | `component:LayoutFooter` | Stable    | —                                |
-| Height   | number (px); CSS length string; unset | Fixes the footer's block size.                                              | Always                                    | content height            | `component:LayoutFooter` | Stable    | —                                |
-| Inset    | spacing step; `0`; unset              | Uniform padding that replaces the automatic inset; `0` is full bleed.       | Always                                    | automatic                 | `component:LayoutFooter` | Stable    | Closed union; rejected by types. |
-| Landmark | caller `role` and `label`             | Exposes the footer as the role the caller names, with that accessible name. | Always                                    | none                      | caller                   | Stable    | —                                |
+| 概念   | 封闭取值或状态                       | 含义                                             | 按变体/方向/状态的可适用性 | 默认值                | 所有者                   | 稳定性 | 无效值行为                 |
+| ------ | ------------------------------------ | ------------------------------------------------ | -------------------------- | --------------------- | ------------------------ | ------ | -------------------------- |
+| 分隔线 | `true`、`false`、未设置              | 在页脚的块起始边缘绘制一条线。                   | 始终                       | Layout 默认值，否则无 | `component:LayoutFooter` | 稳定   | —                          |
+| 高度   | number（px）；CSS 长度字符串；未设置 | 固定页脚的块尺寸。                               | 始终                       | 内容高度              | `component:LayoutFooter` | 稳定   | —                          |
+| 内边距 | 间距步进；`0`；未设置                | 替换自动内边距的统一内边距；`0` 表示满出血。     | 始终                       | 自动                  | `component:LayoutFooter` | 稳定   | 封闭联合类型；由类型拒绝。 |
+| 地标   | 使用方的 `role` 与 `label`           | 以使用方指定的角色暴露页脚，并使用该可访问名称。 | 始终                       | 无                    | 使用方                   | 稳定   | —                          |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Basis                                                                                   |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| FR1 | LayoutFooter renders a root `div` carrying the `layout-footer` target that does not shrink, around an inner `div` that holds the children, has the Layout's content width as its maximum width, and centers within the root. `height` fixes the root's block size, with numbers as pixels.                                                                                                                                                                                                                                                                                                           | Current source and tests                                                                |
-| FR2 | Without `padding`, the inner wrapper's inline and block-end padding is the Layout-edge inset and its block-start padding is the inner inset, where the Layout-edge inset comes from the Layout's `padding`, else the nearest padding container, and the inner inset from the nearest padding container (Card, Section, Dialog, Drawer, or BottomSheet), each spacing step 4 otherwise. A `padding` step replaces all four edges, and `0` removes them. The wrapper publishes container-padding values equal to the padding it applies.                                                               | Current source and tests; `family:layout-regions` FR4; `architecture:container-padding` |
-| FR3 | A divider draws a 1px solid `--color-border` line on the root's block-start edge and reflects `data-divider="true"`. `hasDivider` decides; when unset, the nearest Layout `defaultHasDividers` in the same layer decides (the default stops at a layer boundary, `spec:AST-038` FR7); otherwise there is no divider. A footer without a divider lets the middle row above it collapse its block-end spacing. The collapse stops at each Layout, so a Layout nested in that middle row, including inside a Dialog, Drawer, or BottomSheet opened from it, keeps its own spacing (`spec:AST-038` FR7). | Current source and tests; `family:layout-regions` FR6                                   |
-| FR4 | `role` and `label` set the root's `role` and `aria-label`; LayoutFooter adds no role of its own.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Current source and tests; `family:layout-regions` FR8                                   |
-| FR5 | `ref` reaches the root. Supported DOM, data, ARIA, and event props reach the root, `xstyle`, `className`, and `style` compose after component styles, and the reflected `data-divider` stays component-owned: a caller's `data-divider` never replaces it, so the neighbouring spacing collapse always follows the divider state (`architecture:public-component-api` INV5).                                                                                                                                                                                                                         | Current source and tests; `architecture:public-component-api` INV5–INV8                 |
+| ID  | 不变式                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | 依据                                                                          |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| FR1 | LayoutFooter 渲染一个不收缩的根 `div`，它承载 `layout-footer` target，并围绕一个容纳 children 的内部 `div`；该内部元素以 Layout 的内容宽度作为其最大宽度，并在根元素内居中。`height` 固定根元素的块尺寸，数字按像素处理。                                                                                                                                                                                                                                                    | 当前源码与测试                                                                |
+| FR2 | 在没有 `padding` 时，内部包装元素的行内方向与块结束方向内边距为 Layout 边缘内边距，其块起始方向内边距为内层内边距；其中 Layout 边缘内边距来自 Layout 的 `padding`，否则来自最近的 padding 容器，而内层内边距来自最近的 padding 容器（Card、Section、Dialog、Drawer 或 BottomSheet），两者在都没有时各自取间距步进 4。`padding` 步进会替换全部四个边缘，`0` 会移除它们。该包装元素发布的 container-padding 值等于它所应用的内边距。                                           | 当前源码与测试；`family:layout-regions` FR4；`architecture:container-padding` |
+| FR3 | 分隔线在根元素的块起始边缘绘制一条 1px solid `--color-border` 的线，并反映为 `data-divider="true"`。由 `hasDivider` 决定；未设置时，由同一层内最近的 Layout `defaultHasDividers` 决定（该默认值在层边界处停止，`spec:AST-038` FR7）；否则没有分隔线。没有分隔线的页脚会让其上方中间行折叠其块结束方向间距。该折叠在每个 Layout 处停止，因此嵌套在该中间行中的 Layout（包括从其中打开的 Dialog、Drawer 或 BottomSheet 内部的 Layout）会保留自己的间距（`spec:AST-038` FR7）。 | 当前源码与测试；`family:layout-regions` FR6                                   |
+| FR4 | `role` 与 `label` 设置根元素的 `role` 与 `aria-label`；LayoutFooter 不自行添加任何 role。                                                                                                                                                                                                                                                                                                                                                                                    | 当前源码与测试；`family:layout-regions` FR8                                   |
+| FR5 | `ref` 到达根元素。受支持的 DOM、data、ARIA 与事件 props 到达根元素，`xstyle`、`className` 与 `style` 在组件样式之后合成，并且反映的 `data-divider` 归组件所有：使用方的 `data-divider` 永远不会替换它，因此相邻的间距折叠始终跟随分隔线状态（`architecture:public-component-api` INV5）。                                                                                                                                                                                    | 当前源码与测试；`architecture:public-component-api` INV5–INV8                 |
 
 ### Allowed variation
 
-- **AV1 — Content.** Any caller content may fill the footer.
-- **AV2 — Landmark.** The caller chooses whether the footer is a landmark and
-  which one.
+- **AV1 — 内容。** 任何使用方内容都可以填充页脚。
+- **AV2 — 地标。** 使用方决定页脚是否为地标，以及是哪一个地标。
 
 ### Representative states
 
-| State                | Required invariant                                      | Allowed variation |
-| -------------------- | ------------------------------------------------------- | ----------------- |
-| Default in Layout    | Automatic inset, no divider, no role.                   | Content.          |
-| With divider         | Block-start line and `data-divider="true"`.             | —                 |
-| Explicit padding     | Uniform padding, published to children.                 | Step.             |
-| Contentinfo landmark | `role="contentinfo"` and the caller's name on the root. | Name.             |
+| 状态                | 必需不变式                                         | 允许的变化 |
+| ------------------- | -------------------------------------------------- | ---------- |
+| Layout 中的默认状态 | 自动内边距，无分隔线，无 role。                    | 内容。     |
+| 带分隔线            | 块起始线以及 `data-divider="true"`。               | —          |
+| 显式内边距          | 统一内边距，发布给子元素。                         | 步进。     |
+| Contentinfo 地标    | 根元素上的 `role="contentinfo"` 以及使用方的名称。 | 名称。     |
 
 ### Transformation and precedence order
 
-- **ORD1 — Divider.** `hasDivider` → Layout `defaultHasDividers` → none.
-- **ORD2 — Padding.** `padding` → the automatic inset.
+- **ORD1 — 分隔线。** `hasDivider` → Layout `defaultHasDividers` → 无。
+- **ORD2 — 内边距。** `padding` → 自动内边距。
 
 ### Performance and resources
 
-- **PR1 — No external lifecycle.** LayoutFooter reads the divider default from
-  its Layout and adds no listener, observer, timer, or measurement.
+- **PR1 — 无外部生命周期。** LayoutFooter 从其 Layout 读取分隔线默认值，并且不添加任何监听器、观察器、定时器或测量。
 
 ## Accessibility contract
 
-- **AR1 — Explicit landmarks only.** The footer is a landmark only when the
-  caller supplies `role`, and it is named only by the caller's `label`
-  (`family:layout-regions` FR8).
+- **AR1 — 仅显式地标。** 仅当使用方提供 `role` 时，页脚才是地标；并且它仅由使用方的 `label` 命名（`family:layout-regions` FR8）。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                        | Representation authority | Hierarchy role | Component contract |
-| ---------------- | --------------------------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Footer           | A fixed footer band with an optional block-start divider. | Current source and docs  | Supporting     | FR1–FR3            |
+| 结构或状态 | 设计要求                         | 表示权威       | 层级角色 | 组件契约 |
+| ---------- | -------------------------------- | -------------- | -------- | -------- |
+| 页脚       | 带可选块起始分隔线的固定页脚带。 | 当前源码与文档 | 支撑性   | FR1–FR3  |
 
-Theming: the root carries the `layout-footer` target, which `Layout.doc.mjs`
-declares and `component:Layout` maps. `LayoutFooter.doc.mjs` declares no anatomy
-of its own, so no anatomy-theming block is declared here.
+主题化：根元素承载 `layout-footer` target，它由 `Layout.doc.mjs` 声明，并由 `component:Layout` 映射。`LayoutFooter.doc.mjs` 不声明自己的结构，因此此处不声明任何结构-主题化块。
 
 ## Family and system relationships
 
-- `family:layout-regions` owns region boundaries, padding replacement, divider
-  spacing, and landmark rules; FR2–FR4 and AR1 apply them.
-- `architecture:container-padding` owns inset publication; FR2 applies it.
-- `component:Layout` owns slot placement, the Layout-edge inset, content
-  width, the divider default, and the `layout-footer` target mapping.
-- `architecture:public-component-api` owns caller-input routing; FR5 applies
-  it.
+- `family:layout-regions` 拥有区域边界、内边距替换、分隔线间距与地标规则；FR2–FR4 与 AR1 应用它们。
+- `architecture:container-padding` 拥有内边距发布；FR2 应用它。
+- `component:Layout` 拥有插槽位置、Layout 边缘内边距、内容宽度、分隔线默认值，以及 `layout-footer` target 映射。
+- `architecture:public-component-api` 拥有使用方输入的转发；FR5 应用它。
 
 ## Verification map
 
-| Contract  | Verification                                                                                                                                                                                                                                                                                                                                                 | Representative states                                                                           | Mutation or failure expectation                                                                                                                                                                                                                                                                                                                                  | Audit section                      |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| FR1       | `LayoutSlots.test.tsx` class and `applies a numeric height as pixels on the root` tests; `contentWidth.test.tsx` LayoutFooter inner-wrapper and divider tests; `headerFooterXstyle.test.tsx` `keeps the own styles that xstyle does not set` (non-shrinking root)                                                                                            | Default; numeric height; content width                                                          | A lost `layout-footer` class, a missing pixel height, children placed on the root instead of the inner wrapper, or a divider off the outer element fails. A footer root that shrinks fails. Gap: the content-width maximum and centering have no check.                                                                                                          | `audit:LayoutFooter/layout`        |
-| FR2, ORD2 | `LayoutHeaderFooterEdges.a11y.browser.spec.ts` per-case insets and published values                                                                                                                                                                                                                                                                          | Automatic, explicit, and zero padding                                                           | An inset that differs from the expected step on any edge (automatic, `padding`, full bleed, or a nested Layout), or a published value that differs from the applied padding, fails. Gap: the automatic inset taken from a surrounding Card, Section, Dialog, Drawer or BottomSheet has no named check; the edge spec renders each case in a plain frame.         | `audit:LayoutFooter/layout`        |
-| FR3, ORD1 | `LayoutSlots.test.tsx` and `Layout.test.tsx` divider tests, including `an explicit hasDivider={false} on a footer overrides the context default` and `stops the footer default at a layer boundary`; `LayoutHeaderFooterEdges.a11y.browser.spec.ts` line paint and the collapse of the content above the footer, including where it stops at a nested Layout | Default; `hasDivider`; Layout default; explicit `false`; Layout default across a layer boundary | A missing or unexpected `data-divider`, an ignored Layout default, an explicit `false` that loses, or a Layout default that crosses a layer boundary fails. A line that is not 1px solid `--color-border`, a line without `data-divider="true"`, or content above the footer that does not collapse without a divider, or collapses past a nested Layout, fails. | `audit:LayoutFooter/layout`        |
-| FR4, AR1  | `LayoutSlots.test.tsx` landmark and `exposes no role or name without a caller role` tests; `Layout.a11y.test.tsx` and `Layout.a11y.chromium.spec.ts` `footer-contentinfo` state                                                                                                                                                                              | Caller `contentinfo` role and label; no caller role                                             | A lost role or name fails, including at the accessibility tree. A footer without a caller `role` that exposes a role or name fails.                                                                                                                                                                                                                              | `audit:LayoutFooter/accessibility` |
-| FR5       | `LayoutSlots.test.tsx` ref, `passes className, style, DOM, data, and event props to the root`, and `keeps data-divider when a caller passes its own value` tests; `headerFooterXstyle.test.tsx` `xstyle` merge-order tests; `LayoutHeaderFooterEdges.a11y.browser.spec.ts` `caller-attribute` case                                                           | Ref; caller class, style, DOM, data, and event props; caller `data-divider`                     | A ref on another element, a dropped caller prop, or a caller `data-divider` that replaces or removes the reflected value fails. An `xstyle` that loses to the footer's own styles, or a caller `data-divider` that changes the spacing above the footer, fails.                                                                                                  | `audit:LayoutFooter/api`           |
-| PR1       | Source review                                                                                                                                                                                                                                                                                                                                                | Every state                                                                                     | Gap: no automated check fails if LayoutFooter adds a listener, timer, or measurement.                                                                                                                                                                                                                                                                            | `audit:LayoutFooter/behavior`      |
+| 契约      | 验证                                                                                                                                                                                                                                                                                                         | 代表性状态                                                                  | 变异或失败预期                                                                                                                                                                                                                                                  | 审计小节                           |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| FR1       | `LayoutSlots.test.tsx` 的 class 测试与 `applies a numeric height as pixels on the root` 测试；`contentWidth.test.tsx` 的 LayoutFooter 内部包装元素与分隔线测试；`headerFooterXstyle.test.tsx` 的 `keeps the own styles that xstyle does not set`（不收缩的根元素）                                           | 默认；数值高度；内容宽度                                                    | 丢失 `layout-footer` class、缺少像素高度、children 被放在根元素而非内部包装元素上，或分隔线偏离外层元素，均判为失败。页脚根元素收缩也判为失败。缺口：内容宽度上限与居中没有任何检查。                                                                           | `audit:LayoutFooter/layout`        |
+| FR2, ORD2 | `LayoutHeaderFooterEdges.a11y.browser.spec.ts` 的逐用例内边距与发布值                                                                                                                                                                                                                                        | 自动、显式与零内边距                                                        | 任一边缘上的内边距与预期步进不一致（自动、`padding`、满出血或嵌套 Layout），或发布值与所应用的内边距不一致，均判为失败。缺口：取自外层 Card、Section、Dialog、Drawer 或 BottomSheet 的自动内边距没有具名检查；边缘规格会在普通 frame 中渲染每个用例。           | `audit:LayoutFooter/layout`        |
+| FR3, ORD1 | `LayoutSlots.test.tsx` 与 `Layout.test.tsx` 的分隔线测试，包括 `an explicit hasDivider={false} on a footer overrides the context default` 与 `stops the footer default at a layer boundary`；`LayoutHeaderFooterEdges.a11y.browser.spec.ts` 的线绘制以及页脚上方内容的折叠，包括其在嵌套 Layout 处停止的情形 | 默认；`hasDivider`；Layout 默认值；显式 `false`；跨层边界的 Layout 默认值   | 缺失或意外的 `data-divider`、被忽略的 Layout 默认值、落败的显式 `false`，或跨越层边界的 Layout 默认值，均判为失败。不是 1px solid `--color-border` 的线、没有 `data-divider="true"` 的线，或在无分隔线时页脚上方内容不折叠、或折叠越过嵌套 Layout，均判为失败。 | `audit:LayoutFooter/layout`        |
+| FR4, AR1  | `LayoutSlots.test.tsx` 的地标测试与 `exposes no role or name without a caller role` 测试；`Layout.a11y.test.tsx` 与 `Layout.a11y.chromium.spec.ts` 的 `footer-contentinfo` 状态                                                                                                                              | 使用方的 `contentinfo` role 与 label；无使用方 role                         | 丢失 role 或名称判为失败，包括在可访问性树上。没有使用方 `role` 却暴露 role 或名称的页脚判为失败。                                                                                                                                                              | `audit:LayoutFooter/accessibility` |
+| FR5       | `LayoutSlots.test.tsx` 的 ref 测试、`passes className, style, DOM, data, and event props to the root` 测试与 `keeps data-divider when a caller passes its own value` 测试；`headerFooterXstyle.test.tsx` 的 `xstyle` 合并顺序测试；`LayoutHeaderFooterEdges.a11y.browser.spec.ts` 的 `caller-attribute` 用例 | Ref；使用方的 class、style、DOM、data 与事件 props；使用方的 `data-divider` | ref 落在其他元素上、使用方 prop 被丢弃，或使用方 `data-divider` 替换或移除了所反映的值，均判为失败。`xstyle` 输给页脚自身样式，或使用方 `data-divider` 改变了页脚上方间距，均判为失败。                                                                         | `audit:LayoutFooter/api`           |
+| PR1       | 源码审查                                                                                                                                                                                                                                                                                                     | 每个状态                                                                    | 缺口：若 LayoutFooter 添加监听器、定时器或测量，没有任何自动化检查会失败。                                                                                                                                                                                      | `audit:LayoutFooter/behavior`      |
 
 ## Decision log
 
-None recorded. The record describes shipped behavior.
+无记录。本记录描述的是已发布行为。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, Layout slot rules, or container-padding
-mechanics. It links to their owners.
+本文件不重复使用方 prop 表/示例、当前审计结果、实现步骤、Layout 插槽规则或 container-padding 机制。它链接到它们的拥有者。

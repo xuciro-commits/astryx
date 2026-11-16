@@ -19,251 +19,193 @@ references: [architecture:public-component-api, spec:AST-036/DEC-3]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                                                                                                                                                 |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `createMarkdownRemarkTransform(plugin, ...settings)` in the separate `@astryxdesign/core/Markdown/remark` entry point returns one Markdown transform for `createMarkdownPlugin()`. It accepts a conventional Unified/Remark plugin type as well as an Astryx-authored one.                                                                               |
-| Behavior                | Each invocation runs one synchronous transform-only Remark plugin over a fresh mutable copy of the canonical tree with an isolated constrained file, then accepts a lossless round trip or rejects it.                                                                                                                                                   |
-| End-user impact         | Readers see either the plugin's supported transformation or the last valid readable document; unsupported behavior can never silently drop, approximate, or forge document content.                                                                                                                                                                      |
-| Builder impact          | Builders who import nothing are unaffected. An opt-in builder imports the adapter, proves one plugin compatible with fixtures, and reads one diagnostic when a plugin leaves the profile.                                                                                                                                                                |
-| Compatibility/readiness | Additive and opt-in; absent from Markdown's entry point and from parser-only or server bundles unless imported. Compatibility is per plugin evidence, never package identity.                                                                                                                                                                            |
-| Review checks           | Reject silent approximation, dropped fields, restored or rebuilt provenance, authored or shifted positions, edited Astryx owned nodes, raw-markup channels, async or processor-state plugins, plugin-authored diagnostic text, a refusal a plugin can catch and continue past, an unhandled rejection, or adapter imports inside Markdown or the parser. |
-| Governing rules         | [`spec:AST-036` FR18–FR20, FR24](../../../AST-036/spec.md); [`component:Markdown` FR12–FR16](../Markdown.spec.md); [`architecture:public-component-api`](../../../../architecture/public-component-api.md).                                                                                                                                              |
+| 领域          | 契约                                                                                                                                                                                                                                               |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共契约      | `createMarkdownRemarkTransform(plugin, ...settings)` 位于独立的 `@astryxdesign/core/Markdown/remark` 入口点，为 `createMarkdownPlugin()` 返回一个 Markdown 转换。它既接受常规的 Unified/Remark 插件类型，也接受 Astryx 编写的插件类型。            |
+| 行为          | 每次调用都在规范树的一个新的可变副本上运行一个仅做同步转换的 Remark 插件，并配有一个隔离的受约束文件，然后接受无损往返，或拒绝它。                                                                                                                 |
+| 最终用户影响  | 读者看到的要么是插件支持的转换结果，要么是最后一个有效的可读文档；不受支持的行为绝不会静默丢弃、近似或伪造文档内容。                                                                                                                               |
+| 构建者影响    | 不导入任何内容的构建者不受影响。主动选择启用的构建者会导入适配器，用测试夹具证明某个插件兼容，并在插件超出该配置档时读取一条诊断。                                                                                                                 |
+| 兼容性/就绪度 | 增量式且需主动启用；除非被导入，否则不出现在 Markdown 的入口点，也不出现在仅解析器或服务端 bundle 中。兼容性取决于每个插件的证据，绝不取决于包标识。                                                                                               |
+| 审查检查      | 否决静默近似、字段丢失、被恢复或重建的来源信息、编写或偏移的位置、被编辑的 Astryx 归属节点、原始标记通道、异步或带处理器状态的插件、插件编写的诊断文本、插件可以捕获并继续越过的拒绝、未处理的 rejection，以及 Markdown 或解析器内部的适配器导入。 |
+| 管辖规则      | [`spec:AST-036` FR18–FR20, FR24](../../../AST-036/spec.md); [`component:Markdown` FR12–FR16](../Markdown.spec.md); [`architecture:public-component-api`](../../../../architecture/public-component-api.md)。                                       |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；以下正文具有权威性。
 
 ## Intent
 
-Teams with existing Remark transforms should be able to reuse a compatible one
-inside Astryx Markdown without adopting Unified as a Core runtime, mutating the
-canonical tree, or weakening Core-owned semantics. This module owns that narrow
-compatibility boundary: what the profile accepts, what it refuses, and how a
-refusal stays readable.
+已有 Remark 转换的团队应当能够在 Astryx Markdown 内复用兼容的转换，而不必把 Unified 采纳为 Core 运行时、不必修改规范树，也不必削弱 Core 拥有的语义。本模块拥有这条狭窄的兼容边界：该配置档接受什么、拒绝什么，以及一次拒绝如何保持可读。
 
-Everything outside the profile fails closed. "Remark-compatible" is a claim a
-plugin earns from fixtures in this module's tests, never from a package name.
+该配置档之外的一切都失败关闭。“Remark 兼容”是插件通过本模块测试中的测试夹具赢得的声明，绝不是从包名得来的。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: additive, opt-in, separately imported; no released
-  Markdown, parser, Outline, or bundle behavior changes when the adapter is not
-  imported
-- Migration decision: `spec:AST-036/DEC-3`
+- 已发布的默认值保持不变：`yes`
+- 兼容类别：增量式、需主动启用、单独导入；未导入适配器时，已发布的 Markdown、解析器、Outline 或 bundle 行为均不改变
+- 迁移决策：`spec:AST-036/DEC-3`
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档和发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The adapter's public factory, its mutable Remark tree types, and its
-  constrained file type.
-- The supported-subset round trip and the exact rejection conditions below.
-- The isolated per-invocation copy, file data, and diagnostics.
-- Its own evidence that one real plugin is compatible.
+- 适配器的公共工厂、其可变的 Remark 树类型，以及其受约束文件类型。
+- 受支持子集的往返，以及下文的确切拒绝条件。
+- 每次调用隔离的副本、文件数据和诊断。
+- 它自己关于某个真实插件兼容的证据。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Plugin admission, transform ordering, validation, and failure recovery —
-  owned by `component:Markdown` and `spec:AST-036`.
-- Unified processors, parser or compiler registration, micromark extensions,
-  async pipelines, and `VFile` behavior beyond the constrained file.
-- Heading identity, navigation, resource policy, list, table, and document
-  semantics — owned by Core.
+- 插件准入、转换排序、校验和失败恢复——由 `component:Markdown` 和 `spec:AST-036` 拥有。
+- Unified 处理器、解析器或编译器注册、micromark 扩展、异步流水线，以及受约束文件之外的 `VFile` 行为。
+- 标题标识、导航、资源策略、列表、表格和文档语义——由 Core 拥有。
 
 ## Public API and concepts
 
-| Concept                         | Closed values or states                                            | Meaning                                                                                                                                                                                                               | Default        | Owner                    | Stability |
-| ------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------ | --------- |
-| `createMarkdownRemarkTransform` | `(plugin, ...settings) => MarkdownTransform`                       | Adapts one attacher-shaped Remark plugin; the attacher runs once, its transformer per run.                                                                                                                            | none           | `module:Markdown/remark` | stable    |
-| Adapted tree                    | supported MDAST subset plus Astryx flow image, citation, extension | A fresh mutable copy the plugin may mutate or replace.                                                                                                                                                                | fresh per run  | `module:Markdown/remark` | stable    |
-| Constrained file                | `value`, `data`, `messages`, `message()`, `fail()`, `toString()`   | Readonly source, per-run JSON-like data, and diagnostics.                                                                                                                                                             | empty `data`   | `module:Markdown/remark` | stable    |
-| Accepted plugin type            | `MarkdownRemarkPlugin` or `MarkdownRemarkCompatiblePlugin`         | A new plugin may be authored against typed Astryx trees; a conventional Unified/Remark plugin type is accepted structurally, including a declared async or callback-style transformer that the run time then rejects. | structural     | `module:Markdown/remark` | stable    |
-| Rejection                       | one diagnostic plus the last valid document                        | The fail-closed result for anything outside the profile.                                                                                                                                                              | not applicable | `module:Markdown/remark` | stable    |
+| 概念                            | 封闭取值或状态                                                   | 含义                                                                                                                                              | 默认值         | 所有者                   | 稳定性 |
+| ------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------ | ------ |
+| `createMarkdownRemarkTransform` | `(plugin, ...settings) => MarkdownTransform`                     | 适配一个 attacher 形态的 Remark 插件；attacher 运行一次，其 transformer 每次运行执行。                                                            | 无             | `module:Markdown/remark` | 稳定   |
+| 适配后的树                      | 受支持的 MDAST 子集，加上 Astryx 流式图片、引用、扩展            | 插件可以修改或替换的一个新的可变副本。                                                                                                            | 每次运行新副本 | `module:Markdown/remark` | 稳定   |
+| 受约束文件                      | `value`、`data`、`messages`、`message()`、`fail()`、`toString()` | 只读的源代码、每次运行的类 JSON 数据，以及诊断。                                                                                                  | 空 `data`      | `module:Markdown/remark` | 稳定   |
+| 接受的插件类型                  | `MarkdownRemarkPlugin` 或 `MarkdownRemarkCompatiblePlugin`       | 新插件可以针对带类型的 Astryx 树编写；常规的 Unified/Remark 插件类型按结构被接受，包括声明了异步或回调式 transformer 的情况，而运行时会拒绝后者。 | 结构性         | `module:Markdown/remark` | 稳定   |
+| 拒绝                            | 一条诊断加上最后一个有效文档                                     | 对该配置档之外任何内容的失败关闭结果。                                                                                                            | 不适用         | `module:Markdown/remark` | 稳定   |
 
 ## Behavioral contract
 
-| ID   | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Basis                           |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| FR1  | The adapter accepts only a plugin whose attacher synchronously returns one transformer of at most two parameters. A parser, compiler, async, callback-style, or registration-only plugin is rejected.                                                                                                                                                                                                                                                                                                                                                                   | `spec:AST-036` FR18             |
-| FR2  | Every invocation receives a fresh mutable copy of the canonical tree and a new constrained file. No canonical node, array, data value, or position is mutable, and no state survives between runs.                                                                                                                                                                                                                                                                                                                                                                      | `spec:AST-036` FR10, FR18       |
-| FR3  | The constrained file exposes exactly `value`, `data`, `messages`, `message()`, `fail()`, and `toString()`. Every other key — `path`, `cwd`, `history`, or any other — fails closed on read, write, define, and delete, rather than answering `undefined`; `in` and key enumeration answer truthfully so a plugin can feature-detect. Processor access fails closed the same way.                                                                                                                                                                                        | `spec:AST-036` FR18             |
-| FR4  | A returned or mutated tree is accepted only when every node and metadata field round-trips losslessly through the supported subset, fenced-code `meta` included; otherwise the last valid document is preserved.                                                                                                                                                                                                                                                                                                                                                        | `spec:AST-036` FR19             |
-| FR5  | A surviving source-backed node keeps Core's provenance exactly: every line, column, and offset on both points must come back unchanged. A rebuilt, retyped, duplicated, or shifted surviving node is rejected, never silently restored. Source-backed nodes, including headings, may be removed or reordered; a surviving source heading keeps its depth.                                                                                                                                                                                                               | `spec:AST-036` FR11, FR19, FR26 |
-| FR6  | Astryx-owned citation and plugin extension nodes pass through only when every owned field — including `data` and authored `source` — is exactly equal. Authoring or editing one through the adapter is rejected.                                                                                                                                                                                                                                                                                                                                                        | `spec:AST-036` FR11, FR15       |
-| FR7  | A failed run reports exactly one diagnostic, assembled only from the adapter's own vocabulary and read from adapter-owned state, never from the thrown value or any object the plugin can rewrite. Text a plugin authored — a thrown error, a `fail()` reason, a `message()` diagnostic — never becomes a diagnostic, because the plugin read the document and may quote it. Any refusal the plugin catches and continues past still fails the run, and the first recorded reason is the one reported. Later plugins and rendering continue on the last valid document. | `spec:AST-036` FR12             |
-| FR8  | An unchanged document returns the identical canonical root, so an adapted no-op costs no tree allocation and no downstream invalidation.                                                                                                                                                                                                                                                                                                                                                                                                                                | `spec:AST-036` FR13, FR21       |
-| FR9  | The adapter is a separate entry point that Markdown, the parser, and the plugin protocol never import, so parser-only and server bundles exclude it unless a caller imports it. It is registered in the exports generator, so the published subpath cannot drift from the source.                                                                                                                                                                                                                                                                                       | `spec:AST-036` FR24             |
-| FR10 | A conventional Unified/Remark plugin type-checks at the callsite without being rewritten, including a transformer that declares Unified's callback parameter or an asynchronous return union. The run time still rejects an actual promise and a callback-style transformer.                                                                                                                                                                                                                                                                                            | `spec:AST-036` FR18             |
-| FR11 | A promise the adapter refuses — from the attacher or the transformer — gets a rejection handler attached before any other verdict is applied, so a result that is both refused for another reason and rejected cannot surface as an unhandled rejection. That matters most on the server, where an unhandled rejection ends the process by default and would print a plugin-authored reason drawn from the document. `then` is read exactly once, because reading it can itself throw or trip a guard.                                                                  | `spec:AST-036` FR12, FR18       |
-| FR12 | Sticky refusal is re-checked immediately before validated output becomes observable, so a guard that fires late — inside a hostile `then` accessor, or a getter read while the result is validated — still rejects rather than letting the plugin's output through.                                                                                                                                                                                                                                                                                                     | `spec:AST-036` FR12             |
+| ID   | 不变式                                                                                                                                                                                                                                                                                                                                                                | 依据                            |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| FR1  | 适配器只接受这样的插件：其 attacher 同步返回一个最多两个参数的 transformer。解析器、编译器、异步、回调式或仅注册的插件都会被拒绝。                                                                                                                                                                                                                                    | `spec:AST-036` FR18             |
+| FR2  | 每次调用都会收到规范树的一个新的可变副本和一个新的受约束文件。任何规范节点、数组、数据值或位置都不可变，运行之间也不留存任何状态。                                                                                                                                                                                                                                    | `spec:AST-036` FR10, FR18       |
+| FR3  | 受约束文件恰好暴露 `value`、`data`、`messages`、`message()`、`fail()` 和 `toString()`。其他每个键——`path`、`cwd`、`history` 或任何别的键——在读取、写入、定义和删除时都会失败关闭，而不是返回 `undefined`；`in` 与键枚举会如实作答，以便插件可以探测特性。对处理器的访问同样以失败关闭的方式处理。                                                                     | `spec:AST-036` FR18             |
+| FR4  | 只有当每个节点和元数据字段都能无损地通过受支持子集往返时，才接受返回或修改后的树，围栏代码的 `meta` 也包括在内；否则保留最后一个有效文档。                                                                                                                                                                                                                            | `spec:AST-036` FR19             |
+| FR5  | 存留的、有源文档支撑的节点必须精确保留 Core 的来源信息：两个端点上的每一行、每一列和每个偏移都必须原样返回。被重建、重设类型、复制或偏移的存留节点都会被拒绝，绝不会被静默恢复。有源文档支撑的节点（包括标题）可以被移除或重新排序；存留的源标题保持其深度。                                                                                                          | `spec:AST-036` FR11, FR19, FR26 |
+| FR6  | 只有当每个归属字段——包括 `data` 和编写的 `source`——完全相等时，Astryx 归属的引用节点和插件扩展节点才会通过。通过适配器编写或编辑这类节点会被拒绝。                                                                                                                                                                                                                    | `spec:AST-036` FR11, FR15       |
+| FR7  | 失败的运行恰好报告一条诊断，且只由适配器自己的词汇组装、从适配器拥有的状态中读取，绝不来自抛出的值或插件可以改写的任何对象。插件编写的文本——抛出的错误、`fail()` 理由、`message()` 诊断——永远不会成为诊断，因为插件读过文档，可能引用其中内容。插件捕获并继续越过的任何拒绝仍会使该次运行失败，且报告的是最先记录的理由。后续插件和渲染继续基于最后一个有效文档进行。 | `spec:AST-036` FR12             |
+| FR8  | 未变化的文档返回同一个规范根，因此经适配的空操作不产生树分配，也不触发下游失效。                                                                                                                                                                                                                                                                                      | `spec:AST-036` FR13, FR21       |
+| FR9  | 适配器是一个独立入口点，Markdown、解析器和插件协议从不导入它，因此除非调用方导入，仅解析器和服务端 bundle 都会将它排除在外。它被注册到导出生成器中，所以发布的子路径不会与源码脱节。                                                                                                                                                                                  | `spec:AST-036` FR24             |
+| FR10 | 常规的 Unified/Remark 插件无需改写即可在调用处通过类型检查，包括声明了 Unified 回调参数或异步返回联合类型的 transformer。运行时仍然会拒绝真正的 promise 和回调式 transformer。                                                                                                                                                                                        | `spec:AST-036` FR18             |
+| FR11 | 被适配器拒绝的 promise——来自 attacher 或 transformer——会在应用任何其他判定之前先附加 rejection 处理器，因此一个既因其他原因被拒绝、又处于 rejected 状态的结果不会以未处理的 rejection 形式浮现。这一点在服务端尤为重要：在那里，未处理的 rejection 默认会结束进程，并会打印插件编写、取自文档的理由。`then` 只读取一次，因为读取它本身就可能抛出或触发守卫。          | `spec:AST-036` FR12, FR18       |
+| FR12 | 粘性拒绝会在已校验的输出变得可观察之前立即重新检查，因此晚触发的守卫——在恶意的 `then` 访问器内部，或在结果校验期间读取的 getter 中——仍会拒绝，而不会放过插件的输出。                                                                                                                                                                                                  | `spec:AST-036` FR12             |
 
 ### Supported round trip
 
-| Input                                                         | Round trip                                                                                                                                                      |
-| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `root`, `paragraph`, `heading`, `blockquote`, `thematicBreak` | Structure and children; heading depth stays Core-owned.                                                                                                         |
-| `text`, `strong`, `emphasis`, `delete`, `inlineCode`, `break` | Values and ordered phrasing children.                                                                                                                           |
-| `link`, `image`                                               | `url` revalidated by the navigation and resource owners; `alt` required; `title` null.                                                                          |
-| `list`, `listItem`                                            | `ordered`, `start`, `spread`, Astryx `delimiter`, and `checked`.                                                                                                |
-| `code`                                                        | `lang` and `meta`, each `null` when absent, plus `value`. The authored info string survives both conversions and the released language projection is preserved. |
-| `math`, `inlineMath`                                          | Present only when the caller enabled math.                                                                                                                      |
-| `table`, `tableRow`, `tableCell`                              | Normalized `align` and cell children.                                                                                                                           |
-| Astryx flow image, `citation`, `extension`                    | Preserved as owned nodes; readable by the plugin, not writable.                                                                                                 |
-| `position`, `data`                                            | Core-authored positions and finite JSON-like data.                                                                                                              |
+| 输入                                                          | 往返                                                                                                                      |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `root`、`paragraph`、`heading`、`blockquote`、`thematicBreak` | 结构与子节点；标题深度仍由 Core 拥有。                                                                                    |
+| `text`、`strong`、`emphasis`、`delete`、`inlineCode`、`break` | 值与有序的短语子节点。                                                                                                    |
+| `link`、`image`                                               | `url` 由导航和资源所有者重新校验；`alt` 必填；`title` 为 null。                                                           |
+| `list`、`listItem`                                            | `ordered`、`start`、`spread`、Astryx `delimiter` 和 `checked`。                                                           |
+| `code`                                                        | `lang` 和 `meta`（缺省时各为 `null`），以及 `value`。编写的 info 字符串在两次转换中都能存留，已发布的语言投影也得以保留。 |
+| `math`、`inlineMath`                                          | 仅当调用方启用了 math 时才存在。                                                                                          |
+| `table`、`tableRow`、`tableCell`                              | 规范化后的 `align` 与单元格子节点。                                                                                       |
+| Astryx 流式图片、`citation`、`extension`                      | 作为归属节点保留；插件可读，但不可写。                                                                                    |
+| `position`、`data`                                            | Core 编写的位置和有限制的类 JSON 数据。                                                                                   |
 
 ### Rejection matrix
 
-| Rejected input                                                                                                                                              | Result                                                            |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| Async, callback-style, registration-only, or processor-state plugin                                                                                         | Last valid document plus one diagnostic; FR1, FR3                 |
-| `html` or any node outside the supported subset (definitions, references, footnotes, frontmatter, directives, MDX)                                          | Last valid document plus one diagnostic; FR4                      |
-| An unsupported field, `hName`, `hProperties`, `hChildren`, or non-JSON node or file data                                                                    | Last valid document plus one diagnostic; FR3, FR4                 |
-| Non-string fence `meta`, a link or image `title`, a loose list item, or a ragged transformed table                                                          | Last valid document plus one diagnostic; FR4                      |
-| Reading, writing, defining, or deleting an unsupported file key — `path`, `cwd`, `history`, or any other                                                    | Last valid document plus one diagnostic; FR3                      |
-| An authored, shifted, or removed position on a surviving source-backed node; a rebuilt, retyped, or duplicated source node; or a re-levelled source heading | Last valid document plus one diagnostic; FR5                      |
-| A shifted line or column on an otherwise unchanged offset                                                                                                   | Last valid document plus one diagnostic; FR5                      |
-| Provenance rebuilt from a copied position, or smuggled in from another document                                                                             | Last valid document plus one diagnostic; FR5                      |
-| An authored or edited Astryx citation or extension node, `data` and `source` included                                                                       | Last valid document plus one diagnostic; FR6                      |
-| A rejected link or image URL, invalid built-in structure, a nested link, or block output from an inline entry point                                         | Last valid document plus one diagnostic; FR4                      |
-| A transformer that throws, or any refusal the plugin caught and continued past, `fail()` included                                                           | Last valid document plus one diagnostic; FR7                      |
-| A rejected promise from the attacher or transformer, alone or on top of a caught refusal                                                                    | Last valid document, one diagnostic, no unhandled rejection; FR11 |
-| A guard that fires late, inside a `then` accessor or a getter read during validation                                                                        | Last valid document plus one diagnostic; FR12                     |
+| 被拒绝的输入                                                                                               | 结果                                                   |
+| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| 异步、回调式、仅注册或带处理器状态的插件                                                                   | 最后一个有效文档加一条诊断；FR1、FR3                   |
+| `html` 或受支持子集之外的任何节点（定义、引用、脚注、frontmatter、指令、MDX）                              | 最后一个有效文档加一条诊断；FR4                        |
+| 不受支持的字段、`hName`、`hProperties`、`hChildren`，或非 JSON 的节点数据或文件数据                        | 最后一个有效文档加一条诊断；FR3、FR4                   |
+| 非字符串的围栏 `meta`、链接或图片的 `title`、松散列表项，或参差不齐的转换后表格                            | 最后一个有效文档加一条诊断；FR4                        |
+| 读取、写入、定义或删除不受支持的文件键——`path`、`cwd`、`history` 或任何别的键                              | 最后一个有效文档加一条诊断；FR3                        |
+| 存留的、有源文档支撑的节点上被编写、偏移或移除的位置；被重建、重设类型或复制的源节点；或被重新分级的源标题 | 最后一个有效文档加一条诊断；FR5                        |
+| 偏移量本身未变、但行或列发生偏移                                                                           | 最后一个有效文档加一条诊断；FR5                        |
+| 从复制来的位置重建来源信息，或从另一份文档夹带进来                                                         | 最后一个有效文档加一条诊断；FR5                        |
+| 被编写或编辑的 Astryx 引用或扩展节点，含 `data` 与 `source`                                                | 最后一个有效文档加一条诊断；FR6                        |
+| 被拒绝的链接或图片 URL、非法的内置结构、嵌套链接，或来自行内入口点的块级输出                               | 最后一个有效文档加一条诊断；FR4                        |
+| 抛错的 transformer，或插件捕获并继续越过的任何拒绝，含 `fail()`                                            | 最后一个有效文档加一条诊断；FR7                        |
+| 来自 attacher 或 transformer 的、处于 rejected 状态的 promise，单独出现或叠加在被捕获的拒绝之上            | 最后一个有效文档、一条诊断、无未处理的 rejection；FR11 |
+| 晚触发的守卫，位于 `then` 访问器或校验期间读取的 getter 内部                                               | 最后一个有效文档加一条诊断；FR12                       |
 
 ### Transformation and precedence order
 
-- **ORD1 — one run.** Canonical tree → fresh mutable copy → the plugin's single
-  synchronous transformer → validated round trip → the document later plugins
-  and rendering observe. Core validates the result again; the adapter never
-  substitutes for Core's own validation.
-- **ORD2 — one diagnostic, adapter-authored.** A successful run is silent;
-  Core's only diagnostic channel reports plugin failure, so there is nothing
-  truthful to say. A failed run reports exactly one line, built from this
-  module's own vocabulary. Messages a plugin recorded stay on its file, which
-  only the plugin sees.
-- **ORD3 — defuse, then judge, then accept.** A returned value is inspected
-  and defused before any verdict is applied, so the reason a run is refused
-  never decides whether a promise is left dangling. Sticky refusal is checked
-  again immediately before output is accepted, because a guard can fire at any
-  point the adapter touches plugin-controlled values.
+- **ORD1 — 一次运行。** 规范树 → 新的可变副本 → 插件唯一的同步 transformer → 校验过的往返 → 后续插件与渲染观察到的文档。Core 会再次校验结果；适配器绝不替代 Core 自己的校验。
+- **ORD2 — 一条诊断，由适配器编写。** 成功的运行是静默的；Core 唯一的诊断通道只报告插件失败，因此没有可信的内容可说。失败的运行恰好报告一行，由本模块自己的词汇构建。插件记录的消息留在它的文件上，只有插件能看到该文件。
+- **ORD3 — 先拆除危险，再判定，再接受。** 返回的值在任何判定应用之前先被检查和拆除危险，因此某次运行被拒绝的理由绝不影响是否留下悬空的 promise。粘性拒绝会在输出被接受之前立即再次检查，因为守卫可能在适配器接触插件控制值的任何时刻触发。
 
 ### Performance and resources
 
-- **PR1 — one copy per invocation.** Work is proportional to document size once
-  per run; an unchanged document returns the canonical root itself.
-- **PR2 — no runtime dependency.** The adapter adds no Unified, Remark, mdast,
-  or `VFile` dependency and no parse work; it runs inside the existing transform
-  phase and cannot trigger reparsing.
+- **PR1 — 每次调用一份副本。** 工作量与文档大小成正比，每次运行一次；未变化的文档返回规范根本身。
+- **PR2 — 无运行时依赖。** 适配器不添加 Unified、Remark、mdast 或 `VFile` 依赖，也不做解析工作；它在既有的转换阶段内运行，不会触发重新解析。
 
 ## Accessibility contract
 
-- **AR1 — required meaning survives.** An image must keep its text alternative
-  and a source heading its level, so a rejection is preferred over an
-  accessible-name or document-outline regression.
-- **AR2 — no markup channel.** Raw HTML and hast property channels are rejected,
-  so an adapted plugin cannot inject unlabeled or non-semantic output.
+- **AR1 — 必需的含义得以存留。** 图片必须保留其文本替代，源标题必须保留其层级，因此宁可拒绝，也不要出现可访问名称或文档大纲的退化。
+- **AR2 — 无标记通道。** 原始 HTML 与 hast 属性通道会被拒绝，因此经适配的插件无法注入无标签或非语义的输出。
 
 ## Design relationships
 
-No visual representation is owned by this compatibility adapter; adapted output
-renders through Markdown's existing parts.
+本兼容适配器不拥有任何视觉呈现；适配后的输出通过 Markdown 既有的部件渲染。
 
 ## Parent and system relationships
 
-- `component:Markdown` owns aggregate plugin application, validation, fallback,
-  and heading identity.
-- `spec:AST-036` owns the protocol, the canonical MDAST compatibility matrix,
-  and the limited Remark profile this record implements.
-- `family:navigation-destinations` keeps ownership of every adapted link
-  destination and image resource.
+- `component:Markdown` 拥有聚合插件应用、校验、回退和标题标识。
+- `spec:AST-036` 拥有协议、规范 MDAST 兼容性矩阵，以及本记录所实现的受限 Remark 配置档。
+- `family:navigation-destinations` 保有对每个适配后链接目标和图片资源的所有权。
 
 ## Verification map
 
-| Contract | Verification                                                                                              | Representative states                                                                                                                                                      | Mutation or failure expectation                                                                                           |
-| -------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| FR1–FR3  | `remark.test.tsx` attachment, isolation, and constrained-file fixtures                                    | async, callback-style, processor-state, registration-only plugins; repeated invocations; every unsupported file key, read and written; caught guard refusals               | Accepting one of them, leaking file data between runs, or letting a caught refusal clear the verdict fails the fixtures.  |
-| FR4–FR6  | `remark.test.tsx` round-trip and rejection matrix, including a parsed-fence identity fixture              | every supported node kind; fences with and without an info string; each rejected input above; owned citation and extension nodes                                           | A silently dropped field — `meta` included — an accepted unsupported node, or an edited owned node fails closed fixtures. |
-| FR7      | `remark.test.tsx` diagnostics plus Markdown rendering after a rejection                                   | thrown transformer, swallowed `fail()`, forged rejection built from the adapter's own class, rewritten `message`, hand-marked fatal message, later plugin in the same list | A missing, duplicated, or plugin-authored diagnostic, a swallowed failure that succeeds, or a lost sibling plugin, fails. |
-| FR8      | `remark.test.tsx` identity fixture over the full supported document                                       | untouched document with positions, math, citations, and extension nodes                                                                                                    | Returning a copy instead of the canonical root fails identity.                                                            |
-| FR9      | `remark.test.tsx` import and manifest fixtures; `sync:exports:check`                                      | Markdown, parser, and plugin modules; the published entry point                                                                                                            | An adapter import inside Core's Markdown path, or an unregistered subpath, fails.                                         |
-| FR10     | `remark.test.tsx` compile fixture over Unified-shaped declarations                                        | attacher bound to a processor; callback-parameter and async-union transformer; inline Astryx plugin                                                                        | Narrowing the accepted type so a conventional plugin stops compiling fails the fixture.                                   |
-| FR11     | `remark.test.tsx` rejection fixtures observing `process` unhandled rejections, including server rendering | rejected attacher result; rejected transformer result; a rejected result on top of a caught guard or a caught `fail()`; a thenable whose `then` throws                     | Applying a verdict before defusing, or refusing without attaching a handler, fails the fixtures.                          |
-| FR12     | `remark.test.tsx` late-guard fixtures                                                                     | a hostile `then` accessor; a getter that trips a guard while the result is validated                                                                                       | Dropping the final sticky re-check lets caught-guard output through and fails the fixtures.                               |
+| 契约    | 验证                                                                         | 代表性状态                                                                                                                                      | 变异或失败预期                                                                                        |
+| ------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| FR1–FR3 | `remark.test.tsx` 中关于挂载、隔离和受约束文件的测试夹具                     | 异步、回调式、带处理器状态、仅注册的插件；重复调用；每个不受支持的文件键，读取与写入；被捕获的守卫拒绝                                          | 接受其中任何一种、在运行之间泄漏文件数据，或让被捕获的拒绝清除判定，都会使测试夹具失败。              |
+| FR4–FR6 | `remark.test.tsx` 的往返与拒绝矩阵，包括一个已解析围栏的同一性夹具           | 每种受支持的节点类型；带与不带 info 字符串的围栏；上述每一种被拒绝的输入；归属的引用与扩展节点                                                  | 静默丢弃的字段——包括 `meta`——、被接受的受支持之外节点，或被编辑的归属节点，都会使失败关闭的夹具失败。 |
+| FR7     | `remark.test.tsx` 的诊断，以及拒绝之后的 Markdown 渲染                       | 抛错的 transformer、被吞掉的 `fail()`、用适配器自己的类伪造的拒绝、被改写的 `message`、手工标记为致命的消息、同一列表中的后续插件               | 缺失、重复或插件编写的诊断，本应失败却被吞掉的成功，或丢失同级插件，都会导致失败。                    |
+| FR8     | `remark.test.tsx` 覆盖完整受支持文档的同一性夹具                             | 未被触及、带位置、math、引用和扩展节点的文档                                                                                                    | 返回副本而不是规范根会使同一性检查失败。                                                              |
+| FR9     | `remark.test.tsx` 的导入与清单夹具；`sync:exports:check`                     | Markdown、解析器和插件模块；已发布的入口点                                                                                                      | Core 的 Markdown 路径内出现适配器导入，或子路径未注册，都会导致失败。                                 |
+| FR10    | `remark.test.tsx` 针对 Unified 形态声明的编译夹具                            | 绑定到处理器的 attacher；带回调参数与异步联合类型的 transformer；行内 Astryx 插件                                                               | 把接受的类型收窄，以致常规插件不再能编译，会使该夹具失败。                                            |
+| FR11    | `remark.test.tsx` 观察 `process` 未处理 rejection 的拒绝夹具，包括服务端渲染 | attacher 返回 rejected 结果；transformer 返回 rejected 结果；叠加在被捕获守卫或被捕获的 `fail()` 之上的 rejected 结果；`then` 会抛错的 thenable | 在拆除危险之前应用判定，或在拒绝时不附加处理器，都会使测试夹具失败。                                  |
+| FR12    | `remark.test.tsx` 的晚触发守卫夹具                                           | 恶意的 `then` 访问器；在结果校验期间触发守卫的 getter                                                                                           | 丢掉最后的粘性重检会让被捕获守卫的输出通过，并使测试夹具失败。                                        |
 
 ## Decision log
 
 ### DEC-1 — Lossless round trip or a readable rejection
 
-**Reference:** `module:Markdown/remark/DEC-1`
-**Decider:** `cixzhang`, `2026-09-15`
+**参考：** `module:Markdown/remark/DEC-1`
 
-The adapter never approximates. Link titles, loose list items, raw markup,
-unsupported nodes, and metadata Astryx cannot represent — including a
-non-string fence `meta` — have no Astryx meaning, so accepting them would
-silently change or drop what a reader sees. An authored fence info string does
-have a meaning here and round-trips intact; it is rejected only when it is not
-a string. Refusing the rest keeps the last valid document readable and makes
-the gap visible to the builder in one diagnostic instead of to the reader as
-missing content.
+**决定者：** `cixzhang`，`2026-09-15`
+
+适配器从不近似。链接标题、松散列表项、原始标记、不受支持的节点，以及 Astryx 无法表示的元数据——包括非字符串的围栏 `meta`——在 Astryx 中都没有含义，因此接受它们会静默改变或丢弃读者看到的内容。编写的围栏 info 字符串在这里确实有含义，并能完整往返；只有当它不是字符串时才会被拒绝。拒绝其余内容既能保持最后一个有效文档可读，也能让构建者通过一条诊断看到这一缺口，而不是让读者看到内容缺失。
 
 ### DEC-2 — Provenance is carried, never inferred
 
-**Reference:** `module:Markdown/remark/DEC-2`
-**Decider:** `cixzhang`, `2026-09-15`
+**参考：** `module:Markdown/remark/DEC-2`
 
-A transformed node belongs to a source node only when it carries the marker the
-adapter put on the copy; matching on a position that merely looks right would
-let a rebuilt node inherit provenance it never had. Equality is exact across
-every line, column, and offset, because restoring Core's position over a
-changed one is the silent approximation this profile exists to refuse.
+**决定者：** `cixzhang`，`2026-09-15`
+
+转换后的节点只有在携带适配器放在副本上的标记时，才属于某个源节点；仅凭位置看起来正确来匹配，会让重建的节点继承它从未拥有过的来源信息。每一行、每一列和每个偏移都必须完全相等，因为在一个已被改变的位置上恢复 Core 的位置，正是本配置档要拒绝的那种静默近似。
 
 ### DEC-3 — Only the adapter speaks in diagnostics
 
-**Reference:** `module:Markdown/remark/DEC-3`
-**Decider:** `cixzhang`, `2026-09-15`
+**参考：** `module:Markdown/remark/DEC-3`
 
-A plugin's own text reached it from the document and may quote any of it, so
-forwarding it would turn a developer warning into a place private content
-leaks. The single reported line is assembled from this module's vocabulary
-instead; a plugin's messages remain on the file it was given.
+**决定者：** `cixzhang`，`2026-09-15`
 
-Everything the plugin can reach, it can also rewrite: `message` is writable on
-any Error, and catching one rejection hands it the rejection class itself. So
-the reported reason is read from adapter-owned state keyed by the thrown
-object, and every refusal — a prohibited file key, a processor access, the
-plugin's own `fail()` — is recorded in adapter-owned run state rather than on
-anything the plugin holds. A refusal the plugin catches and continues past
-still fails the run, and the first reason recorded is the one reported.
+插件自己的文本来自它所读到的文档，可能引用了其中任何内容，因此转发它会把开发者警告变成一个泄漏私有内容的地方。所报告的那一行改由本模块的词汇组装；插件的消息仍留在给它的那个文件上。
+
+插件能触及的一切，它也能改写：`message` 在任何 Error 上都是可写的，而捕获一个 rejection 就把 rejection 类本身交给了它。因此，报告的理由从以抛出对象为键的适配器自有状态中读取，而每一次拒绝——被禁止的文件键、处理器访问、插件自己的 `fail()`——都记录在适配器自有的运行状态中，而不是记录在插件持有的任何东西上。插件捕获并继续越过的拒绝仍会使运行失败，且报告的是最先记录的理由。
 
 ### DEC-4 — Owned nodes stay Core's
 
-**Reference:** `module:Markdown/remark/DEC-4`
-**Decider:** `cixzhang`, `2026-09-15`
+**参考：** `module:Markdown/remark/DEC-4`
 
-An adapted plugin may read an Astryx citation or extension node but cannot mint
-or edit one, and cannot change a source heading. Owned nodes are how Markdown,
-Outline, and fallback agree on one document; a compatibility shim is the wrong
-place to let them drift.
+**决定者：** `cixzhang`，`2026-09-15`
+
+经适配的插件可以读取 Astryx 引用或扩展节点，但不能铸造或编辑它们，也不能改变源标题。归属节点是 Markdown、Outline 和回退就同一份文档达成一致的方式；兼容性垫片不是让它们产生偏离的地方。
 
 ### DEC-5 — Accept the plugin types Remark already has
 
-**Reference:** `module:Markdown/remark/DEC-5`
-**Decider:** `cixzhang`, `2026-09-15`
+**参考：** `module:Markdown/remark/DEC-5`
 
-The whole point of the profile is reusing an existing plugin, so a plugin typed
-against Unified must compile here unchanged — Unified declares one transformer
-type carrying both the callback parameter and an async return, and refusing it
-at the type level would refuse every real plugin. The adapter accepts that
-shape structurally and rejects the unsupported behavior at run time, where it
-can fail closed with a readable document. Authors writing a new plugin against
-Astryx annotate it with `MarkdownRemarkPlugin` and keep a fully typed tree.
+**决定者：** `cixzhang`，`2026-09-15`
+
+该配置档的全部意义在于复用既有插件，因此针对 Unified 编写的插件必须能原样在这里编译——Unified 声明了一种 transformer 类型，同时携带回调参数和异步返回，在类型层面拒绝它就会拒绝每一个真实插件。适配器按结构接受这种形态，并在运行时拒绝不受支持的行为，从而能以可读文档失败关闭。针对 Astryx 编写新插件的作者会用 `MarkdownRemarkPlugin` 标注它，并保有完全带类型的树。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This record does not duplicate consumer signatures or examples, the canonical
-plugin protocol, Markdown's aggregate application and fallback rules, the AST
-compatibility matrix, or Remark's own documentation. It links to their owners.
+本记录不重复使用方签名或示例、规范插件协议、Markdown 的聚合应用与回退规则、AST 兼容性矩阵，或 Remark 自己的文档。它链接到它们的所有者。

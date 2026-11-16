@@ -68,358 +68,168 @@ system_specs:
 
 ## Intent
 
-Markdown renders parsed content in a Document with stable default block parts and
-constrained renderer seams. Callers may opt into the canonical plugin protocol for
-bounded source syntax, immutable document transformation, typed extension
-rendering, and native typed document-start frontmatter. They may separately opt into dollar-delimited math by supplying one typed
-renderer for both inline and display expressions. The parser accepts matching
-explicit options. They may also list CodeBlock language values in
-`codeLanguages` so fences in those languages paint with them (FR30). Plugins,
-math, and `codeLanguages` change nothing when absent; the default Code
-block path renders `diff` and `diff-<language>` fences as CodeBlock's diff layer
-(FR29), wraps every fence's long lines (`spec:AST-061` FR5, DEC-9), lays
-out a fence with no header the way CodeBlock does (`component:CodeBlock` FR11),
-and lays each prose block out in the direction of its own text
-(`spec:AST-061` FR6), and every other parsing, rendering, styling, and
-streaming behavior is the released one.
+Markdown 在 Document 中渲染解析后的内容，具备稳定的默认块部件与受约束的渲染器接缝。调用方可以选择启用规范插件协议，以获得受限的源语法、不可变的文档转换、类型化的扩展渲染，以及原生的类型化文档起始 frontmatter。他们也可以单独选择启用美元符号分隔的数学公式，只需为行内与显示两种表达式提供同一个类型化渲染器。解析器接受与之匹配的显式选项。他们还可以在 `codeLanguages` 中列出 CodeBlock 语言值，让这些语言的围栏代码块用这些值着色（FR30）。缺失时，插件、数学公式与 `codeLanguages` 不改变任何行为；默认 Code block 路径把 `diff` 与 `diff-<language>` 围栏渲染为 CodeBlock 的 diff 层（FR29），对每个围栏的长行进行换行（`spec:AST-061` FR5、DEC-9），按 CodeBlock 的方式布置没有表头的围栏（`component:CodeBlock` FR11），并让每个散文块按其自身文字的方向布局（`spec:AST-061` FR6）；其余所有解析、渲染、样式与流式行为都保持已发布版本的行为。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`, except the default Code block path for `diff` fences (FR29, below), its long-line wrap (below), its headerless layout (below), per-block text direction (below), and `data:` link and image URLs (below)
-- Compatibility class: additive, opt-in public API, with five visible
-  default-path rendering changes (the FR29 diff layer, the fenced-code wrap,
-  the headerless layout, per-block text direction, and `data:` URLs, below); existing parser nodes (apart from `data:` URLs and normalized destinations, below), DOM (apart from the direction markup below), styling, targets,
-  dollar-delimited text, `components`, and `inlinePlugins` remain unchanged unless
-  the caller supplies `plugins`, supplies `components.math`, supplies
-  `codeLanguages`, or passes the matching explicit parser option.
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
-- Additive opt-in prop (FR30): `codeLanguages` lets fences in less common languages paint with `component:CodeBlock` language modules; without it nothing changes.
-- Default-path change for `data:` URLs (`spec:AST-005/DEC-3`), a security fix
-  and not a breaking one: the parser drops every `data:` link and image URL, so
-  `<Markdown>` renders each as its source text and the public parser functions
-  no longer return a `data:` URL in `link.href` or `image.src`. A destination
-  that is blank once control characters and outer whitespace are removed is an
-  empty destination and still renders as text, or the image's alternative-text
-  fallback.
-- Normalized destinations (`spec:AST-005/DEC-3`): the parser stores every link
-  and image destination with control characters and outer whitespace removed,
-  from Markdown source, plugin transforms, and Remark plugins alike, so
-  `[a](< b(c) d >)` gives `b(c) d`. A destination without such characters is
-  unchanged.
-- Default-path rendering change for diff fences (FR29), a visible default change
-  and not a breaking one: a `diff` fence that rendered as plain text renders as CodeBlock's diff
-  layer over plaintext with a `diff` label, and a `diff-<language>` fence —
-  which rendered as plain text with a `diff` label and viewport name, its
-  leading word being all Markdown read — as the layer over that language with
-  a `<language> diff` label; the header, copy, disclosure, and viewport name
-  stay as for any other fence, and a supplied `code` renderer's contract is unchanged. The way back to
-  plain text is a `text` fence or a custom `code` renderer. Every other fence
-  is unchanged apart from the wrap and the headerless layout below.
-- Default-path wrap change (`spec:AST-061` FR5, DEC-9), visual and not breaking:
-  the default Code block wraps long lines instead of scrolling them sideways, so
-  a fence whose lines no longer overflow also no longer takes the conditional
-  scroll-region tab stop. Text, line numbers, syntax colours, copy output, and a
-  supplied `code` renderer's contract are unchanged. The way back to sideways
-  scrolling is a custom `code` renderer.
-- Default-path direction change (`spec:AST-061` FR6), visual and not breaking:
-  a prose block — a paragraph, heading, quote, or list item — lays out in the
-  direction of its own text rather than the Internationalization provider's,
-  so a Hebrew paragraph in a left-to-right document starts at the right edge.
-  A block or table cell whose text carries no strongly directional character
-  takes the provider's direction, at any nesting depth. A list, table, or
-  fence orders its contents in its parent's direction: the provider's at the
-  top level, its item's when nested. The text in each table cell reads in its
-  own direction. Each prose block and table cell whose text has a direction
-  carries it as a `dir` attribute, and a block or cell without one carries
-  the provider's direction as `dir` when the block around it reads the other
-  way; that markup is the only DOM change. Parsing, styling targets, and
-  a supplied renderer's contract are unchanged. Fenced code lines keep the frame's
-  direction; FR6's per-line rule is a gap this record does not yet close.
-- Default-path headerless layout (`component:CodeBlock` FR11), visual and not
-  breaking: a fence with no language label shows Copy in its own column beside
-  the code, so long lines wrap before it. A fence that names a language other than
-  `plaintext` keeps its header at every line count. Text, copy output, syntax colours, the
-  viewport name, and a supplied `code` renderer's contract are unchanged.
-- Default-path layout change (FR26–FR28): a default table's columns may become
-  wider than the released fixed buckets, never narrower; header labels wrap
-  instead of truncating; a table that squashed its columns may now scroll.
-  Public API, options, and theming targets are unchanged, and Table's released
-  wrap mode for data-driven callers is unchanged. The DOM does change on this
-  path: Markdown's `markdown-table` block gives up the horizontal overflow,
-  `role`, accessible name, and tab stop it duplicated, leaving the nested
-  Table's Scroll region as the sole scroll viewport, accessible name, and
-  conditional keyboard stop. A table therefore exposes one named region and
-  one conditional tab stop where it previously exposed two, and the block
-  keeps its target and its spacing, sizing, and alignment ownership.
+- 已发布默认行为保留：`yes`，但 `diff` 围栏的默认 Code block 路径（见下文 FR29）、其长行换行（见下文）、其无表头布局（见下文）、按块的文字方向（见下文），以及 `data:` 链接与图片 URL（见下文）除外
+- 兼容性类别：增量式、可选加入的公共 API，带有五处可见的默认路径渲染变更（下文的 FR29 diff 层、围栏代码块换行、无表头布局、按块文字方向，以及 `data:` URL）；除下文所述（`data:` URL 与规范化目标地址）之外，现有解析器节点、DOM（除下文的方向标记外）、样式、目标、美元符号分隔文本、`components` 与 `inlinePlugins` 均保持不变，除非调用方提供 `plugins`、提供 `components.math`、提供 `codeLanguages`，或传入匹配的显式解析器选项。
+- 受控/非受控行为：不适用
+- 迁移决策：无
+- 增量式可选 prop（FR30）：`codeLanguages` 让较少见语言的围栏代码块用 `component:CodeBlock` 语言模块着色；不提供它时行为不变。
+- `data:` URL 的默认路径变更（`spec:AST-005/DEC-3`），是安全修复而非破坏性变更：解析器丢弃每个 `data:` 链接与图片 URL，因此 `<Markdown>` 把它们各自渲染为源文本，公共解析器函数也不再在 `link.href` 或 `image.src` 中返回 `data:` URL。去除控制字符与首尾空白后变为空的目标地址就是空目标地址，仍渲染为文本，或渲染为图片的替代文本回退。
+- 规范化目标地址（`spec:AST-005/DEC-3`）：解析器在保存每个链接与图片目标地址时移除控制字符与首尾空白，无论它们来自 Markdown 源、插件转换还是 Remark 插件，因此 `[a](< b(c) d >)` 得到 `b(c) d`。不含这类字符的目标地址保持不变。
+- `diff` 围栏的默认路径渲染变更（FR29），是可见的默认变更而非破坏性变更：原本渲染为纯文本的 `diff` 围栏，现在渲染为纯文本之上的 CodeBlock diff 层，并带 `diff` 标签；而 `diff-<language>` 围栏——原本渲染为带 `diff` 标签与视口名称的纯文本，其首个单词就是 Markdown 读到的全部内容——现在渲染为该语言之上的 diff 层，并带 `<language> diff` 标签；表头、复制、展开与视口名称与其他任何围栏保持一致，所提供 `code` 渲染器的契约不变。回到纯文本的方式是使用 `text` 围栏或自定义 `code` 渲染器。除下文所述的换行与无表头布局外，其他每个围栏都不变。
+- 默认路径换行变更（`spec:AST-061` FR5、DEC-9），是视觉变更而非破坏性变更：默认 Code block 对长行进行换行，而不是让它们横向滚动，因此行不再溢出的围栏也不再占用条件性滚动区域的 Tab 停靠点。文本、行号、语法着色、复制输出，以及所提供 `code` 渲染器的契约均不变。回到横向滚动的方式是自定义 `code` 渲染器。
+- 默认路径方向变更（`spec:AST-061` FR6），是视觉变更而非破坏性变更：散文块——段落、标题、引用或列表项——按其自身文字的方向布局，而不是按 Internationalization 提供者的方向，因此在从左到右的文档中，一个希伯来语段落从右边缘开始。文字不含强方向性字符的块或表格单元格，在任何嵌套深度都采用提供者的方向。列表、表格或围栏按其父级的方向排列其内容：顶层用提供者的方向，嵌套时用其所在项的方向。每个表格单元格中的文字按自身方向阅读。文字具有方向性的每个散文块与表格单元格都以 `dir` 属性承载该方向；而没有方向的块或单元格，在其外围块按另一方向阅读时，以 `dir` 承载提供者的方向；该标记是唯一的 DOM 变更。解析、样式目标，以及所提供渲染器的契约均不变。围栏代码行保持框架的方向；FR6 的逐行规则是本记录尚未填补的缺口。
+- 默认路径无表头布局（`component:CodeBlock` FR11），是视觉变更而非破坏性变更：没有语言标签的围栏把 Copy 显示在代码旁边的独立列中，因此长行在它之前换行。标明了 `plaintext` 以外语言的围栏在任何行数下都保留其表头。文本、复制输出、语法着色、视口名称，以及所提供 `code` 渲染器的契约均不变。
+- 默认路径布局变更（FR26–FR28）：默认表格的列可能变得比已发布的固定分档更宽，绝不会更窄；表头标签换行而不是截断；原本把列压扁的表格现在可以滚动。公共 API、选项与主题目标均不变，Table 面向数据驱动调用方的已发布换行模式也不变。此路径上的 DOM 确实发生变化：Markdown 的 `markdown-table` 块放弃它重复提供的水平溢出、`role`、可访问名称和 Tab 停靠点，使嵌套 Table 的 Scroll 区域成为唯一的滚动视口、可访问名称与条件性键盘停靠点。因此，表格此前暴露两个命名区域和两个条件性 Tab 停靠点，现在只暴露一个，而该块保留其目标及其间距、尺寸与对齐所有权。
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明应放在使用方文档与发布说明中。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The Document and its current `markdown` target in block and inline display.
-- Default Heading, Paragraph, List, Code block, Blockquote, Table, Divider, and
-  Image block presentation and the eight current block targets documented below.
-- Applying block spacing and reflected density (plus Heading level) to those
-  targets on the default render path.
-- Opt-in recognition of `$…$` inline math and `$$…$$` display math, including
-  delimiter boundaries, escape behavior, parser nodes, and streaming parity.
-- Passing each recognized expression as inert text to the caller's one math
-  renderer with an `inline` or `block` display value.
-- Applying the canonical `plugins` protocol in the fixed syntax → immutable
-  transform → render order while preserving built-in lexical shields, Core-owned
-  semantics, and local readable fallback.
-- Validating and freezing replacement document roots before later transforms or
-  rendering observe them.
-- Sharing plugin-enabled parse configuration, transformed heading projection, and
-  collision-safe heading IDs with Markdown-derived Outline utilities.
-- Decoding an optional document-start frontmatter block into caller-defined typed
-  metadata, withholding unfinished frontmatter while streaming, and excluding
-  completed frontmatter syntax from rendered content.
+- 块级与行内显示中的 Document 及其当前 `markdown` 目标。
+- 默认 Heading、Paragraph、List、Code block、Blockquote、Table、Divider 与 Image 块的表现形式，以及下文记录的八个当前块目标。
+- 在默认渲染路径上把块间距与反射的密度（以及 Heading 层级）应用到这些目标。
+- 可选启用的 `$…$` 行内数学与 `$$…$$` 显示数学识别，包括分隔符边界、转义行为、解析器节点与流式一致性。
+- 把每个已识别的表达式作为惰性文本，连同 `inline` 或 `block` 的 display 值，传给调用方唯一的数学渲染器。
+- 按固定的“语法 → 不可变转换 → 渲染”顺序应用规范 `plugins` 协议，同时保留内置词法屏蔽、Core 拥有的语义，以及本地可读回退。
+- 在后续转换或渲染观察到替换文档根之前，对这些根进行校验与冻结。
+- 与由 Markdown 派生的 Outline 工具共享启用插件后的解析配置、转换后的标题投影，以及防冲突的标题 ID。
+- 把可选的文档起始 frontmatter 块解码为调用方定义的类型化元数据，在流式处理期间暂不输出未完成的 frontmatter，并把已完成的 frontmatter 语法从渲染内容中排除。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Output supplied by custom renderers; each custom component owns its replacement's
-  structure, styling, and accessibility semantics.
-- Inline emphasis, link, inline-code, citation, plugin, or math-renderer output as
-  additional default block anatomy.
-- Nested anatomy or targets owned by CodeBlock, Blockquote, List, CheckboxList,
-  or Table.
-- Executing or sanitizing a renderer's math or plugin output, raw HTML parsing,
-  mutable or unrestricted AST plugins, package discovery, or new
-  list/table/inline-style override slots.
+- 由自定义渲染器提供的输出；每个自定义组件拥有其替代内容的结构、样式与可访问性语义。
+- 把行内强调、链接、行内代码、引用、插件或数学渲染器的输出当作额外的默认块解剖结构。
+- CodeBlock、Blockquote、List、CheckboxList 或 Table 拥有的嵌套解剖结构或目标。
+- 执行或净化渲染器的数学或插件输出、原始 HTML 解析、可变或不受限制的 AST 插件、包发现，或新增的列表/表格/行内样式覆盖槽位。
 
 ## Public concepts
 
-`plugins` is one optional ordered list of opaque entries created by
-`createMarkdownPlugin()`. A plugin declares only the `syntax`, `transform`, and
-`renderers` capabilities it uses. Syntax-bearing entries supply stable parse
-identity. Parsing, transforms, rendering, and Outline use one stable, strictly typed,
-MDAST-aligned canonical tree; `parseMarkdownAst()` and `parseInlineAst()` expose
-that tree from the server-safe `@astryxdesign/core/Markdown/parser` subpath while
-`@astryxdesign/core/Markdown/plugins` remains server-safe for constructing and
-running plugins in server or RSC code. The rendered `Markdown` component remains a
-client entry: function-bearing plugin entries are not serializable props and cannot
-cross an RSC boundary. `MarkdownAstNodeMap` and `visitMarkdownNodes` provide
-node-kind narrowing. Released parser functions preserve their existing result shape
-through a compatibility projection. Transforms return validated replacement roots
-without entering parse identity. Every extension node introduced
-by syntax or transformation has complete renderer ownership and a deterministic
-text projection. Text matching, semantic fences, source decoration, and native
-frontmatter are helpers that compile to transforms rather than separate protocol
-phases. Frontmatter is document metadata: it has no renderer, uses a bounded
-first-party key/value grammar rather than Remark compatibility, and exposes typed
-metadata through the helper that created it. `spec:AST-036`
-owns the shared protocol and limited Remark compatibility profile,
-`module:Markdown/remark` owns that profile's adapter,
-`module:Markdown/headingLinks` owns its opt-in identity projection and permalink
-composition, and this component owns aggregate application and fallback.
+`plugins` 是一个可选的有序不透明条目列表，由 `createMarkdownPlugin()` 创建。插件只声明它使用的 `syntax`、`transform` 与 `renderers` 能力。带语法的条目提供稳定的解析身份。解析、转换、渲染与 Outline 使用同一棵稳定、严格类型化、与 MDAST 对齐的规范树；`parseMarkdownAst()` 与 `parseInlineAst()` 从服务器安全的 `@astryxdesign/core/Markdown/parser` 子路径暴露该树，而 `@astryxdesign/core/Markdown/plugins` 在服务器或 RSC 代码中构建与运行插件时保持服务器安全。渲染出的 `Markdown` 组件仍是客户端入口：带函数的插件条目不是可序列化的 prop，无法跨越 RSC 边界。`MarkdownAstNodeMap` 与 `visitMarkdownNodes` 提供节点种类收窄。已发布的解析器函数通过兼容性投影保留其既有结果形状。转换返回经过校验的替换根，而不进入解析身份。由语法或转换引入的每个扩展节点都拥有完整的渲染器所有权与确定性的文本投影。文本匹配、语义围栏、源装饰与原生 frontmatter 是编译为转换的辅助手段，而不是独立的协议阶段。Frontmatter 是文档元数据：它没有渲染器，使用有界的第一方键/值语法而不是 Remark 兼容，并通过创建它的辅助函数暴露类型化元数据。`spec:AST-036` 拥有共享协议与受限的 Remark 兼容配置，`module:Markdown/remark` 拥有该配置的适配器，`module:Markdown/headingLinks` 拥有其可选启用的身份投影与永久链接组合，而本组件拥有聚合应用与回退。
 
-`decodeMarkdownCharacterReferences(text)` is the character reference decoder
-`Markdown` renders with, exported from the server-safe
-`@astryxdesign/core/Markdown/parser` subpath and from
-`@astryxdesign/core/Markdown` so the RichText surfaces decode references
-exactly as `Markdown` does. It decodes valid named and numeric references in
-plain text and leaves everything else as written; the named reference table
-stays private. `spec:AST-061/DEC-5` owns its contract.
+`decodeMarkdownCharacterReferences(text)` 是 `Markdown` 渲染时使用的字符引用解码器，从服务器安全的 `@astryxdesign/core/Markdown/parser` 子路径以及 `@astryxdesign/core/Markdown` 导出，使 RichText 各界面与 `Markdown` 完全一致地解码引用。它解码纯文本中合法的具名引用与数字引用，其余内容保持写出的原样；具名引用表保持私有。`spec:AST-061/DEC-5` 拥有其契约。
 
-`module:Markdown/sourceLines` owns the opt-in source-line stamps on rendered
-blocks and the optional `sourceLines` prop that `components` block renderers
-receive while its plugin is installed; without it no renderer receives the prop.
+`module:Markdown/sourceLines` 拥有渲染块上可选启用的源行标记，以及在它的插件安装期间 `components` 块渲染器所接收的可选 `sourceLines` prop；没有它时，任何渲染器都收不到该 prop。
 
-`getMarkdownPluginCapabilities(plugin)`, exported from the server-safe
-`@astryxdesign/core/Markdown/plugins` subpath, reports only whether an entry
-declares syntax and whether it declares a transform; the entry stays opaque.
-`MarkdownPluginNodeRenderer`, exported from the client-only
-`@astryxdesign/core/Markdown/plugin-renderer` subpath, renders one parsed
-extension node with the given plugins with exactly the DOM, accessibility,
-theme targets, fallback, and failure reporting that `Markdown` presents for
-that same node — its plugin's renderer inside Markdown's error boundary and
-suspense fallback — and adds no element or theme target of its own.
-`spec:AST-064/DEC-6` owns both, so the RichText surfaces adopt plugins
-without reading their definitions or copying their rendering.
+`getMarkdownPluginCapabilities(plugin)` 从服务器安全的 `@astryxdesign/core/Markdown/plugins` 子路径导出，只报告某个条目是否声明语法、是否声明转换；该条目保持不透明。`MarkdownPluginNodeRenderer` 从仅客户端的 `@astryxdesign/core/Markdown/plugin-renderer` 子路径导出，用给定的插件渲染一个已解析的扩展节点，其 DOM、可访问性、主题目标、回退与失败上报，与 `Markdown` 对同一节点的呈现完全一致——即其插件的渲染器位于 Markdown 的错误边界与 suspense 回退内——并且不添加自己的元素或主题目标。`spec:AST-064/DEC-6` 拥有二者，因此 RichText 各界面无需读取插件定义或复制其渲染即可采用插件。
 
 ### Acceptance and implementation state
 
-The plugin clauses below are the accepted target contract for the AST-036 rollout,
-not a claim that the APIs already ship. Until every clause's implementation and
-verification land, the currently released no-plugin, parser, `components`, and
-`inlinePlugins` behavior remains the only available contract. Each implementation PR
-must identify the clauses it completes without weakening the zero-breaking baseline.
+下文的插件条款是 AST-036 推行的已接受目标契约，并不表示这些 API 已经发布。在每个条款的实现与验证落地之前，当前已发布的无插件、解析器、`components` 与 `inlinePlugins` 行为仍是唯一可用的契约。每个实现 PR 都必须指明它完成了哪些条款，同时不得削弱零破坏基线。
 
-`MarkdownComponents.math` is one optional renderer with the signature
-`({value: string, display: 'inline' | 'block'}) => ReactNode`. Supplying it opts
-the component into math parsing because the caller owns both whether dollar
-syntax means math and how formulas are rendered. Direct parser callers make the
-same choice with `MathParseOptions` (`{math: true}`); incremental callers pair
-that option with `createIncrementalState<true>()`, which returns the exported
-`IncrementalParseState<true>`. Default calls and values
-annotated as `ParseOptions` keep the released `InlineNode` and `BlockNode`
-unions. Enabled calls return the explicit `InlineNodeWithMath` and
-`BlockNodeWithMath` supersets, whose added leaves are `MathInlineNode` and
-`MathBlockNode`. Exact syntax and examples remain in `Markdown.doc.mjs`.
+`MarkdownComponents.math` 是一个可选渲染器，签名为 `({value: string, display: 'inline' | 'block'}) => ReactNode`。提供它即让组件选择启用数学解析，因为调用方同时拥有两件事的决定权：美元符号语法是否表示数学公式，以及公式如何渲染。直接调用解析器的调用方用 `MathParseOptions`（`{math: true}`）做出同样的选择；增量调用方把该选项与 `createIncrementalState<true>()` 配对使用，后者返回导出的 `IncrementalParseState<true>`。默认调用与标注为 `ParseOptions` 的值保留已发布的 `InlineNode` 与 `BlockNode` 联合。启用的调用返回显式的 `InlineNodeWithMath` 与 `BlockNodeWithMath` 超集，其新增叶子为 `MathInlineNode` 与 `MathBlockNode`。确切的语法与示例仍见 `Markdown.doc.mjs`。
 
 ## Behavioral and layout contract
 
-| ID   | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1  | Block and inline displays render one Document root carrying the current `markdown` target. Inline display renders no block anatomy.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| FR2  | On the default block render path, Heading, Paragraph, List, Code block, Blockquote, Table, Divider, and Image carry the eight current local block targets documented below.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| FR3  | A supplied `heading`, `paragraph`, `code`, `blockquote`, `hr`, or safe-URL `image` renderer replaces the corresponding default part, so Markdown does not impose that part's local target on the replacement.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| FR4  | The released Code block target remains `markdown-codeblock`; this compatibility anomaly is not renamed or aliased.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| FR5  | Density and Heading level remain reflected capabilities on their owning targets. Display mode, streaming state, and renderer selection do not become separate anatomy entries.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| FR6  | Without `components.math`, Markdown does not recognize math syntax. Default, legacy-set, `math: false`, and `ParseOptions`-annotated parser calls retain the released `InlineNode` / `BlockNode` result unions; only `MathParseOptions` returns the explicit math-enabled unions.                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| FR7  | With math enabled, `$…$` produces an inline `math` node and `$$…$$` produces a block `math` node. The renderer receives the delimiter-free source as `value` and its placement as `display`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| FR8  | Inline math stays on one line, cannot have whitespace touching either delimiter, and cannot open immediately after a digit or close immediately before one. `$$` is reserved for display math. These boundaries keep paired currency amounts literal.                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| FR9  | A backslash-escaped dollar is literal outside math and does not close math inside it. An unmatched inline or display delimiter remains literal in non-streaming output.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| FR10 | Code spans and fenced code blocks are opaque to math parsing. Link destinations are opaque; link labels may contain inline math. Inline plugins run only on prose text and never inside math.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| FR11 | Streaming converges to the same nodes as a full parse at every chunk boundary, including display math nested in ordinary lists, task lists, blockquotes, and their supported combinations, with LF or CRLF and with or without source ranges. Incomplete math is withheld only while its exact owning container remains open; a list/quote exit or quote-depth change restores literal parsing. Math-enabled incremental calls require `IncrementalParseState<true>`, so the cache and returned union share one contract.                                                                                                                                                                           |
-| FR12 | Omitting `plugins` and passing an empty list are one semantic empty pipeline with identical parser unions, AST, DOM, styling, targets, IDs, and streaming behavior. Core may skip empty preparation and allocation without creating a separate behavior model. `components`, `inlinePlugins`, citations, autolinking, sources, and math retain their released meaning.                                                                                                                                                                                                                                                                                                                              |
-| FR13 | Plugin-enabled parsing follows built-in lexical shields and ordered syntax claims, then uses one stable, strictly typed, MDAST-aligned canonical tree for transforms, rendering, and Outline. `MarkdownAstNodeMap` and `visitMarkdownNodes` narrow callbacks by node kind. Released parser functions preserve their existing result shape through a compatibility projection. Every returned root is finite, acyclic, representable, validated, and frozen before later plugins or rendering observe it.                                                                                                                                                                                            |
-| FR14 | Plugin failures preserve the last valid document and readable authored source. Core retains heading, navigation, image, list, table, and document semantics and exposes no raw-markup parser channel, registry, package discovery, mutable shared AST, or unrestricted DOM hook. URL-like plugin data remains untrusted; Astryx-owned sinks follow `family:navigation-destinations`.                                                                                                                                                                                                                                                                                                                |
-| FR15 | Incremental parse identity contains every parse-affecting Markdown option and only ordered syntax-bearing plugin name, protocol version, and `parseKey`. Transform or renderer changes reuse settled parse output, rerun transformation, and do not remount unaffected extension output.                                                                                                                                                                                                                                                                                                                                                                                                            |
-| FR16 | Plugin-enabled Markdown and Markdown-derived Outline use the same parse options, ordered transforms, extension text projection, and installed heading projection so every Outline target agrees with rendered identity. A first-party module may compose a different heading projection only under its own current module contract; Markdown owns only this shared invocation seam. A limited Remark adapter may run only synchronous transform plugins whose input and output round-trip through the documented supported MDAST subset.                                                                                                                                                            |
-| FR17 | An extension node declares `content` as `'none'`, `'phrasing'`, `'flow'`, or an explicit `{allow, min?, max?}` allowlist that narrows the category its `display` implies. Markdown parses every container's inner source span under the same grammar and shields, validates children at each transform boundary, renders children through the same built-in renderers and `components` seams, counts nesting toward the built-in depth bound, uses the FR16 projection, and renders children in place when a container renderer fails.                                                                                                                                                              |
-| FR18 | A transform may read and remove another plugin's extension nodes, including a subtree containing them, and may insert or remove headings; it may not create, edit, internally reorder, or duplicate another plugin's nodes, change a source heading's depth, or forge or duplicate heading identity. `dependsOn` is validated at preparation; an unmet or misordered dependency skips only that plugin's transform. Every rejection names the rule and owning plugin.                                                                                                                                                                                                                               |
-| FR19 | `onPluginDiagnostic` is available on the component and parser options and receives one source-free event — plugin, phase, stable code, severity — per failure, advisory, or silent degradation, in development and production, rate-limited with a suppression code. Admission, duplicate-name, and protocol-version failures behave identically through the component and every parser entrypoint: the call succeeds with the last valid configuration and never throws into the caller.                                                                                                                                                                                                           |
-| FR20 | `parseMarkdownAst()` and `parseInlineAst()` return the canonical tree and accept the same options and plugin list as the component; `@astryxdesign/core/Markdown/parser` exposes parsing, canonical AST types, and plugin admission with no client boundary. `createMarkdownPlugin()` infers the extension-node union, so no callsite needs explicit type arguments, and a declaration that yields no usable extension type is a type error rather than a silent `never`.                                                                                                                                                                                                                           |
-| FR21 | A transform runs again for every streamed update and must be idempotent and convergent; transforms whose effect requires complete input use the final-input signal. Semantically equal plugin lists reuse prepared work whether or not the array reference is stable, and development reports one diagnostic when a recreated list prevents reuse.                                                                                                                                                                                                                                                                                                                                                  |
-| FR22 | An extension renderer may opt into the Markdown-owned extension theme target so themes reach plugin output. Opting out leaves output untargeted. The target adds no default styling or anatomy beyond the block spacing and content width Core already applies.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| FR23 | Markdown owns an explicit supported dialect rather than claiming full CommonMark or GFM conformance. Adjacent compatible ordered or unordered items remain one list regardless of task-marker presence; each item independently preserves its checked state or ordinary list-item semantics, including at nested levels. The default grammar keeps its released task-list and table support, while `autolink: 'gfm'` adds only the documented autolink behavior and does not toggle any other syntax.                                                                                                                                                                                               |
-| FR24 | `createMarkdownFrontmatter()` recognizes only a leading `---` block of unique `key: value` lines, decodes it through the caller's typed parser, stores finite JSON-like metadata on the canonical document, and removes the syntax from rendered content. An unfinished leading block yields no visible Markdown while streaming; malformed or unfinished final input remains ordinary Markdown. Frontmatter has no renderer and requires no Remark compatibility.                                                                                                                                                                                                                                  |
-| FR25 | The canonical parser and plugin-construction subpaths remain server-safe and can run function-bearing plugins entirely within server or RSC code. The client-owned `Markdown` component supports traditional and streaming SSR, but plugin entries containing functions cannot be serialized from a Server Component into that client boundary; direct RSC rendering requires a future additive server renderer rather than weakening the plugin protocol.                                                                                                                                                                                                                                          |
-| FR26 | On the default table path each column has a content-derived width floor: the larger of its own longest unbreakable token and a readable minimum derived from that column's content, bounded so a table of short columns still fits its container. The floor applies to the cell's text, not to its padded box, so it means the same amount of content at every density. A header label contributes its own readable minimum to that comparison. A table whose floors exceed the container grows and scrolls rather than dividing the container equally.                                                                                                                                             |
-| FR27 | Default table header cells never truncate: no ellipsis and no width clamp. A header reads in full, on one line up to a bounded width and wrapping past it. Inline code inside a default table cell keeps its token whole rather than breaking mid-token; a supplied `inlineCode` renderer owns its own wrapping.                                                                                                                                                                                                                                                                                                                                                                                    |
-| FR28 | Markdown's Table block owns spacing, sizing, and alignment. The nested Table's own Scroll region remains the sole owner of the table's horizontal overflow, its accessible name, and its conditional keyboard focusability; Markdown adds no second scroll container, name, or tab stop of its own.                                                                                                                                                                                                                                                                                                                                                                                                 |
-| FR29 | On the default Code block path the fence's full first word selects CodeBlock's diff layer (`component:CodeBlock` FR9): `diff` renders the layer over plaintext, `diff-<language>` the layer over `<language>` (the language read by the same leading-word rule as any other fence); every other fence takes no diff layer. A supplied `code` renderer's contract is unchanged: it keeps receiving the leading word characters as `language` — `diff` for both `diff` and `diff-<language>` fences — and nothing new.                                                                                                                                                                                |
-| FR30 | `codeLanguages` lists `component:CodeBlock` language values (FR13): Astryx modules or custom languages. On the default Code block path, a fence whose language word — the same leading-word read as any other fence (FR29) — is one of a listed module's identifiers renders with that value as its `language`, ahead of a built-in with the same identifier, and a `diff-<identifier>` fence takes the diff layer over that value; every other fence resolves as before. A later entry wins when two list the same identifier. Without `codeLanguages`, fences render as they do today. A supplied `code` renderer's contract is unchanged: it keeps receiving the language word, and nothing new. |
+| ID   | 不变式                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1  | 块级与行内显示都渲染一个 Document 根，承载当前 `markdown` 目标。行内显示不渲染任何块解剖结构。                                                                                                                                                                                                                                                                                                                                                                                                      |
+| FR2  | 在默认块渲染路径上，Heading、Paragraph、List、Code block、Blockquote、Table、Divider 与 Image 承载下文记录的八个当前局部块目标。                                                                                                                                                                                                                                                                                                                                                                    |
+| FR3  | 所提供的 `heading`、`paragraph`、`code`、`blockquote`、`hr` 或安全 URL 的 `image` 渲染器会替换对应的默认部件，因此 Markdown 不会把该部件的局部目标强加于替代内容。                                                                                                                                                                                                                                                                                                                                  |
+| FR4  | 已发布的 Code block 目标仍为 `markdown-codeblock`；这一兼容性异常既不改名，也不加别名。                                                                                                                                                                                                                                                                                                                                                                                                             |
+| FR5  | 密度与 Heading 层级仍是其所属目标上的反射能力。显示模式、流式状态与渲染器选择不会成为独立的解剖条目。                                                                                                                                                                                                                                                                                                                                                                                               |
+| FR6  | 没有 `components.math` 时，Markdown 不识别数学语法。默认、legacy-set、`math: false` 以及标注为 `ParseOptions` 的解析器调用保留已发布的 `InlineNode` / `BlockNode` 结果联合；只有 `MathParseOptions` 返回显式的启用数学的联合。                                                                                                                                                                                                                                                                      |
+| FR7  | 启用数学后，`$…$` 产生行内 `math` 节点，`$$…$$` 产生块级 `math` 节点。渲染器接收去掉分隔符的源作为 `value`，并接收其位置作为 `display`。                                                                                                                                                                                                                                                                                                                                                            |
+| FR8  | 行内数学保持在一行，两个分隔符的任一侧都不能有空白，且不能紧跟在数字之后开启，也不能紧挨数字之前结束。`$$` 保留给显示数学。这些边界使成对的货币金额保持字面。                                                                                                                                                                                                                                                                                                                                       |
+| FR9  | 反斜杠转义的美元符号在数学之外是字面量，在数学内部不会关闭数学。未匹配的行内或显示分隔符在非流式输出中保持字面。                                                                                                                                                                                                                                                                                                                                                                                    |
+| FR10 | 代码段与围栏代码块对数学解析不透明。链接目标地址不透明；链接标签可以包含行内数学。行内插件只作用于散文文本，从不在数学内部运行。                                                                                                                                                                                                                                                                                                                                                                    |
+| FR11 | 在每个分块边界，流式都收敛到与完整解析相同的节点，包括嵌套在普通列表、任务列表、引用块及其受支持组合中的显示数学，无论使用 LF 还是 CRLF，也无论有无源范围。不完整的数学只在其确切的所属容器仍处于打开状态时被暂缓；列表/引用退出或引用深度变化会恢复字面解析。启用数学的增量调用要求 `IncrementalParseState<true>`，因此缓存与返回的联合共享同一契约。                                                                                                                                              |
+| FR12 | 省略 `plugins` 与传入空列表是同一个语义空管道，具有相同的解析器联合、AST、DOM、样式、目标、ID 与流式行为。Core 可以跳过空的准备与分配，而不创建单独的行为模型。`components`、`inlinePlugins`、引用、自动链接、源与数学保留其已发布含义。                                                                                                                                                                                                                                                            |
+| FR13 | 启用插件的解析遵循内置词法屏蔽与有序语法声明，然后使用一棵稳定、严格类型化、与 MDAST 对齐的规范树进行转换、渲染与 Outline。`MarkdownAstNodeMap` 与 `visitMarkdownNodes` 按节点种类收窄回调。已发布的解析器函数通过兼容性投影保留其既有结果形状。每个返回的根在后续插件或渲染观察到它之前，都是有限、无环、可表示、经过校验且被冻结的。                                                                                                                                                              |
+| FR14 | 插件失败保留最后有效文档与可读的作者源。Core 保留标题、导航、图片、列表、表格与文档语义，并且不暴露原始标记解析通道、注册表、包发现、可变共享 AST 或不受限制的 DOM 钩子。类似 URL 的插件数据保持不受信任；Astryx 拥有的汇点遵循 `family:navigation-destinations`。                                                                                                                                                                                                                                  |
+| FR15 | 增量解析身份包含每个影响解析的 Markdown 选项，并且只包含有序的带语法插件名称、协议版本与 `parseKey`。转换或渲染器变更复用已稳定的解析输出，重新运行转换，并且不重新挂载未受影响的扩展输出。                                                                                                                                                                                                                                                                                                         |
+| FR16 | 启用插件的 Markdown 与由 Markdown 派生的 Outline 使用相同的解析选项、有序转换、扩展文本投影与已安装的标题投影，因此每个 Outline 目标都与渲染身份一致。第一方模块只能在其自身当前模块契约下组合不同的标题投影；Markdown 只拥有这一共享调用接缝。受限的 Remark 适配器只能运行同步转换插件，且其输入与输出都必须通过所记录的支持 MDAST 子集往返。                                                                                                                                                      |
+| FR17 | 扩展节点把 `content` 声明为 `'none'`、`'phrasing'`、`'flow'`，或声明为显式的 `{allow, min?, max?}` 允许列表，以收窄其 `display` 所暗示的类别。Markdown 在同一语法与屏蔽之下解析每个容器的内部源范围，在每个转换边界校验子节点，通过同样的内置渲染器与 `components` 接缝渲染子节点，把嵌套计入内置深度上限，使用 FR16 投影，并在容器渲染器失败时原位渲染子节点。                                                                                                                                     |
+| FR18 | 转换可以读取并移除另一个插件的扩展节点（包括包含它们的子树），也可以插入或移除标题；它不得创建、编辑、内部重排或复制另一个插件的节点，不得改变源标题的深度，也不得伪造或复制标题身份。`dependsOn` 在准备阶段被校验；未满足或顺序错误的依赖只跳过该插件的转换。每次拒绝都指明规则与所属插件。                                                                                                                                                                                                        |
+| FR19 | `onPluginDiagnostic` 在组件与解析器选项上都可用，它对每次失败、提示或静默降级接收一个不含源的事件——插件、阶段、稳定代码、严重程度——在开发与生产环境中都如此，并带抑制代码做速率限制。准入、重名与协议版本失败在组件与每个解析器入口处表现一致：调用以最后有效配置成功，绝不向调用方抛出异常。                                                                                                                                                                                                       |
+| FR20 | `parseMarkdownAst()` 与 `parseInlineAst()` 返回规范树，并接受与组件相同的选项与插件列表；`@astryxdesign/core/Markdown/parser` 暴露解析、规范 AST 类型与插件准入，没有客户端边界。`createMarkdownPlugin()` 推断扩展节点联合，因此没有任何调用点需要显式类型参数，而产生不出可用扩展类型的声明是类型错误，而不是静默的 `never`。                                                                                                                                                                      |
+| FR21 | 每个流式更新都会再次运行转换，转换必须幂等且收敛；效果需要完整输入的转换使用最终输入信号。语义相等的插件列表复用已准备的工作，无论数组引用是否稳定，并且开发环境在重建的列表妨碍复用时报告一条诊断。                                                                                                                                                                                                                                                                                                |
+| FR22 | 扩展渲染器可以选择启用 Markdown 拥有的扩展主题目标，使主题能够触达插件输出。选择退出则输出不被打上主题目标。除 Core 已应用的块间距与内容宽度外，该目标不添加任何默认样式或解剖结构。                                                                                                                                                                                                                                                                                                                |
+| FR23 | Markdown 拥有一个显式支持的方言，而不是声称完全符合 CommonMark 或 GFM。相邻的兼容有序或无序项无论是否有任务标记都保持为一个列表；每一项都独立保留其勾选状态或普通列表项语义，包括在嵌套层级。默认语法保留已发布的任务列表与表格支持，而 `autolink: 'gfm'` 只添加所记录的自动链接行为，不切换任何其他语法。                                                                                                                                                                                          |
+| FR24 | `createMarkdownFrontmatter()` 只识别由唯一 `key: value` 行组成的前导 `---` 块，通过调用方的类型化解析器解码它，把有限的类 JSON 元数据保存在规范文档上，并从渲染内容中移除该语法。未完成的前导块在流式处理时不产生可见 Markdown；畸形或未完成的最终输入保持为普通 Markdown。Frontmatter 没有渲染器，也不需要 Remark 兼容。                                                                                                                                                                           |
+| FR25 | 规范解析器与插件构建子路径保持服务器安全，并且可以完全在服务器或 RSC 代码中运行带函数的插件。客户端拥有的 `Markdown` 组件支持传统 SSR 与流式 SSR，但包含函数的插件条目无法从 Server Component 序列化进该客户端边界；直接进行 RSC 渲染需要未来的增量式服务器渲染器，而不是削弱插件协议。                                                                                                                                                                                                             |
+| FR26 | 在默认表格路径上，每列都有一个由内容推导的宽度下限：取该列自身最长不可断词元与由该列内容推导的可读最小值中的较大者，并施加上界，使短列组成的表格仍能放进容器。该下限作用于单元格的文本，而不是其带内边距的盒子，因此在任何密度下它都代表相同的内容量。表头标签对可读最小值的比较也有自己的贡献。下限超出容器的表格会增长并滚动，而不是均分容器。                                                                                                                                                    |
+| FR27 | 默认表头单元格从不截断：没有省略号，也没有宽度钳制。表头完整阅读，在有界宽度内保持一行，超出后换行。默认表格单元格内的行内代码保持词元完整，而不是在词元中间断开；所提供的 `inlineCode` 渲染器拥有自己的换行方式。                                                                                                                                                                                                                                                                                  |
+| FR28 | Markdown 的 Table 块拥有间距、尺寸与对齐。嵌套 Table 自身的 Scroll 区域仍是表格水平溢出、其可访问名称与条件性键盘可聚焦性的唯一拥有者；Markdown 不添加自己的第二个滚动容器、名称或 Tab 停靠点。                                                                                                                                                                                                                                                                                                     |
+| FR29 | 在默认 Code block 路径上，围栏完整的第一词选择 CodeBlock 的 diff 层（`component:CodeBlock` FR9）：`diff` 在纯文本之上渲染该层，`diff-<language>` 在 `<language>` 之上渲染该层（该语言由与其他任何围栏相同的首词规则读取）；其他每个围栏都不采用 diff 层。所提供 `code` 渲染器的契约不变：它仍然接收首词字符作为 `language`——对 `diff` 与 `diff-<language>` 围栏都是 `diff`——且不新增任何内容。                                                                                                      |
+| FR30 | `codeLanguages` 列出 `component:CodeBlock` 语言值（FR13）：Astryx 模块或自定义语言。在默认 Code block 路径上，若围栏的语言词——与其他任何围栏相同的首词读取（FR29）——是所列模块的标识符之一，则用该值作为其 `language` 渲染，并优先于具有相同标识符的内置语言；`diff-<identifier>` 围栏在该值之上采用 diff 层；其他每个围栏照旧解析。当两个条目列出相同标识符时，后一个条目获胜。没有 `codeLanguages` 时，围栏按今天的方式渲染。所提供 `code` 渲染器的契约不变：它仍然接收语言词，且不新增任何内容。 |
 
-FR23 includes CommonMark-compatible lazy paragraph continuation inside blockquotes
-and ordered, unordered, or task-list items. Omitting a repeated quote marker or
-item indentation does not close the deepest open paragraph; a blank line or an
-interrupting block start does. The owning top-level block's source range includes
-the lazy lines.
+FR23 包含引用块内部以及有序、无序或任务列表项内部与 CommonMark 兼容的惰性段落延续。省略重复的引用标记或项缩进不会关闭最深的打开段落；空行或阻断性的块起始才会。所属顶层块的源范围包含这些惰性行。
 
-FR23 also includes table-level escaping inside inline-code spans: `\|` keeps the pipe
-inside its authored cell, contributes only `|` to the code value and rendered
-text, and produces the same result in full and incremental parsing. A completed
-inline-code span excludes its delimiting backticks from the parsed value and
-renders only that value inside `<code>`; an unmatched backtick remains literal
-text. Outside a table cell, inline code retains its authored backslashes.
+FR23 还包含行内代码段内部的表格级转义：`\|` 把竖线保留在其作者书写的单元格内，对代码值与渲染文本只贡献 `|`，并且在完整解析与增量解析中产生相同的结果。已完成的行内代码段把其定界反引号从解析值中排除，只把该值渲染在 `<code>` 内；未匹配的反引号保持为字面文本。在表格单元格外，行内代码保留其作者书写的反斜杠。
 
 ### Allowed variation
 
-- **AV1 — Parsed content.** The number and ordering of block parts may vary with
-  the Markdown source without changing their ownership.
-- **AV2 — Lists.** Ordered, unordered, and task lists share the List anatomy and
-  current `markdown-list` target. Each level's marker style is fixed by its
-  depth, as `spec:AST-061/DEC-6` defines, not a variation.
-- **AV3 — Custom renderers.** Supported custom block renderers may replace their
-  default part and own its styling without receiving a Markdown block target.
-- **AV4 — Nested primitives.** Astryx primitives used inside default blocks may
-  change internal element shape while preserving their own public contracts and
-  Markdown's outer block targets.
-- **AV5 — Math renderer.** The caller may use any renderer that accepts the raw
-  expression and display value. Its DOM, styles, typesetting engine, error UI,
-  and accessibility representation are outside Markdown's ownership.
-- **AV6 — Installed plugins.** A host may supply any ordered set of compatible
-  opaque plugin entries. Syntax, immutable transform behavior, renderer-owned
-  output, and helper implementation may vary while validation, readable fallback,
-  Core semantics, and heading identity stay fixed.
+- **AV1 — 解析后的内容。** 块部件的数量与顺序可以随 Markdown 源变化，而不改变其所有权。
+- **AV2 — 列表。** 有序、无序与任务列表共享 List 解剖结构与当前 `markdown-list` 目标。每一级的标记样式由其深度固定，正如 `spec:AST-061/DEC-6` 所定义，不属于可变范围。
+- **AV3 — 自定义渲染器。** 受支持的自定义块渲染器可以替换其默认部件并拥有其样式，而不接收 Markdown 块目标。
+- **AV4 — 嵌套原语。** 默认块内使用的 Astryx 原语可以改变内部元素形状，同时保留其自身的公共契约与 Markdown 的外层块目标。
+- **AV5 — 数学渲染器。** 调用方可以使用任何接受原始表达式与 display 值的渲染器。其 DOM、样式、排版引擎、错误 UI 与可访问性表示都不属于 Markdown 的所有权。
+- **AV6 — 已安装插件。** 宿主可以提供任意有序的兼容不透明插件条目集合。语法、不可变转换行为、渲染器拥有的输出与辅助实现可以变化，而校验、可读回退、Core 语义与标题身份保持不变。
 
 ### Representative states
 
-| State                  | Required invariant                                                                                                                                      | Allowed variation                                                                               |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Default block content  | Every parsed block uses its corresponding current Markdown target.                                                                                      | Block count, order, density, content width, and alignment.                                      |
-| Custom block renderers | The replaced Heading, Paragraph, Code block, Blockquote, Divider, or Image lacks the corresponding Markdown target.                                     | Replacement structure and styling.                                                              |
-| Ordered/unordered list | List carries `markdown-list`; each level's marker style follows its depth (`spec:AST-061/DEC-6`).                                                       | Start value, item count, and nested content.                                                    |
-| Task list              | Each task-marked item carries its own checked state; mixed task/plain items stay in one compatible list and preserve document order and nesting.        | Checked values, item content, and adjacent plain items.                                         |
-| Safe block image       | Default Image carries `markdown-image`, or a custom image renderer replaces it.                                                                         | Source and alternative text.                                                                    |
-| Empty block image URL  | Markdown renders its fallback Image part with `markdown-image`. An unsafe URL never reaches the renderer: the parser drops it.                          | Alternative text shown by the fallback.                                                         |
-| Inline display         | Document carries `markdown`; no block target renders.                                                                                                   | Inline text, links, code, citations, plugins, and opt-in inline math.                           |
-| Math renderer absent   | Dollar-delimited source follows the released Markdown grammar and no `math` node or renderer output exists.                                             | Currency, unmatched delimiters, and ordinary prose.                                             |
-| Math renderer present  | Complete supported delimiters are opaque to Markdown formatting and are passed to the renderer as inert text.                                           | Inline or block display and any renderer-owned output.                                          |
-| Streaming math         | Incomplete math is withheld; once complete, the streamed nodes equal the full-parse nodes at top level and inside list/blockquote containers.           | Delimiters and expression text may arrive in separate chunks; source ranges remain optional.    |
-| Plugins omitted        | Released parser unions, AST, DOM, targets, heading IDs, and performance remain unchanged.                                                               | Omitted or empty list; both are one empty transform pipeline.                                   |
-| Plugins enabled        | Fixed syntax → immutable transform → render order, validated roots, readable fallback, and matching Markdown/Outline heading identity remain invariant. | Syntax, transforms, renderers, helper execution plans, plugin order, and live post-parse state. |
-| Native frontmatter     | A complete leading block is absent from rendered content and yields typed metadata; unfinished streaming input is withheld.                             | Metadata schema and values are caller-defined finite data.                                      |
+| 状态             | 必需不变式                                                                                                       | 允许的变化                                                         |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 默认块内容       | 每个已解析块使用其对应的当前 Markdown 目标。                                                                     | 块数量、顺序、密度、内容宽度与对齐。                               |
+| 自定义块渲染器   | 被替换的 Heading、Paragraph、Code block、Blockquote、Divider 或 Image 不带有对应的 Markdown 目标。               | 替代内容的结构与样式。                                             |
+| 有序/无序列表    | List 承载 `markdown-list`；每一级的标记样式遵循其深度（`spec:AST-061/DEC-6`）。                                  | 起始值、项数量与嵌套内容。                                         |
+| 任务列表         | 每个带任务标记的项承载其自身的勾选状态；任务项与普通项混合时仍留在同一个兼容列表内，并保留文档顺序与嵌套。       | 勾选值、项内容与相邻的普通项。                                     |
+| 安全块图片       | 默认 Image 承载 `markdown-image`，或由自定义图片渲染器替换它。                                                   | 源与替代文本。                                                     |
+| 空块图片 URL     | Markdown 用 `markdown-image` 渲染其回退 Image 部件。不安全的 URL 永远不会到达渲染器：解析器会丢弃它。            | 回退所显示的替代文本。                                             |
+| 行内显示         | Document 承载 `markdown`；不渲染任何块目标。                                                                     | 行内文本、链接、代码、引用、插件，以及可选启用的行内数学。         |
+| 数学渲染器缺失   | 美元符号分隔的源遵循已发布的 Markdown 语法，不存在 `math` 节点或渲染器输出。                                     | 货币、未匹配的分隔符与普通散文。                                   |
+| 数学渲染器存在   | 完整的受支持分隔符对 Markdown 格式化不透明，并作为惰性文本传给渲染器。                                           | 行内或块级显示，以及任何渲染器拥有的输出。                         |
+| 流式数学         | 不完整的数学被暂缓；一旦完整，流式节点在顶层与列表/引用容器内部都等于完整解析的节点。                            | 分隔符与表达式文本可能分块到达；源范围仍是可选的。                 |
+| 插件省略         | 已发布的解析器联合、AST、DOM、目标、标题 ID 与性能保持不变。                                                     | 省略或空列表；两者都是同一个空转换管道。                           |
+| 插件启用         | 固定的“语法 → 不可变转换 → 渲染”顺序、经过校验的根、可读回退，以及与 Markdown/Outline 一致的标题身份都保持不变。 | 语法、转换、渲染器、辅助执行计划、插件顺序，以及解析后的实时状态。 |
+| 原生 frontmatter | 完整的前导块不出现在渲染内容中，并产生类型化元数据；未完成的流式输入被暂缓。                                     | 元数据 schema 与值是调用方定义的有限数据。                         |
 
 ### Transformation and precedence order
 
-- Fenced and inline code claim their contents before math.
-- Complete display math claims a block before headings, tables, lists, and
-  paragraphs. Complete inline math claims its source before citations, links,
-  emphasis, autolinks, and inline plugins.
-- A custom renderer receives only the delimiter-free expression string and its
-  display value. Markdown never turns it into HTML or executes it.
-- Existing URL sanitization remains in force for links and images; math adds no
-  navigation or raw-HTML sink.
-- Built-in syntax and protected contexts claim first; extension syntax claims only
-  eligible source; ordered transforms then receive deeply readonly document roots;
-  Core validates each returned root before rendering.
-- A configured native frontmatter helper claims only the document-start delimiter.
-  It withholds an unfinished block during streaming, removes a completed block
-  before later transforms render the document, and makes typed metadata available
-  to those later transforms and to callers of that helper.
-- A semantic-fence proposal renders before `components.code`. `components.code`
-  renders every fence no proposal claims, and a claimed fence whose plugin
-  renderer is absent, returns nothing, throws, or suspends falls back to
-  `components.code` when supplied and to the default Code block otherwise
-  (`spec:AST-036` FR17).
-- Text matching, semantic fences, and source decorations use transform helpers. Core
-  may compile those helpers into indexed internal plans without exposing additional
-  public phases.
+- 围栏代码与行内代码在数学之前占据其内容。
+- 完整的显示数学在标题、表格、列表与段落之前占据一个块。完整的行内数学在引用、链接、强调、自动链接与行内插件之前占据其源。
+- 自定义渲染器只接收去掉分隔符的表达式字符串及其 display 值。Markdown 绝不把它变成 HTML，也不执行它。
+- 现有的 URL 净化对链接与图片仍然有效；数学不新增导航或原始 HTML 汇点。
+- 内置语法与受保护上下文优先占据；扩展语法只占据符合条件的源；随后有序转换接收深度只读的文档根；Core 在渲染前校验每个返回的根。
+- 配置好的原生 frontmatter 辅助函数只占据文档起始分隔符。它在流式处理期间暂缓未完成的块，在后续转换渲染文档之前移除已完成的块，并让类型化元数据可供这些后续转换与该辅助函数的调用方使用。
+- 语义围栏提案在 `components.code` 之前渲染。`components.code` 渲染没有任何提案占据的每个围栏；而某个已被占据的围栏，其插件渲染器缺失、返回空、抛出异常或挂起时，在提供 `components.code` 的情况下回退到它，否则回退到默认 Code block（`spec:AST-036` FR17）。
+- 文本匹配、语义围栏与源装饰使用转换辅助函数。Core 可以把这些辅助函数编译为带索引的内部计划，而不暴露额外的公共阶段。
 
 ### Performance and resources
 
-- Math scanning is disabled unless requested.
-- GFM autolink scanning is linear in the input length: the email and URL
-  literal scans are anchored, so a long plain run costs about as much as a
-  plain parse.
-- Inline matching is a bounded forward scan of one line. Display matching scans
-  only from a candidate `$$` opener to its closer.
-- The incremental parser keeps completed blocks cached, treats an open display
-  expression like an open code fence, and tracks exact list and blockquote
-  container depth so an indented closer cannot become a new opener and a depth
-  transition cannot swallow literal content. The factory-created state carries
-  the same legacy or math-enabled node contract as the parser call.
-- Stable and semantically equal plugin lists reuse prepared syntax and transform plans. Only syntax enters parse identity; transform and renderer changes reuse parsed output. Zero-work and representative transforms remain within `spec:AST-036` FR21–FR23 budgets, including the plugin-authored and streaming paths.
-- Remark compatibility adapters, the conformance kit, and optional renderers stay outside Core bundles unless explicitly imported.
+- 除非请求，否则不执行数学扫描。
+- GFM 自动链接扫描的耗时与输入长度成线性关系：邮箱与 URL 的字面量扫描都是锚定的，因此一段很长的纯文本所花的代价大约与一次普通解析相当。
+- 行内匹配是对单行的有界前向扫描。显示数学匹配只从候选的 `$$` 起始标记扫描到它的结束标记。
+- 增量解析器缓存已完成的块，把未闭合的显示数学视同未闭合的代码围栏，并精确跟踪列表与引用容器的深度，使缩进的结束标记不会变成新的起始标记，深度切换也不会吞掉字面内容。工厂创建的状态携带与解析器调用相同的、旧版或启用数学后的节点契约。
+- 稳定且语义相等的插件列表会复用已准备好的语法与转换计划。只有语法进入解析身份；转换与渲染器的变化复用已解析的输出。零工作量与代表性转换都保持在 `spec:AST-036` FR21–FR23 的预算之内，包括插件编写的路径与流式路径。
+- Remark 兼容适配器、一致性测试套件与可选渲染器都留在 Core 包之外，除非被显式导入。
 
 ## Accessibility contract
 
-The default document semantics, heading IDs, paragraph role, list semantics,
-scrollable Table wrapper, and image alternative text remain unchanged. Math has
-no Astryx-owned default output: the caller's renderer owns an accessible
-representation appropriate to its typesetting engine (for example MathML or a
-labelled `role="math"` element). Markdown adds no wrapper, ARIA attributes, or
-HTML injection around renderer output. Plugin renderers likewise own their
-complete documented semantic pattern, while Core preserves its own document,
-heading, navigation, image, list, and table semantics. Transforms cannot erase
-required accessible meaning or make meaning color-only.
+默认的文档语义、标题 ID、段落 role、列表语义、可滚动的 Table 包装层以及图片替代文本保持不变。Math 没有 Astryx 自有的默认输出：调用方的渲染器负责给出与其排版引擎相称的无障碍表示（例如 MathML，或带标签的 `role="math"` 元素）。Markdown 不会在渲染器输出周围添加包装层、ARIA 属性或 HTML 注入。插件渲染器同样负责其完整且有文档记载的语义模式，而 Core 保留自己的文档、标题、导航、图片、列表与表格语义。转换不能抹除必需的无障碍含义，也不能让含义仅靠颜色表达。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                                                 | Representation authority       | Hierarchy role | Component contract |
-| ---------------- | ---------------------------------------------------------------------------------- | ------------------------------ | -------------- | ------------------ |
-| Document         | Contains block or inline rendered Markdown content.                                | Current source and public docs | Supporting     | FR1, FR5           |
-| Heading          | Presents one parsed heading with its resolved level and optional generated ID.     | Current source and public docs | Prominent      | FR2, FR3, FR5      |
-| Paragraph        | Presents one prose block using the default composition-safe paragraph structure.   | Current source and public docs | Prominent      | FR2, FR3           |
-| List             | Presents ordered, unordered, or task-list items as one block.                      | Current source and public docs | Prominent      | FR2, FR5           |
-| Code block       | Presents fenced code and owns the outer spacing target on the default path.        | Current source and public docs | Prominent      | FR2, FR3, FR4      |
-| Blockquote       | Presents quoted block content on the default path.                                 | Current source and public docs | Prominent      | FR2, FR3           |
-| Table            | Presents parsed rows and columns in a keyboard-scrollable block wrapper.           | Current source and public docs | Prominent      | FR2                |
-| Divider          | Presents a horizontal separation between blocks.                                   | Current source and public docs | Supporting     | FR2, FR3           |
-| Image            | Presents a block image, or the fallback for an empty image URL.                    | Current source and public docs | Prominent      | FR2, FR3           |
-| Math             | Delegates an explicitly enabled expression to the caller's renderer as inert text. | Component contract             | Supporting     | FR6–FR11           |
+| 结构或状态 | 设计要求                                                  | 表示权威           | 层级角色 | 组件契约      |
+| ---------- | --------------------------------------------------------- | ------------------ | -------- | ------------- |
+| Document   | 包含块级或行内渲染的 Markdown 内容。                      | 当前源码与公开文档 | 支撑     | FR1, FR5      |
+| Heading    | 呈现一个已解析的标题，包含其解析后的层级与可选的生成 ID。 | 当前源码与公开文档 | 突出     | FR2, FR3, FR5 |
+| Paragraph  | 使用默认的组合安全段落结构呈现一个散文块。                | 当前源码与公开文档 | 突出     | FR2, FR3      |
+| List       | 将有序、无序或任务列表项作为一个块呈现。                  | 当前源码与公开文档 | 突出     | FR2, FR5      |
+| Code block | 呈现围栏代码，并在默认路径上拥有外层间距目标。            | 当前源码与公开文档 | 突出     | FR2, FR3, FR4 |
+| Blockquote | 在默认路径上呈现引用的块内容。                            | 当前源码与公开文档 | 突出     | FR2, FR3      |
+| Table      | 在可键盘滚动的块包装层中呈现已解析的行与列。              | 当前源码与公开文档 | 突出     | FR2           |
+| Divider    | 呈现块之间的水平分隔。                                    | 当前源码与公开文档 | 支撑     | FR2, FR3      |
+| Image      | 呈现块级图片，或空图片 URL 的回退内容。                   | 当前源码与公开文档 | 突出     | FR2, FR3      |
+| Math       | 将显式启用的表达式作为惰性文本交给调用方的渲染器。        | 组件契约           | 支撑     | FR6–FR11      |
 
-Custom renderers replace the existing default parts rather than becoming nested
-Markdown anatomy. The opt-in math renderer is also not default anatomy and gets no
-Markdown theme target or wrapper. Lists and Tables have no corresponding custom
-block renderer. The Document remains Markdown-owned in every display mode.
+自定义渲染器替换既有的默认部件，而不会变成嵌套的 Markdown 结构。可选启用的数学渲染器同样不是默认结构，也不会获得 Markdown 主题目标或包装层。List 与 Table 没有对应的自定义块渲染器。Document 在每种显示模式下仍归 Markdown 所有。
 
 ### Theming anatomy
 
@@ -439,216 +249,131 @@ block renderer. The Document remains Markdown-owned in every display mode.
 }
 ```
 
-The map records all nine current targets on Markdown's default render paths. For
-Heading, Paragraph, Code block, Blockquote, Divider, and safe Image, a custom
-renderer replaces the default part and therefore replaces its local target. The
-`markdown-codeblock` spelling is a released compatibility anomaly: the current
-naming rule would produce `markdown-code-block`, but shipped targets are frozen
-and this change preserves the existing spelling exactly.
+该映射记录了 Markdown 默认渲染路径上的全部九个当前目标。对于 Heading、Paragraph、Code block、Blockquote、Divider 与安全的 Image，自定义渲染器会替换默认部件，因而替换其本地目标。`markdown-codeblock` 这一拼写是已发布的兼容性异常：当前的命名规则本会产出 `markdown-code-block`，但已发布的目标已冻结，本次变更精确保留现有拼写。
 
 ## Family and system relationships
 
-- `architecture:component-theming-surface` owns anatomy qualification, target
-  mapping, target-capability state, composition boundaries, and compatibility for
-  frozen targets.
-- `architecture:public-component-api` and `spec:AST-002/DEC-1` own API
-  admission. The caller knows whether dollar syntax is math and must choose the
-  renderer; Markdown cannot derive either from the source without changing the
-  meaning of existing documents.
-- `spec:AST-002/DEC-5` requires this accepted component-local contract to be
-  current with the implementation.
-- `family:navigation-destinations` owns the shared accept/block result for parsed
-  links and every Astryx-owned navigation sink. `spec:AST-005/DEC-1` requires
-  Markdown parsing and link rendering to preserve the same normalized navigation
-  decision as other Core links. Rejected links remain inert and do not reach a
-  custom link renderer; accepted links retain their ordinary behavior.
-- `spec:AST-005/DEC-2` keeps embedded-resource policy separate. The parser owns
-  Markdown link and image URL safety (`spec:AST-005/DEC-3`): it drops every
-  `javascript:`, `vbscript:`, and `data:` URL, and the renderer renders only the
-  nodes it parsed.
-- `module:Markdown/headingLinks` owns its opt-in public factory, heading projection,
-  built-in sibling renderer, i18n, styles, accessibility behavior, and evidence.
-  Markdown supplies only the generic plugin and built-in-heading composition seams.
-- `spec:AST-036` owns the opaque syntax/transform/renderer protocol, immutable AST
-  validation, limited Remark compatibility, performance, and resource boundaries.
-  This record owns aggregate Markdown behavior in FR12–FR22;
-  `module:Markdown/remark` owns the separately imported Remark adapter's
-  supported subset, rejections, and diagnostics; and
-  `module:Outline/parseOutlineFromMarkdown` owns the corresponding Outline
-  projection.
-- `component:Table/DEC-1` and `spec:AST-025/DEC-1` own the nested Scroll
-  region's behavior: Table adopts the shared scrollable-area composition on its
-  own viewport, and that composition — not Markdown — decides how the region
-  scrolls, names itself, and contains its overflow. `spec:AST-025/DEC-4` owns
-  the keyboard ownership that makes the region a tab stop only while it
-  actually scrolls. FR28 projects those claims onto Markdown's table block: it
-  requires Markdown to add no competing scroll container, name, or tab stop,
-  and it neither restates nor narrows what Table and the shared behavior own.
-- `spec:AST-064` owns how the RichText surfaces adopt Markdown plugins. Its
-  DEC-6 limits what this component exposes for them to the capability report
-  and the single-node renderer above.
-- Nested Astryx primitives retain ownership of their own anatomy and targets;
-  Markdown owns the outer block targets listed here.
+- `architecture:component-theming-surface` 拥有结构限定、目标映射、目标能力状态、组合边界，以及冻结目标的兼容性。
+- `architecture:public-component-api` 与 `spec:AST-002/DEC-1` 拥有 API 准入。调用方知道美元符号语法是否为数学，并且必须选择渲染器；若不改变既有文档的含义，Markdown 无法从源码推导出这两者中的任何一个。
+- `spec:AST-002/DEC-5` 要求这份已接受的组件本地契约与实现保持同步。
+- `family:navigation-destinations` 拥有已解析链接与每个 Astryx 自有导航汇聚点的共享接受/阻止结果。`spec:AST-005/DEC-1` 要求 Markdown 解析与链接渲染保留与其他 Core 链接相同的规范化导航决策。被拒绝的链接保持惰性，不会到达自定义链接渲染器；被接受的链接保留其通常行为。
+- `spec:AST-005/DEC-2` 将嵌入资源策略保持独立。解析器拥有 Markdown 链接与图片 URL 的安全性（`spec:AST-005/DEC-3`）：它会丢弃每个 `javascript:`、`vbscript:` 与 `data:` URL，而渲染器只渲染它已解析的节点。
+- `module:Markdown/headingLinks` 拥有其可选启用的公共工厂、标题投影、内置同级渲染器、i18n、样式、无障碍行为与证据。Markdown 只提供通用插件与内置标题的组合接缝。
+- `spec:AST-036` 拥有不透明的语法/转换/渲染器协议、不可变 AST 校验、受限的 Remark 兼容性、性能与资源边界。本记录在 FR12–FR22 中拥有聚合的 Markdown 行为；`module:Markdown/remark` 拥有单独导入的 Remark 适配器所支持的子集、拒绝与诊断；`module:Outline/parseOutlineFromMarkdown` 拥有对应的 Outline 投影。
+- `component:Table/DEC-1` 与 `spec:AST-025/DEC-1` 拥有嵌套 Scroll 区域的行为：Table 在自己的视口上采用共享的可滚动区域组合，并由该组合——而非 Markdown——决定该区域如何滚动、如何命名自己以及如何容纳其溢出。`spec:AST-025/DEC-4` 拥有键盘所有权，使该区域只在实际滚动时才成为 Tab 停靠点。FR28 把这些主张投射到 Markdown 的表格块上：它要求 Markdown 不添加相竞争的滚动容器、名称或 Tab 停靠点，既不重述也不收窄 Table 与共享行为所拥有的内容。
+- `spec:AST-064` 拥有 RichText 各表面如何采用 Markdown 插件。其 DEC-6 把本组件为它们暴露的内容限制为能力报告与上文的单节点渲染器。
+- 嵌套的 Astryx 原语保留对其自身结构与目标的所有权；Markdown 拥有此处列出的外层块目标。
 
 ## Verification map
 
-| Contract               | Verification                                                                                                                                                                                                                                                                                                                          | Representative states                                                                                                                                | Failure signal                                                                                                                                                                                             |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1–FR5                | `Markdown.test.tsx`, theme-target tests, and `scripts/check-knowledge.mjs`                                                                                                                                                                                                                                                            | Default block/inline output and all current targets                                                                                                  | Existing DOM, target, spacing, or renderer behavior changes.                                                                                                                                               |
-| FR6–FR10               | `parser.test.ts` and `Markdown.test.tsx`                                                                                                                                                                                                                                                                                              | Opt-out, inline/display math, escapes, currency, code, links, plugins                                                                                | A delimiter is claimed without opt-in, TeX is formatted as Markdown, or opaque contexts leak.                                                                                                              |
-| FR11                   | `incremental.test.ts` and `Markdown.test.tsx`                                                                                                                                                                                                                                                                                         | Every-character top-level/list/task-list/blockquote splits, CRLF, source ranges                                                                      | Streaming diverges from a full parse, shows partial syntax, mistakes a nested closer for an opener, or crosses a closed container.                                                                         |
-| FR12–FR16              | plugin, transform, adapter, performance, and Outline parser tests                                                                                                                                                                                                                                                                     | omitted/empty lists, immutable transforms, invalid outputs, live updates, one compatible Remark plugin, duplicate headings                           | Empty behavior forks, input mutates, invalid structure escapes, transforms reparse, adapter loses content, budgets fail, or heading targets diverge.                                                       |
-| FR17–FR18              | container parse/validation, ownership, and dependency tests                                                                                                                                                                                                                                                                           | leaf/container declarations, nested containers, foreign read/remove/mint/edit, unmet/misordered dependencies                                         | Plugin-built parsed children, invalid content, lost fallback children, foreign mint/edit, or generic ownership codes.                                                                                      |
-| FR19                   | diagnostic-channel tests in development and production                                                                                                                                                                                                                                                                                | every phase, advisory reports, rate suppression, no handler, malformed list, duplicate Core, version skew                                            | A silent production failure, document content in a diagnostic, or one entrypoint throwing where another recovers.                                                                                          |
-| FR20–FR22              | canonical/server imports, inference, streaming, preparation, theming tests                                                                                                                                                                                                                                                            | server imports, no explicit type args, chunk boundaries, recreated lists, themed/unthemed extensions                                                 | Client references, explicit-type workarounds, oscillation, per-render re-preparation, or unreachable opted-in output.                                                                                      |
-| FR23                   | parser, incremental, renderer, nesting, and public option tests                                                                                                                                                                                                                                                                       | mixed lists; escaped prose/code table cells, nested inline code, full/streaming parity; autolink omitted/enabled                                     | A mixed list splits or loses state, an escaped table pipe changes cells or exposes its backslash, or autolink changes other syntax.                                                                        |
-| FR24                   | `plugins/frontmatter.test.tsx`, Storybook, and server rendering                                                                                                                                                                                                                                                                       | complete, malformed, non-leading, LF/CRLF, unfinished streaming, full plugin stack                                                                   | Metadata syntax renders after completion, unfinished syntax leaks while streaming, typing is lost, or later plugins stop composing.                                                                        |
-| FR25                   | `parser.public.test.ts`, plugin SSR tests, and package export checks                                                                                                                                                                                                                                                                  | server/RSC parsing with plugins, synchronous SSR, suspending renderer streaming boundary                                                             | A server import gains `use client`, plugin execution needs serialization, SSR loses fallback, or direct RSC rendering is misrepresented as supported.                                                      |
-| FR26–FR28              | `Markdown.test.tsx` and a real-browser layer over checked-in narrow-width stories                                                                                                                                                                                                                                                     | short, prose, and token-heavy tables; header-only rows and empty cells; long headers over short bodies; reading columns from phone to document width | A column collapses below its content floor, cell padding eats the floor, a header truncates, an inline-code token breaks mid-token, or a second scroll viewport, name, or tab stop appears around a table. |
-| FR29                   | `Markdown.test.tsx` (a `diff` fence → plaintext + layer, a `diff-tsx` fence → tsx + layer, a plain fence unchanged, a custom `code` renderer receives `language="diff"` for both diff fences and nothing new)                                                                                                                         | default path and custom renderer, `diff` and `diff-<language>` fences                                                                                | a fence word other than `diff`/`diff-<language>` reaching the layer, or a custom renderer receiving a new prop or a different `language`                                                                   |
-| FR30                   | `Markdown.test.tsx` (a fence naming a listed module paints with it and labels with its name; the same fence without `codeLanguages` stays plain; a later entry wins a shared identifier; a `diff-<identifier>` fence takes the diff layer over the listed value; a custom `code` renderer receives the language word and nothing new) | listed and unlisted modules, a shared identifier, a `diff-<identifier>` fence, a custom `code` renderer                                              | a listed module's fence rendering plain, an unlisted identifier resolving to a module, or a custom renderer receiving a module or a new prop                                                               |
-| Public syntax/types    | `Markdown.public.test.ts`, core typecheck, and `Markdown.doc.mjs`                                                                                                                                                                                                                                                                     | Legacy exhaustive switches, math opt-ins, inferred extension-node unions                                                                             | A released union widens, an enabled union loses nodes, or docs drift from declarations.                                                                                                                    |
-| Navigation contract    | `parser.test.ts`, `urlSchemes.test.ts`, `Markdown.test.tsx`, and `Markdown.renderBoundary.test.tsx`                                                                                                                                                                                                                                   | Parsed and rendered links, including transformed built-in links; accepted ordinary schemes; rejected destinations; links versus images               | A blocked destination reaches navigation or a custom link renderer, or resource policy narrows accepted navigation.                                                                                        |
-| Security/accessibility | `parser.test.ts`, `Markdown.test.tsx`, and renderer guidance                                                                                                                                                                                                                                                                          | Inert expression strings and renderer-owned semantics                                                                                                | Astryx executes math as HTML or silently claims renderer-owned accessibility.                                                                                                                              |
-| Autolink scan cost     | `parser.perf.test.ts` "GFM autolink scanning is linear in the input length" (100,000-character runs parse with autolink within a fixed budget) and `parser.test.ts` "finds the same bare emails as a scan from every character"                                                                                                       | A long plain run, a run with an `@` and no dotted domain, a run followed by an email and a URL, and a URL closed by a long run of `)`                | A scan whose cost grows with the square of a run exceeds the budget; an anchored scan that finds different emails fails the comparison                                                                     |
+| 契约             | 验证                                                                                                                                                                                                                                                               | 代表性状态                                                                                        | 失败信号                                                                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1–FR5          | `Markdown.test.tsx`、主题目标测试以及 `scripts/check-knowledge.mjs`                                                                                                                                                                                                | 默认的块级/行内输出与所有当前目标                                                                 | 既有 DOM、目标、间距或渲染器行为发生变化。                                                                                             |
+| FR6–FR10         | `parser.test.ts` 与 `Markdown.test.tsx`                                                                                                                                                                                                                            | 未启用、行内/显示数学、转义、货币符号、代码、链接、插件                                           | 在未启用时认领了分隔符，TeX 被当作 Markdown 格式化，或不透明上下文发生泄漏。                                                           |
+| FR11             | `incremental.test.ts` 与 `Markdown.test.tsx`                                                                                                                                                                                                                       | 逐字符的顶层/列表/任务列表/引用分割、CRLF、源范围                                                 | 流式结果偏离完整解析、显示部分语法、把嵌套的结束标记误认为起始标记，或跨越已关闭的容器。                                               |
+| FR12–FR16        | 插件、转换、适配器、性能与 Outline 解析器测试                                                                                                                                                                                                                      | 省略/空列表、不可变转换、无效输出、实时更新、一个兼容的 Remark 插件、重复标题                     | 空行为出现分叉、输入被修改、无效结构逃逸、转换触发重新解析、适配器丢失内容、预算失败，或标题目标出现分歧。                             |
+| FR17–FR18        | 容器解析/校验、所有权与依赖测试                                                                                                                                                                                                                                    | 叶子/容器声明、嵌套容器、外部读取/移除/创建/编辑、未满足或顺序错误的依赖                          | 插件构建的已解析子节点、无效内容、丢失的回退子节点、外部创建/编辑，或通用的所有权代码。                                                |
+| FR19             | 开发与生产环境中的诊断通道测试                                                                                                                                                                                                                                     | 每个阶段、建议性报告、频率抑制、无处理函数、格式错误的列表、重复的 Core、版本偏差                 | 生产环境出现静默失败、诊断中携带文档内容，或某个入口抛出异常而另一个入口能恢复。                                                       |
+| FR20–FR22        | 规范/服务端导入、类型推导、流式、准备、主题测试                                                                                                                                                                                                                    | 服务端导入、无显式类型参数、分块边界、重建的列表、有主题/无主题的扩展                             | 客户端引用、显式类型的绕过写法、振荡、每次渲染重新准备，或无法到达的可选启用输出。                                                     |
+| FR23             | 解析器、增量、渲染器、嵌套与公共选项测试                                                                                                                                                                                                                           | 混合列表；转义的散文/代码表格单元格、嵌套行内代码、完整与流式的一致性；自动链接省略/启用          | 混合列表被拆分或丢失状态、转义的表格竖线改变单元格或暴露其反斜杠，或自动链接改变了其他语法。                                           |
+| FR24             | `plugins/frontmatter.test.tsx`、Storybook 与服务端渲染                                                                                                                                                                                                             | 完整、格式错误、非开头位置、LF/CRLF、未完成的流式、完整插件栈                                     | 元数据语法在完成后仍被渲染、未完成的语法在流式过程中泄漏、类型信息丢失，或后续插件停止组合。                                           |
+| FR25             | `parser.public.test.ts`、插件 SSR 测试与包导出检查                                                                                                                                                                                                                 | 带插件的服务端/RSC 解析、同步 SSR、会挂起的渲染器流式边界                                         | 服务端导入被加上 `use client`、插件执行需要序列化、SSR 丢失回退，或直接 RSC 渲染被错误表述为受支持。                                   |
+| FR26–FR28        | `Markdown.test.tsx` 以及覆盖已签入的窄宽度 story 的真实浏览器层                                                                                                                                                                                                    | 简短、散文与 token 密集的表格；仅有表头的行与空单元格；长表头配短表体；从手机到文档宽度读取各列   | 列收缩到其内容下限之下、单元格内边距吃掉下限、表头被截断、行内代码 token 在中间断开，或表格周围出现第二个滚动视口、名称或 Tab 停靠点。 |
+| FR29             | `Markdown.test.tsx`（一个 `diff` 围栏 → 纯文本 + 层，一个 `diff-tsx` 围栏 → tsx + 层，一个普通围栏保持不变，自定义 `code` 渲染器对两个 diff 围栏都收到 `language="diff"` 且不收到新内容）                                                                          | 默认路径与自定义渲染器、`diff` 与 `diff-<language>` 围栏                                          | 不是 `diff`/`diff-<language>` 的围栏词进入该层，或自定义渲染器收到新 prop 或不同的 `language`                                          |
+| FR30             | `Markdown.test.tsx`（命名某个已列出模块的围栏用它来绘制并以它的名称作为标签；同一围栏在没有 `codeLanguages` 时保持普通样式；后出现的条目在共享标识符上胜出；`diff-<identifier>` 围栏优先采用 diff 层而非已列出的值；自定义 `code` 渲染器收到语言词且不收到新内容） | 已列出与未列出的模块、共享标识符、`diff-<identifier>` 围栏、自定义 `code` 渲染器                  | 已列出模块的围栏被渲染成普通样式、未列出的标识符被解析为某个模块，或自定义渲染器收到模块或新 prop                                      |
+| 公共语法/类型    | `Markdown.public.test.ts`、core 类型检查与 `Markdown.doc.mjs`                                                                                                                                                                                                      | 旧版穷尽式 switch、数学的可选启用、推导出的扩展节点联合类型                                       | 已发布的联合类型被放宽、已启用的联合类型丢失节点，或文档与声明脱节。                                                                   |
+| 导航契约         | `parser.test.ts`、`urlSchemes.test.ts`、`Markdown.test.tsx` 与 `Markdown.renderBoundary.test.tsx`                                                                                                                                                                  | 已解析与已渲染的链接，包括经过转换的内置链接；被接受的普通 scheme；被拒绝的目标；链接与图片之分   | 被阻止的目标到达导航或自定义链接渲染器，或资源策略收窄了被接受的导航。                                                                 |
+| 安全/无障碍      | `parser.test.ts`、`Markdown.test.tsx` 与渲染器指导                                                                                                                                                                                                                 | 惰性表达式字符串与渲染器自有的语义                                                                | Astryx 把数学当作 HTML 执行，或悄悄认领渲染器自有的无障碍职责。                                                                        |
+| 自动链接扫描成本 | `parser.perf.test.ts` 的“GFM 自动链接扫描的耗时与输入长度成线性关系”（100,000 字符的输入在固定预算内完成带自动链接的解析）与 `parser.test.ts` 的“从每个字符开始扫描都能找到相同的裸邮箱”                                                                           | 一段很长的纯文本、含 `@` 但没有带点域名的文本、后接邮箱与 URL 的文本，以及被一长串 `)` 闭合的 URL | 耗时随文本长度平方增长的扫描超出预算；锚定扫描若找到不同邮箱则比较失败                                                                 |
 
-Focused tests continue to pin all nine current target names and default block
-placement. Math intentionally adds no target and no default anatomy.
+聚焦测试继续固定全部九个当前目标名称与默认块位置。Math 有意不添加任何目标，也不添加默认结构。
 
 ## Decision log
 
 ### DEC-1 — Math is an opt-in renderer contract
 
-**Reference:** `component:Markdown/DEC-1`
-**Decider:** `cixzhang`, `2026-09-13`
+**参考：** `component:Markdown/DEC-1`
 
-A caller that supplies `components.math` opts the component into the constrained
-dollar-math grammar and receives every complete expression through one renderer
-with its source value and inline/block placement. Direct parser callers use
-`MathParseOptions`; incremental callers also create
-`IncrementalParseState<true>` via `createIncrementalState<true>()` so the cache
-and result expose the same math-enabled node union.
+**决策者：** `cixzhang`、`2026-09-13`
 
-This passes API admission because otherwise identical dollar-delimited source may
-be prose or math, only the document host knows which meaning applies, and Astryx
-cannot choose a typesetting or accessibility implementation for the host. Tying
-the opt-in to the required renderer prevents an enabled-but-unrenderable state.
-The default remains exactly the released Markdown grammar.
+提供 `components.math` 的调用方会让组件进入受限的美元数学语法，并通过一个渲染器接收每个完整表达式，同时获得其源值与行内/块级位置。直接的解析器调用方使用 `MathParseOptions`；增量调用方还要通过 `createIncrementalState<true>()` 创建 `IncrementalParseState<true>`，使缓存与结果暴露同一个启用数学后的节点联合类型。
 
-Rejected: a generic AST/plugin escape hatch, raw HTML rendering, new list/table
-slots without consumer evidence, or a separate boolean on the component that
-could enable math without a renderer.
+这通过了 API 准入，因为其他方面完全相同的美元符号分隔的源既可能是散文也可能是数学公式，只有文档宿主知道哪种含义适用，而 Astryx 无法替宿主选择排版或无障碍实现。把可选启用与必需的渲染器绑定，可防止出现已启用但无法渲染的状态。默认值仍完全是已发布的 Markdown 语法。
+
+已否决：通用 AST/插件逃生舱口、原始 HTML 渲染、在没有使用方证据的情况下新增列表/表格槽位，或在组件上增加一个单独的布尔值，使数学可在没有渲染器时被启用。
 
 ### DEC-2 — Immutable transformation is the canonical Markdown extension seam
 
-**Reference:** `component:Markdown/DEC-2`
-**Decider:** `cixzhang`, `2026-09-15`
+**参考：** `component:Markdown/DEC-2`
 
-Markdown accepts one ordered `plugins` list whose opaque entries are created by
-`createMarkdownPlugin()`. The public protocol exposes only bounded `syntax`,
-immutable `transform`, and typed `renderers`. Core owns deep-readonly input,
-validation and freezing of replacement roots, readable fallback, syntax-only parse
-identity, preparation reuse, shared heading identity, containers, diagnostics, canonical/server parsing, and theming in FR12–FR22. Existing
-`components`, `inlinePlugins`, math, citations, autolinking, and parser calls remain
-compatible.
+**决策者：** `cixzhang`、`2026-09-15`
 
-Text matching, semantic fences, and source decoration are transform helpers rather
-than separate protocol phases. A tree-shakeable adapter may run only synchronous
-transform-only Remark plugins over the documented MDAST subset; unsupported behavior
-fails closed rather than being approximated.
+Markdown 接受一个有序的 `plugins` 列表，其不透明条目由 `createMarkdownPlugin()` 创建。公共协议只暴露有界的 `syntax`、不可变的 `transform` 与带类型的 `renderers`。Core 在 FR12–FR22 中拥有深度只读输入、替换根的校验与冻结、可读回退、仅语法的解析身份、准备复用、共享标题身份、容器、诊断、规范/服务端解析与主题化。既有的 `components`、`inlinePlugins`、数学公式、引用、自动链接与解析器调用保持兼容。
 
-This projects `spec:AST-036/DEC-1` through `DEC-4` into the component owner. It rejects a registry, package discovery, mutable shared AST, raw markup, a second plugin prop, or an unrestricted Unified runtime.
+文本匹配、语义围栏与源装饰是转换辅助方法，而不是单独的协议阶段。可 tree-shake 的适配器只可在有文档记载的 MDAST 子集上运行同步的仅转换 Remark 插件；不受支持的行为按失败关闭处理，而不是近似处理。
+
+这会把 `spec:AST-036/DEC-1` 至 `DEC-4` 投射到组件所有者。它否决注册表、包发现、可变的共享 AST、原始标记、第二个插件 prop，或不受限的 Unified 运行时。
 
 ### DEC-3 — Containers, diagnostics, and canonical APIs are Markdown-owned
 
-**Reference:** `component:Markdown/DEC-3`
-**Decider:** `cixzhang`, `2026-09-16`
+**参考：** `component:Markdown/DEC-3`
 
-Markdown parses every extension container's inner span itself and validates children against the plugin's declared content shape, so a callout holds real Markdown while heading identity, protected contexts, navigation policy, and Outline scope stay Core-owned. Containers change what a document can express, not which projection owns heading identity: the released top-level traversal remains the default, and any opt-in widening belongs to a separate current module contract. A failed container renderer shows its children rather than literal source. Ownership rejections name the rule and owner; removal of another plugin's nodes is permitted and only minting, editing, internal reordering, duplication, and identity forgery are not.
+**决策者：** `cixzhang`、`2026-09-16`
 
-Markdown also owns the protocol's observability and entry surface: `onPluginDiagnostic` makes every failure visible in production without carrying document content, admission failures degrade instead of throwing at any entrypoint, canonical parse entrypoints and a server-safe parser entry exist beside the released projection, extension types are inferred, and extension output may opt into one theme target without becoming default anatomy.
+Markdown 自己解析每个扩展容器的内部区间，并按照插件声明的内容形状校验子节点，因此标注块（callout）可承载真正的 Markdown，而标题身份、受保护上下文、导航策略与 Outline 范围仍归 Core 所有。容器改变的是文档能表达什么，而不是由哪个投影拥有标题身份：已发布的顶层遍历仍是默认值，任何可选启用的放宽都属于单独的当前模块契约。失败的容器渲染器会显示其子节点，而不是字面源码。所有权拒绝会指出规则与所有者；移除另一个插件的节点是被允许的，只有创建、编辑、内部重排、复制与身份伪造不是。
 
-This projects `spec:AST-036/DEC-5` through `DEC-11` into the component owner in FR17–FR22. It rejects leaf-only extensions, plugin-authored parsed children, independent document shells, development-only or free-text diagnostics, parsers reachable only through a client barrel, required hand-written extension aliases, and default anatomy for plugin output.
+Markdown 也拥有该协议的可观测性与入口表面：`onPluginDiagnostic` 让每个失败在生产环境中可见，同时不携带文档内容；准入失败在任何入口都降级而不是抛出；规范解析入口与服务器安全解析器与已发布投影并存；扩展类型会被推导；扩展输出可选启用一个主题目标，而不会成为默认结构。
+
+这会把 `spec:AST-036/DEC-5` 至 `DEC-11` 投射到组件所有者，覆盖 FR17–FR22。它否决仅叶子扩展、插件编写的已解析子节点、独立的文档外壳、仅开发环境或自由文本的诊断、只能通过客户端 barrel 到达的解析器、必需手写的扩展别名，以及插件输出的默认结构。
 
 ### DEC-4 — Own an explicit Markdown dialect, not a profile switch
 
-**Reference:** `component:Markdown/DEC-4`
-**Decider:** `cixzhang`, `2026-09-19`
+**参考：** `component:Markdown/DEC-4`
 
-Markdown's released grammar is an explicit Astryx-owned subset. Task-list markers are item semantics inside the ordinary ordered or unordered list structure, so mixed task and plain items stay in one compatible list and each item retains its own state at every nesting level. Released table and task-list syntax remains enabled by default. A backslash-escaped pipe inside a table cell is structural source syntax: it keeps the pipe in that cell and contributes only the literal pipe to rendered prose or inline code, with the same result in full and incremental parsing. The optional `autolink: 'gfm'` value adds only the documented autolink behavior; it neither enables another syntax feature nor changes list structure.
+**决策者：** `cixzhang`、`2026-09-19`
 
-This keeps documents stable as Astryx adds or declines individual ecosystem features. It rejects a blanket CommonMark or GFM conformance claim, aggregate all-task/all-plain classification, an implicit whole-grammar mode switch, and silently enabling future GFM features under the existing autolink option.
+Markdown 已发布的语法是 Astryx 自有的显式子集。任务列表标记是普通有序或无序列表结构中的项语义，因此任务项与普通项混排时仍留在同一个兼容列表中，且每个项在每个嵌套层级上都保留自己的状态。已发布的表格与任务列表语法默认保持启用。表格单元格内反斜杠转义的竖线是结构性源语法：它把竖线保留在该单元格中，并且只把字面竖线贡献给渲染后的散文或行内代码，完整解析与增量解析的结果相同。可选的 `autolink: 'gfm'` 值只添加有文档记载的自动链接行为；它既不启用其他语法特性，也不改变列表结构。
+
+这使文档在 Astryx 增加或拒绝个别生态特性时保持稳定。它否决笼统的 CommonMark 或 GFM 一致性声明、聚合的“全任务/全普通”分类、隐式的整语法模式切换，以及在既有自动链接选项下悄悄启用未来的 GFM 特性。
 
 ### DEC-5 — Frontmatter is typed document metadata
 
-**Reference:** `component:Markdown/DEC-5`
-**Decider:** `cixzhang`, `2026-09-19`
+**参考：** `component:Markdown/DEC-5`
 
-Native frontmatter is a first-party helper in the ordered plugin pipeline. It
-recognizes only a leading delimited block, parses a deliberately small key/value
-grammar through a caller-provided typed decoder, and removes the syntax from the
-rendered document. It does not create a visual extension node or require Remark's
-frontmatter format. During streaming, incomplete frontmatter is withheld so raw
-metadata never flashes as content; once closed, later plugins can consume the
-metadata and the remaining document normally.
+**决策者：** `cixzhang`、`2026-09-19`
+
+原生 frontmatter 是有序插件管线中的一个第一方辅助工具。它只识别位于开头的定界块，通过调用方提供的带类型解码器解析一套刻意保持很小的键/值语法，并把该语法从渲染后的文档中移除。它不创建可视化扩展节点，也不要求 Remark 的 frontmatter 格式。在流式过程中，未完成的 frontmatter 会被暂缓，使原始元数据绝不会闪显为内容；一旦闭合，后续插件便可正常消费该元数据与其余文档。
 
 ### DEC-6 — A Markdown table column is floored by its own content, on Markdown's own Table part
 
-**Reference:** `component:Markdown/DEC-6`
-**Decider:** `nynexman4464`, `2026-09-28`
+**参考：** `component:Markdown/DEC-6`
 
-A Markdown table's columns are sized from the column's own content rather than
-from fixed width buckets, and the floor is expressed against the cell's text
-rather than its padded box. Content-derived floors keep an identifier, a route,
-or a status token readable at any reading width, and a floor on the text box
-means the same amount of content at every density without Markdown restating
-Table's own spacing.
+**决策者：** `nynexman4464`、`2026-09-28`
 
-Markdown applies this to its own default Table part, over Table's released
-wrap-mode defaults, rather than changing those defaults. Table's wrap mode is a
-released contract for data-driven tables, and Markdown already owns the styling
-of the part it renders; narrowing the change to that part leaves every other
-Table caller untouched.
+Markdown 表格的各列按该列自身的内容而非固定宽度桶来定宽，并且下限是针对单元格文本而非其带内边距的盒子来表达的。由内容推导的下限让标识符、路由或状态 token 在任意阅读宽度下都可读，而文本盒上的下限意味着相同的内边距在每种密度下都对应相同的内容量，Markdown 也无须重述 Table 自己的间距。
 
-The nested Table's Scroll region stays the single owner of the table's
-horizontal overflow, name, and conditional keyboard focusability, so
-Markdown's own block gives up the overflow, `role`, name, and tab stop it
-duplicated. Two nested scroll containers around one table produce a focus stop
-that never scrolls and a second region with the same name, and the column
-floors are not observable while an outer container absorbs the overflow.
+Markdown 在 Table 已发布的换行模式默认值之上，把这一点应用于自己的默认 Table 部件，而不是改变那些默认值。Table 的换行模式是面向数据驱动表格的已发布契约，而 Markdown 已经拥有它所渲染部件的样式；把变更收窄到该部件，就不会触及任何其他 Table 调用方。
 
-Rejected: changing Table's wrap-mode defaults instead, which would move a
-released behavior for every data-driven caller to fix one part's layout;
-widening columns by measuring rendered text, which adds an observer and a
-reflow to a purely declarative path; and adding a prop or option for column
-sizing, which would make a default-path defect into a caller's decision.
+嵌套 Table 的 Scroll 区域仍是表格水平溢出、名称与条件性键盘可聚焦性的唯一所有者，因此 Markdown 自己的块放弃了它重复的溢出、`role`、名称与 Tab 停靠点。围绕一个表格的两个嵌套滚动容器会产生一个从不会滚动的焦点停靠点，以及第二个同名区域，而且当外层容器吸收溢出时，列下限也不可观测。
+
+已否决：改为改变 Table 的换行模式默认值，那会为了修正一个部件的布局而移动每个数据驱动调用方的已发布行为；通过测量渲染后文本加宽各列，那会给纯声明式路径增加观察者与重排；以及为列定宽添加 prop 或选项，那会把默认路径的缺陷变成调用方的决策。
 
 ### DEC-7 — Streaming fade-in starts may come from refs written during render
 
-**Reference:** `component:Markdown/DEC-7`
-**Decider:** `cixzhang`, `2026-11-09`
+**参考：** `component:Markdown/DEC-7`
 
-While Markdown streams, refs written during render decide where each new
-fade-in span starts. They hold the recent fade boundaries and the last rendered
-blocks or inline nodes. `architecture:react-component-runtime` INV4 records
-this exception.
+**决策者：** `cixzhang`、`2026-11-09`
 
-The exception is cosmetic. Markdown renders text only from its committed,
-smoothed children, never from these refs. A render React discards, as a
-suspended transition does, can only shift the fade spans by the text it added.
-The newest fade starts later. When every span is in use, the oldest fading text
-settles one step early. The streamed text stays exact.
+当 Markdown 流式渲染时，渲染期间写入的 ref 决定每个新淡入区间的起始位置。它们持有最近的淡入边界，以及最后渲染的块或行内节点。`architecture:react-component-runtime` INV4 记录了这一例外。
 
-Rejected: syncing these refs at commit, which adds commit-phase work to every
-streaming update for a cosmetic difference.
+该例外是装饰性的。Markdown 只从其已提交、已平滑的子节点渲染文本，绝不从这些 ref 渲染。被 React 丢弃的一次渲染（例如挂起的过渡）最多只会按它添加上去的文本移动淡入区间。最新的淡入开始得更晚。当所有区间都在使用时，最旧的淡入文本会提前一步稳定。流式文本本身保持精确。
+
+已否决：在提交阶段同步这些 ref，那会为了一处装饰性差异给每次流式更新增加提交阶段的工作。
 
 ## Open questions
 
-- **OQ1 — Which focused tests should pin target absence for the five remaining
-  custom block replacement paths?** (`checkable`)
+- **OQ1 — 哪些聚焦测试应当为其余五条自定义块替换路径固定“目标不存在”？**（`checkable`）
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, parser mechanics,
-streaming implementation, nested primitive contracts, current audit results, or
-system theming rules. It links to their owners.
+本文件不重复使用方 prop 表/示例、解析器机制、流式实现、嵌套原语契约、当前审计结果或系统主题化规则。它链接到这些内容的拥有者。

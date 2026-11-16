@@ -31,179 +31,140 @@ system_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                          |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | A read-only, one-line label with a required `label`, an optional leading `icon`, and a theme-extensible `variant` (default `neutral`).                                                            |
-| Behavior                | The badge never wraps; a label wider than the available space is cut with an ellipsis inside the badge, and a string or number label is also carried in the root's `title`.                       |
-| End-user impact         | Readers see a compact status or category label that stays inside its container; assistive technology reads the full label text.                                                                   |
-| Builder impact          | None; the record describes shipped behavior.                                                                                                                                                      |
-| Compatibility/readiness | Released behavior recorded as current; no API, default, or output changes. One implementation gap is listed under Current-state impact.                                                           |
-| Review checks           | Reject a badge that wraps or escapes its container, a `title` derived from a rich label, a badge that adds its own role, tab stop, or live region, or a variant that is not reflected on `badge`. |
-| Governing rules         | `architecture:public-component-api/INV5,INV6,INV8`; `architecture:component-theming-surface/INV2,INV6,INV14`.                                                                                     |
+| Area                    | Contract                                                                                                                                      |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public contract         | 只读的单行标签，必须有 `label`，可选的前置 `icon`，以及可被主题扩展的 `variant`（默认 `neutral`）。                                           |
+| Behavior                | badge 永不换行；宽于可用空间的标签会在 badge 内部以省略号裁切，字符串或数字标签还会写入根节点的 `title`。                                     |
+| End-user impact         | 读者看到的是紧凑的状态或类别标签，且始终位于其容器之内；辅助技术读取完整的标签文本。                                                          |
+| Builder impact          | 无；本记录描述的是已发布的行为。                                                                                                              |
+| Compatibility/readiness | 已发布的行为，记录为 current；无 API、默认值或输出变化。Current-state impact 下列出了一处实现缺口。                                           |
+| Review checks           | 拒绝会换行或溢出容器的 badge、由富标签推导出的 `title`、自行添加 role、tab 停靠点或 live region 的 badge，以及未在 `badge` 上映射的 variant。 |
+| Governing rules         | `architecture:public-component-api/INV5,INV6,INV8`；`architecture:component-theming-surface/INV2,INV6,INV14`。                                |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；以下正文具有权威性。
 
 ## Intent
 
-Badge marks one status or category with a short, non-interactive label. It owns
-the label's one-line geometry, its overflow treatment, and the closed set of
-built-in tones that a theme can extend.
+Badge 用一个简短、非交互的标签标记某一种状态或类别。它负责标签的单行几何、其溢出处理，以及主题可以扩展的那一组封闭的内置色调。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: no public prop or default change. The DOM and styling
-  output change: a plain-text label with no right-to-left letter gets
-  `dir="ltr"`, and the label isolates its text (`unicode-bidi: isolate`)
-- Controlled/uncontrolled behavior: not applicable; Badge holds no state
-- Migration decision: none
+- 已发布默认值保留：`yes`
+- 兼容性类别：公共 prop 或默认值均无变化。DOM 与样式输出有变化：不含从右到左字母的纯文本标签会获得 `dir="ltr"`，且标签会隔离其文本（`unicode-bidi: isolate`）
+- 受控/非受控行为：不适用；Badge 不持有任何状态
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明的内容。
 
 ## Current-state impact
 
-- **Clipped label tail is pointer-only (AR4).** Keyboard and touch users cannot
-  reveal the clipped tail of a long label; only a pointer hover on the native
-  `title` shows it. Assistive technology still receives the full text from the
-  DOM.
+- **被裁切的标签尾部仅对指针可见（AR4）。** 键盘与触摸用户无法显示长标签被裁切的尾部；只有在原生 `title` 上悬停指针才会显示它。辅助技术仍可从 DOM 获得完整文本。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The badge root, its optional leading Icon slot, and the Label container.
-- One-line geometry, inline padding, radius, typography, and the ellipsis
-  overflow treatment.
-- The built-in `variant` tones and the reflection of `variant` on the `badge`
-  theming target.
-- Deriving the root `title` from a string or number label.
+- badge 根节点、其可选的位于前部的 Icon 槽位，以及 Label 容器。
+- 单行几何、行内内边距、圆角、字体排版，以及省略号溢出处理。
+- 内置 `variant` 色调，以及 `variant` 在 `badge` 主题目标上的映射。
+- 由字符串或数字标签推导根节点的 `title`。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Which status or category a product shows, its wording, and whether a badge is
-  appropriate — owned by the product callsite and consumer guidance in
-  `Badge.doc.mjs`.
-- The supplied icon's artwork, size, and accessibility exposure — owned by the
-  supplied node (`component:Icon` when an Icon is passed).
-- Tag-like and dot-only status presentations — owned by
-  `component:Token` and `component:StatusDot`.
-- Contrast of the color tokens each tone uses — owned by the active theme.
+- 产品显示哪个状态或类别、其措辞，以及是否适合使用 badge —— 由产品调用点及 `Badge.doc.mjs` 中的使用方指南负责。
+- 所提供的图标的图形、尺寸与无障碍暴露 —— 由所提供的节点负责（传入 Icon 时为 `component:Icon`）。
+- 类标签式与仅圆点式的状态呈现 —— 由 `component:Token` 与 `component:StatusDot` 负责。
+- 每种色调所用颜色 token 的对比度 —— 由当前生效的主题负责。
 
 ## Public concepts
 
-| Concept          | Closed values or states                                                                                                                                          | Meaning                                               | Availability by variant/orientation/state | Default   | Owner             | Stability | Invalid-value behavior                                                                                                             |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------- | --------- | ----------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Tone (`variant`) | Semantic: `neutral`, `info`, `success`, `warning`, `error`; color: `blue`, `cyan`, `green`, `orange`, `pink`, `purple`, `red`, `teal`, `yellow`; theme additions | Selects the badge fill and text color.                | All badges                                | `neutral` | `component:Badge` | Stable    | A theme-added value is reflected on `badge` and receives no component fill or color (FR6); TypeScript rejects unregistered values. |
-| Label            | string, number, or rich node                                                                                                                                     | The visible badge content.                            | Always rendered; required                 | Required  | `component:Badge` | Stable    | An empty string renders an empty label and no `title`.                                                                             |
-| Icon             | present; absent                                                                                                                                                  | Optional caller-supplied node shown before the label. | All badges                                | absent    | `component:Badge` | Stable    | Absent renders no icon and no placeholder.                                                                                         |
+| Concept           | Closed values or states                                                                                                                                | Meaning                                      | Availability by variant/orientation/state | Default   | Owner             | Stability | Invalid-value behavior                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------- | ----------------------------------------- | --------- | ----------------- | --------- | -------------------------------------------------------------------------------------------- |
+| 色调（`variant`） | 语义：`neutral`、`info`、`success`、`warning`、`error`；颜色：`blue`、`cyan`、`green`、`orange`、`pink`、`purple`、`red`、`teal`、`yellow`；主题新增值 | 选择 badge 的填充色与文字颜色。              | 所有 badge                                | `neutral` | `component:Badge` | 稳定      | 主题新增的值会映射到 `badge`，且不会获得组件填充或颜色（FR6）；TypeScript 会拒绝未注册的值。 |
+| Label             | 字符串、数字或富节点                                                                                                                                   | 可见的 badge 内容。                          | 始终渲染；必填                            | 必填      | `component:Badge` | 稳定      | 空字符串会渲染空标签，且不设置 `title`。                                                     |
+| Icon              | 存在；不存在                                                                                                                                           | 可选的、由调用方提供的节点，显示在标签之前。 | 所有 badge                                | 不存在    | `component:Badge` | 稳定      | 不存在时不渲染图标，也不渲染占位符。                                                         |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                        | Basis                                   |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| FR1 | Badge renders one inline-flex `span` root, centered on both axes, with block size `--spacing-5` (at least that size once it grows with a set text size under `spec:AST-102` FR4; today's fixed size is a gap), no block padding, inline padding `--spacing-2`, `--radius-full` corners, inherited font family, `--text-supporting-size` and `--text-supporting-leading` type, and `--font-weight-medium` weight. | Current source                          |
-| FR2 | When `icon` is supplied it renders directly inside the root, before the Label container, separated by `--spacing-1`; the label always renders inside its own Label container.                                                                                                                                                                                                                                    | Current source and tests                |
-| FR3 | The badge is one line and never wraps. The root is capped at the inline size of its container and may shrink below its content size; a label that does not fit is clipped with a trailing ellipsis inside the Label container and does not escape the badge.                                                                                                                                                     | Current source and consumer docs        |
-| FR4 | A non-empty string label or any number label sets the root `title` to the label text, whether or not the label is clipped. A rich-node or empty-string label sets no `title`.                                                                                                                                                                                                                                    | Current source and tests                |
-| FR5 | `variant` defaults to `neutral`. `neutral` paints `--color-neutral` with primary text; `info`, `success`, `warning`, and `error` paint their strong status fills (`--color-<status>`) with their matching `--color-on-<status>` text and keep a `CanvasText` outline in forced colors; each color variant paints its tinted background with its matching colored text.                                           | Current source and consumer docs        |
-| FR6 | The `badge` target carries the resolved `variant` for every value, including a value a theme adds through `BadgeVariantMap`. A theme-added value receives no component fill or text color, so it renders the FR1 geometry over a transparent background in the inherited text color until a theme paints it.                                                                                                     | Current source and extensible-axis test |
-| FR7 | `ref` reaches the root `span`. Supported DOM, ARIA, data, and event props reach the root; `xstyle`, `className`, and `style` merge in that order after the component styles.                                                                                                                                                                                                                                     | Current source and tests                |
-| FR8 | Badge uses no hooks, measurement, or client-only API, so it renders identically on the server and the client.                                                                                                                                                                                                                                                                                                    | Current source and server-safety test   |
+| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                         | Basis                    |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| FR1 | Badge 渲染一个 inline-flex 的 `span` 根节点，在两个轴向上居中，块向尺寸为 `--spacing-5`（在 `spec:AST-102` FR4 下随设定文字尺寸增长后至少为该尺寸；当前的固定尺寸是一个缺口），无块向内边距，行内内边距为 `--spacing-2`，圆角为 `--radius-full`，字体族继承，字号为 `--text-supporting-size`、行高为 `--text-supporting-leading`，字重为 `--font-weight-medium`。 | 当前源码                 |
+| FR2 | 传入 `icon` 时，它直接渲染在根节点内部、Label 容器之前，并以 `--spacing-1` 分隔；标签始终渲染在其自身的 Label 容器内。                                                                                                                                                                                                                                            | 当前源码与测试           |
+| FR3 | badge 只有一行，且永不换行。根节点的行内尺寸以容器为上限，并可收缩到小于其内容尺寸；放不下的标签会在 Label 容器内以尾部省略号裁切，且不会溢出 badge。                                                                                                                                                                                                             | 当前源码与使用方文档     |
+| FR4 | 非空字符串标签或任何数字标签会把根节点的 `title` 设为标签文本，无论标签是否被裁切。富节点标签或空字符串标签不设置 `title`。                                                                                                                                                                                                                                       | 当前源码与测试           |
+| FR5 | `variant` 默认为 `neutral`。`neutral` 以 `--color-neutral` 作填充，配主文字颜色；`info`、`success`、`warning` 与 `error` 使用各自的强状态填充（`--color-<status>`）和与之匹配的 `--color-on-<status>` 文字色，并在强制颜色模式下保留 `CanvasText` 描边；每个颜色变体用其着色背景配相应的彩色文字。                                                                | 当前源码与使用方文档     |
+| FR6 | `badge` 目标对每个取值都携带解析后的 `variant`，包括主题通过 `BadgeVariantMap` 新增的值。主题新增的值不会获得组件填充或文字颜色，因此在主题绘制它之前，它会以继承的文字颜色、在透明背景上呈现 FR1 的几何。                                                                                                                                                        | 当前源码与可扩展轴测试   |
+| FR7 | `ref` 到达根 `span`。受支持的 DOM、ARIA、data 与事件 prop 会到达根节点；`xstyle`、`className` 与 `style` 按该顺序在组件样式之后合并。                                                                                                                                                                                                                             | 当前源码与测试           |
+| FR8 | Badge 不使用 hook、测量或仅客户端 API，因此它在服务端与客户端的渲染结果一致。                                                                                                                                                                                                                                                                                     | 当前源码与服务端安全测试 |
 
 ### Allowed variation
 
-- **AV1 — Theme paint.** A theme may change any visual property of `badge`,
-  including per-`variant` fill, text color, height, and radius, without changing
-  anatomy, the one-line rule, or the `title` rule.
-- **AV2 — Label content.** Label length and content may vary; clipping position
-  depends on the available inline size.
+- **AV1 — 主题绘制。** 主题可以更改 `badge` 的任何视觉属性，包括按 `variant` 的填充、文字颜色、高度与圆角，而不改变结构、单行规则或 `title` 规则。
+- **AV2 — 标签内容。** 标签长度与内容可以变化；裁切位置取决于可用的行内尺寸。
 
 ### Representative states
 
-| State               | Required invariant                                                        | Allowed variation                |
-| ------------------- | ------------------------------------------------------------------------- | -------------------------------- |
-| Default             | Neutral tone, one line, `title` equal to the string label.                | Label text.                      |
-| With icon           | Icon renders before the Label container on the inline-start side.         | Icon artwork and size.           |
-| Count               | A number label renders as text and sets `title` to its string form.       | Tone.                            |
-| Long label, narrow  | The badge stays within its container and the label ends in an ellipsis.   | Clip position.                   |
-| Rich label          | The node renders inside the Label container and no `title` is set.        | Node content.                    |
-| Theme-added variant | `data-variant` names the added value; no component fill or color applies. | Theme paint for the added value. |
+| State              | Required invariant                                      | Allowed variation      |
+| ------------------ | ------------------------------------------------------- | ---------------------- |
+| 默认               | 中性色调、单行、`title` 等于该字符串标签。              | 标签文本。             |
+| 带图标             | Icon 在行内起始侧渲染于 Label 容器之前。                | Icon 的图形与尺寸。    |
+| 计数               | 数字标签以文本形式渲染，并把 `title` 设为其字符串形式。 | 色调。                 |
+| 长标签、窄容器     | badge 保持在其容器内，标签以省略号结尾。                | 裁切位置。             |
+| 富标签             | 节点渲染在 Label 容器内，且不设置 `title`。             | 节点内容。             |
+| 主题新增的 variant | `data-variant` 指明新增的值；不应用组件填充或颜色。     | 针对新增值的主题绘制。 |
 
 ### Transformation and precedence order
 
-- **ORD1 — Root attributes.** Component class and `data-variant` → component
-  styles → `xstyle` → `className` → `style` → derived `title` → remaining
-  caller props.
-- **ORD2 — Content order.** Icon, then Label container, in logical inline
-  order.
+- **ORD1 — 根节点属性。** 组件 class 与 `data-variant` → 组件样式 → `xstyle` → `className` → `style` → 推导出的 `title` → 其余调用方 prop。
+- **ORD2 — 内容顺序。** 按逻辑行内顺序，先 Icon，再 Label 容器。
 
 ### Performance and resources
 
-- **PR1 — Static render.** Badge registers no listener, observer, timer, or
-  effect and performs no layout measurement.
+- **PR1 — 静态渲染。** Badge 不注册监听器、观察器、定时器或 effect，也不进行布局测量。
 
 ## Accessibility contract
 
-- **AR1 — Static text.** Badge adds no role, tab stop, or live region of its
-  own and exposes its label as ordinary text in reading order, so a changed
-  label is not announced. A caller `role` or `tabIndex` passes through (FR7).
-- **AR2 — Meaning in text.** Badge renders `label` as text, and tone color
-  supplements that text. An empty label renders a color-only badge with nothing
-  in the accessibility tree; supplying a meaningful label is the callsite's
-  responsibility.
-- **AR3 — Icon exposure is delegated.** Badge adds no name, role, or
-  `aria-hidden` to the supplied icon; its exposure is the supplied node's own
-  (an Icon without a label is decorative under `component:Icon`).
-- **AR4 — Full text stays in the DOM.** Clipping is visual only: the complete
-  label remains in the accessibility tree, and the FR4 `title` exposes it to
-  pointer hover. Implementation gap: keyboard and touch users have no way to
-  reveal a clipped tail.
+- **AR1 — 静态文本。** Badge 不添加自己的 role、tab 停靠点或 live region，并把标签作为按阅读顺序的普通文本暴露，因此标签变化不会被播报。调用方传入的 `role` 或 `tabIndex` 会透传（FR7）。
+- **AR2 — 含义在文本中。** Badge 把 `label` 渲染为文本，色调颜色是该文本的补充。空标签会渲染出一个仅有颜色的 badge，在无障碍树中没有任何内容；提供有意义的标签是调用点的责任。
+- **AR3 — 图标的暴露被委托。** Badge 不为所提供的图标添加名称、role 或 `aria-hidden`；其暴露由所提供的节点自身负责（在 `component:Icon` 下，没有标签的 Icon 属于装饰性）。
+- **AR4 — 完整文本保留在 DOM 中。** 裁切仅是视觉上的：完整标签仍留在无障碍树中，FR4 的 `title` 将其暴露给指针悬停。实现缺口：键盘与触摸用户无法显示被裁切的尾部。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                             | Representation authority | Hierarchy role | Component contract |
-| ---------------- | -------------------------------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Badge root       | A compact one-line pill whose tone signals status or category. | Current source           | Supporting     | FR1, FR3, FR5, FR6 |
-| Icon             | An optional leading glyph that helps identify the badge type.  | Current source and docs  | Supporting     | FR2, AR3           |
-| Label            | The text or number that carries the badge's meaning.           | Current source and docs  | Prominent      | FR3, FR4, AR2, AR4 |
+| Anatomy or state | Design requirement                                  | Representation authority | Hierarchy role | Component contract |
+| ---------------- | --------------------------------------------------- | ------------------------ | -------------- | ------------------ |
+| Badge 根节点     | 紧凑的单行胶囊，其色调传达状态或类别。              | 当前源码                 | 辅助           | FR1, FR3, FR5, FR6 |
+| Icon             | 可选的、位于前部的字形，用于帮助辨识 badge 的类型。 | 当前源码与文档           | 辅助           | FR2, AR3           |
+| Label            | 承载 badge 含义的文本或数字。                       | 当前源码与文档           | 主要           | FR3, FR4, AR2, AR4 |
 
-Theming: the root is the single `badge` target and reflects `variant`. The Label
-container and the Icon slot add no targets: the label inherits `badge`, and a
-supplied icon keeps its own styling and inherits the badge text color.
+主题化：根节点是唯一的 `badge` 目标，并映射 `variant`。Label 容器与 Icon 槽位不新增目标：标签继承 `badge`，而所提供的图标保留其自身样式并继承 badge 的文字颜色。
 
 ## Family and system relationships
 
-- `architecture:public-component-api` owns ref, passthrough, and styling-input
-  rules; FR7 applies them to the root `span`.
-- `architecture:component-theming-surface` owns target qualification, state
-  reflection, and extensible-axis rules; FR6 records Badge's extensible
-  `variant` axis and its unthemed fallback.
+- `architecture:public-component-api` 负责 ref、透传与样式输入规则；FR7 将它们应用于根 `span`。
+- `architecture:component-theming-surface` 负责目标资格、状态映射与可扩展轴规则；FR6 记录 Badge 的可扩展 `variant` 轴及其未加主题时的回退行为。
 
 ## Verification map
 
-| Contract                      | Verification                                                                                  | Representative states                                                                                              | Mutation or failure expectation                                                                                                                                                                                            | Audit section          |
-| ----------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| FR2, FR7                      | `Badge.test.tsx`                                                                              | Icon, ref, passthrough                                                                                             | Dropping the icon, the ref, or a passthrough prop fails DOM assertions. Gap: the icon-before-label order is untested.                                                                                                      | `audit:Badge/behavior` |
-| AR1–AR3                       | Source review                                                                                 | Default, with icon                                                                                                 | Gap: no automated check fails if Badge adds its own role, tab stop, live region, or icon semantics.                                                                                                                        | `audit:Badge/a11y`     |
-| FR5                           | `Badge.test.tsx` `data-variant` assertions; `Badge.stories.tsx` variant fixtures in a browser | `success` and `purple` reflection; every tone rendered                                                             | A lost `data-variant` for those tones fails. Gap: no automated check covers the `neutral` default's reflection or any tone's paint; a paint change is visible only in the rendered fixtures.                               | `audit:Badge/theming`  |
-| FR4, AR4                      | `Badge.test.tsx` full-label suite                                                             | String, number, rich, and empty labels                                                                             | Setting `title` from a rich or empty label, or dropping it for a string or number, fails. Gap: no check asserts that a clipped label stays whole in the accessibility tree.                                                | `audit:Badge/a11y`     |
-| FR1, FR3                      | `Badge.stories.tsx` long-label fixture in a browser                                           | Long labels in tight space                                                                                         | A label that wraps or escapes the badge is visible in the rendered fixture.                                                                                                                                                | `audit:Badge/layout`   |
-| FR6                           | `extensibleAxes.test.ts`, `themingTargets.test.ts`                                            | `BadgeVariantMap`, `badge` target                                                                                  | Removing `variant` from the target reflection or the doc's `visualProps` fails the structural checks. Gap: no test renders a theme-added value, so the unthemed fallback is verified by source review only.                | `audit:Badge/theming`  |
-| FR8, PR1                      | `serverSafeComponents.test.ts`                                                                | Import graph                                                                                                       | Adding a hook or a client-only import to Badge fails the server-safety invariant.                                                                                                                                          | `audit:Badge/behavior` |
-| `design:bidirectionality` DR2 | `MixedDirectionText.a11y.chromium.spec.ts`                                                    | `https://`, `.com`, `+3`, `@alice`, `iPhone جديد` and `example.com موقع` under RTL and LTR (Mixed Direction story) | A label whose weak or neutral characters reorder under RTL (`//:https`, `com.`, `3+`, `alice@`), or right-to-left text with a leading Latin word that lays out left to right, fails on each character's rendered position. | `audit:Badge/layout`   |
+| Contract                      | Verification                                                                         | Representative states                                                                                             | Mutation or failure expectation                                                                                                                           | Audit section          |
+| ----------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| FR2, FR7                      | `Badge.test.tsx`                                                                     | Icon、ref、透传                                                                                                   | 去掉图标、ref 或某个透传 prop 会使 DOM 断言失败。缺口：图标先于标签的顺序未被测试。                                                                       | `audit:Badge/behavior` |
+| AR1–AR3                       | 源码审查                                                                             | 默认、带图标                                                                                                      | 缺口：若 Badge 添加自己的 role、tab 停靠点、live region 或图标语义，没有任何自动化检查会失败。                                                            | `audit:Badge/a11y`     |
+| FR5                           | `Badge.test.tsx` 的 `data-variant` 断言；浏览器中 `Badge.stories.tsx` 的变体测试夹具 | `success` 与 `purple` 的映射；每种色调均已渲染                                                                    | 这些色调丢失 `data-variant` 会失败。缺口：没有自动化检查覆盖 `neutral` 默认值的映射或任何色调的绘制；绘制变化只能在渲染出的测试夹具中看到。               | `audit:Badge/theming`  |
+| FR4, AR4                      | `Badge.test.tsx` 的完整标签测试套件                                                  | 字符串、数字、富节点与空标签                                                                                      | 由富节点或空标签设置 `title`，或对字符串或数字不设置它，都会失败。缺口：没有检查断言被裁切的标签在无障碍树中保持完整。                                    | `audit:Badge/a11y`     |
+| FR1, FR3                      | 浏览器中 `Badge.stories.tsx` 的长标签测试夹具                                        | 紧凑空间中的长标签                                                                                                | 换行或溢出 badge 的标签在渲染出的测试夹具中可见。                                                                                                         | `audit:Badge/layout`   |
+| FR6                           | `extensibleAxes.test.ts`、`themingTargets.test.ts`                                   | `BadgeVariantMap`、`badge` 目标                                                                                   | 从目标映射或文档的 `visualProps` 中移除 `variant` 会使结构检查失败。缺口：没有测试渲染主题新增的值，因此未加主题时的回退仅通过源码审查验证。              | `audit:Badge/theming`  |
+| FR8, PR1                      | `serverSafeComponents.test.ts`                                                       | 导入图                                                                                                            | 为 Badge 添加 hook 或仅客户端导入会违反服务端安全不变式。                                                                                                 | `audit:Badge/behavior` |
+| `design:bidirectionality` DR2 | `MixedDirectionText.a11y.chromium.spec.ts`                                           | `https://`、`.com`、`+3`、`@alice`、`iPhone جديد` 与 `example.com موقع` 在 RTL 和 LTR 下（Mixed Direction story） | 若标签的弱字符或中性字符在 RTL 下重排（`//:https`、`com.`、`3+`、`alice@`），或以拉丁词开头的从右到左文本被排成从左到右，则会在每个字符的渲染位置上失败。 | `audit:Badge/layout`   |
 
 ## Decision log
 
-None recorded. The record describes shipped behavior.
+无记录。本记录描述的是已发布的行为。
 
 ## Open questions
 
-- **OQ1 — How should the full text of a clipped label reach keyboard and touch
-  users?** (`human-design`) Options include a measured tooltip shown only when
-  the label is clipped, which makes Badge a client component and focusable
-  while clipped, or leaving recovery to the callsite.
+- **OQ1 — 被裁切标签的完整文本应如何到达键盘与触摸用户？**（`human-design`）选项包括：仅在标签被裁切时显示的、经过测量的 tooltip，这会使 Badge 成为客户端组件并在被裁切时可聚焦；或把恢复手段留给调用点。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不重复使用方 prop 表/示例、当前审计结果、实现步骤或 family/system 规则。它改为链接到其所有者。

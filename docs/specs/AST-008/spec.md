@@ -21,520 +21,226 @@ affects_consumer_docs: [color, theme]
 
 ## Intent
 
-Theme authors need a repeatable way to make complete tonal palette candidates.
-Generation is authoring work: it produces colors for people to inspect, adjust,
-and accept. The accepted result is saved as private, theme-owned palette data.
-Ordinary theme builds do not rerun the generator.
+主题作者需要一种可重复的方式来制作完整的色调调色板候选项。生成属于创作工作：它产出供人检查、调整并接受的色彩。被接受的结果保存为私有的、主题所拥有的调色板数据。普通的主题构建不会重新运行生成器。
 
-The Palette Generator Lab compares candidate recipes, complete families, modes,
-anchors, and existing themes, then lets an author copy candidate JSON. The
-versioned OKLCH recipe is the visual basis for supported generation. A later
-current authority—AST-018 only if amended and accepted—owns the shape and
-lifecycle of accepted palette data and any first-class palette/theme integration.
+Palette Generator Lab 会比较候选项配方、完整家族、模式、锚点与既有主题，然后让作者复制候选项 JSON。版本化的 OKLCH 配方是受支持生成的视觉基础。后续的 current 权威——仅在 AST-018 经修订并接受后——拥有已接受调色板数据的形状与生命周期，以及任何一等公民的调色板/主题集成。
 
-The Astryx CLI theme-authoring workflow exposes the pure
-`generateTonalPalette()` authoring API and the
-`astryx theme palette generate` command. Both use one versioned engine. Neither
-implicitly rewrites a theme.
+Astryx CLI 的主题创作工作流暴露纯 `generateTonalPalette()` 创作 API 与 `astryx theme palette generate` 命令。两者使用同一个版本化引擎。二者都不会隐式重写主题。
 
-New-authoring interfaces recommend the palette workflow and do not present the
-legacy color-scale helper as though choosing one accent were an isolated edit or
-an approved palette. The Playground omits its `Create from accent` affordance
-while retaining explicit token editing.
+新的创作界面推荐调色板工作流，并且不会把旧版色阶辅助函数呈现成仿佛选择一个强调色就是一次孤立编辑或一个已批准的调色板。Playground 省略其 `Create from accent` 入口，同时保留显式的 token 编辑。
 
-`DefineThemeInput.color`, `ThemeAdaptationValue.color`, and
-`expandColorScale()` are legacy authoring surfaces. They remain `stable` until a
-replacement-first patch ships the complete modernization route described below;
-that patch moves them to `deprecated`. Their existing runtime behavior remains
-supported and byte-equivalent throughout the deprecation window. Deprecation is
-static and source-level: declarations, authoring validation, and documentation
-identify the replacement, with no compatibility flag, runtime branch,
-rendered-app warning, or added executable production-bundle bytes. Static
-TypeScript declaration metadata is not executable runtime behavior.
+`DefineThemeInput.color`、`ThemeAdaptationValue.color` 与 `expandColorScale()` 是旧版创作接口。在替换优先补丁交付下述完整现代化路径之前，它们保持 `stable`；该补丁随后把它们改为 `deprecated`。在整个弃用窗口内，它们既有的运行时行为继续受支持并保持字节等价。弃用是静态的、源码级的：声明、创作校验与文档指明替代方案，而不涉及兼容标志、运行时分支、渲染应用警告，也不新增可执行的生产 bundle 字节。静态 TypeScript 声明元数据不是可执行的运行时行为。
 
 ## Non-goals
 
-- Choose the public API, accepted data shape, semantic-role reference model,
-  compiler integration, or runtime projection for a future first-class palette.
-  A later current authority—AST-018 only if amended and accepted—owns those choices.
-- Remove `DefineThemeInput.color`, `ThemeAdaptationValue.color`, or
-  `expandColorScale()` before their separately identified cleanup items are
-  approved for a minor release.
-- Add a runtime compatibility setting, runtime warning, executable production
-  branch, or executable production-bundle bytes solely for deprecation.
-- Require generated palettes or provenance for hand-authored or imported data.
-- Treat a palette stop as design approval or an accessibility guarantee.
+- 为未来的一等公民调色板选择公共 API、已接受的数据形状、语义角色引用模型、编译器集成或运行时投影。这些选择由后续的 current 权威拥有——仅在 AST-018 经修订并接受后。
+- 在分别标识的清理项获准进入次要版本之前，移除 `DefineThemeInput.color`、`ThemeAdaptationValue.color` 或 `expandColorScale()`。
+- 仅为弃用而新增运行时兼容设置、运行时警告、可执行的生产分支或可执行的生产 bundle 字节。
+- 对手写或导入的数据强制要求生成的调色板或溯源信息。
+- 把调色板色标视为设计批准或无障碍保证。
 
 ## Ownership
 
-| Owner                           | Contract                                                                                                                         |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| AST-008                         | Candidate generation, the new-authoring recommendation, and the three legacy color-scale deprecation lifecycles.                 |
-| Ruby                            | The visual recipe and recommendation, after the required comparison evidence.                                                    |
-| Later current palette authority | Accepted palette shape, stable semantic-role references, validation, and any first-class authoring or compilation integration.   |
-| `theme:<name>`                  | Accepted exact palette values, mappings and deviations, required states, compatibility, and rendered evidence.                   |
-| Current theme architecture      | Productive `defineTheme` normalization and compilation, including byte-equivalent legacy behavior during the deprecation window. |
-| CLI authoring surface           | The generation command, pure API, candidate serialization, receipts, safe writes, migration tooling, and authoring diagnostics.  |
+| Owner                           | Contract                                                                         |
+| ------------------------------- | -------------------------------------------------------------------------------- |
+| AST-008                         | 候选项生成、新创作推荐，以及三个旧版色阶弃用生命周期。                           |
+| Ruby                            | 在必要的对比证据之后，视觉配方与推荐。                                           |
+| Later current palette authority | 已接受调色板的形状、稳定的语义角色引用、校验，以及任何一等公民的创作或编译集成。 |
+| `theme:<name>`                  | 已接受的精确调色板值、映射与偏差、必需状态、兼容性，以及渲染证据。               |
+| Current theme architecture      | 生产环境的 `defineTheme` 归一化与编译，包括弃用窗口期间字节等价的旧版行为。      |
+| CLI authoring surface           | 生成命令、纯 API、候选项序列化、回执、安全写入、迁移工具与创作诊断信息。         |
 
 ## Authoring lifecycle
 
-| Stage      | Required result                                                                                                                   |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Create     | Generate, hand-author, or import a complete candidate palette.                                                                    |
-| Review     | Inspect complete families, modes, diagnostics, comparisons, and rendered contexts; adjust or reject freely.                       |
-| Accept     | Save the final exact palette data under the accepted palette contract.                                                            |
-| Map        | Record an inspectable, stable semantic-role mapping under the authority that owns accepted palette/theme integration.             |
-| Verify     | Record contextual evidence for the exact palette, role mapping, and rendered values in the owning theme record.                   |
-| Regenerate | Update mapped roles coherently from the accepted palette without an implicit generator run or a manual recopy of unrelated roles. |
+| Stage      | Required result                                                                  |
+| ---------- | -------------------------------------------------------------------------------- |
+| Create     | 生成、手写或导入一个完整的候选调色板。                                           |
+| Review     | 检查完整家族、模式、诊断信息、对比与渲染上下文；可自由调整或拒绝。               |
+| Accept     | 在已接受调色板契约下保存最终的精确调色板数据。                                   |
+| Map        | 在拥有已接受调色板/主题集成的权威之下，记录可检查的稳定语义角色映射。            |
+| Verify     | 在拥有该主题的记录中，为精确调色板、角色映射与渲染值记录上下文证据。             |
+| Regenerate | 从已接受调色板一致地更新已映射角色，无需隐式运行生成器，也无需手动重抄无关角色。 |
 
 ## Requirements
 
-- **FR1 — Generation is optional.** Generated, hand-authored, and imported
-  palettes are equal after validation. Missing generation provenance means only
-  “not generated by this recipe”; it MUST NOT make valid palette data invalid.
-- **FR2 — Requests describe complete author intent.** A generation request MUST
-  describe the complete family set; normalized seeds; versioned intensity and
-  neutral profiles; exact, bounded, and flexible anchors; an explicit stop
-  layout; light and dark strategy; target gamut and encoding; and every other
-  output-affecting parameter. Astryx tooling SHOULD default family ramps to the
-  21-stop `0, 5, …, 100` layout, while accepting any non-empty author-defined
-  numeric stop list. Compact and specialized layouts are valid author choices,
-  not exceptions. Every candidate exposes exact standalone black and white
-  values for direct theme authoring. Stops 0 and 100 repeat those values in
-  generated families. Authors MAY omit the repeated endpoints with a custom
-  stop list without losing the standalone values. The family identifiers
-  `black` and `white` are reserved for those standalone values.
-- **FR2a — Custom stop syntax is exact.** Every stop MUST be a finite JSON number
-  from 0 through 100 inclusive. Stops MUST be unique and strictly increasing.
-  Integer and decimal stops are valid; equivalent numeric spellings such as `5`
-  and `5.0` identify the same stop and therefore cannot coexist. Endpoints 0 and
-  100 are optional. A one-stop palette is valid. Serialization uses the canonical
-  JSON number spelling produced by the implementation and MUST NOT depend on
-  locale.
-- **FR2b — Stop numbers are stable coordinates.** For the same recipe, family,
-  mode, seed, vibrancy, profile, and compatible anchors, a shared stop MUST
-  produce the same exact color in compact, full, and custom layouts. Adding or
-  removing other stops MUST NOT renumber or change it. Generated TypeScript MUST
-  expose only the requested stop keys, so an omitted stop fails type checking.
-- **FR3 — Mode intent is explicit.** Light-only, dark-only, independent light and
-  dark inputs, shared candidates, and named dark transforms are distinct. A
-  light ramp MUST NOT silently become a reviewed dark ramp, and labels MUST NOT
-  be reversed for dark mode.
-- **FR4 — Constraints and preferences stay distinct.** Gamut validity,
-  monotonicity, exact anchors, and bounded-anchor tolerances are hard constraints.
-  Intensity, optical balance, and flexible anchors are optimization preferences.
-  A conflict MUST fail clearly rather than moving an exact anchor, weakening a
-  tolerance, substituting a profile, or changing the stop layout. An anchor MUST
-  NOT turn stop 0 or 100 into a chromatic value; a conflicting endpoint anchor
-  fails with guidance to use an interior stop.
-- **FR5 — Recipes are deterministic and versioned.** A recipe identity MUST pin
-  color space, constants, profiles, schedules, anchors, gamut handling, precision,
-  rounding, serialization, and tie-breaking. The same normalized request MUST
-  produce byte-identical canonical candidate output across supported platforms,
-  with no ambient time, locale, path, network, randomness, traversal, or
-  unrecorded dependency input.
-- **FR6 — Generated candidates carry reproducibility evidence.** The generator
-  MUST emit the complete candidate plus a detached record naming the normalized
-  request, recipe and implementation versions, output format versions,
-  adjustments, deviations, and every canonical output digest. An output change
-  MUST change a matching identity or digest.
-- **FR7 — Generation stops at a candidate.** Output MUST identify itself as a
-  candidate and MUST NOT adopt values, map roles, or claim visual or accessibility
-  approval. Preview is read-only. An explicit output option MAY save the candidate
-  as a separate TypeScript or JSON file, but MUST NOT overwrite an existing file
-  without explicit author intent. Once adopted, the palette is ordinary
-  author-owned data: it may be edited freely and does not remain under generator
-  control. Edited accepted data MUST NOT claim exact regeneration, and ordinary
-  theme builds MUST NOT rerun the generator.
-- **FR8 — The selected recipe preserves complete-family evidence.** The first
-  production recipe MUST be pinned by its normative algorithm and canonical
-  fixtures rather than another implementation. Before release, its
-  version-pinned evidence MUST cover complete family sets,
-  rendered light/dark contexts, hue continuity, luminance and adjacent-stop
-  distinction, gamut, family balance, CVD simulations, reproducibility, and
-  performance. Fixtures cover blue-to-purple, yellow-to-brown, disproportionate
-  family strength, and blue/purple, yellow/green, and red/orange distinction.
-  Output remains a candidate until an author accepts it.
-- **FR9 — Accepted mapping is explicit, inspectable, and coherent.** The current
-  authority that admits accepted palette/theme integration MUST define stable
-  semantic-role references or an equivalently deterministic authoring-time mapping
-  contract. Once an edited or regenerated palette is explicitly accepted, every
-  role mapped to it MUST update coherently without requiring authors to recopy
-  unrelated values by hand. Tooling MAY suggest a mapping, but a separate explicit
-  apply action MUST show the target and patch, preserve author edits, and permit
-  adjustment or rejection. This requirement does not choose the final
-  `DefineThemeInput`, compiler, or artifact shape.
-- **FR10 — Regeneration never recolors themes implicitly.** Generating a new
-  candidate MUST NOT replace an adopted palette or change saved theme values,
-  normalized tokens, CSS, built runtime modules, or mounted behavior. A committed
-  palette edit MAY intentionally change theme mappings that explicitly reference
-  it; that source diff and its rendered impact MUST be reviewed together.
-- **FR11 — Validation is separate from construction.** Palette inspection uses a
-  `validate*` or `check*` role in theme-package tests, internal test utilities, or
-  an explicitly accepted future CLI checker. Validation-only data and helpers
-  MUST stay outside Core runtime theme input and output.
-- **FR12 — Accessibility is contextual.** Tools MAY report measured properties
-  and contrast for explicit pairs. They MUST NOT label an isolated palette,
-  family, stop, or suggestion accessible. Theme evidence names the exact
-  foreground, background, text size, component state, mode, and non-color cues.
-- **FR13 — Authoring has no runtime cost.** Generator code, color-math
-  dependencies, candidates, reproducibility data, and suggestion logic MUST NOT
-  enter Core component runtime, theme mounting, default theme CSS or JavaScript,
-  or a theme package's default runtime export.
-- **FR14 — Supported generation surfaces stay narrow.**
-  `generateTonalPalette(request)` is a pure authoring function that returns
-  candidate data without reading or writing files.
-  `astryx theme palette generate <config>` is its non-interactive file adapter.
-  TypeScript is the primary committed output so exact family and stop keys remain
-  checkable; JSON MAY be requested for interoperable tooling. These surfaces MUST
-  NOT rewrite a theme or perform semantic mapping implicitly. A future explicit
-  first-class palette input, stable mapping contract, or compiler integration
-  requires separate current authority; this requirement neither approves nor
-  forbids one.
-- **FR15 — Visual review uses one standard artifact.** The CLI MAY explicitly
-  write a self-contained HTML preview from the same candidate data. The preview
-  MUST identify itself as `palette-preview-v1`, show every generated family,
-  mode, stop, and hex value, and require no network resources. It MUST NOT make
-  an accessibility claim. It follows the same overwrite protection as palette
-  output and MUST NOT open a browser without a separate explicit action.
-- **FR16 — Authoring guidance preserves intent.** Agent-facing documentation and
-  evaluation fixtures MUST distinguish exact, bounded, and flexible anchors;
-  preserve explicit decimal and custom layouts; omit an accent when none is
-  requested; and ask whether an ambiguous accent is one theme value or a light
-  and dark family rather than guessing.
-- **FR17 — New authoring uses palettes; legacy expansion remains compatible.** A
-  theme-authoring interface MUST NOT present one accent input as an isolated edit
-  when it also replaces neutral, surface, text, border, or other derived values.
-  The Playground MUST omit `Create from accent` and retain direct editing of
-  explicit color tokens. The CLI theme docs and generated theme template MUST
-  recommend the supported palette workflow for new authoring. In the
-  replacement-first patch, explicit reference documentation MUST identify
-  `DefineThemeInput.color`, `ThemeAdaptationValue.color`, and
-  `expandColorScale()` as deprecated legacy authoring APIs while documenting their
-  existing behavior accurately for unmigrated themes. `ColorScaleConfig` and
-  `ColorScaleTokens` remain stable public types during this lifecycle; this record
-  does not schedule their removal.
-- **FR18 — Color-scale deprecation is static, replacement-first, and lossless.**
-  Before the replacement-first patch, all three surfaces remain `stable` and no
-  declaration or warning labels them deprecated. That patch MUST ship the working
-  palette replacement, stable versioned instructions, the exact modernization
-  command, maintained-source migration, declaration `@deprecated` metadata, and
-  authoring/build diagnostics together. Every diagnostic MUST name the applicable
-  `DEP-*` id, exact replacement, stable instructions, and migration command.
-  Deprecation MUST NOT add a runtime compatibility flag, runtime branch,
-  rendered-app warning, or executable production-bundle bytes. For unmigrated
-  source, existing token value strings (including CSS references), normalization,
-  adaptation layers, inheritance, generated CSS, builds, and mounted behavior
-  remain byte-equivalent during the deprecation window. The previewable and
-  idempotent migration follows `spec:AST-040`, preserves those observables as its
-  baseline, and reports dynamic, inherited, adaptation-bearing, or otherwise
-  uncertain cases without rewriting them unless it can prove the replacement
-  preserves the same behavior. Migration never invokes the palette generator: it
-  writes the exact current token value strings as imported, theme-owned palette
-  data or literal token values and references them through `tokens`. Removal
-  requires the separate cleanup ids and minor-release approval in the lifecycle
-  table below.
+- **FR1 — 生成是可选的。** 经校验后，生成的、手写的与导入的调色板是平等的。缺少生成溯源信息只意味着“不是由本配方生成的”；它绝不能使有效的调色板数据失效。
+- **FR2 — 请求描述完整的作者意图。** 生成请求必须描述完整家族集合；归一化的种子；版本化的强度与中性配置档；精确、有界与弹性锚点；显式的色标布局；浅色与深色策略；目标色域与编码；以及所有其他影响输出的参数。Astryx 工具应该把家族渐变默认设为 21 个色标的 `0, 5, …, 100` 布局，同时接受任何非空的、作者定义的数值色标列表。紧凑与专门化布局是有效的作者选择，而非例外。每个候选项都暴露精确的独立黑色与白色值，供直接创作主题使用。在生成的家族中，色标 0 与 100 重复这些值。作者可以用自定义色标列表省略重复的端点，而不会失去这些独立值。家族标识符 `black` 与 `white` 保留给这些独立值。
+- **FR2a — 自定义色标语法是精确的。** 每个色标必须是 0 到 100（含）之间的有限 JSON 数字。色标必须唯一且严格递增。整数与小数色标均有效；等价数值写法如 `5` 与 `5.0` 指向同一个色标，因此不能共存。端点 0 与 100 是可选的。只有一个色标的调色板有效。序列化使用实现产生的规范 JSON 数字写法，且不得依赖区域设置。
+- **FR2b — 色标编号是稳定坐标。** 对同一配方、家族、模式、种子、鲜艳度、配置档与兼容锚点，共享的色标必须在紧凑、完整与自定义布局中产生相同的精确颜色。增删其他色标不得对其重新编号或改变它。生成的 TypeScript 必须只暴露被请求的色标键，因此省略的色标会导致类型检查失败。
+- **FR3 — 模式意图是显式的。** 仅浅色、仅深色、独立的浅色与深色输入、共享候选项以及命名深色变换是彼此不同的。浅色渐变不得静默变成已审查的深色渐变，且标签不得因深色模式而被反转。
+- **FR4 — 约束与偏好保持区分。** 色域有效性、单调性、精确锚点与有界锚点容差是硬约束。强度、光学平衡与弹性锚点是优化偏好。冲突必须清晰失败，而不是移动精确锚点、放松容差、替换配置档或改变色标布局。锚点不得把色标 0 或 100 变成有彩色值；冲突的端点锚点失败，并给出改用内部色标的指引。
+- **FR5 — 配方是确定性且版本化的。** 配方标识必须固定颜色空间、常量、配置档、调度、锚点、色域处理、精度、舍入、序列化与平局决胜规则。同一归一化请求必须在受支持的平台上产生字节一致的规范候选项输出，不得有环境时间、区域设置、路径、网络、随机性、遍历或未记录的依赖作为输入。
+- **FR6 — 生成的候选项携带可复现性证据。** 生成器必须产出完整候选项，外加一份独立记录，写明归一化请求、配方与实现版本、输出格式版本、调整、偏差以及每个规范输出摘要。输出变化必须改变匹配的标识或摘要。
+- **FR7 — 生成止于候选项。** 输出必须自称为候选项，且不得采用值、映射角色或声称获得视觉或无障碍批准。预览是只读的。显式输出选项可以把候选项保存为单独的 TypeScript 或 JSON 文件，但若无作者的显式意图，不得覆盖已有文件。一旦被采用，该调色板就是普通的作者拥有数据：它可以被自由编辑，且不再受生成器控制。被编辑的已接受数据不得声称可精确重新生成，普通主题构建也不得重新运行生成器。
+- **FR8 — 所选配方保留完整家族证据。** 第一个生产配方必须由其规范算法与规范测试夹具固定，而不是由另一个实现固定。发布之前，其版本固定的证据必须覆盖完整家族集合、渲染的浅色/深色上下文、色相连续性、明度与相邻色标区分度、色域、家族平衡、CVD 模拟、可复现性与性能。测试夹具覆盖蓝到紫、黄到棕、家族强度不均衡，以及蓝/紫、黄/绿与红/橙的区分。
+- **FR9 — 已接受映射是显式、可检查且一致的。** 接纳已接受调色板/主题集成的 current 权威必须定义稳定的语义角色引用，或等价的确定性创作时映射契约。一旦被编辑或重新生成的调色板被显式接受，映射到它的每个角色都必须一致更新，无需作者手动重抄无关值。工具可以建议映射，但单独的显式应用动作必须展示目标与补丁、保留作者的编辑，并允许调整或拒绝。本要求不选择最终的 `DefineThemeInput`、编译器或产物形状。
+- **FR10 — 重新生成绝不隐式重着色主题。** 生成新候选项不得替换已采用调色板，也不得改变已保存的主题值、归一化 token、CSS、构建产物运行时模块或挂载行为。已提交的调色板编辑可以有意识地改变显式引用它的主题映射；该源码差异及其渲染影响必须一并审查。
+- **FR11 — 校验与构造分离。** 调色板检查在主题包测试、内部测试工具或显式接受的未来 CLI 检查器中使用 `validate*` 或 `check*` 角色。仅用于校验的数据与辅助函数必须留在 Core 运行时主题输入与输出之外。
+- **FR12 — 无障碍是上下文相关的。** 工具可以报告显式配对的实测属性与对比度。它们不得把孤立的调色板、家族、色标或建议标记为无障碍。主题证据要写明精确的前景、背景、文本尺寸、组件状态、模式与非色彩线索。
+- **FR13 — 创作没有运行时成本。** 生成器代码、色彩数学依赖、候选项、可复现性数据与建议逻辑不得进入 Core 组件运行时、主题挂载、默认主题 CSS 或 JavaScript，或主题包的默认运行时导出。
+- **FR14 — 受支持的生成接口保持狭窄。** `generateTonalPalette(request)` 是纯创作函数，返回候选项数据，不读写文件。`astryx theme palette generate <config>` 是它非交互式的文件适配器。TypeScript 是主要的已提交输出，因此精确的家族与色标键仍可检查；JSON 可以为互操作工具而请求。这些接口不得重写主题或隐式执行语义映射。未来显式的一等公民调色板输入、稳定映射契约或编译器集成需要单独的 current 权威；本要求既不批准也不禁止此类集成。
+- **FR15 — 视觉审查使用一件标准产物。** CLI 可以显式写出由同一候选项数据生成的自包含 HTML 预览。该预览必须自称为 `palette-preview-v1`，展示每个生成的家族、模式、色标与 hex 值，且不需要网络资源。它不得作出无障碍声明。它遵循与调色板输出相同的覆盖保护，且不得在无单独显式动作的情况下打开浏览器。
+- **FR16 — 创作指导保留意图。** 面向 agent 的文档与评估测试夹具必须区分精确、有界与弹性锚点；保留显式小数与自定义布局；在未请求强调色时省略强调色；并在强调色含义不明时询问它是一个主题值还是一个浅色与深色家族，而不是猜测。
+- **FR17 — 新创作使用调色板；旧版展开保持兼容。** 主题创作界面不得把一个强调色输入呈现为孤立编辑，当它同时替换中性、表面、文本、边框或其他派生值时。Playground 必须省略 `Create from accent`，并保留对显式颜色 token 的直接编辑。CLI 主题文档与生成的主题模板必须为新创作推荐受支持的调色板工作流。在替换优先补丁中，显式参考文档必须把 `DefineThemeInput.color`、`ThemeAdaptationValue.color` 与 `expandColorScale()` 标识为已弃用的旧版创作 API，同时为未迁移的主题准确记录其既有行为。`ColorScaleConfig` 与 `ColorScaleTokens` 在此生命周期内保持为稳定公共类型；本记录不安排它们的移除。
+- **FR18 — 色阶弃用是静态的、替换优先的且无损的。** 在替换优先补丁之前，这三个接口都保持 `stable`，且没有任何声明或警告把它们标记为已弃用。该补丁必须一并交付可用的调色板替代、稳定的版本化说明、确切的现代化命令、受维护源码的迁移、声明 `@deprecated` 元数据，以及创作/构建诊断信息。每条诊断信息必须写明适用的 `DEP-*` id、精确替代方案、稳定说明与迁移命令。弃用不得新增运行时兼容标志、运行时分支、渲染应用警告或可执行的生产 bundle 字节。对于未迁移的源码，既有的 token 值字符串（包括 CSS 引用）、归一化、适配层、继承、生成的 CSS、构建与挂载行为在弃用窗口期间保持字节等价。可预览且幂等的迁移遵循 `spec:AST-040`，把这些可观测项保留为基线，并报告动态、继承、携带适配或其他不确定的情形，而不重写它们——除非它能证明替代方案保留了相同行为。迁移绝不调用调色板生成器：它把当前精确的 token 值字符串写成导入的、主题拥有的调色板数据或字面 token 值，并通过 `tokens` 引用它们。移除需要下述生命周期表中单独的清理 id 与次要版本批准。
 
 ## Deprecation lifecycle
 
-The three legacy surfaces follow `spec:AST-017` FR28–FR31 and FR29a–FR29d.
-They share one authoring mechanism but are distinct public contracts, so each is
-described and removed separately. Their direct authority is `spec:AST-008/FR18`.
+这三个旧版接口遵循 `spec:AST-017` FR28–FR31 与 FR29a–FR29d。它们共享一个创作机制，但属于彼此不同的公共契约，因此各自被单独描述与移除。它们的直接权威是 `spec:AST-008/FR18`。
 
 ### `DefineThemeInput.color`
 
-- **Package / surface:** `@astryxdesign/core` type field.
-- **Deprecation / cleanup:** `DEP-AST-008-COLOR-INPUT` /
-  `CLN-AST-008-COLOR-INPUT`.
-- **Old contract:** a `color` seed derives broad theme token values during
-  `defineTheme()` normalization and remains inheritable by descendant themes.
-- **Replacement:** `astryx theme palette generate` produces reviewed,
-  theme-owned TypeScript palette data; the AST-040 codemod may instead import the
-  exact existing token value strings as equivalent palette data. The theme writes
-  semantic roles through existing `tokens` entries that reference that committed
-  data. A later current authority may replace this authoring projection with
-  first-class integration.
-- **Warning:** `@deprecated` plus exact-source theme build or validation diagnostics,
-  each naming the deprecation id, stable versioned instructions, and
-  `astryx upgrade --from <installed-version> --apply`.
-- **Migration / proof:** the AST-040 codemod materializes byte-equal token value
-  strings, including CSS references, and proves equivalent normalized tokens,
-  generated CSS, adaptation layers, inheritance, and extension behavior. It
-  reports and leaves unchanged dynamic or inheritable uses it cannot prove.
-- **State / target:** `stable` until the replacement-first patch ships, then
-  `deprecated`; cleanup is unscheduled and requires the exact cleanup id in a
-  frozen minor plan.
-- **Rollback:** before cleanup, revert the migration patch or keep the deprecated
-  field; after cleanup, a compatible recovery patch restores the field and its
-  byte-equivalent normalization.
+- **包 / 接口：** `@astryxdesign/core` 类型字段。
+- **弃用 / 清理：** `DEP-AST-008-COLOR-INPUT` / `CLN-AST-008-COLOR-INPUT`。
+- **旧契约：** `color` 种子在 `defineTheme()` 归一化期间派生宽泛的主题 token 值，并仍可由后代主题继承。
+- **替代方案：** `astryx theme palette generate` 生成经审查的、主题拥有的 TypeScript 调色板数据；AST-040 codemod 也可以改为把既有的精确 token 值字符串导入为等价的调色板数据。主题通过引用该已提交数据的既有 `tokens` 条目写入语义角色。后续的 current 权威可以用一等公民集成替代此创作投影。
+- **警告：** `@deprecated` 加上精确源码的主题构建或校验诊断信息，每条都写明弃用 id、稳定的版本化说明，以及 `astryx upgrade --from <installed-version> --apply`。
+- **迁移 / 证明：** AST-040 codemod 产出字节相等的 token 值字符串（包括 CSS 引用），并证明归一化 token、生成的 CSS、适配层、继承与扩展行为等价。它报告并原样保留无法证明的动态或可继承用法。
+- **状态 / 目标：** 在替换优先补丁交付前为 `stable`，之后为 `deprecated`；清理未排期，需要在冻结的次要版本计划中写明确切的清理 id。
+- **回滚：** 清理之前，回退迁移补丁或保留已弃用字段；清理之后，兼容的恢复补丁还原该字段及其字节等价归一化。
 
 ### `ThemeAdaptationValue.color`
 
-- **Package / surface:** `@astryxdesign/core` nested type field.
-- **Deprecation / cleanup:** `DEP-AST-008-ADAPTATION-COLOR` /
-  `CLN-AST-008-ADAPTATION-COLOR`.
-- **Old contract:** an adaptation rule supplies a partial color-scale configuration
-  completed from the effective root color axis.
-- **Replacement:** adaptation rules write condition-specific semantic roles through
-  existing `value.tokens` entries that reference the same committed theme-owned
-  palette data.
-- **Warning:** `@deprecated` plus exact-source theme validation diagnostics carrying
-  the same instruction and migration fields.
-- **Migration / proof:** the AST-040 codemod preserves each lowered adaptation token
-  string and rule order. It reports and leaves unchanged partial, inherited, or
-  dynamic rules unless it can prove equivalent completion and CSS.
-- **State / target:** `stable` until the replacement-first patch ships, then
-  `deprecated`; cleanup is unscheduled and independent of the root field cleanup.
-- **Rollback:** before cleanup, retain or restore the deprecated field; after cleanup,
-  a compatible recovery patch restores its completion and lowering behavior.
+- **包 / 接口：** `@astryxdesign/core` 嵌套类型字段。
+- **弃用 / 清理：** `DEP-AST-008-ADAPTATION-COLOR` / `CLN-AST-008-ADAPTATION-COLOR`。
+- **旧契约：** 适配规则提供局部的色阶配置，由有效根颜色轴补全。
+- **替代方案：** 适配规则通过引用同一份已提交的主题拥有调色板数据的既有 `value.tokens` 条目，写入条件特定的语义角色。
+- **警告：** `@deprecated` 加上携带相同说明与迁移字段的精确源码主题校验诊断信息。
+- **迁移 / 证明：** AST-040 codemod 保留每个下放后的适配 token 字符串与规则顺序。它报告并原样保留局部的、继承的或动态的规则，除非它能证明补全与 CSS 等价。
+- **状态 / 目标：** 在替换优先补丁交付前为 `stable`，之后为 `deprecated`；清理未排期，且独立于根字段的清理。
+- **回滚：** 清理之前，保留或恢复已弃用字段；清理之后，兼容的恢复补丁还原其补全与下放行为。
 
 ### `expandColorScale()`
 
-- **Package / surface:** `@astryxdesign/core` function export.
-- **Deprecation / cleanup:** `DEP-AST-008-EXPAND-COLOR-SCALE` /
-  `CLN-AST-008-EXPAND-COLOR-SCALE`.
-- **Old contract:** a public authoring helper expands `ColorScaleConfig` into broad
-  token overrides, including live CSS references.
-- **Replacement:** the AST-040 codemod inlines the exact returned token map as a
-  committed TypeScript module whose strings are imported directly, or migrates a
-  theme callsite to existing `tokens` / adaptation `value.tokens` references backed
-  by that committed data.
-- **Warning:** `@deprecated` plus exact-source authoring or build diagnostics carrying
-  the same instruction and migration fields.
-- **Migration / proof:** the AST-040 codemod materializes byte-equal returned token
-  strings when the call is statically resolvable. Dynamic calls are reported and
-  left unchanged. Old helper output and migrated theme output are compared for
-  representative and downstream usage.
-- **State / target:** `stable` until the replacement-first patch ships, then
-  `deprecated`; cleanup is unscheduled and independent of both field cleanups.
-- **Rollback:** before cleanup, retain or restore the deprecated export; after cleanup,
-  a compatible recovery patch restores the export and its byte-equivalent output.
+- **包 / 接口：** `@astryxdesign/core` 函数导出。
+- **弃用 / 清理：** `DEP-AST-008-EXPAND-COLOR-SCALE` / `CLN-AST-008-EXPAND-COLOR-SCALE`。
+- **旧契约：** 一个公共创作辅助函数把 `ColorScaleConfig` 展开为宽泛的 token 覆盖，包括实时 CSS 引用。
+- **替代方案：** AST-040 codemod 把精确返回的 token 映射内联为已提交的 TypeScript 模块并直接导入其字符串，或把主题调用点迁移为由该已提交数据支撑的既有 `tokens` / 适配 `value.tokens` 引用。
+- **警告：** `@deprecated` 加上携带相同说明与迁移字段的精确源码创作或构建诊断信息。
+- **迁移 / 证明：** 当调用可被静态解析时，AST-040 codemod 产出字节相等的返回 token 字符串。动态调用会被报告并原样保留。会针对代表性用法与下游用法比较旧辅助函数输出与迁移后的主题输出。
+- **状态 / 目标：** 在替换优先补丁交付前为 `stable`，之后为 `deprecated`；清理未排期，且独立于两个字段的清理。
+- **回滚：** 清理之前，保留或恢复已弃用导出；清理之后，兼容的恢复补丁还原该导出及其字节等价输出。
 
-`ColorScaleConfig` and `ColorScaleTokens` remain stable public types and are not
-assigned cleanup ids by this record.
+`ColorScaleConfig` 与 `ColorScaleTokens` 保持为稳定公共类型，本记录没有为它们指定清理 id。
 
-The replacement-first patch ships the working palette path, stable versioned
-instructions, AST-040 codemod, static declaration metadata, exact-source theme
-build or validation diagnostics, maintained-source migration, and old/new
-compatibility proof together. FR17's Playground and new-authoring guidance
-requirements apply immediately and do not wait for the replacement-first patch.
-The patch's maintained-source migration covers remaining uses of the three legacy
-surfaces in examples, stories, tests, and repository-owned themes. `defineTheme`,
-theme mounting, and rendered applications never emit deprecation warnings. Cleanup
-approval for one id does not authorize removal of another.
+替换优先补丁会一并交付可用的调色板路径、稳定的版本化说明、AST-040 codemod、静态声明元数据、精确源码的主题构建或校验诊断信息、受维护源码的迁移，以及旧/新兼容性证明。FR17 的 Playground 与新创作指导要求立即生效，不必等待替换优先补丁。该补丁的受维护源码迁移覆盖示例、stories、测试与仓库拥有的主题中三个旧版接口的其余用法。`defineTheme`、主题挂载与渲染应用绝不发出弃用警告。一个 id 的清理批准不授权移除另一个。
 
 ## Implementation contract
 
-1. `astryx-oklch-v1` is defined in one owned production engine that pins its
-   constants, transformations, and exact regression vectors.
-2. The pure authoring API and CLI adapter use one deterministic engine and agree
-   on recipe semantics. The CLI follows `architecture:cli-surface` for its
-   command, response, error, documentation, support, and write contract.
-3. Generated TypeScript exports author-owned palette data without importing the
-   generator. Generated JSON contains the same canonical palette values.
-4. The optional HTML preview is generated by one versioned renderer rather than
-   improvised by each agent or caller.
-5. Every public function, command, package, schema, or artifact receives separate
-   API and AST-017 compatibility acceptance before release.
-6. Focused agent fixtures cover anchor language, optional accents, clarification,
-   and custom stops. Expected decisions remain evaluation-only and MUST NOT be
-   included in prompts sent to agents.
+1. `astryx-oklch-v1` 在一个自有生产引擎中定义，该引擎固定其常量、变换与精确回归向量。
+2. 纯创作 API 与 CLI 适配器使用同一个确定性引擎，并在配方语义上保持一致。CLI 在命令、响应、错误、文档、支持与写入契约上遵循 `architecture:cli-surface`。
+3. 生成的 TypeScript 导出作者拥有的调色板数据，而不导入生成器。生成的 JSON 包含相同的规范调色板值。
+4. 可选的 HTML 预览由同一个版本化渲染器生成，而不是由每个 agent 或调用方临时拼凑。
+5. 每个公共函数、命令、包、schema 或产物在发布前分别获得 API 与 AST-017 兼容性验收。
+6. 聚焦的 agent 测试夹具覆盖锚点语言、可选强调色、澄清与自定义色标。预期决策仅用于评估，不得写入发送给 agent 的提示中。
 
 ### `astryx-oklch-v1` normative recipe
 
-The first production recipe is defined here and pinned by canonical fixtures:
+第一个生产配方在此定义，并由规范测试夹具固定：
 
-- Normalize supported seed and anchor colors to lowercase six-digit sRGB hex.
-- Convert sRGB through the standard D65 OKLab matrices, then express hue and
-  chroma in OKLCH.
-- Convert requested tone to lightness with the CIELAB L* transfer: values above
-  8 use `((tone + 16) / 116)³`; lower values use `tone / 903.3`; the result is
-  cube-rooted for OKLab lightness.
-- Apply the pinned tone chroma envelope
-  `0.18 + 0.82 × sqrt(sin(π × tone / 100))`.
-- Apply hue-balance factors 0.94 for `[70,115)`, 0.78 for `[115,175)`, 0.82 for
-  `[175,230)`, 0.90 for `[285,340)`, and 1 elsewhere. Orange hues `[40,70)`
-  rotate toward red below tone 50 by at most 8 degrees so low orange stops stay
-  distinct from the red family.
-- Above tone 60, green hues `[115,175)` taper to 72% of their balanced chroma
-  and teal hues `[175,200)` taper to 60% at tone 95 using smoothstep. This keeps
-  their light stops optically balanced without muting cyan or changing the
-  midtone anchors.
-- Vibrancy 50 is neutral. Values 0–25 interpolate to multiplier 0.72; values
-  25–50 interpolate from 0.72 to 1; values above 50 add 0.0096 per point.
-- Cross-family coordination mixes source chroma 35% with reference chroma 0.18
-  at 65%. Neutral profiles are `neutral-v1` (hue 0, chroma 0), `warm-v1`
-  (hue 75, chroma 0.018), `cool-v1` (hue 250, chroma 0.018), and `custom`
-  (the normalized neutral seed).
-- Stop numbers retain the same literal tone meaning in both modes. Dark ramps
-  multiply chroma by 0.85 without silently shifting the requested tone. Stop 0
-  therefore resolves to exact black in either mode, and stop 100 resolves to
-  exact white. Both endpoints are included by default and MAY be omitted by an
-  explicit custom layout.
-- Out-of-gamut OKLCH candidates preserve lightness and hue while chroma is found
-  by 20 iterations of binary search over `[0, 0.4]`.
-- Exact anchors replace their stop. Bounded anchors move toward the requested
-  color only within their declared OKLab Euclidean `maxDeltaE`; flexible anchors
-  blend 35% toward the requested color. Anchor corrections use smoothstep
-  interpolation and taper to zero 25 tone units beyond the nearest anchor.
-- Convert final colors to sRGB by rounding each clamped channel to the nearest
-  8-bit integer. Emit lowercase `#rrggbb`. Canonical JSON uses two-space
-  indentation, insertion-ordered families and stops, and one trailing newline.
-  Candidates expose the requested stop layout as an ordered `stops` array;
-  family ramp objects are lookup maps and do not define iteration order.
-- Invalid requests fail before producing a candidate. Family-local anchor
-  conflicts report the family and produce no adoptable output.
+- 把受支持的种子色与锚点色归一化为小写六位 sRGB hex。
+- 通过标准 D65 OKLab 矩阵转换 sRGB，然后在 OKLCH 中表达色相与彩度。
+- 用 CIELAB L* 传递函数把请求的色调转换为明度：大于 8 的值使用 `((tone + 16) / 116)³`；更小的值使用 `tone / 903.3`；结果为 OKLab 明度开立方根。
+- 应用固定的色调彩度包络 `0.18 + 0.82 × sqrt(sin(π × tone / 100))`。
+- 应用色相平衡系数：`[70,115)` 为 0.94，`[115,175)` 为 0.78，`[175,230)` 为 0.82，`[285,340)` 为 0.90，其余为 1。橙色色相 `[40,70)` 在色调 50 以下向红色旋转最多 8 度，使低橙色色标与红色家族保持区分。
+- 在色调 60 以上，绿色色相 `[115,175)` 用 smoothstep 收敛到其平衡彩度的 72%，蓝绿色色相 `[175,200)` 在色调 95 收敛到 60%。这使它们的浅色色标在光学上平衡，而不压低青色或改变中间调锚点。
+- 鲜艳度 50 为中性。0–25 的值插值到乘数 0.72；25–50 的值从 0.72 插值到 1；大于 50 的值每点增加 0.0096。
+- 跨家族协调把源彩度 35% 与参考彩度 0.18 的 65% 混合。中性配置档为 `neutral-v1`（色相 0，彩度 0）、`warm-v1`（色相 75，彩度 0.018）、`cool-v1`（色相 250，彩度 0.018）与 `custom`（归一化后的中性种子）。
+- 色标编号在两种模式下都保留相同的字面色调含义。深色渐变色标把彩度乘以 0.85，而不静默改变请求的色调。因此色标 0 在任一模式下都解析为精确黑色，色标 100 解析为精确白色。两个端点默认包含，且可以由显式自定义布局省略。
+- 超出色域的 OKLCH 候选项保留明度与色相，彩度通过在 `[0, 0.4]` 上迭代 20 次二分查找求得。
+- 精确锚点替换其色标。有界锚点仅在声明的 OKLab 欧氏 `maxDeltaE` 内朝请求颜色移动；弹性锚点向请求颜色混合 35%。锚点修正使用 smoothstep 插值，并在最近锚点之外 25 个色调单位处衰减为零。
+- 把最终颜色转换为 sRGB：把每个钳制后的通道舍入到最近的 8 位整数。输出小写 `#rrggbb`。规范 JSON 使用两空格缩进、按插入顺序排列的家族与色标，以及一个结尾换行。候选项以有序 `stops` 数组暴露请求的色标布局；家族渐变对象是查找映射，不定义迭代顺序。
+- 无效请求在产出候选项之前失败。家族局部的锚点冲突报告该家族，且不产出可采用的输出。
 
-The following canonical candidate fixtures use SHA-256 over UTF-8 canonical JSON:
+以下规范候选项测试夹具对 UTF-8 规范 JSON 计算 SHA-256：
 
-| Fixture                | Request summary                                                                                | Candidate bytes | SHA-256                                                            |
-| ---------------------- | ---------------------------------------------------------------------------------------------- | --------------: | ------------------------------------------------------------------ |
-| `default-three-family` | Neutral `#777777`, blue `#0074e2`, orange `#d57113`; both modes; vibrancy 50; 21 default stops |            3755 | `11c40191d508274d89d631bb4e1cb662f70ff0dce6c0dec101c317f9f69d3e25` |
-| `exact-anchor`         | Blue `#0074e2`; light only; stops 20, 50, 80; exact stop-50 anchor `#1682d5`                   |             327 | `c42929be3c4b5cb857cada078f62bb5a2242c1a22cfa4ae7546a18592540f7f3` |
-| `single-custom-stop`   | Red `#d62830`; dark only; stop 40                                                              |             258 | `88d3d69865c74c7fb14347b9967575285a7d44ab893087a08bc842bb66b29bbb` |
-| `high-tone-balance`    | Green `#358a3a`, teal `#0c7365`, cyan `#0c6f82`; both modes; stops 60, 80, 95                  |             910 | `873821574fdbe3357304dbc06986bd2e5ec88af80d0f36305626fd826c3cf07b` |
+| Fixture                | Request summary                                                                    | Candidate bytes | SHA-256                                                            |
+| ---------------------- | ---------------------------------------------------------------------------------- | --------------: | ------------------------------------------------------------------ |
+| `default-three-family` | 中性 `#777777`、蓝色 `#0074e2`、橙色 `#d57113`；两种模式；鲜艳度 50；21 个默认色标 |            3755 | `11c40191d508274d89d631bb4e1cb662f70ff0dce6c0dec101c317f9f69d3e25` |
+| `exact-anchor`         | 蓝色 `#0074e2`；仅浅色；色标 20、50、80；精确的色标 50 锚点 `#1682d5`              |             327 | `c42929be3c4b5cb857cada078f62bb5a2242c1a22cfa4ae7546a18592540f7f3` |
+| `single-custom-stop`   | 红色 `#d62830`；仅深色；色标 40                                                    |             258 | `88d3d69865c74c7fb14347b9967575285a7d44ab893087a08bc842bb66b29bbb` |
+| `high-tone-balance`    | 绿色 `#358a3a`、蓝绿色 `#0c7365`、青色 `#0c6f82`；两种模式；色标 60、80、95        |             910 | `873821574fdbe3357304dbc06986bd2e5ec88af80d0f36305626fd826c3cf07b` |
 
-Exact fixture equality is the release gate for recipe compatibility. Monotonicity,
-adjacent-stop distance, hue drift, family distinction, gamut events, and CVD
-simulations are recorded as design evidence for the complete candidate; they do
-not become universal accessibility or contrast guarantees for isolated colors.
+精确测试夹具相等是配方兼容性的发布门禁。单调性、相邻色标距离、色相漂移、家族区分度、色域事件与 CVD 模拟被记录为完整候选项的设计证据；它们不会成为孤立颜色的通用无障碍或对比度保证。
 
 ## Current-state impact
 
-| State                       | Required result                                                                                                           |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Generation absent           | Existing themes, builds, runtime bytes, and supported package ranges stay unchanged.                                      |
-| Candidate produced          | No source, theme, package, or runtime output changes.                                                                     |
-| Palette accepted            | Exact values enter theme-owned palette data under `theme:<name>`; a later current authority may standardize the shape.    |
-| Mapping accepted            | Under that authority, stable semantic-role references are inspectable, reviewable, and update coherently.                 |
-| New candidate generated     | Adopted palettes and rendered output stay unchanged until an explicit review and save.                                    |
-| Adopted palette edited      | Under that authority, explicitly accepting the edit updates mapped roles coherently; unrelated literal values stay fixed. |
-| Playground color edit       | Explicit token editing remains; no accent edit silently expands into unrelated color tokens.                              |
-| Legacy surface before patch | Stable, fully supported, and unlabeled; Playground and maintained new-authoring guidance follow FR17 immediately.         |
-| Replacement-first patch     | Replacement, guidance, migration, static metadata, diagnostics, source migration, and compatibility proof ship together.  |
-| Deprecated API used         | Normalization, token strings, inheritance, CSS, builds, and mounted behavior remain byte-equivalent.                      |
-| Migration run               | Proven uses preserve exact observables; uncertain dynamic, inherited, or adaptation-bearing cases remain unchanged.       |
+| State                       | Required result                                                                         |
+| --------------------------- | --------------------------------------------------------------------------------------- |
+| Generation absent           | 既有主题、构建、运行时字节与受支持的包范围保持不变。                                    |
+| Candidate produced          | 源码、主题、包或运行时输出均无变化。                                                    |
+| Palette accepted            | 精确值进入 `theme:<name>` 下的主题拥有调色板数据；后续的 current 权威可以标准化其形状。 |
+| Mapping accepted            | 在该权威之下，稳定的语义角色引用可检查、可审查，并一致更新。                            |
+| New candidate generated     | 直到显式审查并保存之前，已采用调色板与渲染输出保持不变。                                |
+| Adopted palette edited      | 在该权威之下，显式接受该编辑会一致更新已映射角色；无关的字面值保持固定。                |
+| Playground color edit       | 显式 token 编辑保留；没有强调色编辑会静默展开为无关颜色 token。                         |
+| Legacy surface before patch | 稳定、完全受支持且未加标记；Playground 与受维护的新创作指导立即遵循 FR17。              |
+| Replacement-first patch     | 替代方案、指导、迁移、静态元数据、诊断信息、源码迁移与兼容性证明一并交付。              |
+| Deprecated API used         | 归一化、token 字符串、继承、CSS、构建与挂载行为保持字节等价。                           |
+| Migration run               | 已被证明的用法保留精确可观测项；不确定的动态、继承或携带适配的情形保持不变。            |
 
 ## Verification
 
-Verification MUST cover cross-platform deterministic vectors; hard failures;
-every candidate source and provenance state; complete-family regression/CVD
-evidence; candidate-versus-accepted identity; inspectable stable role mappings;
-runtime/default-bundle absence; real-Chromium evidence for accepted mappings;
-Playground evidence that accent editing does not invoke legacy color-scale
-expansion or mutate unrelated tokens; static `@deprecated` declaration metadata;
-exact-source theme build or validation diagnostics; absence of deprecation-only
-runtime branches, logs, executable bytes, or output changes; maintained-source
-migration; and AST-040 preview, idempotence, and refusal fixtures. Migration proof
-MUST compare token value strings including CSS references, normalized root and
-adaptation layers, generated CSS, inheritance, and descendant extension behavior.
+验证必须覆盖跨平台确定性向量；硬失败；每种候选项来源与溯源状态；完整家族回归/CVD 证据；候选项与已接受项的同一性；可检查的稳定角色映射；运行时/默认 bundle 中不存在相应代码；已接受映射的真实 Chromium 证据；Playground 证据表明强调色编辑不会调用旧版色阶展开或改动无关 token；静态 `@deprecated` 声明元数据；精确源码的主题构建或校验诊断信息；不存在仅用于弃用的运行时分支、日志、可执行字节或输出变化；受维护源码的迁移；以及 AST-040 的预览、幂等与拒绝测试夹具。迁移证明必须比较 token 值字符串（包括 CSS 引用）、归一化根与适配层、生成的 CSS、继承与后代扩展行为。
 
 ## Decision log
 
 ### DEC-5 and DEC-9 — Preserve complete-recipe evidence
 
-**Decider:** `cixzhang`, `2026-09-01` through `2026-09-02`
+**决策者：** `cixzhang`，`2026-09-01` 至 `2026-09-02`
 
-FR8 preserves Ruby's complete-authoring requirements and the comparison evidence
-behind the selected OKLCH direction. A color-space name or isolated ramps alone
-do not define the production recipe.
+FR8 保留 Ruby 的完整创作要求，以及所选 OKLCH 方向背后的对比证据。仅凭颜色空间名称或孤立渐变不足以定义生产配方。
 
 ### DEC-10 — Accepted palettes are committed snapshots
 
-**Decider:** `cixzhang`, `2026-09-03`
+**决策者：** `cixzhang`，`2026-09-03`
 
-Accepted palettes are committed snapshots. Theme mappings use literal CSS values
-or explicit references to committed palette data; generation never runs implicitly.
-A generated candidate changes no accepted source or rendered output until an author
-explicitly accepts it.
+已接受的调色板是已提交的快照。主题映射使用字面 CSS 值或对已提交调色板数据的显式引用；生成从不隐式运行。生成的候选项在作者显式接受之前，不改变任何已接受的源码或渲染输出。
 
-Rejected: an implicit generator run during ordinary theme normalization or build,
-because it would recolor a theme without an explicit accepted source change.
+已否决：在普通主题归一化或构建期间隐式运行生成器，因为这会重着色主题而没有显式的已接受源码变更。
 
 ### DEC-11 — Generation has one authoring engine and two adapters
 
-**Decider:** `cixzhang`, `2026-09-03`
+**决策者：** `cixzhang`，`2026-09-03`
 
-The CLI theme-authoring workflow is the first supported consumer. The pure
-`generateTonalPalette()` API enables programmatic authoring without filesystem
-effects; `astryx theme palette generate` adds preview and explicit file output.
-Both use the same `astryx-oklch-v1` engine. Neither enters Core or
-`defineTheme()`.
+CLI 主题创作工作流是第一个受支持的使用方。纯 `generateTonalPalette()` API 支持无文件系统副作用的编程式创作；`astryx theme palette generate` 增加预览与显式文件输出。两者使用同一个 `astryx-oklch-v1` 引擎。二者都不进入 Core 或 `defineTheme()`。
 
 ### DEC-12 — The generator defaults without restricting palette authors
 
-**Decider:** `rubyycheung`, `2026-09-03`
+**决策者：** `rubyycheung`，`2026-09-03`
 
-The first production generator defaults each family to the familiar 21-position
-`0, 5, …, 100` layout and accepts any explicit non-empty numeric stop list.
-Every candidate exposes exact black and white as standalone authoring values.
-Stops 0 and 100 repeat them in each generated family so authors can retain a
-complete coordinate range or remove the repeated endpoints explicitly without
-losing access to either solid. Generated TypeScript names the values `black`
-and `white`; theme-owned palette wrappers may expose them alongside families,
-for example as `neutralPalettes.black` and `neutralPalettes.white`. Those names
-are reserved from family identifiers. The generated candidate becomes
-author-owned after review and acceptance. Generator defaults therefore do not
-become palette-validity rules.
+第一个生产生成器把每个家族默认设为熟悉的 21 位 `0, 5, …, 100` 布局，并接受任何显式的非空数值色标列表。每个候选项都暴露精确黑色与白色作为独立创作值。色标 0 与 100 在每个生成的家族中重复它们，使作者可以保留完整坐标范围，或显式移除重复端点而不失去对任一纯色的访问。生成的 TypeScript 把这两个值命名为 `black` 与 `white`；主题拥有的调色板包装器可以把它们与家族并列暴露，例如 `neutralPalettes.black` 与 `neutralPalettes.white`。这些名称从家族标识符中保留。生成的候选项在审查与接受之后成为作者拥有。因此生成器默认值不会成为调色板有效性规则。
 
-Generated palettes are reviewable starting points. Authors may adjust
-family-level inputs and regenerate until the palette matches their intended
-expression; only the explicitly approved output becomes the theme-owned palette.
+生成的调色板是可供审查的起点。作者可以调整家族级输入并重新生成，直到调色板符合其预期表达；只有被显式批准的输出才成为主题拥有的调色板。
 
-Rejected: requiring every accepted palette to use the generator's 21-stop
-default. Themes may need compact or specialized palettes for iconography,
-illustration, visualization, or brand expression.
+已否决：要求每个已接受调色板都使用生成器的 21 色标默认值。主题可能需要紧凑或专门化的调色板，用于图标、插画、可视化或品牌表达。
 
 ### DEC-13 — Intermediate stops are generated explicitly
 
-**Deciders:** `cixzhang`, `rubyycheung`, `2026-09-03`
+**决策者：** `cixzhang`、`rubyycheung`，`2026-09-03`
 
-Compact and full presets share the same 0–100 tonal coordinate system, and
-custom layouts remain valid. An author who needs an intermediate value such as
-12.5 requests that stop during generation and reviews the emitted exact hex.
-The committed TypeScript then exposes `family[12.5]` as an actual typed key.
+紧凑与完整预设共享同一 0–100 色调坐标系，自定义布局仍有效。需要 12.5 这类中间值的作者在生成时请求该色标，并审查输出的精确 hex。随后已提交的 TypeScript 把 `family[12.5]` 暴露为真实的类型化键。
 
-Rejected: restricting palette authors to two stop counts, renumbering stops when
-the layout changes, or adding a runtime `family.get(12.5)` that creates an
-unreviewed color after authoring.
+已否决：把调色板作者限制为两种色标数量、在布局变化时重新编号色标，或添加运行时 `family.get(12.5)` 而在创作之后产生未审查的颜色。
 
 ### DEC-14 — Playground color editing does not imply palette generation
 
-**Decider:** `rubyycheung`, `2026-09-30`
+**决策者：** `rubyycheung`，`2026-09-30`
 
-The Playground keeps direct semantic-token editing and omits `Create from
-accent`. A one-accent control is not palette authoring when it also replaces
-neutral, surface, text, border, and related values without exposing a candidate
-palette or a separate mapping decision. Maintained authoring surfaces recommend
-the supported palette workflow instead.
+Playground 保留直接的语义 token 编辑，并省略 `Create from accent`。单强调色控件在同时替换中性、表面、文本、边框与相关值、却不暴露候选调色板或单独映射决策时，不属于调色板创作。受维护的创作接口改为推荐受支持的调色板工作流。
 
-Rejected: replacing the control with another generator while retaining automatic
-token rewrites, because that still collapses generation, review, and mapping.
+已否决：用另一个生成器替换该控件但仍保留自动 token 重写，因为那仍然把生成、审查与映射混为一谈。
 
 ### DEC-15 — Legacy color-scale authoring follows static replacement-first deprecation
 
-**Decider:** `cixzhang`, `2026-10-07`
+**决策者：** `cixzhang`，`2026-10-07`
 
-`DefineThemeInput.color`, `ThemeAdaptationValue.color`, and
-`expandColorScale()` remain stable until one patch ships the complete replacement,
-versioned guidance, AST-040 modernization, static metadata, exact-source
-diagnostics, maintained-source migration, and compatibility proof. They then
-enter `deprecated` with byte-equivalent executable behavior and no runtime warning
-or branch. Each public surface owns a separate deprecation and cleanup id.
+`DefineThemeInput.color`、`ThemeAdaptationValue.color` 与 `expandColorScale()` 保持稳定，直到某一个补丁一并交付完整替代、版本化指导、AST-040 现代化、静态元数据、精确源码诊断信息、受维护源码迁移与兼容性证明。随后它们进入 `deprecated`，具有字节等价的可执行行为，且没有运行时警告或分支。每个公共接口拥有单独的弃用与清理 id。
 
-Future first-class palette input, stable semantic-role mapping, and compiler
-integration remain open to AST-018 if amended and accepted, or to a later current
-authority. AST-008 requires explicit acceptance, coherent mapped updates, and no
-implicit generator run without selecting that future API shape.
+未来的一等公民调色板输入、稳定语义角色映射与编译器集成，仍对经修订并接受的 AST-018 或后续的 current 权威开放。AST-008 要求显式接受、一致的映射更新，并且在不选择该未来 API 形状的情况下不得隐式运行生成器。
 
-Rejected: a runtime compatibility flag or deprecation warning, or a permanent ban
-on first-class palette/theme integration.
+已否决：运行时兼容标志或弃用警告，或永久禁止一等公民的调色板/主题集成。
 
 ## Open questions
 
-- **OQ1 — What is the first-class accepted palette/theme contract?** A later
-  current authority—AST-018 only if amended and accepted—must settle the public
-  input shape, stable semantic-role references, authoring and compilation
-  behavior, validation, and artifact lifecycle. AST-008 requires explicit review,
-  coherent mapped updates, and no implicit generator run without selecting among
-  those API shapes.
+- **OQ1 — 一等公民的已接受调色板/主题契约是什么？** 后续的 current 权威——仅在 AST-018 经修订并接受后——必须确定公共输入形状、稳定语义角色引用、创作与编译行为、校验以及产物生命周期。AST-008 要求显式审查、一致的映射更新，并且在不选择这些 API 形状的情况下不得隐式运行生成器。

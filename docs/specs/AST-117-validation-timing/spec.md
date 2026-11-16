@@ -43,45 +43,21 @@ affects_consumer_docs:
 
 ## Intent
 
-An input that checks its own entries reveals a rejected entry at a moment the
-builder chooses, for a whole form or for one field: when the input reveals it
-by default, or only when the person commits the entry with Enter or by leaving
-the field. A form that checks its fields on blur can then hold an input's own
-rejections to the same moment. Under the commit choice, the visible message,
-the invalid state, and the screen-reader announcement appear together and
-clear together.
+自行校验输入内容的输入框，在构建者选定的时刻显示被拒绝的输入，这个时刻可以按整个表单确定，也可以按单个字段确定：或是输入框默认显示的时刻，或是仅当使用者用 Enter 提交输入、或离开字段时才显示的时刻。这样，一个在失焦时校验字段的表单，就能把输入框自身的拒绝保持到同一时刻。选择提交时刻时，可见的消息、无效状态与屏幕阅读器播报会一同出现，也一同清除。
 
 ## Members
 
-The rule applies to the four members of `family:input-fields` that reject
-entries themselves: `DateInput`, `DateTimeInput`, `TimeInput`, and
-`NumberInput`. `FormLayout` sets a form-wide default for them. Members that
-reject nothing themselves, such as `TextInput`, `Selector`, and
-`DateRangeInput`, whose dates come only from a Calendar that disables
-unreachable days, take no entry error behavior.
+该规则适用于 `family:input-fields` 中自行拒绝输入的四个成员：`DateInput`、`DateTimeInput`、`TimeInput` 与 `NumberInput`。`FormLayout` 为它们设置表单级默认值。自身不拒绝任何输入的成员不采用输入错误行为，例如 `TextInput`、`Selector`，以及 `DateRangeInput`，后者的日期只来自一个会禁用不可达日期的 Calendar。
 
 ## Non-goals
 
-- Which entries a member rejects, when it reveals a rejection under
-  `'complete'`, which signals a rejection has, and what a commit does with a
-  rejected entry. Each member's record owns them.
-- Caller validation. A caller's `status`, `isRequired`, and form-library rules
-  keep their own timing; this record governs only the rejections a member makes
-  itself.
-- Native constraint validation in the browser, such as `required` and
-  `:invalid`.
-- Rejection wording. Each member's record and `spec:AST-111` AR3 own the
-  messages; `spec:AST-086` owns their delivery.
-- The `onChange` timing of typed entry, which each member's record owns
-  (`spec:AST-111` FR12 for dates).
-- Equivalent internal implementations remain valid when they satisfy this
-  contract.
-- Internal modules, files, function names, algorithms, data structures, storage
-  layouts, manifests, journals, locks, transaction protocols, and CI job/workflow
-  topology belong in architecture or implementation unless callers or
-  interoperating systems intentionally depend on that exact mechanism as a public
-  protocol. In that case, state who depends on it and why an equivalent
-  implementation would not satisfy the contract.
+- 成员拒绝哪些输入、在 `'complete'` 下何时显示拒绝、拒绝具有哪些信号，以及提交对被拒绝输入的处理。这些归各成员的记录所有。
+- 调用方校验。调用方的 `status`、`isRequired` 与表单库规则各自保持自己的时机；本记录只约束成员自身做出的拒绝。
+- 浏览器中的原生约束校验，例如 `required` 与 `:invalid`。
+- 拒绝的措辞。消息归各成员的记录与 `spec:AST-111` AR3 所有；消息的传达归 `spec:AST-086` 所有。
+- 键入输入的 `onChange` 时机，它归各成员的记录所有（日期的时机见 `spec:AST-111` FR12）。
+- 只要满足本契约，等价的内部实现仍然有效。
+- 内部模块、文件、函数名、算法、数据结构、存储布局、清单、日志、锁、事务协议，以及 CI 作业/工作流拓扑，属于架构或实现，除非调用方或互操作的系统有意将该具体机制作为公共协议来依赖。在这种情况下，应说明谁依赖它，以及为什么等价实现无法满足契约。
 
 ## Public contract
 
@@ -112,221 +88,123 @@ type EntryErrorBehavior = 'complete' | 'blur-or-enter';
 
 ### Terms
 
-- A **rejection** is a member's own refusal of an entry, as its record defines
-  it: a date the calendar does not have, unreadable or incomplete date text, a
-  time or number that does not parse, a fractional number in an integer-only
-  field, or a value outside `min`, `max`, or `dateConstraints`.
-- The **signals** of a rejection are the ones its member's record gives it: a
-  visible message, `aria-invalid`, invalid styling of the entry's text, and an
-  announcement.
-- A **commit** is Enter in the field or blur, focus leaving the field.
+- **拒绝** 是成员按其记录的定义对某项输入所做的自身否决：日历中不存在的日期、不可读或不完整的日期文本、无法解析的时间或数字、仅限整数的字段中出现的小数，以及超出 `min`、`max` 或 `dateConstraints` 的值。
+- 拒绝的**信号**是其成员的记录为其规定的那些信号：可见的消息、`aria-invalid`、输入文本的无效样式，以及播报。
+- **提交**是在字段中按 Enter，或是失焦，即焦点离开字段。
 
 ### Behavior
 
-- **FR1 — Each member takes `entryErrorBehavior`.** `DateInput`,
-  `DateTimeInput`, `TimeInput`, and `NumberInput` accept an optional
-  `entryErrorBehavior` of `'complete'` or `'blur-or-enter'`. One value governs every
-  surface and segment of the field: typed text, the native control, and
-  `DateTimeInput`'s date and time segments. The type of the value is exported as
-  `EntryErrorBehavior`. The prop sets when a member reveals its own entry
-  errors, the rejections that `onEntryErrorChange` reports where a member has
-  it; validation itself runs on every edit under both values.
-- **FR2 — The form sets a default and the field wins.** `FormLayout` accepts an
-  optional `defaultEntryErrorBehavior` of the same type. A member resolves its
-  behavior from its own `entryErrorBehavior`, else the nearest `FormLayout`'s
-  `defaultEntryErrorBehavior`, else `'complete'`. `FormLayout` provides the
-  default as it provides `defaultOptionality` (`component:FormLayout` FR4): a
-  nested `FormLayout` replaces it for its own descendants, an unset nested value
-  included, and content in a layer opened inside a `FormLayout` starts without
-  it (`spec:AST-038` FR7, FR8).
-- **FR3 — `'complete'` is each member's shipped behavior.** Under
-  `'complete'`, a member reveals each rejection when, and with the signals,
-  its own record states, and nothing in this record changes that. A field
-  with no `entryErrorBehavior` and no `FormLayout` default behaves the same
-  way.
-- **FR4 — `'blur-or-enter'` holds every signal until commit.** Under `'blur-or-enter'`, while
-  a person types or edits, a member shows, marks, styles, and announces no
-  rejection of its own. At Enter or blur, it reveals the rejection that the
-  entry has at that moment, with every signal its record gives that rejection
-  appearing together and the announcement made once. A value that a native date
-  or time control reports is held to the next Enter or blur in the same way. A
-  member that reports its rejections to the caller, as DateInput and
-  DateTimeInput do through `onEntryErrorChange`, reports a rejection when it
-  reveals it, so a caller `error` status that the report drives appears at the
-  same commit; it reports a cleared rejection at once (FR5).
-  When the member's record drops the rejected entry at that commit, the member
-  announces the rejection once at that commit and then drops the entry as its
-  record states.
-- **FR5 — A rejection clears as soon as the entry is valid.** Under both
-  values, an edit that makes the entry a value the member accepts, or empties
-  it, clears the rejection's signals at once, without a commit. Under
-  `'blur-or-enter'`, an edit that leaves the entry rejected keeps the revealed
-  rejection and does not announce it again; the next commit reveals the entry's
-  current rejection. A new `value` or a pick that replaces the entry, as the
-  member's record states, clears its rejection.
-- **FR6 — Locked fields reveal no rejection.** While a member is disabled, or
-  busy where its record blocks edits (`component:DateInput` FR12,
-  `component:DateTimeInput` FR9 and FR13), it reveals no rejection of its own
-  (`spec:AST-085` FR2). Once it is editable, its entry error behavior applies
-  again. A busy member whose record keeps it editable keeps revealing
-  rejections under its entry error behavior.
-- **FR7 — Compositions keep the default.** `PowerSearch`'s value editors,
-  Table's filter editors, and `Pagination`'s page input render members with
-  `'complete'` and expose no entry error behavior prop. A `FormLayout` around
-  them does not change it.
+- **FR1 — 每个成员接受 `entryErrorBehavior`。** `DateInput`、`DateTimeInput`、`TimeInput` 与 `NumberInput` 接受一个可选的 `entryErrorBehavior`，取值为 `'complete'` 或 `'blur-or-enter'`。一个取值约束字段的每个表面与分段：键入的文本、原生控件，以及 `DateTimeInput` 的日期分段与时间分段。该值的类型导出为 `EntryErrorBehavior`。该属性决定成员何时显示自身的输入错误，也就是 `onEntryErrorChange` 在成员具备该回调时所报告的拒绝；在两种取值下，校验本身都在每次编辑时运行。
+- **FR2 — 表单设置默认值，字段优先。** `FormLayout` 接受一个同类型的可选 `defaultEntryErrorBehavior`。成员按以下顺序确定自身行为：自身的 `entryErrorBehavior`，否则最近一层 `FormLayout` 的 `defaultEntryErrorBehavior`，否则 `'complete'`。`FormLayout` 提供该默认值的方式与提供 `defaultOptionality` 相同（`component:FormLayout` FR4）：嵌套的 `FormLayout` 为其后代替换该默认值，嵌套值为未设置的情况也算在内；在 `FormLayout` 内部打开的层中的内容初始时不带有该默认值（`spec:AST-038` FR7、FR8）。
+- **FR3 — `'complete'` 是各成员已发布的行为。** 在 `'complete'` 下，成员按其记录所述的时刻与信号显示每次拒绝，本记录不改变其中任何一点。既没有 `entryErrorBehavior`、也没有 `FormLayout` 默认值的字段表现相同。
+- **FR4 — `'blur-or-enter'` 将所有信号保持到提交。** 在 `'blur-or-enter'` 下，当使用者键入或编辑时，成员不显示、不标记、不设样式，也不播报自身的任何拒绝。在 Enter 或失焦时，成员显示该时刻输入所带的拒绝，其记录为该拒绝规定的所有信号一同出现，且播报只发生一次。原生日期或时间控件报告的取值，同样被保持到下一次 Enter 或失焦。向调用方报告拒绝的成员（如 `DateInput` 与 `DateTimeInput` 通过 `onEntryErrorChange` 所做的那样）在显示拒绝时才报告该拒绝，因此由该报告驱动的调用方 `error` 状态也在同一次提交时出现；已清除的拒绝会立即报告（FR5）。当成员的记录在该次提交时丢弃被拒绝的输入，成员在该次提交时播报一次该拒绝，然后按记录所述丢弃该输入。
+- **FR5 — 一旦输入有效，拒绝立即清除。** 在两种取值下，使输入成为成员接受的值、或使输入变为空的编辑，会立即清除拒绝的信号，无需提交。在 `'blur-or-enter'` 下，仍使输入处于被拒绝状态的编辑会保留已显示的拒绝，且不再重复播报；下一次提交会显示该输入当前的拒绝。新的 `value`、或替换输入的选取操作（按成员的记录所述），会清除其拒绝。
+- **FR6 — 锁定的字段不显示拒绝。** 当成员处于禁用状态，或在记录会阻止编辑的情况下处于忙碌状态时（`component:DateInput` FR12、`component:DateTimeInput` FR9 与 FR13），它不显示自身的拒绝（`spec:AST-085` FR2）。一旦它可编辑，其输入错误行为再次生效。记录保持其可编辑的忙碌成员，仍按其输入错误行为显示拒绝。
+- **FR7 — 组合组件保持默认值。** `PowerSearch` 的值编辑器、Table 的筛选编辑器，以及 `Pagination` 的页码输入，都以 `'complete'` 渲染成员，且不暴露输入错误行为属性。包裹它们的 `FormLayout` 不改变这一点。
 
 ### Accessibility contract
 
-- **AR1 — Nothing before commit under `'blur-or-enter'`.** Under `'blur-or-enter'`, no
-  rejection is marked or announced before Enter or blur (FR4).
-- **AR2 — One announcement per revealed rejection.** Each rejection that a
-  commit reveals is announced once, at the urgency `spec:AST-086` FR5 gives an
-  error, and where a message shows, the announced words match the shown words
-  (`spec:AST-086` FR7).
-- **AR3 — A dropped entry is still explained.** Under `'blur-or-enter'`, a member that
-  drops a rejected entry at commit still announces why (FR4), so a person
-  learns that the entry was not accepted (WCAG 2.2 3.3.1).
+- **AR1 — `'blur-or-enter'` 下提交之前没有任何信号。** 在 `'blur-or-enter'` 下，Enter 或失焦之前不标记、也不播报任何拒绝（FR4）。
+- **AR2 — 每次显示的拒绝只播报一次。** 提交所显示的每次拒绝只播报一次，紧迫程度按 `spec:AST-086` FR5 对错误的取值；在显示消息的场合，播报的文字与显示的文字一致（`spec:AST-086` FR7）。
+- **AR3 — 被丢弃的输入仍会得到解释。** 在 `'blur-or-enter'` 下，在提交时丢弃被拒绝输入的成员仍会播报原因（FR4），使使用者知道该输入未被接受（WCAG 2.2 3.3.1）。
 
 ### Compatibility
 
-Classified under `spec:AST-017` against the latest stable release:
+依据 `spec:AST-017` 对照最新稳定版本分类：
 
-- `entryErrorBehavior` and `defaultEntryErrorBehavior` are new optional props,
-  and their default, `'complete'`, is each member's shipped behavior (FR3), so
-  usage that sets neither is unchanged: additive (`spec:AST-017` FR5;
-  `architecture:public-component-api` INV3).
-- `'blur-or-enter'` applies only where a caller sets it. It makes Enter reveal
-  a held native time rejection in `TimeInput` and in `DateTimeInput`'s time
-  segment, which reveal it at once by default: additive (`spec:AST-017` FR5).
+- `entryErrorBehavior` 与 `defaultEntryErrorBehavior` 是新的可选属性，其默认值 `'complete'` 就是各成员已发布的行为（FR3），因此两者都不设置的用法保持不变：属于新增（`spec:AST-017` FR5；`architecture:public-component-api` INV3）。
+- `'blur-or-enter'` 只在调用方设置它的地方生效。它使 Enter 在 `TimeInput` 与 `DateTimeInput` 的时间分段中显示被保持的原生时间拒绝，而这些地方默认会立即显示拒绝：属于新增（`spec:AST-017` FR5）。
 
 ### Platform support
 
-- Supported feature/engine floor: every supported browser and renderer. Nothing
-  here is behind a capability check.
-- Unsupported behavior: none.
-- Browser evidence: DOM and accessibility-tree assertions for each signal at
-  each keystroke and commit under both values; a real-browser check that blur
-  and Enter commit on the typed and native surfaces.
+- 支持的功能/引擎下限：所有受支持的浏览器与渲染器。此处没有任何内容依赖能力检测。
+- 不支持的行为：无。
+- 浏览器证据：在两种取值下，对每次按键与每次提交时的每个信号做 DOM 与可访问性树断言；在真实浏览器中检查键入表面与原生表面上的失焦与 Enter 提交。
 
 ## Current-state impact
 
-- `family:input-fields` names entry error behavior as a canonical concept and adds
-  FR14, a projection of this record; its shared-owner section gives `FormLayout`
-  the form-level default.
-- `component:DateInput`, `component:DateTimeInput`, `component:TimeInput`, and
-  `component:NumberInput` add `entryErrorBehavior` and project FR1–FR6.
-- `component:FormLayout` adds `defaultEntryErrorBehavior` to its props and its
-  layout context.
-- The `.doc.mjs` files of the five components document the props, the default,
-  and precedence, and say that the prop sets when an entry error shows, not
-  when validation runs.
+- `family:input-fields` 把输入错误行为列为规范概念，并新增 FR14 作为本记录的投影；其共享拥有者章节把表单级默认值赋予 `FormLayout`。
+- `component:DateInput`、`component:DateTimeInput`、`component:TimeInput` 与 `component:NumberInput` 新增 `entryErrorBehavior`，并投影 FR1–FR6。
+- `component:FormLayout` 在其属性与布局上下文中新增 `defaultEntryErrorBehavior`。
+- 这五个组件的 `.doc.mjs` 文件记录这些属性、默认值与优先级，并说明该属性决定输入错误何时显示，而不是校验何时运行。
 
-Requirement gaps:
+要求缺口：
 
-- FR6 gap: a busy `TimeInput` (`isLoading` or a pending `changeAction`) stays
-  editable but reveals no rejection of its own until it is idle.
+- FR6 缺口：忙碌的 `TimeInput`（`isLoading` 或待处理的 `changeAction`）保持可编辑，但在空闲之前不显示自身的拒绝。
 
 ## Verification
 
-| Contract | Verification                                                                                 | Representative states                                                                                                                  | Mutation or failure expectation                                                                                                       |
-| -------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1, FR2 | Member and `FormLayout` render suites; type tests                                            | No prop; field prop; form default; both, disagreeing; nested layout with and without a value; a field in a Dialog opened inside a form | A field ignores its prop, a form default outranks the field, a nested or layered field keeps the outer default, or the type widens    |
-| FR3      | Each member's existing rejection suites, run with no prop and with `'complete'`              | Every rejection each member's record names                                                                                             | Any signal appears at a different moment, or with a different signal set, than with no prop                                           |
-| FR4      | Keystroke-by-keystroke and commit suites under `'blur-or-enter'`                             | Each rejection of each member; native edits; Enter and blur; an entry the member drops at blur                                         | A signal appears before Enter or blur, the signals appear apart, the announcement repeats, or a dropped entry is not announced        |
-| FR5      | Edit suites after a revealed rejection                                                       | Edit to valid; to empty; to still rejected; caller `value` change; calendar pick                                                       | A fixed entry keeps its rejection, a still-rejected edit clears it or announces it again under `'blur-or-enter'`, or a pick leaves it |
-| FR6      | Disabled suites, and busy suites for the records that block edits while busy                 | Rejection revealed, then disabled; draft kept while busy; a busy TimeInput that stays editable                                         | A locked field reveals a rejection, a busy editable field stops revealing, or its behavior does not apply again once editable         |
-| FR7      | `PowerSearch`, Table filter editor, and `Pagination` page input suites inside a `FormLayout` | `defaultEntryErrorBehavior="blur-or-enter"` around the composition                                                                     | An editor follows the form default                                                                                                    |
-| AR1–AR3  | Screen-reader evidence under `spec:AST-009`                                                  | Each member, typed and native, under `'blur-or-enter'`                                                                                 | A rejection is heard before commit, heard twice, or a dropped entry is not explained                                                  |
+| 契约     | 验证                                                                              | 代表性状态                                                                                                   | 变更或失败预期                                                                                      |
+| -------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| FR1, FR2 | 成员与 `FormLayout` 的渲染测试套件；类型测试                                      | 无属性；字段属性；表单默认值；两者同时设置且相互冲突；带值与不带值的嵌套布局；在表单内打开的 Dialog 中的字段 | 字段忽略自身属性、表单默认值压过字段、嵌套或分层中的字段保留外层默认值，或类型被放宽                |
+| FR3      | 各成员现有的拒绝测试套件，分别在未设置属性与设置 `'complete'` 时运行              | 各成员记录所列的每一种拒绝                                                                                   | 任何信号出现的时刻或信号集合与未设置属性时不同                                                      |
+| FR4      | 在 `'blur-or-enter'` 下逐次按键与提交的测试套件                                   | 各成员的每种拒绝；原生编辑；Enter 与失焦；成员在失焦时丢弃的输入                                             | 信号在 Enter 或失焦之前出现、各信号分散出现、播报重复，或被丢弃的输入未被播报                       |
+| FR5      | 显示拒绝之后的编辑测试套件                                                        | 编辑为有效；编辑为空；编辑后仍被拒绝；调用方改变 `value`；日历选取                                           | 已修正的输入仍保留拒绝、在 `'blur-or-enter'` 下仍被拒绝的编辑清除拒绝或再次播报，或选取之后拒绝残留 |
+| FR6      | 禁用测试套件，以及针对忙碌时阻止编辑的记录所做的忙碌测试套件                      | 先显示拒绝再禁用；忙碌期间保留草稿；保持可编辑的忙碌 TimeInput                                               | 锁定字段显示拒绝、忙碌的可编辑字段停止显示，或其行为在可编辑后不再生效                              |
+| FR7      | `FormLayout` 内 `PowerSearch`、Table 筛选编辑器与 `Pagination` 页码输入的测试套件 | 在组合组件外层设置 `defaultEntryErrorBehavior="blur-or-enter"`                                               | 编辑器跟随表单默认值                                                                                |
+| AR1–AR3  | 依据 `spec:AST-009` 的屏幕阅读器证据                                              | 在 `'blur-or-enter'` 下各成员的键入表面与原生表面                                                            | 拒绝在提交前被听到、被听到两次，或被丢弃的输入未得到解释                                            |
 
 ## Decision log
 
 ### DEC-1 — One option for every input that checks its own entries
 
-**Reference:** `spec:AST-117/DEC-1`
-**Decider:** `nynexman4464`, `2026-11-11`
+**引用：** `spec:AST-117/DEC-1`
 
-Forms that check fields on blur need an input's own rejections to wait for the
-commit, while other forms keep the input's own timing. One option, with the
-same two values on every member that rejects entries, serves both. Its default
-is the shipped behavior, as a new behavior prop's default is
-(`architecture:public-component-api` INV3). Under `'blur-or-enter'` the option holds
-the message, the invalid state, and the announcement together, and under both
-values a rejection clears as soon as the entry is valid.
+**决定者：** `nynexman4464`，`2026-11-11`
 
-Rejected: commit timing as the only behavior, because forms that rely on an
-input's own early feedback would lose it.
+在失焦时校验字段的表单，需要让输入框自身的拒绝等到提交时再显示，而其他表单保留输入框自身的时机。一个选项，在所有会拒绝输入的成员上取相同的两个值，可以同时满足两者。其默认值为已发布的行为，正如新行为属性的默认值那样（`architecture:public-component-api` INV3）。在 `'blur-or-enter'` 下，该选项让消息、无效状态与播报一同保持；在两种取值下，一旦输入有效，拒绝立即清除。
+
+已否决：以提交时机作为唯一行为，因为依赖输入框自身即时反馈的表单会失去该反馈。
 
 ### DEC-2 — The form sets the default, and the field wins
 
-**Reference:** `spec:AST-117/DEC-2`
-**Decider:** `nynexman4464`, `2026-11-11`
+**引用：** `spec:AST-117/DEC-2`
 
-A form follows one convention for all its fields, so `FormLayout` carries it
-through the context that already carries `defaultOptionality`. A field that
-needs another behavior sets its own prop. Form libraries set validation timing
-on the form, and those that also take it per field let the field win.
+**决定者：** `nynexman4464`，`2026-11-11`
+
+表单对其所有字段遵循一种约定，因此 `FormLayout` 通过已经承载 `defaultOptionality` 的上下文传递该约定。需要其他行为的字段设置自己的属性。表单库在表单上设置校验时机；那些也按字段接受该设置的表单库会让字段胜出。
 
 ### DEC-3 — The name follows the behavior-prop rule
 
-**Reference:** `spec:AST-117/DEC-3`
-**Decider:** `nynexman4464`, `2026-11-11`
+**引用：** `spec:AST-117/DEC-3`
 
-A prop that chooses how a component responds to input is named
-`<thing>Behavior` (`architecture:public-component-api` INV2). The thing is the
-member's entry error, the rejection that `onEntryErrorChange` already reports,
-so the option is `entryErrorBehavior`, the form default
-`defaultEntryErrorBehavior`, and the type `EntryErrorBehavior`. Its values name
-when an entry error appears:
-`'complete'`, the member's shipped moment (FR3), and
-`'blur-or-enter'`, when the person leaves the field or presses Enter. The
-second value names both triggers, because Enter commits an entry without
-moving focus.
+**决定者：** `nynexman4464`，`2026-11-11`
 
-Rejected:
+选择组件如何响应输入的属性，命名为 `<thing>Behavior`（`architecture:public-component-api` INV2）。此处的对象是成员的输入错误，也就是 `onEntryErrorChange` 已经报告的拒绝，因此选项名为 `entryErrorBehavior`，表单默认值为 `defaultEntryErrorBehavior`，类型为 `EntryErrorBehavior`。其取值命名输入错误何时出现：`'complete'` 是成员已发布的时刻（FR3），`'blur-or-enter'` 是使用者离开字段或按下 Enter 的时刻。第二个取值同时命名两个触发条件，因为 Enter 无需移动焦点即可提交输入。
 
-- `validationBehavior`, because React Aria uses that name for native versus
-  ARIA validation, and because it suggests when validation runs.
-- `validateOn`, `validateTrigger`, and `validationTiming`, because they suggest
-  when validation runs and break the `<thing>Behavior` rule.
-- `errorBehavior` and `errorTiming`, because they also suggest control over a
-  caller's errors; `errorTiming` also breaks the rule.
-- Separate `'blur'` and `'enter'` values. With Enter alone, a person who tabs
-  away from a rejected entry is never told, and phone number pads have no
-  Enter key. With blur alone, Enter commits a rejected entry with no sign.
-- `'commit'`, because developers read it as saving or submitting.
-- `'eager'` and `'lazy'`, because neither names its trigger and form libraries
-  already use them with other meanings.
+已否决：
+
+- `validationBehavior`，因为 React Aria 用该名称指原生校验与 ARIA 校验之别，而且它暗示校验何时运行。
+- `validateOn`、`validateTrigger` 与 `validationTiming`，因为它们暗示校验何时运行，并且违反 `<thing>Behavior` 规则。
+- `errorBehavior` 与 `errorTiming`，因为它们还暗示可以控制调用方的错误；`errorTiming` 另外还违反该规则。
+- 分开的 `'blur'` 与 `'enter'` 取值。若只有 Enter，从被拒绝的输入按 Tab 离开的人永远不会被告知，而电话号码键盘没有 Enter 键。若只有失焦，Enter 会在没有任何提示的情况下提交被拒绝的输入。
+- `'commit'`，因为开发者会把它理解为保存或提交。
+- `'eager'` 与 `'lazy'`，因为两者都没有命名其触发条件，而且表单库已经用它们表达其他含义。
 
 ### DEC-4 — Under `'blur-or-enter'`, a dropped entry is announced at its commit
 
-**Reference:** `spec:AST-117/DEC-4`
-**Decider:** `nynexman4464`, `2026-11-11`
+**引用：** `spec:AST-117/DEC-4`
 
-Some members drop a rejected entry at blur, and by default they announce the
-rejection while the person types. Under `'blur-or-enter'` that announcement waits, so
-the commit that drops the entry announces it; otherwise the entry would vanish
-with no word (FR4).
+**决定者：** `nynexman4464`，`2026-11-11`
+
+有些成员在失焦时丢弃被拒绝的输入，默认情况下它们会在使用者键入时播报该拒绝。在 `'blur-or-enter'` 下，该播报会等待，因此丢弃该输入的那次提交会播报它；否则输入会在没有一句说明的情况下消失（FR4）。
 
 ### DEC-5 — Compositions keep the default
 
-**Reference:** `spec:AST-117/DEC-5`
-**Decider:** `nynexman4464`, `2026-11-11`
+**引用：** `spec:AST-117/DEC-5`
 
-`PowerSearch` and Table filtering compose members as filter editors, and
-`Pagination` composes one as its page input, not as fields of a form, so a
-form's convention does not apply to them. They keep `'complete'` and take no
-prop (FR7). `DateRangeInput` has no typed entry to reject.
+**决定者：** `nynexman4464`，`2026-11-11`
+
+`PowerSearch` 与 Table 筛选把成员组合为筛选编辑器，`Pagination` 把一个成员组合为页码输入，它们都不是表单字段，因此表单的约定不适用于它们。它们保持 `'complete'`，且不接受属性（FR7）。`DateRangeInput` 没有可拒绝的键入输入。
 
 ### DEC-6 — A revealed entry error stays while the entry stays wrong
 
-**Reference:** `spec:AST-117/DEC-6`
-**Decider:** `nynexman4464`, `2026-11-11`
+**引用：** `spec:AST-117/DEC-6`
 
-Under `'blur-or-enter'`, once an entry error shows, an edit that leaves the
-entry wrong keeps it, without a new announcement, until the entry is valid or
-empty or the next commit reveals its current error (FR5). Hiding it on every
-edit would make the error flicker while the person corrects it.
+**决定者：** `nynexman4464`，`2026-11-11`
+
+在 `'blur-or-enter'` 下，一旦输入错误显示，使输入仍然有错的编辑会保留该错误且不再播报，直到输入变为有效或为空，或下一次提交显示其当前的错误（FR5）。若在每次编辑时隐藏它，使用者修正错误期间该错误就会闪烁。
 
 ## Open questions
 
-None.
+无。

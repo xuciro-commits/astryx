@@ -1,11 +1,6 @@
-# Native component specs
+# 原生组件规范
 
-One short spec per native component, per language, kept beside the core
-component's spec in its folder under `docs/specs/components/`, so
-`docs/specs/components/TabList/` holds `TabList.spec.md` and
-`TabList.swift.spec.md` side by side. The rules live in
-[AST-093 (Native component guidelines)](../../../docs/specs/AST-093-native-component-guidelines/spec.md),
-which applies [AST-082 (Native-first surfaces)](../../../docs/specs/AST-082-native-first-surfaces/spec.md).
+每个原生组件、每种语言各一份简短规范，与 core 组件的规范一起放在 `docs/specs/components/` 下该组件的文件夹中，因此 `docs/specs/components/TabList/` 中会并排放置 `TabList.spec.md` 和 `TabList.swift.spec.md`。规则见 [AST-093（原生组件指南）](../../../docs/specs/AST-093-native-component-guidelines/spec.md)，该规范应用 [AST-082（原生优先界面）](../../../docs/specs/AST-082-native-first-surfaces/spec.md)。
 
 ```text
 packages/native/
@@ -23,46 +18,27 @@ docs/specs/components/
     └── <Name>.swift.spec.md   # the Swift spec, e.g. Button.swift.spec.md
 ```
 
-Swift comes first. Kotlin and other languages get their own directory when
-their first component starts.
+Swift 优先。Kotlin 和其他语言在首个组件启动时获得各自的目录。
 
-## The three guidelines, in order
+## 三项准则（按顺序）
 
-1. **Native-first.** Use the platform's own control when it fits the
-   component's contract. In Swift: SwiftUI, then UIKit or AppKit. Draw a custom
-   control only when the platform has none, and say why in the spec.
-2. **Apple Human Interface Guidelines.** On iOS and macOS, presentation and
-   interaction follow the HIG: hit targets, Dynamic Type, SF Symbols, materials,
-   motion and Reduce Motion, haptics, VoiceOver. Name the pages you follow.
-3. **Brand through the theme.** Everything the first two leave open (color,
-   type family, shape, spacing, icon choice) comes from the app's theme:
-   `defineTheme` tokens and `defineNativeTheme` intent. Never hard-code a
-   brand value and never add a visual prop for one platform.
+1. **原生优先。** 当平台自带的控件符合组件契约时，就使用它。在 Swift 中：优先 SwiftUI，其次 UIKit 或 AppKit。只有当平台没有相应控件时才绘制自定义控件，并在规范中说明原因。
+2. **Apple 人机界面指南。** 在 iOS 和 macOS 上，呈现与交互遵循 HIG：点击目标、Dynamic Type、SF Symbols、材质、动效与“减弱动态效果”、触感反馈、VoiceOver。请写明你遵循的页面。
+3. **通过主题体现品牌。** 前两项未规定的一切（颜色、字体族、形状、间距、图标选择）都来自应用的主题：`defineTheme` token 和 `defineNativeTheme` 意图。绝不硬编码品牌值，也绝不为某个平台添加视觉 prop。
 
-The core contract (prop names, states, words, accessibility semantics) stays
-the same everywhere. A native spec never renames or changes it.
+core 契约（prop 名称、状态、文案、无障碍语义）在所有平台上保持一致。原生规范绝不重命名或更改它。
 
-## Adding a spec
+## 添加规范
 
-1. Copy `TEMPLATE.md` to the core component's folder under
-   `docs/specs/components/` as `<Name>.<language>.spec.md`, for Swift
-   `docs/specs/components/<ComponentRoot>/<Name>.swift.spec.md`.
-2. Fill every section. Write "None" rather than deleting one.
-3. Open a pull request that changes only files under `packages/native/` and
-   native specs. A spec can land on its own or with the component it describes.
+1. 将 `TEMPLATE.md` 复制到 `docs/specs/components/` 下 core 组件的文件夹中，命名为 `<Name>.<language>.spec.md`；对于 Swift，即 `docs/specs/components/<ComponentRoot>/<Name>.swift.spec.md`。
+2. 填写每个章节。不要删除章节，而是写 "None"。
+3. 提交一个仅更改 `packages/native/` 下文件和原生规范的拉取请求。规范可以单独落地，也可以与它所描述的组件一起落地。
 
-Pull requests that change only `packages/native/` and native component specs
-(`docs/specs/components/**/<Name>.<language>.spec.md`), written entirely by the
-native group listed in AST-093 FR6, are approved once required checks pass, the
-review app finds no defect on the exact head, and a review against AST-082,
-AST-093, and the specs of the components they touch finds every defined
-requirement met. Behavior no spec defines does not block; it is recorded as a
-spec gap.
+仅更改 `packages/native/` 和原生组件规范（`docs/specs/components/**/<Name>.<language>.spec.md`）、且完全由 AST-093 FR6 所列原生小组编写的拉取请求，在以下条件满足后即获批准：必需检查通过、评审应用在确切的 head 上未发现缺陷，并且对照 AST-082、AST-093 及其涉及组件的规范进行评审后发现所有已定义要求均得到满足。没有规范定义的行为不会阻塞；它会记录为规范缺口。
 
-## Test and validation
+## 测试与验证
 
-Every native component change ships with the evidence in AST-093 FR5. For
-Swift:
+每次原生组件变更都随附 AST-093 FR5 中要求的证据。对于 Swift：
 
 ```sh
 pnpm vitest run --project node packages/native   # contracts, generated code, theme drift
@@ -70,7 +46,4 @@ pnpm -F @astryxdesign/native typecheck
 cd packages/native/<swift package> && swift build && swift test   # on a Mac with Xcode
 ```
 
-CI builds and tests every Swift package under `packages/native/` on macOS and
-the iOS Simulator. Attach captures of every state, from a simulator or device,
-in light and dark and at the largest text size. Anything you could not capture
-is reported as not measured.
+CI 会在 macOS 和 iOS 模拟器上构建并测试 `packages/native/` 下的每个 Swift 包。请附上每个状态的截图（来自模拟器或设备），涵盖浅色、深色和最大字号。任何无法截取的内容都会报告为未测量。

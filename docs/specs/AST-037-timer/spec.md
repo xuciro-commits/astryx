@@ -25,235 +25,152 @@ affects_consumer_docs: [Timer]
 
 ## Contract at a glance
 
-| Area                                                                                                                     | Contract                                                                                                                                                                                                                                                                                                                        |
-| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract                                                                                                          | Add `Timer`, `TimerProps`, `TimerFormat`, optional `startTime` in Unix milliseconds, closed `format` values `elapsed` and `clock`, Timestamp-equivalent `type`, `size`,                                                                                                                                                         |
-| `color`, and `weight` typography, the root `HTMLTimeElement` ref, and the standard `BaseProps<HTMLTimeElement>` surface. |
-| Behavior                                                                                                                 | Render a standardized elapsed duration from the chosen origin, update the owned `<time>` node without React tick renders, and schedule only when the selected format can visibly change.                                                                                                                                        |
-| End-user impact                                                                                                          | People watching active work see a stable duration that scales from seconds through minutes and hours without unnecessary timer work competing with the surrounding interface.                                                                                                                                                   |
-| Builder impact                                                                                                           | Builders use the zero-config elapsed format, supply an earlier operation start, or choose the standardized stopwatch-like clock format. They use the same                                                                                                                                                                       |
-| optional typography props and defaults as Timestamp, and do not write duration                                           |
-| formatters or choose timer cadence.                                                                                      |
-| Compatibility                                                                                                            | Additive, not yet released. Runtime, accessibility, documentation, and theming evidence must land before release.                                                                                                                                                                                                               |
-| Review checks                                                                                                            | Reject custom formatter or cadence APIs, React state updates for ticks, callback-count drift, one-second wakeups after elapsed output drops seconds, leaked timers, negative output, lost root passthrough/ref behavior, or more than one visible anatomy part.                                                                 |
-| Governing rules                                                                                                          | [`architecture:public-component-api`](../../architecture/public-component-api.md); [`architecture:react-component-runtime`](../../architecture/react-component-runtime.md); [`architecture:component-theming-surface`](../../architecture/component-theming-surface.md); [AST-002 DEC-1, DEC-2, and DEC-5](../AST-002/spec.md). |
+| 领域                                                                                                   | 契约                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共契约                                                                                               | 新增 `Timer`、`TimerProps`、`TimerFormat`、可选的 `startTime`（Unix 毫秒）、封闭的 `format` 取值 `elapsed` 与 `clock`、与 Timestamp 等价的 `type`、`size`、                                                                                                                                                                      |
+| `color` 与 `weight` 排版属性、根 `HTMLTimeElement` ref，以及标准的 `BaseProps<HTMLTimeElement>` 表面。 |
+| 行为                                                                                                   | 从所选起点渲染标准化的已用时长，在不进行 React tick 渲染的情况下更新所属的 `<time>` 节点，并且只在所选格式能够产生可见变化时才安排调度。                                                                                                                                                                                         |
+| 最终用户影响                                                                                           | 观看进行中工作的人会看到一个稳定的时长，它从秒扩展到分钟和小时，且不会有不必要的计时器工作与周围界面竞争。                                                                                                                                                                                                                       |
+| 构建者影响                                                                                             | 构建者使用零配置的 elapsed 格式、提供更早的操作开始时间，或选择标准化的秒表式 clock 格式。他们使用与 Timestamp 相同的                                                                                                                                                                                                            |
+| 可选排版属性与默认值，并且不编写时长                                                                   |
+| 格式化器，也不选择计时器节奏。                                                                         |
+| 兼容性                                                                                                 | 增量式，尚未发布。运行时、无障碍、文档与主题证据必须在发布前落地。                                                                                                                                                                                                                                                               |
+| 审查检查                                                                                               | 拒绝自定义格式化器或节奏 API、用 React 状态更新实现 tick、回调计数漂移、elapsed 输出在丢弃秒之后仍每秒唤醒、泄漏的计时器、负值输出、丢失根节点透传/ref 行为，或超过一个可见解剖部件。                                                                                                                                            |
+| 约束规则                                                                                               | [`architecture:public-component-api`](../../architecture/public-component-api.md)；[`architecture:react-component-runtime`](../../architecture/react-component-runtime.md)；[`architecture:component-theming-surface`](../../architecture/component-theming-surface.md)；[AST-002 DEC-1, DEC-2, and DEC-5](../AST-002/spec.md)。 |
 
-This table is a review projection; the body below is authoritative.
+此表是审查投影；下方的正文具有权威性。
 
 ## Intent
 
-Products need a shared elapsed-time primitive for operations whose duration
-changes while visible. Its defining value is ownership of a clock-driven DOM
-update that does not schedule a React render on each tick. Its formatting remains
-consistent as a duration grows from seconds through minutes and hours, and its
-resource cadence follows the precision a person can actually see.
+产品需要一个共享的已用时长原语，用于在可见期间时长会变化的操作。它的核心价值在于：它拥有一项由时钟驱动的 DOM 更新，而该更新不会在每次 tick 时安排 React 渲染。随着时长从秒增长到分钟和小时，其格式化保持一致，其资源节奏跟随人真正能看到的精度。
 
-Timer is distinct from Timestamp: Timestamp describes an instant and may present
-relative calendar language, while Timer measures duration from an origin. It is
-also distinct from Text: Text presents caller-owned content, while Timer owns the
-changing duration value, standardized representation, and resource lifecycle.
+Timer 与 Timestamp 不同：Timestamp 描述一个瞬间，并可能以相对日历语言呈现，而 Timer 从某个起点度量时长。它也与 Text 不同：Text 呈现调用方拥有的内容，而 Timer 拥有变化的时长值、标准化表示与资源生命周期。
 
 ### Component ledger
 
-| Source requirement                                                                                         | Proposed target                | Why it belongs                                                                                                                                                                     | Done criteria                                                                                                                                                                                                          |
-| ---------------------------------------------------------------------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Show elapsed time during active work without periodic React render work or product-local formatting drift. | Stable Core `Timer` component. | The behavior repeats across loading, processing, recording, and activity surfaces; products should not rebuild formatting, lifecycle, drift handling, or cadence at each callsite. | Closed formats, format-aware scheduling, direct owned-node updates, clock-derived duration, cleanup, ref and passthrough behavior, theming target, consumer docs, stories, and focused tests conform to this contract. |
+| 来源需求                                                                          | 提议目标                   | 为何归属                                                                                                 | 完成标准                                                                                                                                   |
+| --------------------------------------------------------------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 在活跃工作期间显示已用时长，且不产生周期性 React 渲染工作或产品本地的格式化漂移。 | 稳定的 Core `Timer` 组件。 | 该行为在加载、处理、录制与活动界面中反复出现；产品不应在每个调用点重建格式化、生命周期、漂移处理或节奏。 | 封闭格式、感知格式的调度、直接更新所属节点、时钟推导的时长、清理、ref 与透传行为、主题目标、使用方文档、stories 以及聚焦测试均符合本契约。 |
 
 ## Ownership boundary
 
-AST-037 owns Timer's public elapsed-origin and format concepts, representation
-ladder, format-aware cadence, non-rendering tick requirement, semantic duration
-output, resource lifecycle, and initial Core admission. The Timer component record
-owns the concrete component projection and evidence after implementation.
-`architecture:public-component-api` owns export, BaseProps, styling, ref, and
-caller-choice rules. `architecture:react-component-runtime` owns Effect and
-resource lifecycle correctness. `architecture:component-theming-surface` owns
-target qualification.
+AST-037 拥有 Timer 的公共已用起点与格式概念、表示阶梯、感知格式的节奏、非渲染 tick 要求、语义时长输出、资源生命周期，以及初始的 Core 准入。Timer 组件记录在实现之后拥有具体的组件投影与证据。`architecture:public-component-api` 拥有导出、BaseProps、样式、ref 与调用方选择规则。`architecture:react-component-runtime` 拥有 Effect 与资源生命周期正确性。`architecture:component-theming-surface` 拥有目标资格认定。
 
 ## Non-goals
 
-- Loading indicators, waiting messages, status labels, or when a product chooses to
-  show or hide elapsed time.
-- Wall-clock dates, relative calendar phrases, time zones, or absolute instants.
-- Pause, resume, deadlines, alarms, lap history, or imperative timer controls.
-- Countdown is deferred to a later contract; standardized duration formats and
-  cadence remain reusable if Timer later admits an end-time origin.
-- Sub-second display precision, arbitrary formatter callbacks, or caller control of
-  the internal scheduling cadence.
-- Announcing every tick to assistive technology.
-- A new global token or component-specific theme variable.
+- 加载指示器、等待消息、状态标签，或产品选择显示或隐藏已用时长的方式。
+- 挂钟日期、相对日历短语、时区，或绝对瞬间。
+- 暂停、恢复、截止时间、闹钟、计圈历史，或命令式计时器控制。
+- 倒计时推迟到后续契约；如果 Timer 日后接纳结束时间起点，标准化的时长格式与节奏仍可复用。
+- 亚秒级显示精度、任意格式化器回调，或调用方对内部调度节奏的控制。
+- 向辅助技术播报每一次 tick。
+- 新的全局令牌或组件专属主题变量。
 
 ## Public concepts
 
-| Concept           | Closed values or states                     | Meaning                                                                       | Default                                                          | Invalid-value behavior                                     |
-| ----------------- | ------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------- |
-| Elapsed origin    | Mount time or `startTime` Unix milliseconds | The instant from which elapsed duration is derived                            | Mount time                                                       | A non-finite value falls back to mount time                |
-| Duration format   | `elapsed`, `clock`                          | Standardized visible representation and its implied precision                 | `elapsed`                                                        | Types reject other values; runtime falls back to `elapsed` |
-| Tick presentation | Current elapsed value on one `<time>` root  | Visible text and machine-readable duration at the selected format's precision | `0s` for elapsed; `0:00` for clock before client synchronization | Clock values before the origin clamp to zero               |
+| 概念      | 封闭取值或状态                     | 含义                                     | 默认值                                           | 无效值行为                             |
+| --------- | ---------------------------------- | ---------------------------------------- | ------------------------------------------------ | -------------------------------------- |
+| 已用起点  | 挂载时间或 `startTime` Unix 毫秒   | 推导已用时长所依据的瞬间                 | 挂载时间                                         | 非有限值回退到挂载时间                 |
+| 时长格式  | `elapsed`、`clock`                 | 标准化的可见表示及其隐含精度             | `elapsed`                                        | 类型拒绝其他值；运行时回退到 `elapsed` |
+| tick 呈现 | 单个 `<time>` 根节点上的当前已用值 | 在所选格式精度下的可见文本与机器可读时长 | 客户端同步之前，elapsed 为 `0s`、clock 为 `0:00` | 起点之前的 clock 值钳制为零            |
 
-`startTime` is caller-owned because Timer cannot derive when an operation began
-before Timer mounted. `format` is caller-owned because compact prose and a
-stopwatch readout are distinct presentation needs. Formatting details and
-scheduling cadence remain Timer-owned: callers choose meaning, not machinery.
+`startTime` 由调用方拥有，因为 Timer 无法推导出在 Timer 挂载之前某操作是何时开始的。`format` 由调用方拥有，因为紧凑的散文式表达与秒表读数属于不同的呈现需求。格式化细节与调度节奏仍由 Timer 拥有：调用方选择含义，而不是机制。
 
 ## Standard formats
 
-| Elapsed duration              | `elapsed` | `clock`   |
-| ----------------------------- | --------- | --------- |
-| zero                          | `0s`      | `0:00`    |
-| 34 seconds                    | `34s`     | `0:34`    |
-| 2 minutes, 8 seconds          | `2m 08s`  | `2:08`    |
-| 1 hour, 2 minutes, 33 seconds | `1h 02m`  | `1:02:33` |
+| 已用时长          | `elapsed` | `clock`   |
+| ----------------- | --------- | --------- |
+| 零                | `0s`      | `0:00`    |
+| 34 秒             | `34s`     | `0:34`    |
+| 2 分 8 秒         | `2m 08s`  | `2:08`    |
+| 1 小时 2 分 33 秒 | `1h 02m`  | `1:02:33` |
 
-`elapsed` displays at most two units, largest first. Seconds are unpadded when
-they are the only unit, padded after minutes, and omitted after hours. `clock`
-uses colon-separated stopwatch notation: `m:ss` below one hour and `h:mm:ss`
-from one hour onward.
+`elapsed` 最多显示两个单位，最大者在前。秒在作为唯一单位时不补零，在分钟之后补零，在小时之后省略。`clock` 使用冒号分隔的秒表记法：不足一小时为 `m:ss`，自一小时起为 `h:mm:ss`。
 
 ## Requirements
 
-- **FR1 — One semantic root.** Timer MUST render one `<time>` root whose visible
-  text uses the selected standard format.
-- **FR2 — Derivable origin default.** With no `startTime`, elapsed time MUST begin
-  from the component's mount lifetime. With a finite `startTime`, elapsed time MUST
-  derive from that Unix-millisecond origin.
-- **FR3 — Clock-derived, non-negative duration.** Timer MUST subtract the resolved
-  origin from the current clock, clamp negative duration to zero, and derive output
-  from that result. It MUST NOT accumulate elapsed time from callback count, so a
-  delayed callback catches up without cumulative drift.
-- **FR4 — No tick renders.** Clock ticks MUST update the owned `<time>` node
-  directly and MUST produce zero React update commits for Timer and its surrounding
-  subtree. Parent renders caused by unrelated work remain outside Timer's control.
-- **FR5 — Machine-readable parity.** Timer MUST update `dateTime` to an ISO 8601
-  duration representing the same precision as the visible value: whole seconds for
-  `clock` and for `elapsed` below one hour, whole minutes for `elapsed` at or above
-  one hour.
-- **FR6 — Current props without duplicate resources.** A changed `startTime` or
-  `format` MUST take effect without remounting and without creating more than one
-  active timer resource.
-- **FR7 — Complete lifecycle ownership.** Each mounted Timer owns at most one active
-  browser timer resource. Every Effect setup MUST release the resource it acquired
-  during dependency change, node replacement, unmount, and StrictMode replay. No
-  tick may update a detached or replaced node.
-- **FR8 — Stable public DOM and typography surface.** The root MUST expose
-  `Timer`, `TimerProps`, `TimerFormat`, its `HTMLTimeElement` ref, Text-family
-  `type`, `size`, `color`, and `weight`, and the standard DOM, data, ARIA, style,
-  class, event, and `xstyle` inputs admitted by `BaseProps<HTMLTimeElement>`.
-  Typography resolution and defaults MUST match Timestamp: `type="supporting"`,
-  `size="supporting"`, `color="secondary"`, and `weight="normal"`.
-- **FR9 — No unsolicited live announcements.** Timer MUST NOT add a live-region
-  role or `aria-live` value by default. A caller may deliberately provide an ARIA
-  attribute through the standard DOM surface for a context that needs it.
-- **FR10 — One themeable anatomy part.** The visible root MUST carry the `timer`
-  theming target. No subpart, format, timing state, or scheduling mechanism receives
-  a separate target.
-- **FR11 — Initial render is deterministic.** Initial markup MUST show the selected
-  format's zero value with `dateTime="PT0S"` without reading the client clock into
-  server-visible markup. Client synchronization then applies the chosen origin.
-- **FR12 — Format-aware cadence.** `clock` and `elapsed` below one hour MUST schedule
-  at the next whole-second boundary. `elapsed` at or above one hour MUST schedule at
-  the next whole-minute boundary because its visible output omits seconds. A future
-  origin MUST schedule directly toward the first visible change rather than waking
-  every second while output remains zero. A callback that runs late MUST schedule
-  from the current clock, not from the missed deadline.
-- **FR13 — Bounded DOM writes.** Timer SHOULD skip visible-text and `dateTime` writes
-  when the selected format's represented value has not changed.
+- **FR1 — 单一语义根节点。** Timer 必须渲染一个 `<time>` 根节点，其可见文本使用所选的标准格式。
+- **FR2 — 可推导的起点默认值。** 在没有 `startTime` 时，已用时间必须从组件的挂载生命周期开始。在有有限 `startTime` 时，已用时间必须从该 Unix 毫秒起点推导。
+- **FR3 — 由时钟推导的非负时长。** Timer 必须从当前时钟中减去解析后的起点，将负时长钳制为零，并从该结果推导输出。它不得从回调次数累加已用时间，因此延迟的回调能够赶上而不产生累积漂移。
+- **FR4 — 无 tick 渲染。** 时钟 tick 必须直接更新所属的 `<time>` 节点，并且对 Timer 及其周围子树必须产生零次 React 更新提交。由无关工作引起的父级渲染仍不在 Timer 的控制范围内。
+- **FR5 — 机器可读的一致性。** Timer 必须将 `dateTime` 更新为表示与可见值相同精度的 ISO 8601 时长：`clock` 以及不足一小时的 elapsed 使用整秒，达到或超过一小时的 elapsed 使用整分钟。
+- **FR6 — 当前 props 且不重复资源。** `startTime` 或 `format` 发生变化时，必须在不重新挂载的情况下生效，并且不得创建多于一个活动的计时器资源。
+- **FR7 — 完整的生命周期归属。** 每个已挂载的 Timer 最多拥有一个活动浏览器计时器资源。每次 Effect 设置都必须在依赖变更、节点替换、卸载与 StrictMode 重放期间释放它获取的资源。任何 tick 都不得更新已分离或被替换的节点。
+- **FR8 — 稳定的公共 DOM 与排版表面。** 根节点必须暴露 `Timer`、`TimerProps`、`TimerFormat`、其 `HTMLTimeElement` ref、Text 家族的 `type`、`size`、`color` 与 `weight`，以及由 `BaseProps<HTMLTimeElement>` 接纳的标准 DOM、data、ARIA、style、class、事件与 `xstyle` 输入。排版解析与默认值必须与 Timestamp 一致：`type="supporting"`、`size="supporting"`、`color="secondary"`、`weight="normal"`。
+- **FR9 — 不主动播报 live。** Timer 默认不得添加 live-region 角色或 `aria-live` 值。调用方可以针对需要它的情境，通过标准 DOM 表面有意提供 ARIA 属性。
+- **FR10 — 单一可主题化的解剖部件。** 可见根节点必须携带 `timer` 主题目标。任何子部件、格式、计时状态或调度机制都不得获得单独的目标。
+- **FR11 — 初始渲染是确定性的。** 初始标记必须显示所选格式的零值并带有 `dateTime="PT0S"`，且不得将客户端时钟读入服务器可见的标记。随后客户端同步应用所选起点。
+- **FR12 — 感知格式的节奏。** `clock` 以及不足一小时的 elapsed 必须在下一个整秒边界调度。达到或超过一小时的 elapsed 必须在下一个整分钟边界调度，因为其可见输出省略秒。未来的起点必须直接朝第一个可见变化调度，而不是在输出仍为零时每秒唤醒。迟到的回调必须从当前时钟调度，而不是从错过的截止时间调度。
+- **FR13 — 有界的 DOM 写入。** 当所选格式所表示的值未发生变化时，Timer 应跳过可见文本与 `dateTime` 的写入。
 
 ### Transformation and precedence
 
-Resolve the finite caller origin or mount origin, subtract it from the current
-clock, clamp to zero, floor to the selected format's current precision, format the
-value, update visible and machine-readable output on the same owned node, then
-schedule the next boundary where that format can change. Timer owns `dateTime`;
-standard consumer attributes and styling otherwise reach the root.
+解析有限的调用方起点或挂载起点，从当前时钟中减去它，钳制为零，向下取整到所选格式的当前精度，格式化该值，在同一个所属节点上更新可见输出与机器可读输出，然后调度该格式可能发生变化的下一个边界。Timer 拥有 `dateTime`；除此之外，标准使用方属性与样式传递到根节点。
 
 ### Platform support
 
-- Supported feature/engine floor: unchanged from the current Core package support.
-- Unsupported behavior: environments without Effects retain the selected format's
-  deterministic zero value and `PT0S`, and acquire no timer resource.
-- Browser evidence: real-browser stories verify both format ladders, the hour
-  boundary, stable inline geometry, semantic duration parity, and absence of
-  component update commits.
+- 支持的功能/引擎下限：与当前 Core 包的支持情况相同。
+- 不受支持的行为：没有 Effect 的环境保留所选格式的确定性零值与 `PT0S`，并且不获取任何计时器资源。
+- 浏览器证据：真实浏览器 stories 验证两条格式阶梯、小时边界、稳定的内联几何、语义时长对齐，以及不存在组件更新提交。
 
 ## Current-state impact
 
-- Core gains one stable elapsed-duration component and type, two closed formats,
-  Timestamp-equivalent typography props, one `timer` theming target, consumer
-  documentation, Storybook coverage, and a showcase block.
-- Timestamp remains unchanged and continues to own instants, calendar-relative
-  language, time zones, and absolute formatting.
-- The default path adds no builder choice. Only operations that began before mount
-  supply `startTime`; only stopwatch-like surfaces choose `format="clock"`.
-- Custom formatting and timer cadence are intentionally not public API.
-- No existing component, export, DOM structure, theme, token, or callsite changes.
+- Core 获得一个稳定的已用时长组件与类型、两种封闭格式、与 Timestamp 等价的排版 props、一个 `timer` 主题目标、使用方文档、Storybook 覆盖，以及一个展示区块。
+- Timestamp 保持不变，继续拥有瞬间、日历相对语言、时区与绝对格式化。
+- 默认路径不增加任何构建者选择。只有那些在挂载之前就已开始的操作才提供 `startTime`；只有类秒表界面才选择 `format="clock"`。
+- 自定义格式化与计时器节奏有意不作为公共 API。
+- 不改变任何现有组件、导出、DOM 结构、主题、令牌或调用点。
 
 ## Verification
 
-| Contract           | Verification                                                                    | Representative states                                                                                                                             | Mutation or failure expectation                                                                                                                                                                                                |
-| ------------------ | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| FR1–FR5, FR11–FR13 | Focused Timer tests with a controlled clock and fake timers                     | Initial, default/earlier/future origin and future scheduling, delayed callback, each format ladder, 59:59→1:00:00 boundary, elapsed hour boundary | State-driven ticks, callback-count accumulation, negative values, needless pre-origin wakes, wrong padding/unit ladder, stale `dateTime`, wrong initial markup, redundant writes, or one-second post-hour elapsed wakeups fail |
-| FR4                | React Profiler commit-count test                                                | Several elapsed ticks and a composed sibling                                                                                                      | Replacing owned-node mutation with React state produces extra update commits                                                                                                                                                   |
-| FR6–FR7            | Resource spy tests under rerender, unmount, and StrictMode                      | Origin change, format change, replay, cleanup                                                                                                     | Duplicate or leaked timer resources fail setup/cleanup counts and detached-node guards                                                                                                                                         |
-| FR8                | Public import, DOM passthrough, typography, styling merge, event, and ref tests | Root import, Timestamp defaults, each typography override, and representative BaseProps                                                           | Missing exports; divergent defaults; or dropped typography, attributes, handlers, class/style inputs, or root ref fail                                                                                                         |
-| FR9                | Accessibility attribute tests                                                   | Default and caller-declared live behavior                                                                                                         | Timer adds unsolicited live semantics or drops deliberate caller ARIA                                                                                                                                                          |
-| FR10               | Theming-target and knowledge checks                                             | One root target across formats                                                                                                                    | Missing, extra, or misplaced target mapping fails repository validation                                                                                                                                                        |
-| Browser contract   | Storybook browser evidence                                                      | Default elapsed, clock, earlier origin, hour-scale elapsed, composed wait message                                                                 | Visible output, semantic duration, geometry, or update-commit behavior differs from the contract                                                                                                                               |
+| 契约               | 验证                                                | 代表性状态                                                                                       | 变更或失败预期                                                                                                                                                         |
+| ------------------ | --------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1–FR5, FR11–FR13 | 使用受控时钟与假计时器的聚焦 Timer 测试             | 初始、默认/更早/未来起点与未来调度、延迟回调、每条格式阶梯、59:59→1:00:00 边界、elapsed 小时边界 | 由状态驱动的 tick、按回调次数累加、负值、起点之前不必要的唤醒、错误的补零/单位阶梯、陈旧的 `dateTime`、错误的初始标记、冗余写入，或小时之后 elapsed 的每秒唤醒都会失败 |
+| FR4                | React Profiler 提交计数测试                         | 若干 elapsed tick 以及一个组合的兄弟节点                                                         | 用 React 状态替代所属节点的变更会产生额外的更新提交                                                                                                                    |
+| FR6–FR7            | 在重渲染、卸载与 StrictMode 下的资源监视测试        | 起点变更、格式变更、重放、清理                                                                   | 重复或泄漏的计时器资源会使设置/清理计数与分离节点防护失败                                                                                                              |
+| FR8                | 公共导入、DOM 透传、排版、样式合并、事件与 ref 测试 | 根导入、Timestamp 默认值、每项排版覆盖，以及代表性的 BaseProps                                   | 缺少导出；默认值出现分歧；或丢失排版、属性、处理函数、class/style 输入或根 ref 都会失败                                                                                |
+| FR9                | 无障碍属性测试                                      | 默认行为与调用方声明的 live 行为                                                                 | Timer 添加了未经请求的 live 语义，或丢弃了调用方有意提供的 ARIA                                                                                                        |
+| FR10               | 主题目标与知识检查                                  | 跨格式的单一根目标                                                                               | 目标映射缺失、多余或位置错误都会使仓库校验失败                                                                                                                         |
+| 浏览器契约         | Storybook 浏览器证据                                | 默认 elapsed、clock、更早起点、小时尺度 elapsed、组合的等待消息                                  | 可见输出、语义时长、几何或更新提交行为与契约不符                                                                                                                       |
 
 ## Decision log
 
 ### DEC-1 — Timer owns non-rendering elapsed-time updates
 
-**Reference:** `spec:AST-037/DEC-1`  
-**Direction owner:** `cixzhang`, `2026-09-22`
+**参考：** `spec:AST-037/DEC-1`
 
-Timer is a stable shared primitive for elapsed time. It owns one clock-derived
-duration and writes changing text directly to its owned DOM node so clock ticks do
-not schedule React renders. Builders may supply an earlier start instant or choose
-a standardized format; they do not supply a formatter or control scheduling.
+**方向负责人：** `cixzhang`、`2026-09-22`
 
-Rejected: implementing each tick through React state. That makes every Timer a
-periodic render source and increases contention in trees already processing live
-application updates.
+Timer 是一个稳定的、用于已用时长的共享原语。它拥有一个由时钟推导的时长，并将变化的文本直接写入其所属的 DOM 节点，因此时钟 tick 不会安排 React 渲染。构建者可以提供更早的开始瞬间或选择标准化的格式；他们不提供格式化器，也不控制调度。
 
-Rejected: exposing an interval, tick frequency, or arbitrary formatter. Those
-choices prevent the component from maintaining consistent duration language and
-from reducing work when visible precision drops.
+已否决：通过 React 状态实现每个 tick。那会使每个 Timer 都成为周期性渲染源，并加剧已经在处理实时应用更新的树中的竞争。
+
+已否决：暴露 interval、tick 频率或任意格式化器。这些选择会阻止组件维持一致的时长语言，并阻止其在可见精度下降时减少工作量。
 
 ### DEC-2 — Timer starts in Core
 
-**Reference:** `spec:AST-037/DEC-2`  
-**Direction owner:** `cixzhang`, `2026-09-22`
+**参考：** `spec:AST-037/DEC-2`
 
-Timer starts in Core because its purpose is a stable cross-product runtime
-primitive, its first contract is intentionally narrow, and the requested behavior
-is already operationally proven. Core admission requires the complete evidence in
-this spec before release; it does not waive normal component quality gates.
+**方向负责人：** `cixzhang`、`2026-09-22`
 
-Rejected: shipping independent product copies or making the non-rendering behavior
-an application recipe. That would duplicate representation, resource ownership,
-and cadence decisions across callsites.
+Timer 起步于 Core，因为它的用途是稳定的跨产品运行时原语，其首个契约有意保持狭窄，且所要求的行为已在运营中得到验证。Core 准入要求在发布前具备本规格中的完整证据；它并不豁免常规的组件质量闸门。
+
+已否决：发布独立的产品副本，或把非渲染行为做成应用配方。那会在各调用点重复表示、资源所有权与节奏决策。
 
 ### DEC-3 — Formats own their visible precision and cadence
 
-**Reference:** `spec:AST-037/DEC-3`
-**Direction owner:** `cixzhang`, `2026-09-22`
+**参考：** `spec:AST-037/DEC-3`
 
-Timer exposes two standard representations: `elapsed` for compact prose and row
-metadata, and `clock` for stopwatch-like readings. Each format owns its precision,
-so the runtime wakes only at the next boundary capable of changing visible output.
-In particular, elapsed durations at or above one hour omit seconds and wake on
-minute boundaries.
+**方向负责人：** `cixzhang`、`2026-09-22`
 
-Rejected: scaling cadence from elapsed age while continuing to display seconds.
-That would leave visible output stale. Precision changes first; cadence follows it.
+Timer 暴露两种标准表示：`elapsed` 用于紧凑的散文式表达与行元数据，`clock` 用于类秒表读数。每种格式拥有自己的精度，因此运行时只在下一个能够改变可见输出的边界唤醒。特别地，达到或超过一小时的 elapsed 时长省略秒，并在分钟边界唤醒。
+
+已否决：在继续显示秒的同时按已用时长缩放节奏。那会使可见输出变得陈旧。精度先变化；节奏随之调整。
 
 ## Open questions
 
-None. The contract is current; implementation evidence remains pending.
+无。契约是当前的；实现证据仍待补充。
 
 ## Content boundary
 
-This record does not duplicate consumer examples, implementation code, private
-scheduling mechanics, current measurements, or system runtime/theming rules. Those
-belong to their canonical owners.
+本记录不重复使用方示例、实现代码、私有调度机制、当前测量值，或系统运行时/主题规则。那些属于其规范所有者。

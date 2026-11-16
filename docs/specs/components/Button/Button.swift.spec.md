@@ -24,220 +24,170 @@ system_specs: [spec:AST-082, spec:AST-093]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `Button(label:variant:size:elevation:isLoading:isInterruptible:isDisabled:width:tooltip:href:base:onClick:)` and `Button(_ props: ButtonProps)`, a SwiftUI `View` in module `Astryx`.                                                                                                                                                                                                                                                                                        |
-| Behavior                | A SwiftUI `Button` drawn with the Astryx button style, or a SwiftUI `Link` when an enabled Button has `href`. While loading, a spinner covers the label, which keeps its place, and presses wait unless it is interruptible. On iOS and iPadOS 26 and later, in a system bar or under the floating-glass opt-in, it draws the system's Liquid Glass in place of its own fill: an unset `variant` is `secondary`, as in core, and every `variant` keeps its meaning in glass. |
-| End-user impact         | A person gets one action control whose width holds while it loads and which never runs twice by accident; a link Button stays a link while busy, so VoiceOver and keyboard focus stay on it. In bars and floating controls it looks and behaves like the system's buttons beside it, one layer of glass rather than a fill inside glass, and a main or destructive action still reads as one.                                                                                |
-| Builder impact          | An app passes core's Button props; `href` makes the same view open a destination through the system. A Button in a bar needs no extra code; `.astryxFloating()` on a floating container opts its Buttons into glass. A `variant` the callsite sets is always obeyed.                                                                                                                                                                                                         |
-| Compatibility/readiness | Breaking for canary callers: `action:`, `fillsWidth:`, `icon:`, and the hand-written `AstryxButtonVariant` and `AstryxButtonSize` give way to the generated `ButtonProps` (`onClick:`, `width:`, `ButtonVariant`, `ButtonSize`). Draft; built and tested on macOS and the iOS Simulator.                                                                                                                                                                                     |
-| Review checks           | Reject a loading link that swaps to a button, a loading Button that runs `onClick` or opens its link while not interruptible, a size change while loading, or a disabled Button with `href` that opens. Reject an Astryx fill drawn inside a bar's glass, a set `variant` that glass overrides or drops, glass drawn under Reduce Transparency or Increase Contrast, or a glass change merged without the simulator capture gate.                                            |
-| Governing rules         | `component:Button` FR7–FR11; `spec:AST-082` FR3; `spec:AST-093` FR1–FR5; the Swift component API record (A2–A5) under `packages/native/specs/swift/library/`; DEC-1 below.                                                                                                                                                                                                                                                                                                   |
+| 领域          | 契约                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公开契约      | `Button(label:variant:size:elevation:isLoading:isInterruptible:isDisabled:width:tooltip:href:base:onClick:)` 与 `Button(_ props: ButtonProps)`，即模块 `Astryx` 中的一个 SwiftUI `View`。                                                                                                                                                                                                                        |
+| 行为          | 一个用 Astryx 按钮样式绘制的 SwiftUI `Button`；当处于启用状态的 Button 带有 `href` 时，则是一个 SwiftUI `Link`。加载期间，一个加载指示器覆盖在标签之上，标签保持原位，且除非它可中断，否则按压会等待。在 iOS 与 iPadOS 26 及更高版本上，处于系统栏中或在浮动玻璃选项下时，它绘制系统的 Liquid Glass 来代替自身的填充：未设置的 `variant` 为 `secondary`，与 core 中一致，并且每个 `variant` 在玻璃中保持其语义。 |
+| 最终用户影响  | 用户得到的是一个操作控件，其宽度在加载期间保持不变，并且绝不会意外执行两次；链接型 Button 在忙碌期间仍保持为链接，因此 VoiceOver 与键盘焦点都停留在它上面。在栏与浮动控件中，它的外观与行为同旁边的系统按钮一致，是一层玻璃而非玻璃内部的填充，主操作或破坏性操作依然一眼可辨。                                                                                                                                  |
+| 构建者影响    | 应用直接传入 core 的 Button 属性；`href` 让同一个视图通过系统打开某个目标。栏中的 Button 无需额外代码；在浮动容器上使用 `.astryxFloating()` 即可让其 Button 选用玻璃。调用点设置的 `variant` 始终会被遵循。                                                                                                                                                                                                      |
+| 兼容性/就绪度 | 对 canary 调用方是破坏性变更：`action:`、`fillsWidth:`、`icon:` 以及手写的 `AstryxButtonVariant` 与 `AstryxButtonSize` 让位于生成的 `ButtonProps`（`onClick:`、`width:`、`ButtonVariant`、`ButtonSize`）。草稿；已在 macOS 与 iOS 模拟器上构建并测试。                                                                                                                                                           |
+| 评审检查      | 拒绝下列情况：加载中的链接切换成按钮；加载中的 Button 在不可中断时执行 `onClick` 或打开其链接；加载期间尺寸发生变化；带 `href` 的禁用 Button 仍会打开。拒绝在栏的玻璃内部绘制 Astryx 填充；拒绝玻璃覆盖或丢弃已设置的 `variant`；拒绝在“降低透明度”或“增强对比度”下绘制玻璃；拒绝未经模拟器截图闸门就合并的玻璃改动。                                                                                            |
+| 治理规则      | `component:Button` FR7–FR11；`spec:AST-082` FR3；`spec:AST-093` FR1–FR5；位于 `packages/native/specs/swift/library/` 下的 Swift 组件 API 记录（A2–A5）；下文 DEC-1。                                                                                                                                                                                                                                             |
 
-This table is a review projection; the body below is authoritative.
+本表是评审用的投影，以下正文具有权威性。
 
 ## Intent
 
-Button on Apple platforms is core's action control drawn with SwiftUI's own
-button and link, so presses, focus, and VoiceOver work the platform's way while
-its look, loading, and link behavior follow the core `Button` contract.
+Apple 平台上的 Button 是用 SwiftUI 自带的按钮与链接绘制的 core 操作控件，因此按压、焦点与 VoiceOver 都按平台的方式工作，而外观、加载与链接行为则遵循 core 的 `Button` 契约。
 
 ## Compatibility and migration
 
-- Released default preserved: `not yet released`
-- Compatibility class: breaking for canary callers (hand-written parameters → generated `ButtonProps`)
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 保留的已发布默认值：`not yet released`
+- 兼容性等级：对 canary 调用方为破坏性变更（手写参数 → 生成的 `ButtonProps`）
+- 受控/非受控行为：不适用
+- 迁移决定：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**负责**
 
-- How Swift draws core's Button: the SwiftUI control it uses, the loading
-  presentation, when presses land, and when `href` makes it a link.
-- How Button meets the system's Liquid Glass on Apple platforms: in system bars,
-  under the floating-glass opt-in, and under Reduce Transparency or Increase
-  Contrast (FR7–FR11).
+- Swift 如何绘制 core 的 Button：所使用的 SwiftUI 控件、加载呈现、按压何时生效，以及 `href` 何时使其成为链接。
+- Button 在 Apple 平台上如何适配系统的 Liquid Glass：位于系统栏中、浮动玻璃选项下，以及“降低透明度”或“增强对比度”下（FR7–FR11）。
 
-**Does not own / non-goals**
+**不负责 / 非目标**
 
-- The meaning of Button's props, its variants and sizes, and its pending and
-  disabled states — owned by `component:Button`.
-- Which destinations a link may open — owned by
-  `family:navigation-destinations`.
-- How a prop switches to a different SwiftUI control in general — owned by the
-  Swift component API record (A2).
-- The glass itself, how a bar groups its items, and the scroll edge effect —
-  owned by the system.
-- Search in a navigation context — not a Button concern.
-- macOS toolbars and floating controls — FR7–FR10 cover iOS and iPadOS 26;
-  on macOS the token look stays (FR10).
+- Button 属性的语义、其变体与尺寸，以及其待定与禁用状态——由 `component:Button` 负责。
+- 链接可以打开哪些目标——由 `family:navigation-destinations` 负责。
+- 属性一般如何切换到另一个 SwiftUI 控件——由 Swift 组件 API 记录（A2）负责。
+- 玻璃本身、栏如何对其条目分组，以及滚动边缘效果——由系统负责。
+- 导航上下文中的搜索——不属于 Button 的关切。
+- macOS 工具栏与浮动控件——FR7–FR10 覆盖 iOS 与 iPadOS 26；在 macOS 上保留 token 外观（FR10）。
 
 ## Public concepts
 
-| Concept       | Closed values or states                 | Meaning                                                              | Availability by variant/orientation/state        | Default  | Owner                    | Stability    | Invalid-value behavior                      |
-| ------------- | --------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------ | -------- | ------------------------ | ------------ | ------------------------------------------- |
-| control       | button; link                            | a SwiftUI `Button`, or a SwiftUI `Link` for an enabled `href`        | always                                           | button   | `component:swift/Button` | experimental | an `href` that is not a URL leaves a button |
-| loading       | idle; loading                           | `isLoading`: spinner over the label, presses wait                    | always                                           | idle     | `component:Button`       | experimental | none                                        |
-| interruptible | off; on                                 | `isInterruptible`: presses and link opens land while loading         | while loading                                    | off      | `component:Button`       | experimental | none                                        |
-| availability  | operable; busy-only; disabled           | disabled wins over loading                                           | always                                           | operable | `component:Button`       | experimental | none                                        |
-| surface       | token; bar glass; floating glass; solid | where the Button sits decides what draws behind its label (FR7–FR10) | iOS and iPadOS 26 and later for the glass values | token    | `component:swift/Button` | experimental | none                                        |
+| 概念          | 封闭值或状态                            | 含义                                                               | 按变体/方向/状态可用                       | 默认值   | 负责方                   | 稳定性       | 无效值行为                      |
+| ------------- | --------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------ | -------- | ------------------------ | ------------ | ------------------------------- |
+| control       | button; link                            | 一个 SwiftUI `Button`，或在 `href` 处于启用状态时为 SwiftUI `Link` | 始终                                       | button   | `component:swift/Button` | experimental | 不是 URL 的 `href` 仍保留为按钮 |
+| loading       | idle; loading                           | `isLoading`：加载指示器覆盖在标签之上，按压会等待                  | 始终                                       | idle     | `component:Button`       | experimental | 无                              |
+| interruptible | off; on                                 | `isInterruptible`：加载期间按压与链接打开会生效                    | 加载期间                                   | off      | `component:Button`       | experimental | 无                              |
+| availability  | operable; busy-only; disabled           | 禁用优先于加载                                                     | 始终                                       | operable | `component:Button`       | experimental | 无                              |
+| surface       | token; bar glass; floating glass; solid | Button 所在的位置决定其标签背后绘制什么（FR7–FR10）                | 玻璃取值适用于 iOS 与 iPadOS 26 及更高版本 | token    | `component:swift/Button` | experimental | 无                              |
 
 ## Behavioral and layout contract
 
-| ID   | Candidate invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Basis                                                                            | Draft review state |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- | ------------------ |
-| FR1  | Both initializers MUST build the same `ButtonProps`; base props (`id`, `isHidden`) come through `ButtonProps`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Swift component API A2, A3                                                       | verify             |
-| FR2  | While loading, the view MUST draw a spinner over the label, keep the label's place so its size does not change, stay at full opacity, and read as busy ("Loading", core's catalog message) to VoiceOver. It MUST NOT run `onClick` while loading unless it is interruptible; an interruptible loading Button runs `onClick` on each press.                                                                                                                                                                                                                                                                                                                                                                                                                   | `component:Button` FR7–FR9                                                       | verify             |
-| FR3  | An enabled Button with `href` MUST draw a SwiftUI `Link` to that destination, in the Astryx button style, which VoiceOver reads as a link. A disabled Button with `href` MUST draw its disabled button, which never opens.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | `component:Button` FR11; `spec:AST-082` FR3                                      | verify             |
-| FR4  | A loading Button with `href` MUST stay a `Link`: it keeps focus, shows its spinner, reads as busy, and does not open its destination until loading ends, unless the Button is interruptible, in which case each activation opens it. It never swaps to a button while busy.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `component:Button` FR9 ("a link-mode Button stays a link while busy-only"), FR11 | verify             |
-| FR5  | A Button whose `href` is a script URL (`javascript:`, `vbscript:`) or an HTML document in a `data:` URL MUST NOT open it, after core's normalization (control characters removed, whitespace trimmed, the scheme compared in lowercase without spaces after its colon): it draws its enabled button, which runs `onClick` and does not look disabled.                                                                                                                                                                                                                                                                                                                                                                                                        | `component:Button` FR11; `family:navigation-destinations`                        | verify             |
-| FR6  | A disabled Button MUST keep its keyboard focus stop and show its tooltip on focus, draw its disabled look, read as a dimmed button to VoiceOver, and never run `onClick`; a focused Button that becomes disabled keeps one view structure and its focus. A Button with `href` keeps its `Link` and its disabled button in one structure, and focus moves from the link to the button when it becomes disabled, and back when it is enabled, so focus stays inside the component.                                                                                                                                                                                                                                                                             | `component:Button` FR10; `family:buttons` FR3                                    | verify             |
-| FR7  | On iOS and iPadOS 26 and later, a Button hosted in a system bar (navigation bar or toolbar) MUST draw no fill or border of its own, so the bar's glass is its only chrome (a set `elevation` still paints its shadow, FR11); its label and any tint follow FR8. An unset `variant` is `secondary`, as in core, so it draws `secondary`'s bar treatment: label only, in `color.textPrimary`, on the bar's glass. This needs no new prop or modifier.                                                                                                                                                                                                                                                                                                          | DEC-1; Apple's Liquid Glass guidance (remove custom backgrounds in bars)         | verify             |
-| FR8  | A `variant` the callsite sets MUST always be obeyed. On iOS and iPadOS 26 and later, in a system bar and under the floating opt-in (FR9), it maps to the closest glass treatment that keeps its meaning, and is never drawn with another variant's treatment (in a bar, `secondary` and `ghost` share the bar's glass): `primary` → prominent glass tinted `color.accent`, label `color.onAccent`; `destructive` → prominent glass tinted `color.error`, label `color.onError`; `secondary` → regular glass (in a bar, the bar's own glass), label `color.textPrimary`, no `color.neutral` fill; `ghost` → floating: clear glass, label `color.textPrimary`; in a bar: the bar's own glass, label `color.textPrimary` (the bar owns its items' backgrounds). | DEC-1                                                                            | verify             |
-| FR9  | On iOS and iPadOS 26 and later, the Apple-only modifier `.astryxFloating()` MUST only mark a container as floating (controls over scrolling content); the Buttons inside it draw FR8's floating treatment, subject to the theme's `material` (ORD2) and FR10, with an unset `variant` drawn as `secondary`. Without the modifier, a Button outside a system bar keeps its token look. The modifier is not a prop and changes no `ButtonProps` (Swift component API A2).                                                                                                                                                                                                                                                                                      | DEC-1; Swift component API A1c (a modifier's `astryx` prefix)                    | verify             |
-| FR10 | Under Reduce Transparency or Increase Contrast, a Button that would draw glass (FR7–FR9) MUST draw no glass: its variant's token fill (`color.accent` for `primary`, `color.error` for `destructive`, `color.neutral` for `secondary` and an unset `variant`, `color.backgroundSurface` for `ghost`) with a `color.borderEmphasized` edge, so its label keeps a solid, visible background. Before iOS 26, and on macOS, which FR7–FR9 do not cover, the token look stays.                                                                                                                                                                                                                                                                                    | DEC-1; `spec:AST-093` FR2                                                        | verify             |
-| FR11 | In glass, every prop keeps core's meaning: `isLoading`, `isInterruptible`, `isDisabled`, `href`, and `tooltip` behave as FR2–FR6; `size` sets the control's minimum height and label type (`component:Button` FR4); an explicit `width` applies, capped at what the bar or container offers (`component:Button` FR5); and `elevation` paints its shadow beneath the glass (`component:Button` FR13). A Button's label MUST NOT be truncated by Astryx padding inside a bar that has room for it.                                                                                                                                                                                                                                                             | `component:Button` FR4, FR5, FR7–FR11, FR13; DEC-1                               | verify             |
+| ID   | 候选不变式                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | 依据                                                                       | 草稿评审状态 |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------ |
+| FR1  | 两个初始化器必须构建相同的 `ButtonProps`；基础属性（`id`、`isHidden`）经由 `ButtonProps` 传入。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Swift 组件 API A2、A3                                                      | verify       |
+| FR2  | 加载期间，视图必须在标签之上绘制加载指示器，保持标签原位以使其尺寸不变，保持完全不透明，并对 VoiceOver 呈现为忙碌（“Loading”，core 的目录消息）。除非可中断，否则加载期间不得执行 `onClick`；可中断的加载中 Button 会在每次按压时执行 `onClick`。                                                                                                                                                                                                                                                                                                                                                                          | `component:Button` FR7–FR9                                                 | verify       |
+| FR3  | 带 `href` 的启用 Button 必须以 Astryx 按钮样式绘制指向该目标的 SwiftUI `Link`，VoiceOver 会将其读作链接。带 `href` 的禁用 Button 必须绘制其禁用按钮，且该按钮永不打开。                                                                                                                                                                                                                                                                                                                                                                                                                                                    | `component:Button` FR11；`spec:AST-082` FR3                                | verify       |
+| FR4  | 带 `href` 的加载中 Button 必须保持为 `Link`：它保持焦点、显示其加载指示器、读作忙碌，并且在加载结束前不打开其目标；除非该 Button 可中断，此时每次激活都会打开它。忙碌期间它绝不会切换成按钮。                                                                                                                                                                                                                                                                                                                                                                                                                              | `component:Button` FR9（“链接模式的 Button 在仅忙碌期间保持为链接”）、FR11 | verify       |
+| FR5  | 其 `href` 为脚本 URL（`javascript:`、`vbscript:`）或 `data:` URL 中的 HTML 文档的 Button，在 core 规范化之后（移除控制字符、裁剪空白、协议以小写比较且冒号后不含空格），绝不得打开它：它绘制其启用按钮，该按钮执行 `onClick` 且看起来并非禁用状态。                                                                                                                                                                                                                                                                                                                                                                        | `component:Button` FR11；`family:navigation-destinations`                  | verify       |
+| FR6  | 禁用的 Button 必须保留其键盘焦点停靠点并在获得焦点时显示其工具提示，绘制其禁用外观，对 VoiceOver 读作变暗的按钮，并且绝不执行 `onClick`；一个获得焦点后变为禁用的 Button 保持单一视图结构与其焦点。带 `href` 的 Button 在同一种结构中保留其 `Link` 与其禁用按钮，当它变为禁用时焦点从链接移到按钮，重新启用时又移回，因此焦点始终留在组件内部。                                                                                                                                                                                                                                                                            | `component:Button` FR10；`family:buttons` FR3                              | verify       |
+| FR7  | 在 iOS 与 iPadOS 26 及更高版本上，承载于系统栏（导航栏或工具栏）中的 Button 必须不绘制自身的填充或边框，因此栏的玻璃是它唯一的外壳（设置的 `elevation` 仍绘制其阴影，见 FR11）；其标签与任何着色遵循 FR8。未设置的 `variant` 为 `secondary`，与 core 中一致，因此它绘制 `secondary` 的栏处理方式：仅标签，使用 `color.textPrimary`，位于栏的玻璃之上。这不需要新的属性或修饰符。                                                                                                                                                                                                                                           | DEC-1；Apple 的 Liquid Glass 指南（移除栏中的自定义背景）                  | verify       |
+| FR8  | 调用点设置的 `variant` 必须始终被遵循。在 iOS 与 iPadOS 26 及更高版本上，在系统栏中以及在浮动选项下（FR9），它会映射到最接近且能保持其语义的玻璃处理方式，绝不会以另一个变体的处理方式绘制（在栏中，`secondary` 与 `ghost` 共享栏的玻璃）：`primary` → 以 `color.accent` 着色的醒目玻璃，标签 `color.onAccent`；`destructive` → 以 `color.error` 着色的醒目玻璃，标签 `color.onError`；`secondary` → 常规玻璃（在栏中即栏自身的玻璃），标签 `color.textPrimary`，不使用 `color.neutral` 填充；`ghost` → 浮动时：通透玻璃，标签 `color.textPrimary`；在栏中：栏自身的玻璃，标签 `color.textPrimary`（栏负责其条目的背景）。 | DEC-1                                                                      | verify       |
+| FR9  | 在 iOS 与 iPadOS 26 及更高版本上，仅 Apple 平台的修饰符 `.astryxFloating()` 必须只把容器标记为浮动（控件位于滚动内容之上）；其中的 Button 绘制 FR8 的浮动处理方式，受主题的 `material`（ORD2）与 FR10 约束，未设置的 `variant` 绘制为 `secondary`。不使用该修饰符时，系统栏之外的 Button 保留其 token 外观。该修饰符不是属性，不改变任何 `ButtonProps`（Swift 组件 API A2）。                                                                                                                                                                                                                                              | DEC-1；Swift 组件 API A1c（修饰符的 `astryx` 前缀）                        | verify       |
+| FR10 | 在“降低透明度”或“增强对比度”下，本会绘制玻璃的 Button（FR7–FR9）必须不绘制玻璃：改用其变体的 token 填充（`primary` 用 `color.accent`，`destructive` 用 `color.error`，`secondary` 与未设置的 `variant` 用 `color.neutral`，`ghost` 用 `color.backgroundSurface`）并带 `color.borderEmphasized` 边缘，使其标签保有实心、可见的背景。在 iOS 26 之前以及在 macOS 上（FR7–FR9 不覆盖它们），保留 token 外观。                                                                                                                                                                                                                  | DEC-1；`spec:AST-093` FR2                                                  | verify       |
+| FR11 | 在玻璃中，每个属性都保持 core 的语义：`isLoading`、`isInterruptible`、`isDisabled`、`href` 与 `tooltip` 的行为如 FR2–FR6；`size` 设置控件的最小高度与标签字号（`component:Button` FR4）；显式的 `width` 会生效，上限为栏或容器所提供的空间（`component:Button` FR5）；`elevation` 在玻璃之下绘制其阴影（`component:Button` FR13）。在空间足够的栏中，Button 的标签绝不得因 Astryx 的内边距而被截断。                                                                                                                                                                                                                       | `component:Button` FR4、FR5、FR7–FR11、FR13；DEC-1                         | verify       |
 
 ### Variant mapping in glass
 
-FR7–FR9 in one table. "Least surprising" means a callsite gets what its
-`variant` already promises, with the system's glass as its surface.
+FR7–FR9 汇总在一张表中。“最不意外”意味着调用点得到其 `variant` 已经承诺的东西，并以系统的玻璃作为其表面。
 
-| `variant`     | In a system bar (iOS and iPadOS 26)                                              | Floating, opted in (iOS and iPadOS 26)                    | Least surprising because                                                                                              |
-| ------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| not set       | as `secondary`: the bar's glass, label `color.textPrimary`, no fill              | regular glass, label `color.textPrimary` (as `secondary`) | core's default is `secondary`, so an unset Button is a secondary one on every platform                                |
-| `primary`     | prominent glass tinted `color.accent`, label `color.onAccent`                    | the same                                                  | still the one filled, accent-colored main action, as the system's prominent bar buttons are                           |
-| `secondary`   | the bar's glass, label `color.textPrimary`, no `color.neutral` fill              | regular glass, label `color.textPrimary`                  | still a neutral action; the glass takes the place of the neutral fill, so there is one surface, not two               |
-| `ghost`       | the bar's glass, label `color.textPrimary` (the bar owns its items' backgrounds) | clear glass, label `color.textPrimary`                    | still the quietest action; clear glass is the least visible surface that keeps the label readable over moving content |
-| `destructive` | prominent glass tinted `color.error`, label `color.onError`                      | the same                                                  | still reads as destructive before it is pressed                                                                       |
+| `variant`     | 系统栏中（iOS 与 iPadOS 26）                                    | 浮动且已选择启用（iOS 与 iPadOS 26）                 | 最不意外的原因                                                                 |
+| ------------- | --------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------ |
+| 未设置        | 同 `secondary`：栏的玻璃，标签 `color.textPrimary`，无填充      | 常规玻璃，标签 `color.textPrimary`（同 `secondary`） | core 的默认值为 `secondary`，因此未设置的 Button 在所有平台上都是 secondary 的 |
+| `primary`     | 以 `color.accent` 着色的醒目玻璃，标签 `color.onAccent`         | 同上                                                 | 仍是唯一填充的、强调色的主操作，正如系统的醒目栏按钮那样                       |
+| `secondary`   | 栏的玻璃，标签 `color.textPrimary`，不使用 `color.neutral` 填充 | 常规玻璃，标签 `color.textPrimary`                   | 仍是中性操作；玻璃取代了中性填充，因此只有一个表面，而不是两个                 |
+| `ghost`       | 栏的玻璃，标签 `color.textPrimary`（栏负责其条目的背景）        | 通透玻璃，标签 `color.textPrimary`                   | 仍是最安静的操作；通透玻璃是在移动内容之上保持标签可读的最不显眼的表面         |
+| `destructive` | 以 `color.error` 着色的醒目玻璃，标签 `color.onError`           | 同上                                                 | 在按压之前仍然读作破坏性操作                                                   |
 
 ### Allowed variation
 
-- **AV1 — Platform controls.** The control is SwiftUI's `Button` or `Link`, so
-  focus rings, press feedback, and how the system opens a destination are the
-  platform's own.
-- **AV2 — The system's glass.** In glass (FR7–FR9), refraction, how a bar groups
-  and morphs its items, press effects, and the scroll edge effect are the
-  system's own and may change with each iOS release.
+- **AV1 — 平台控件。** 控件是 SwiftUI 的 `Button` 或 `Link`，因此焦点环、按压反馈以及系统打开目标的方式都由平台自身决定。
+- **AV2 — 系统的玻璃。** 在玻璃中（FR7–FR9），折射、栏如何对其条目分组与变形、按压效果以及滚动边缘效果均由系统自身决定，并可能随每次 iOS 版本而变化。
 
 ### Representative states
 
-| State                                    | Required invariant                             | Allowed variation               |
-| ---------------------------------------- | ---------------------------------------------- | ------------------------------- |
-| loading                                  | same size as idle; spinner; busy; presses wait | spinner is the system's         |
-| loading and interruptible                | presses land                                   | none                            |
-| enabled with `href`                      | a `Link`                                       | none                            |
-| disabled with `href`                     | a dimmed button that never opens               | none                            |
-| loading with `href`                      | a `Link` that does not open until loading ends | none                            |
-| in a bar, `variant` unset                | `secondary`'s bar treatment; no Astryx fill    | the system's glass and grouping |
-| in a bar, `variant` set                  | FR8's treatment for that variant               | the system's glass and grouping |
-| floating, opted in                       | FR8's treatment; unset takes `secondary`'s     | the system's glass              |
-| Reduce Transparency or Increase Contrast | solid token fill with an edge, no glass        | none                            |
+| 状态                     | 必需不变式                                   | 允许的变化           |
+| ------------------------ | -------------------------------------------- | -------------------- |
+| 加载中                   | 与空闲时尺寸相同；加载指示器；忙碌；按压等待 | 加载指示器由系统提供 |
+| 加载中且可中断           | 按压会生效                                   | 无                   |
+| 启用且带 `href`          | 一个 `Link`                                  | 无                   |
+| 禁用且带 `href`          | 一个永不打开的变暗按钮                       | 无                   |
+| 加载中且带 `href`        | 在加载结束前不打开的 `Link`                  | 无                   |
+| 在栏中，`variant` 未设置 | `secondary` 的栏处理方式；无 Astryx 填充     | 系统的玻璃与分组     |
+| 在栏中，`variant` 已设置 | 该变体的 FR8 处理方式                        | 系统的玻璃与分组     |
+| 浮动，已选择启用         | FR8 的处理方式；未设置时采用 `secondary` 的  | 系统的玻璃           |
+| 降低透明度或增强对比度   | 带边缘的实心 token 填充，无玻璃              | 无                   |
 
 ### Transformation and precedence order
 
-- **ORD1 — Availability.** Disabled, then loading (busy-only unless
-  interruptible), then operable, as in core.
-- **ORD2 — Surface.** Reduce Transparency or Increase Contrast (solid, FR10);
-  then the theme's `material` (`spec:AST-082` FR10): `opaque` draws FR10's
-  solid surface wherever floating glass (FR9) would draw, while a Button in a
-  bar still draws no fill of its own, and `translucent`, an `ios` entry's
-  `liquidGlass`, or an absent `material` keeps FR7–FR9; then the `variant`'s treatment (FR8, an unset `variant` as
-  `secondary`); then the token look outside bars and floating containers.
-  Placement never overrides a set `variant`.
+- **ORD1 — 可用性。** 先是禁用，然后是加载（除非可中断，否则为仅忙碌），再是可操作，与 core 中一致。
+- **ORD2 — 表面。** 先看“降低透明度”或“增强对比度”（实心，FR10）；然后是主题的 `material`（`spec:AST-082` FR10）：`opaque` 在本会绘制浮动玻璃（FR9）的位置绘制 FR10 的实心表面，而栏中的 Button 仍不绘制自身填充；`translucent`、`ios` 条目的 `liquidGlass` 或缺失 `material` 则保留 FR7–FR9；然后是 `variant` 的处理方式（FR8，未设置的 `variant` 视为 `secondary`）；最后是栏与浮动容器之外的 token 外观。放置位置绝不会覆盖已设置的 `variant`。
 
 ### Performance and resources
 
-- **PR1 — No work while idle.** The view holds no timers or tasks; loading is a
-  prop the caller sets.
+- **PR1 — 空闲时不做工作。** 视图不持有任何计时器或任务；加载是调用方设置的属性。
 
 ## Accessibility contract
 
-- **AR1 — Name and state.** The label names the control in every state; a
-  loading Button adds core's "Loading" message as its value and announces it
-  when loading starts. A link Button reads as a link, a disabled one as dimmed.
-- **AR3 — Glass keeps the name and role.** In glass the Button keeps its label,
-  its button or link role, and its loading and disabled states (AR1); the system
-  draws only what is behind the label.
-- **AR2 — Rendered tree not measured.** Tests assert what the view sets; the
-  rendered accessibility tree is not measured until an app-hosted target exists.
+- **AR1 — 名称与状态。** 标签在每种状态下都为该控件命名；加载中的 Button 会将 core 的“Loading”消息作为其值加入，并在加载开始时播报它。链接型 Button 读作链接，禁用型读作变暗。
+- **AR3 — 玻璃保留名称与角色。** 在玻璃中，Button 保留其标签、其按钮或链接角色，以及其加载与禁用状态（AR1）；系统只绘制标签背后的内容。
+- **AR2 — 不测量渲染树。** 测试断言视图所设置的内容；在存在应用托管的测试目标之前，渲染出的无障碍树不被测量。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                    | Representation authority   | Hierarchy role | Component contract |
-| ---------------- | ----------------------------------------------------- | -------------------------- | -------------- | ------------------ |
-| Spinner          | the system's activity indicator                       | prescribed by the platform | supporting     | FR2, FR4           |
-| Glass surface    | the system's Liquid Glass (regular, clear, prominent) | prescribed by the platform | supporting     | FR7–FR10           |
+| 结构或状态 | 设计要求                                | 表现形式权威 | 层级角色 | 组件契约 |
+| ---------- | --------------------------------------- | ------------ | -------- | -------- |
+| 加载指示器 | 系统的活动指示器                        | 由平台规定   | 支持性   | FR2、FR4 |
+| 玻璃表面   | 系统的 Liquid Glass（常规、通透、醒目） | 由平台规定   | 支持性   | FR7–FR10 |
 
-The component implements design requirements without copying their rationale.
+组件实现设计要求，但不复制其理由。
 
-Platform control: SwiftUI `Button` and `Link` with `ProgressView`; they are the
-platform's own controls and satisfy the contract (`spec:AST-093` FR2). A
-`tooltip` shows through the shared Astryx tooltip (`library/tooltip.spec.md`).
-Guideline pages: Buttons, Progress indicators, Materials (Liquid Glass),
-Toolbars, and Accessibility (Reduce Transparency, Increase Contrast) in the
-Apple Human Interface Guidelines (`spec:AST-093` FR3).
+平台控件：SwiftUI `Button` 与 `Link` 配合 `ProgressView`；它们是平台自身的控件，满足契约（`spec:AST-093` FR2）。`tooltip` 通过共享的 Astryx 工具提示显示（`library/tooltip.spec.md`）。指南页面：Apple Human Interface Guidelines 中的 Buttons、Progress indicators、Materials (Liquid Glass)、Toolbars 与 Accessibility（Reduce Transparency、Increase Contrast）（`spec:AST-093` FR3）。
 
-Theme values read (`spec:AST-093` FR4): `color.accent`, `color.onAccent`,
-`color.error`, `color.onError`, `color.neutral`, `color.textPrimary`,
-`color.backgroundSurface` and `color.borderEmphasized` (the solid fallback),
-the native theme's `material` intent, including an `ios` entry's `material`
-(`spec:AST-082` FR10; ORD2),
-`size.elementSm`, `size.elementMd`, `size.elementLg`, `radius.element`,
-`space` steps for padding, `font.label` and `font.family.body`, the
-`shadow.low`, `shadow.med`, and `shadow.high` layers, and the Dynamic Type
-scale.
+读取的主题值（`spec:AST-093` FR4）：`color.accent`、`color.onAccent`、`color.error`、`color.onError`、`color.neutral`、`color.textPrimary`、`color.backgroundSurface` 与 `color.borderEmphasized`（实心回退），原生主题的 `material` 意图，包括 `ios` 条目的 `material`（`spec:AST-082` FR10；ORD2），`size.elementSm`、`size.elementMd`、`size.elementLg`、`radius.element`、用于内边距的 `space` 步长、`font.label` 与 `font.family.body`、`shadow.low`、`shadow.med` 与 `shadow.high` 层，以及 Dynamic Type 缩放。
 
 ## Family and system relationships
 
-- `component:Button` owns the props, the pending and disabled states, and link
-  mode; this record states only how Swift draws them.
-- `family:navigation-destinations` owns destination handling for links.
+- `component:Button` 负责属性、待定与禁用状态以及链接模式；本记录只说明 Swift 如何绘制它们。
+- `family:navigation-destinations` 负责链接的目标处理。
 
 ## Verification map
 
-| Contract | Verification                                                                                                                                                                                                                                                                                                             | Representative states                                                                                                                                  | Mutation or failure expectation                                                                                                                  | Audit section                 |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------- |
-| FR1      | `ButtonTests.swift` initializer test                                                                                                                                                                                                                                                                                     | both initializers                                                                                                                                      | differing props fail                                                                                                                             | `audit:swift/Button/api`      |
-| FR2      | `ButtonTests.swift` loading, width, and interruptible tests                                                                                                                                                                                                                                                              | loading; loading and interruptible                                                                                                                     | a press that lands while loading, a size change, or dimming fails                                                                                | `audit:swift/Button/loading`  |
-| FR3      | `ButtonTests.swift` `href` test                                                                                                                                                                                                                                                                                          | enabled and disabled with `href`                                                                                                                       | a disabled Button that opens, or an enabled one that is not a link, fails                                                                        | `audit:swift/Button/link`     |
-| FR4      | `ButtonTests.swift` `href` test with loading, and with loading and interruptible                                                                                                                                                                                                                                         | loading with `href`; interruptible                                                                                                                     | a busy link that swaps to a button or opens before loading ends fails                                                                            | `audit:swift/Button/link`     |
-| FR5      | `ButtonTests.swift` refused-destination and normalization tests                                                                                                                                                                                                                                                          | `javascript:`, `vbscript:`, `data:text/html`, padded, mixed case, with controls, and `data: text/html`; a `data:image` and a `mailto:` that still open | a refused destination that opens, an unnormalized one that slips through, or a refused one that looks disabled, fails                            | `audit:swift/Button/link`     |
-| FR6      | `ButtonTests.swift` disabled tests, including a disabled Button with `href` keeping its destination for one structure; the focus stop and the focus move are not measured until an app-hosted test can observe them                                                                                                      | disabled with and without a tooltip; disabled with `href`                                                                                              | a disabled Button that runs `onClick` or opens its link, or one marked without its focus stop, fails                                             | `audit:swift/Button/disabled` |
-| AR1      | `ButtonTests.swift` accessibility assertions                                                                                                                                                                                                                                                                             | idle; loading; link                                                                                                                                    | a missing name, value, or announcement fails                                                                                                     | `audit:swift/Button/a11y`     |
-| FR7      | Simulator capture gate: an unset Button in the navigation bar and in the bottom toolbar, light and dark, on each new iOS; a unit test that a bar Button draws no fill. Evidence gap: SwiftUI has no public signal that a view sits in a bar, so the bottom toolbar is unverified until a detection passes the gate there | navigation bar; bottom toolbar                                                                                                                         | an Astryx fill inside the bar's glass fails                                                                                                      | `audit:swift/Button/glass`    |
-| FR8      | Simulator capture gate: each variant in a bar and floating, light and dark; a unit test of the variant-to-treatment mapping                                                                                                                                                                                              | primary; secondary; ghost; destructive                                                                                                                 | a set variant drawn with another variant's treatment fails, except `secondary` and `ghost` sharing the bar's glass in a bar                      | `audit:swift/Button/glass`    |
-| FR9      | Simulator capture gate: floating Buttons with and without the modifier; a unit test that the modifier changes no `ButtonProps`                                                                                                                                                                                           | opted in; not opted in                                                                                                                                 | glass without the modifier, or a token fill with it, fails                                                                                       | `audit:swift/Button/glass`    |
-| FR10     | Simulator capture gate with Reduce Transparency and with Increase Contrast on                                                                                                                                                                                                                                            | each variant in a bar and floating                                                                                                                     | any glass drawn, or a label without a solid background, fails                                                                                    | `audit:swift/Button/glass`    |
-| FR11     | `ButtonTests.swift` loading and disabled tests in glass; simulator capture gate for label truncation, `size`, `width`, and `elevation` in a bar and floating                                                                                                                                                             | loading; disabled; long label; each size; fill width; each elevation                                                                                   | a truncated label with room, a lost loading or disabled state, or a `size`, `width`, or `elevation` that core would honor and glass drops, fails | `audit:swift/Button/glass`    |
+| 契约 | 验证                                                                                                                                                                                                                               | 代表性状态                                                                                                                                 | 变更或失败预期                                                                                          | 审计章节                      |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| FR1  | `ButtonTests.swift` 初始化器测试                                                                                                                                                                                                   | 两个初始化器                                                                                                                               | 属性不同则失败                                                                                          | `audit:swift/Button/api`      |
+| FR2  | `ButtonTests.swift` 的加载、宽度与可中断测试                                                                                                                                                                                       | 加载中；加载中且可中断                                                                                                                     | 加载期间按压生效、尺寸变化或变暗均失败                                                                  | `audit:swift/Button/loading`  |
+| FR3  | `ButtonTests.swift` 的 `href` 测试                                                                                                                                                                                                 | 启用与禁用且带 `href`                                                                                                                      | 禁用的 Button 仍会打开，或启用的 Button 不是链接，均失败                                                | `audit:swift/Button/link`     |
+| FR4  | `ButtonTests.swift` 带加载、以及带加载且可中断的 `href` 测试                                                                                                                                                                       | 加载中且带 `href`；可中断                                                                                                                  | 忙碌中的链接切换为按钮或在加载结束前打开则失败                                                          | `audit:swift/Button/link`     |
+| FR5  | `ButtonTests.swift` 的拒绝目标与规范化测试                                                                                                                                                                                         | `javascript:`、`vbscript:`、`data:text/html`、带填充、大小写混合、含控制字符，以及 `data: text/html`；仍会打开的 `data:image` 与 `mailto:` | 被拒绝的目标仍会打开、未规范化的目标漏过，或被拒绝的目标看起来像禁用，均失败                            | `audit:swift/Button/link`     |
+| FR6  | `ButtonTests.swift` 的禁用测试，包括带 `href` 的禁用 Button 在单一结构中保留其目标；在应用托管的测试能够观察之前，不测量焦点停靠点与焦点移动                                                                                       | 禁用且带/不带工具提示；禁用且带 `href`                                                                                                     | 禁用的 Button 执行 `onClick` 或打开其链接，或被标记为未保留其焦点停靠点，均失败                         | `audit:swift/Button/disabled` |
+| AR1  | `ButtonTests.swift` 的无障碍断言                                                                                                                                                                                                   | 空闲；加载中；链接                                                                                                                         | 缺少名称、值或播报均失败                                                                                | `audit:swift/Button/a11y`     |
+| FR7  | 模拟器截图闸门：在导航栏与底部工具栏中、浅色与深色下、每个新 iOS 版本上的未设置 Button；一个单元测试验证栏中的 Button 不绘制填充。证据缺口：SwiftUI 没有公开信号表明视图位于栏中，因此在检测在该处通过闸门之前，底部工具栏尚未验证 | 导航栏；底部工具栏                                                                                                                         | 在栏的玻璃内绘制 Astryx 填充则失败                                                                      | `audit:swift/Button/glass`    |
+| FR8  | 模拟器截图闸门：每个变体在栏中与浮动状态下、浅色与深色下；一个关于变体到处理方式映射的单元测试                                                                                                                                     | primary; secondary; ghost; destructive                                                                                                     | 已设置的变体以另一变体的处理方式绘制则失败，但在栏中 `secondary` 与 `ghost` 共享栏的玻璃除外            | `audit:swift/Button/glass`    |
+| FR9  | 模拟器截图闸门：带与不带该修饰符的浮动 Button；一个单元测试验证该修饰符不改变任何 `ButtonProps`                                                                                                                                    | 已选择启用；未选择启用                                                                                                                     | 不带修饰符却绘制玻璃，或带修饰符却使用 token 填充，均失败                                               | `audit:swift/Button/glass`    |
+| FR10 | 开启“降低透明度”与“增强对比度”的模拟器截图闸门                                                                                                                                                                                     | 每个变体在栏中与浮动状态下                                                                                                                 | 绘制任何玻璃，或标签没有实心背景，均失败                                                                | `audit:swift/Button/glass`    |
+| FR11 | `ButtonTests.swift` 在玻璃中的加载与禁用测试；针对栏中与浮动状态下标签截断、`size`、`width` 与 `elevation` 的模拟器截图闸门                                                                                                        | 加载中；禁用；长标签；每种尺寸；填满宽度；每种高度                                                                                         | 有空间却截断标签、丢失加载或禁用状态，或 core 会遵循而玻璃丢弃的 `size`、`width` 或 `elevation`，均失败 | `audit:swift/Button/glass`    |
 
 ## Decision log
 
 ### DEC-1 — Button meets the system's glass, and a set variant is always obeyed
 
-**Reference:** `component:swift/Button/DEC-1`
-**Decider:** cixzhang, 2026-10-31
+**引用：** `component:swift/Button/DEC-1`
 
-On iOS and iPadOS 26 and later, a Button in a system bar draws no fill of its
-own, so the bar's glass is its only chrome; a Button in a container the
-Apple-only modifier marks as floating draws SwiftUI's glass; and Reduce
-Transparency or Increase Contrast draws a solid token surface. A `variant` the
-callsite sets keeps its meaning in glass (FR8): `primary` and `destructive`
-stay the one filled, colored action, and `secondary` and `ghost` stay neutral.
-An unset `variant` is `secondary`, as core defines it, so an unset bar Button
-has a neutral label where a native bar item takes the tint.
+**决定者：** cixzhang，2026-10-31
 
-Rejected: no Astryx glass, with apps using SwiftUI's own buttons in bars and
-floating controls.
+在 iOS 与 iPadOS 26 及更高版本上，系统栏中的 Button 不绘制自身填充，因此栏的玻璃是它唯一的外壳；在仅 Apple 平台的修饰符标记为浮动的容器中，Button 绘制 SwiftUI 的玻璃；而“降低透明度”或“增强对比度”下则绘制实心的 token 表面。调用点设置的 `variant` 在玻璃中保持其语义（FR8）：`primary` 与 `destructive` 仍是唯一填充的、有色的操作，`secondary` 与 `ghost` 保持中性。未设置的 `variant` 为 `secondary`，正如 core 所定义，因此未设置的栏中 Button 具有中性标签，而原生栏条目则采用着色。
+
+已否决：不使用 Astryx 玻璃，而让应用在栏与浮动控件中使用 SwiftUI 自身的按钮。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不重复使用方的属性表/示例、当前审计结果、实现步骤或家族/系统规则。它链接到它们的负责方。

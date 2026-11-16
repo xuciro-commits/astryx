@@ -48,400 +48,130 @@ affects_consumer_docs:
 
 ## Intent
 
-A screen-reader user hears each status change once, when it happens, at the
-right urgency. A message is never lost because its live region appeared
-together with its text, and never heard twice because two parts of the page
-both claim it.
+屏幕阅读器用户在每次状态变化发生时只听到一次，且紧迫程度正确。消息不会因为其 live region 与文本同时出现而丢失，也不会因为页面中两个部分都声明它而被听到两次。
 
-Builders get one rule for every component that reports status: name the one
-owner of the message, and deliver transient messages through the shared
-announcement channel.
+构建者为每个报告状态的组件得到一条规则：指明消息的唯一所有者，并通过共享的播报通道投递瞬时消息。
 
 ## Non-goals
 
-- Which events a component reports. Component and family records decide what
-  is a status message; this record decides how it is delivered.
-- Exact wording. Text comes from `architecture:internationalization`.
-- Focus movement. A status message never moves focus; focus rules stay with
-  `architecture:interaction-modality` and component records.
-- Modal alerts that take focus, such as AlertDialog. They are not status
-  messages.
-- Spoken output on a specific screen reader. `spec:AST-009` owns that evidence.
-- Where the channel is hosted while a native modal makes the rest of the page
-  inert. `spec:AST-003` (FR15, FR18, FR20) owns hosting.
-- Equivalent internal implementations remain valid when they satisfy this
-  contract.
+- 组件报告哪些事件。组件与 family 记录决定什么是状态消息；本记录决定如何投递它。
+- 确切措辞。文本来自 `architecture:internationalization`。
+- 焦点移动。状态消息从不移动焦点；焦点规则仍归 `architecture:interaction-modality` 与组件记录。
+- 会夺取焦点的模态提醒，例如 AlertDialog。它们不是状态消息。
+- 在特定屏幕阅读器上的朗读输出。`spec:AST-009` 拥有该证据。
+- 当原生模态使页面其余部分达到 inert 状态时，通道托管在哪里。`spec:AST-003`（FR15、FR18、FR20）拥有托管。
+- 等价的内部实现只要满足本契约即仍然有效。
 
 ## Requirements
 
-- **FR1 — One owner per message.** Every status message Astryx announces has
-  exactly one announcement owner. No other element that shows the same words
-  carries a live role (`status`, `alert`, `log`) or `aria-live`.
-- **FR2 — Transient messages use the shared channel.** When the element that
-  shows a message mounts, unmounts, or is replaced together with its text, the
-  owner announces through the shared announcement channel, except as FR3 (an
-  urgent Banner's `role="alert"` message), FR4, FR10, FR11, and FR14 provide.
-  The new element
-  MUST NOT carry a live role or `aria-live`, except an urgent Banner's
-  `role="alert"` message (FR3).
-- **FR3 — Live roles only on persistent containers.** A component MAY own a
-  live role only on an element that stays mounted while its content changes.
-  It MUST NOT mount that element already holding the text to announce, except
-  an urgent Banner's `role="alert"` message, delivered at FR5's assertive
-  urgency.
-- **FR4 — A live container owns content added inside it.** Content added inside
-  a mounted live container is delivered by that container, at its urgency. An
-  element added with that content MUST NOT carry its own live role or announce
-  the same content through the channel. A persistent component region that FR3
-  allows, such as Button's loading region or an input's invalid-entry region,
-  keeps its own role and delivers its own content at its own urgency.
-- **FR5 — Urgency.** Outside a live container, errors and time-critical
-  failures use the assertive channel. All other status messages use the polite
-  channel. Inside a mounted live container, FR4 applies. Inside an open native
-  modal, FR14's containers carry the same two urgencies.
-- **FR6 — Once per occasion.** An occasion is one state transition or one user
-  action. The owner announces once per occasion. Rerender, StrictMode replay,
-  and an update to the same value do not repeat it. A new occasion with the
-  same words announces again.
-- **FR7 — Shown words stay readable.** Delivering through the channel does not
-  hide the visible message from assistive technology. The visible element stays
-  available for browse mode and `aria-describedby`. The announced words match
-  the shown words.
-- **FR8 — Indicators inside an owner are silent.** A visual indicator composed
-  inside a component that owns the task, such as a Spinner in a busy control,
-  announces nothing and carries no live role. The owning component announces its busy state once per busy start (FR6), through the channel or through a persistent region that FR3 allows. A busy start is not announced after the same operation's outcome has been announced; when the outcome announces first, the pending busy announcement is dropped.
-  A standalone indicator is its own owner and follows FR2.
-- **FR9 — One shared channel per document.** The channel is one polite and one
-  assertive region per document. They are created empty, stay mounted for the
-  document's lifetime, and clear their text shortly after each announcement so
-  stale text does not linger. Messages written to a region before the previous
-  one is exposed are joined in order into one announcement; none is dropped,
-  except a message a `hasReplace` instance withdraws. A `useAnnounce` instance
-  created with `hasReplace` states one current state of its owner, such as a
-  search's result count: each message it writes withdraws that instance's
-  previous message while it is not yet exposed, whatever their urgencies, and is
-  spoken in the region of its own urgency; a message already exposed has been
-  heard and stays. Messages from other instances, and from instances without
-  `hasReplace`, still join. `useAnnounce` takes an optional options object with
-  one field, `hasReplace` (default `false`), offered to every caller, Astryx's
-  components and apps alike (`spec:AST-075` DEC-2):
-  `useAnnounce({hasReplace: true})`; the `announce(message, politeness)` it
-  returns is unchanged. FR13 says when an own-content message comes from such an
-  instance. An identical message repeated within the same frame is one message
-  (FR6). An empty message clears the region, including messages joined but not
-  yet exposed.
-  `useAnnounce` is the public way to reach it. When an open native modal encloses the
-  caller, it follows FR14 instead.
-- **FR10 — Rehosted owners speak through the modal they are in.** While the
-  shared channel is not admitted to modal hosting, a globally hosted owner that
-  `spec:AST-003` rehosts above native modals (FR16, FR18) announces through the
-  containers of the modal its host sits in (FR14), otherwise through the shared
-  channel. It adds no live container of its own.
-- **FR11 — A message announces when it appears after the page loads.** Page
-  load covers everything committed until the document finishes loading,
-  including the page's first render from the server or the client. A message
-  present during page load is not announced. A message inserted after the
-  document finishes loading, or whose text changes after that, is announced
-  once. That includes a message brought in by a client-rendered route change and
-  a server-rendered message inserted by client navigation. A message that
-  reaches assistive technology only through its announcement, such as a picker's
-  empty-panel message under `spec:AST-056` FR3, announces even during page load.
-  FR4 applies inside a mounted live container, and FR6 governs repeats. FR11
-  covers components that announce their own rendered content;
-  `component:FieldStatus`, a grouped field's status message (as in TimeInput
-  inside an input group), and `component:Banner` keep their own announcement
-  rules.
-- **FR12 — Own-content announcements behave the same everywhere.** Every
-  component FR11 covers announces the element's
-  rendered text, or its accessible name when it renders no text, leaving out
-  `aria-hidden` content. It stays silent for text present during page load
-  (except as FR11 provides for announcement-only messages), announces once per later appearance or text change, and re-arms when
-  the element is hidden. An appearance its owner does not re-render for is
-  announced on the owner's next render (FR13). During a server render it announces nothing and adds no
-  live role, and a server-renderable adopter stays server-renderable and passes
-  the server-safe component boundary check. Any mechanism that satisfies this is
-  valid; `architecture:react-component-runtime` INV10 places it.
-- **FR13 — Own-content announcements are well behaved.** Announcing a
-  component's own rendered content (FR11) happens once per occasion under
-  rerender, dependency change, and StrictMode replay, does no work while the
-  element is hidden, and leaves nothing behind after unmount. Action
-  announcements, such as a result count from a query handler or FR8 busy
-  starts, keep their own owner. A picker's own empty-panel message (FR11) comes
-  from its search's `hasReplace` instance (FR9), so it replaces the search's
-  result count not yet exposed, and the search's next count replaces it while it
-  is not yet exposed. Content revealed
-  without a re-render of its
-  owner, such as when an ancestor's `hidden` attribute is removed outside
-  React, is announced on the owner's next render, and nothing watches for the
-  reveal while the content is hidden (`architecture:react-component-runtime`
-  INV5, INV10). `architecture:react-component-runtime` INV10 owns where this
-  work lives.
-- **FR14 — Owners inside an open modal deliver inside it.** While the
-  shared channel is not exposed inside native modals (Platform support), a
-  message its owner would otherwise send through the shared channel — an FR2
-  message or an action announcement such as a result count, a selection
-  change, or a busy start — follows the nearest open native modal that
-  encloses its owner. When Astryx renders that modal (such as a Dialog, a
-  modal BottomSheet, a modal Drawer, a Lightbox, or CommandPalette), the
-  message is delivered through a persistent polite container and a persistent
-  assertive container inside it. When an app renders that modal without
-  Astryx, the last sentence of FR14 applies. When no open native modal
-  encloses the owner, the message uses the shared channel. The public `useAnnounce` takes this route: a message sent with it
-  from inside such a modal, by a component or by app code, is delivered
-  through that modal's containers, with no separate path. The route follows
-  where the owner is when it announces, so one owner that is sometimes inside
-  a modal and sometimes not needs no second announcement path. An Astryx component that
-  renders an Astryx modal and announces about that modal's content, such as
-  CommandPalette's result counts or Lightbox's position, is inside that modal
-  for this route while it is open. App code reaches a modal's containers by
-  calling `useAnnounce` from a component rendered inside that modal; a call
-  made outside the modal, even by the component that renders it, takes the
-  route of where that call is. When a modal closes while a message in its
-  containers is not yet exposed, that message is delivered through the channel
-  exposed after the close — the containers of the native modal then on top
-  when Astryx renders it, or the shared channel when no native modal is open
-  — so a message sent just before its modal closes, such as "Saved" followed
-  by closing a Dialog, is not lost. When the modal then on top is one an app
-  renders without Astryx, delivery of that message is outside this record. FR14 adds one
-  container of each urgency per modal for these messages; an owner's own
-  persistent FR3 region — Button's loading region, an input's invalid-entry
-  region — keeps its role and urgency inside the modal as FR4 says, and an
-  owner that `spec:AST-003` rehosts above the modal writes to these containers
-  (FR10). FR14's containers are direct children of the modal's dialog
-  element, created empty on first use (FR3), carry `status` and `alert`
-  respectively (FR5), and clear shortly after each announcement; messages
-  written to one before the previous is exposed are joined in order, except that
-  a message from a `hasReplace` instance withdraws that instance's previous
-  message not yet exposed, in either container, as FR9 says. An identical
-  message repeated within the same frame is one message, and an empty message
-  clears it, including messages joined but not yet exposed, as FR9 says of the
-  shared channel. FR6 applies to each owner's
-  messages. A busy owner's FR8 region inside a modal is
-  FR14's polite container. When a later modal opens above the owner's modal
-  (`spec:AST-003` FR17), the owner's containers are inert with its modal, and
-  a message it announces while covered is not heard — the container clears it
-  before the modal is on top again — as the owner itself is not operable
-  until then. When the nearest open native modal enclosing a busy owner is
-  one an app renders without Astryx, the owner announces its busy start
-  through a persistent region inside that modal (FR3, FR8), including when
-  that modal is itself inside an open Astryx modal; other delivery from an
-  owner inside such a modal is outside this record.
+- **FR1 — 每条消息一个所有者。** Astryx 播报的每条状态消息都恰好有一个播报所有者。任何其他显示相同文字的元素都不携带 live role（`status`、`alert`、`log`）或 `aria-live`。
+- **FR2 — 瞬时消息使用共享通道。** 当显示消息的元素与它的文本一起挂载、卸载或被替换时，所有者通过共享播报通道播报，除非 FR3（紧急 Banner 的 `role="alert"` 消息）、FR4、FR10、FR11 与 FR14 另有规定。新元素 MUST NOT 携带 live role 或 `aria-live`，紧急 Banner 的 `role="alert"` 消息除外（FR3）。
+- **FR3 — live role 只出现在持久容器上。** 组件 MAY 仅在一个内容变化时仍保持挂载的元素上拥有 live role。它 MUST NOT 让该元素在挂载时就已持有要播报的文本，紧急 Banner 的 `role="alert"` 消息除外，该消息按 FR5 的 assertive 紧迫程度投递。
+- **FR4 — live 容器拥有添加到其内部的内容。** 添加到已挂载 live 容器内部的内容由该容器按自身紧迫程度投递。随该内容一起添加的元素 MUST NOT 携带自身的 live role，也不得通过通道播报相同内容。FR3 允许的持久组件区域，例如 Button 的加载区域或输入框的无效输入区域，保留自身的 role 并按自身紧迫程度投递自身内容。
+- **FR5 — 紧迫程度。** 在 live 容器之外，错误与时间关键的失败使用 assertive 通道。所有其他状态消息使用 polite 通道。在已挂载的 live 容器内部，适用 FR4。在打开的原生模态内部，FR14 的容器承载相同的两种紧迫程度。
+- **FR6 — 每次场合只播报一次。** 一次场合是一次状态转换或一次用户操作。所有者每次场合只播报一次。重新渲染、StrictMode 重放以及对相同值的更新都不会重复播报。具有相同文字的新场合会再次播报。
+- **FR7 — 显示的文字保持可读。** 通过通道投递不会使可见消息对辅助技术隐藏。可见元素仍可供浏览模式与 `aria-describedby` 使用。播报的文字与显示的文字一致。
+- **FR8 — 所有者内部的指示器保持静默。** 在拥有任务的组件内部组合出来的视觉指示器，例如忙碌控件中的 Spinner，不播报任何内容，也不携带 live role。拥有它的组件在每次忙碌开始时只播报一次忙碌状态（FR6），通过通道或通过 FR3 允许的持久区域。如果同一操作的结果已经被播报，则忙碌开始不再播报；当结果先播报时，待定的忙碌播报被丢弃。独立指示器是它自己的所有者，遵循 FR2。
+- **FR9 — 每个文档一个共享通道。** 通道是每个文档一个 polite 区域和一个 assertive 区域。它们以空内容创建，在文档生命周期内保持挂载，并在每次播报后不久清空自身文本，以免陈旧文本残留。在上一条尚未暴露之前写入某区域的消息，按顺序合并为一次播报；没有任何一条被丢弃，除非某条消息被某个 `hasReplace` 实例撤销。用 `hasReplace` 创建的 `useAnnounce` 实例陈述其所有者当下的一个状态，例如搜索的结果数：它写入的每条消息在其尚未暴露时会撤销该实例先前的那条消息，无论两者的紧迫程度如何，并在其自身紧迫程度对应的区域中朗读；已经暴露的消息已被听到，因而保留。来自其他实例的消息，以及来自不带 `hasReplace` 的实例的消息，仍然合并。`useAnnounce` 接受一个可选的选项对象，其中只有一个字段 `hasReplace`（默认 `false`），向每个调用方提供，Astryx 的组件与应用一视同仁（`spec:AST-075` DEC-2）：`useAnnounce({hasReplace: true})`；它返回的 `announce(message, politeness)` 不变。FR13 说明自身内容消息何时来自这样的实例。在同一帧内重复的相同消息算作一条消息（FR6）。空消息清空该区域，包括已合并但尚未暴露的消息。`useAnnounce` 是到达它的公开方式。当打开的原生模态包围调用方时，它改为遵循 FR14。
+- **FR10 — 被重新托管的宿主通过其所在模态发声。** 在共享通道尚未获准进入模态托管期间，一个被全局托管的宿主若被 `spec:AST-003` 重新托管到原生模态之上（FR16、FR18），则通过其宿主所在模态的容器播报（FR14），否则通过共享通道播报。它不添加自己的 live 容器。
+- **FR11 — 消息在页面加载之后出现时才播报。** 页面加载涵盖文档完成加载之前提交的一切，包括页面在服务端或客户端的首次渲染。页面加载期间已存在的消息不播报。在文档完成加载之后插入的消息，或此后文本发生变化的消息，只播报一次。这包括由客户端渲染的路由切换带入的消息，以及由客户端导航插入的服务端渲染消息。只能通过其播报到达辅助技术的消息，例如 `spec:AST-056` FR3 下选择器的空面板消息，即使在页面加载期间也播报。FR4 适用于已挂载的 live 容器内部，FR6 管辖重复。FR11 涵盖播报自身渲染内容的组件；`component:FieldStatus`、分组字段的状态消息（如输入组中的 TimeInput）以及 `component:Banner` 保留各自的播报规则。
+- **FR12 — 自身内容播报在各处行为一致。** FR11 涵盖的每个组件播报该元素的渲染文本，当它不渲染文本时播报其可访问名称，并排除 `aria-hidden` 的内容。对于页面加载期间已存在的文本它保持静默（除 FR11 对仅播报消息的规定外），在之后的每次出现或文本变化时只播报一次，并在元素被隐藏时重新进入待播报状态。所有者不为其重新渲染的出现，会在所有者的下一次渲染时播报（FR13）。在服务端渲染期间它不播报任何内容，也不添加 live role，可服务端渲染的采用方保持可服务端渲染，并通过服务端安全的组件边界检查。任何满足这一点的机制都有效；`architecture:react-component-runtime` INV10 规定了它的位置。
+- **FR13 — 自身内容播报行为良好。** 播报组件自身渲染的内容（FR11）在重新渲染、依赖变化与 StrictMode 重放的情况下每次场合只发生一次，在元素隐藏期间不做任何工作，并在卸载后不留下任何残留。动作播报，例如来自查询处理器的结果数或 FR8 的忙碌开始，保留各自的所有者。选择器自身的空面板消息（FR11）来自其搜索的 `hasReplace` 实例（FR9），因此它会替换搜索尚未暴露的结果数，而搜索的下一个结果数会在它尚未暴露时替换它。在其所有者未重新渲染的情况下被揭示的内容，例如祖先的 `hidden` 属性在 React 之外被移除时，会在所有者的下一次渲染时播报，并且在内容隐藏期间不会监视该揭示（`architecture:react-component-runtime` INV5、INV10）。`architecture:react-component-runtime` INV10 拥有这项工作所在的位置。
+- **FR14 — 打开模态内部的所有者在其内部投递。** 在共享通道尚未暴露于原生模态内部期间（Platform support），所有者原本会通过共享通道发送的消息——一条 FR2 消息，或诸如结果数、选择变化、忙碌开始之类的动作播报——遵循包围其所有者的最近一个打开的原生模态。当由 Astryx 渲染该模态时（例如 Dialog、模态 BottomSheet、模态 Drawer、Lightbox 或 CommandPalette），消息通过其内部一个持久 polite 容器和一个持久 assertive 容器投递。当应用不经 Astryx 渲染该模态时，适用 FR14 的最后一句。当没有打开的原生模态包围所有者时，消息使用共享通道。公开的 `useAnnounce` 走这条路线：从这样的模态内部用它发送的消息，无论由组件还是由应用代码发送，都通过该模态的容器投递，无需单独的路径。该路线遵循所有者播报时所处的位置，因此一个有时在模态内、有时不在的所有者不需要第二条播报路径。一个渲染 Astryx 模态并就其内容播报的 Astryx 组件，例如 CommandPalette 的结果数或 Lightbox 的位置，在模态打开期间对该路线而言就在该模态内部。应用代码通过从渲染于该模态内部的组件调用 `useAnnounce` 来到达模态的容器；在模态之外进行的调用，即使由渲染该模态的组件发出，也走该调用自身所在位置的路线。当一个模态关闭时，其容器中尚未暴露的消息，通过关闭之后暴露的通道投递——当 Astryx 渲染此时位于顶层的原生模态时是其容器，当没有原生模态打开时是共享通道——因此在其模态关闭前刚刚发送的消息，例如“已保存”后紧跟关闭 Dialog，不会丢失。当此时位于顶层的模态是应用不经 Astryx 渲染的模态时，该消息的投递不在本记录范围内。FR14 为每个模态针对这些消息增加每种紧迫程度各一个容器；所有者自身的持久 FR3 区域——Button 的加载区域、输入框的无效输入区域——如 FR4 所述在模态内部保留其 role 与紧迫程度，而被 `spec:AST-003` 重新托管到模态之上的所有者写入这些容器（FR10）。FR14 的容器是模态 dialog 元素的直接子元素，首次使用时以空内容创建（FR3），分别携带 `status` 与 `alert`（FR5），并在每次播报后不久清空；在上一条尚未暴露之前写入其中一个容器的消息按顺序合并，但来自 `hasReplace` 实例的消息会撤销该实例尚未暴露的前一条消息，无论它位于哪个容器，如 FR9 所述。在同一帧内重复的相同消息算作一条消息，空消息会清空它，包括已合并但尚未暴露的消息，正如 FR9 对共享通道所述。FR6 适用于每个所有者的消息。忙碌所有者在模态内部的 FR8 区域就是 FR14 的 polite 容器。当一个较晚的模态在所有者所在模态之上打开时（`spec:AST-003` FR17），所有者的容器随其模态一同 inert，它在被覆盖期间播报的消息不会被听到——容器在模态重新回到顶层之前就清空了它——因为在此之前所有者本身不可操作。当包围忙碌所有者的最近一个打开的原生模态是应用不经 Astryx 渲染的模态时，所有者通过该模态内部的一个持久区域播报其忙碌开始（FR3、FR8），包括该模态本身位于一个打开的 Astryx 模态内部的情况；来自此类模态内部所有者的其他投递不在本记录范围内。
 
 ### Platform support
 
-- Supported feature/engine floor: the package's supported browsers.
-- Unsupported behavior: without a document (server render), announcing is a
-  no-op and renders nothing.
-- While a native modal dialog is open, the shared channel on the page body is
-  not exposed to assistive technology until `spec:AST-003` admits it to modal
-  hosting. Owners rehosted above the modal use that modal's containers (FR10),
-  and an owner rendered inside the modal — a busy control (FR8), a picker's
-  selection and result messages, a sheet's search outcome — announces through
-  the persistent containers inside that modal (FR14). Delivery from an owner
-  that is neither inside the modal nor rehosted above it is outside this
-  record. Inside a native modal that Astryx does not render, a busy owner
-  announces its busy start through a persistent region inside that modal
-  (FR3, FR8), and other delivery is outside this record.
-- Browser evidence: DOM and accessibility-tree checks prove routing (FR1–FR5,
-  FR7–FR10, FR14). Spoken timing, order, and repetition on real AT are
-  recommended `spec:AST-009` follow-up, not a merge or release requirement.
+- 支持的功能/引擎下限：本包所支持的浏览器。
+- 不支持的行为：在没有文档（服务端渲染）时，播报是空操作，不渲染任何内容。
+- 当原生模态对话框打开时，页面 body 上的共享通道不会暴露给辅助技术，直到 `spec:AST-003` 允许其进入模态托管。被重新托管到模态之上的所有者使用该模态的容器（FR10），而渲染在模态内部的所有者——忙碌控件（FR8）、选择器的选择与结果消息、sheet 的搜索结果——通过该模态内部的持久容器播报（FR14）。来自既不在模态内部、也未被重新托管到模态之上的所有者的投递不在本记录范围内。在 Astryx 不渲染的原生模态内部，忙碌所有者通过该模态内部的一个持久区域播报其忙碌开始（FR3、FR8），其他投递不在本记录范围内。
+- 浏览器证据：DOM 与无障碍树检查证明了路由（FR1–FR5、FR7–FR10、FR14）。在真实 AT 上的朗读时机、顺序与重复是建议的 `spec:AST-009` 后续工作，而非合并或发布要求。
 
 ## Current-state impact
 
-- `component:FieldStatus` AR1 and `component:Banner` FR8 defer to FR4 inside a
-  mounted live container; elsewhere they already match FR2, FR5, and FR7.
-- `architecture:react-component-runtime` INV5 gains the authority it requires
-  for the document-owned channel (FR9). INV2 and INV3 already require FR6.
-- Switch: busy is announced through the channel, and the thumb Spinner also
-  mounts with `role="status"`. Under FR8 the thumb Spinner is silent. Under FR6
-  StrictMode replay does not repeat the busy announcement.
-- Spinner (standalone): mounts with `role="status"` and its name. Under FR2 and
-  FR11 it announces its label through the channel when it appears after page
-  load, and stays silent when present at page load. The role and name it
-  exposes without a live role are outside this record.
-- `family:input-fields` members and other busy controls (TextInput, TextArea,
-  Selector, MultiSelector, ComplexSelector, Typeahead, Tokenizer, the date and
-  time inputs, FileInput, CheckboxInput, CommandPaletteInput,
-  DropdownMenuSubMenu, Thumbnail, and the lab EmojiPicker, Schedule, and
-  Comments history loaders): each composes a Spinner with
-  `role="status"` inside the busy control. Under FR8 that Spinner is silent and
-  each control announces its own busy state through the channel. Switch
-  already does. CommandPalette opens as a native modal, so it announces each busy
-  start, including its load on opening or clearing the query, through a
-  persistent region inside its dialog (FR3); under FR14 that region is the
-  dialog's polite container.
-- Owners inside Astryx modals (FR14): `useAnnounce` writes only to the
-  page-body channel. Under FR14 it follows the nearest open native modal
-  enclosing the caller, delivering into that modal's containers when Astryx
-  renders it, so owners and app code rendered inside a modal need no separate
-  path. Channel messages that are not exposed inside a modal and become
-  audible, including app messages sent with `useAnnounce`: a Selector, MultiSelector, Typeahead, Tokenizer, date or time
-  input, or any other channel caller rendered inside a Dialog, a modal
-  BottomSheet, a modal Drawer, or a Lightbox. A busy owner inside a modal
-  already announces its busy start inside the dialog; its region is FR14's
-  polite container, so busy starts written to it before the previous is
-  exposed are joined instead of the last one replacing the others, and a busy
-  owner in a non-modal sheet or drawer nested inside an open modal announces
-  in that modal rather than on the page body. CommandPalette's result counts
-  and empty results (its busy starts already use its in-dialog region) and
-  Lightbox's position and zoom messages are sent from above the modal each
-  renders, so routing by where the caller is does not reach the modal; under
-  FR14 each delivers them into its own open modal, a change in each component
-  beside `useAnnounce`. A message pending when its modal closes is
-  written inside the dialog or on the inert page body; under FR14 it moves to
-  the channel exposed after the close.
-- ChatMessageList: its top loading Spinner is a `role="status"` child of the
-  log. Under FR4 and FR8 it is silent, and ChatMessageList announces its loading
-  through the channel.
-- EmptyState: its root mounts a live role together with its text. Under FR2,
-  FR11, and FR12 it carries no live role and announces when it appears
-  after page load. EmptyState stays server-renderable.
-- The ChatComposer status bar carries no live role and announces the caller's
-  status message from its own Effect. That is own content, so under
-  `architecture:react-component-runtime` INV10 it moves onto the shared module.
-- The chat trigger menu's loading row carries no live role. Its "Searching…"
-  announcement is the menu's busy start under FR8 and keeps its own owner.
-- Button: its persistent loading region fits FR3, except when a Button first
-  renders loading and the region mounts holding its text. Inside a live
-  container it keeps its role and urgency (FR4).
-- DateInput, DateTimeInput, TimeInput, and NumberInput: their persistent
-  assertive invalid-entry regions fit FR3 and, inside a live container, keep
-  their role and urgency (FR4).
-- ChatSystemMessage: forces `role="status"` inside the `role="log"` list. Under
-  FR4 the log delivers it; dividers and dates are ordinary log content.
-- ChatTypingIndicator (lab): announces its label from its own Effect. Inside a
-  live log it follows FR4; otherwise it follows FR11 through FR13. It keeps its
-  own Effect because the core module is not published to lab (INV10).
-- Comments (lab): its error banners and progress label mount live roles
-  together with their text. Inside a live log they follow FR4; otherwise FR2.
-- Selector and MultiSelector render their empty-panel message as
-  `role="presentation"`, so it reaches assistive technology only through the
-  announcement and announces even at page load (FR11, `spec:AST-056`
-  FR3). Typeahead and CommandPalette announce their empty state after page load and are otherwise unchanged.
-- `component:FieldStatus` AR1 is unchanged: a field message announces on first
-  mount, because it reports the field's state when the field appears.
-- `component:Banner` FR8: the caller announces an async outcome from its
-  transition handler, because only the caller knows whether a Banner is a new
-  outcome or persistent content; an urgent message may instead carry
-  `role="alert"`, which Banner places on its message element (FR2, FR3). FR11 and FR12 cover components that
-  announce their own content.
-- `useAnnounce`: messages written in the same frame are joined instead of the
-  last one replacing the others, except from a `hasReplace` instance (FR9).
-- `useAnnounce` collapses an identical message repeated in the same frame into
-  one (FR9), and busy owners drop a pending busy announcement once the same
-  operation's outcome has announced (FR8).
-- Selector, MultiSelector, Typeahead, Tokenizer's sheet, CommandPalette, and
-  PowerSearch announce a result count on each query change, and MultiSelector
-  also its create row. Written within one frame, as a barcode scanner,
-  dictation, or automation types, one owner's superseded counts are joined
-  (`1 result Create "Urg" Create "Urge" …`), and a count followed by the empty
-  panel's message says both. Under FR9, FR13, and FR14 each sends its result
-  count, and MultiSelector its create row, through a separate
-  `useAnnounce({hasReplace: true})` instance, so only the current one is spoken,
-  and selection messages keep their own plain instance. `useAnnounce` gains that
-  optional option; Astryx's own result counts use it, including the comboboxes
-  `spec:AST-075` DEC-2 composes (its FR7) and Tokenizer's sheet. Instances
-  without it keep joining.
-- `spec:AST-037` FR9 (Timer adds no unsolicited live region) already conforms.
-- Consumer tests that query these elements by `status` or `alert` role change.
-  Release notes name each affected component.
+- `component:FieldStatus` AR1 与 `component:Banner` FR8 在已挂载的 live 容器内部让位于 FR4；在其他位置它们已符合 FR2、FR5 与 FR7。
+- `architecture:react-component-runtime` INV5 获得文档自有通道所需的权威（FR9）。INV2 与 INV3 已经要求 FR6。
+- Switch：忙碌通过通道播报，滑块 Spinner 也以 `role="status"` 挂载。在 FR8 下该滑块 Spinner 保持静默。在 FR6 下 StrictMode 重放不会重复忙碌播报。
+- Spinner（独立）：以 `role="status"` 及其名称挂载。在 FR2 与 FR11 下，当它在页面加载之后出现时通过通道播报其标签，而当它在页面加载时已存在则保持静默。它在不带 live role 的情况下暴露的 role 与名称不在本记录范围内。
+- `family:input-fields` 成员与其他忙碌控件（TextInput、TextArea、Selector、MultiSelector、ComplexSelector、Typeahead、Tokenizer、日期与时间输入、FileInput、CheckboxInput、CommandPaletteInput、DropdownMenuSubMenu、Thumbnail，以及 lab 的 EmojiPicker、Schedule 与 Comments 历史加载器）：每一个都在忙碌控件内部组合一个带 `role="status"` 的 Spinner。在 FR8 下该 Spinner 保持静默，每个控件通过通道播报自身的忙碌状态。Switch 已经如此。CommandPalette 以原生模态打开，因此它通过其 dialog 内部的持久区域播报每次忙碌开始，包括打开时或清空查询时的加载（FR3）；在 FR14 下该区域就是该 dialog 的 polite 容器。
+- Astryx 模态内部的所有者（FR14）：`useAnnounce` 只写入页面 body 的通道。在 FR14 下它遵循包围调用方的最近一个打开的原生模态，在 Astryx 渲染该模态时投递到该模态的容器，因此在模态内部渲染的所有者与应用代码无需单独的路径。在模态内部未暴露、之后变得可听的通道消息，包括用 `useAnnounce` 发送的应用消息：渲染在 Dialog、模态 BottomSheet、模态 Drawer 或 Lightbox 内部的 Selector、MultiSelector、Typeahead、Tokenizer、日期或时间输入，或任何其他通道调用方。模态内部的忙碌所有者已经在 dialog 内部播报其忙碌开始；它的区域就是 FR14 的 polite 容器，因此在上一条尚未暴露之前写入其中的忙碌开始会被合并，而不是最后一条替换其他几条，而嵌套在打开模态内部的非模态 sheet 或 drawer 中的忙碌所有者会在该模态中播报，而不是在页面 body 上。CommandPalette 的结果数与空结果（其忙碌开始已经使用其 dialog 内区域）以及 Lightbox 的位置与缩放消息，都是从它们各自渲染的模态之上发送的，因此按调用方位置进行路由无法到达该模态；在 FR14 下，每一个都把它们投递到自己打开的模态中，这是每个组件中除 `useAnnounce` 之外的一处改动。在其模态关闭时仍处于待定状态的消息，被写入 dialog 内部或 inert 的页面 body 上；在 FR14 下它转移到关闭之后暴露的通道。
+- ChatMessageList：其顶部的加载 Spinner 是该 log 的一个 `role="status"` 子元素。在 FR4 与 FR8 下它保持静默，ChatMessageList 通过通道播报其加载状态。
+- EmptyState：其根元素以 live role 与文本一起挂载。在 FR2、FR11 与 FR12 下它不携带 live role，并在页面加载之后出现时播报。EmptyState 保持可服务端渲染。
+- ChatComposer 的状态栏不携带 live role，并通过自身的 Effect 播报调用方的状态消息。那是自身内容，因此在 `architecture:react-component-runtime` INV10 下它迁移到共享模块上。
+- 聊天触发菜单的加载行不携带 live role。它的“Searching…”播报是该菜单在 FR8 下的忙碌开始，并保留自己的所有者。
+- Button：其持久加载区域符合 FR3，除非 Button 首次渲染加载状态且该区域在挂载时就持有其文本。在 live 容器内部它保留其 role 与紧迫程度（FR4）。
+- DateInput、DateTimeInput、TimeInput 与 NumberInput：它们持久的 assertive 无效输入区域符合 FR3，并且在 live 容器内部保留其 role 与紧迫程度（FR4）。
+- ChatSystemMessage：在 `role="log"` 列表中强制使用 `role="status"`。在 FR4 下由该 log 投递它；分隔线与日期是普通的 log 内容。
+- ChatTypingIndicator（lab）：从自身的 Effect 播报其标签。在 live log 内部它遵循 FR4；否则它通过 FR11 到 FR13 遵循规则。它保留自己的 Effect，因为核心模块未发布给 lab（INV10）。
+- Comments（lab）：其错误 banner 与进度标签以 live role 与文本一起挂载。在 live log 内部它们遵循 FR4；否则遵循 FR2。
+- Selector 与 MultiSelector 将其空面板消息渲染为 `role="presentation"`，因此它只能通过播报到达辅助技术，并且在页面加载时也播报（FR11、`spec:AST-056` FR3）。Typeahead 与 CommandPalette 在页面加载之后播报其空状态，其他方面不变。
+- `component:FieldStatus` AR1 不变：字段消息在首次挂载时播报，因为它在字段出现时报告该字段的状态。
+- `component:Banner` FR8：调用方在其转换处理器中播报异步结果，因为只有调用方知道某个 Banner 是新的结果还是持久内容；紧急消息可以改为携带 `role="alert"`，Banner 会把它放在其消息元素上（FR2、FR3）。FR11 与 FR12 涵盖播报自身内容的组件。
+- `useAnnounce`：在同一帧内写入的消息会被合并，而不是最后一条替换其他几条，来自 `hasReplace` 实例的消息除外（FR9）。
+- `useAnnounce` 会把同一帧内重复的相同消息合并为一条（FR9），而忙碌所有者在同一操作的结果已经播报后丢弃待定的忙碌播报（FR8）。
+- Selector、MultiSelector、Typeahead、Tokenizer 的 sheet、CommandPalette 与 PowerSearch 在每次查询变化时播报结果数，MultiSelector 还播报其创建行。若在同一帧内写入，例如条形码扫描器、听写或自动化正在输入时，一个所有者被取代的多个计数会被合并（`1 result Create "Urg" Create "Urge" …`），而一个计数后跟空面板消息时会两者都说。在 FR9、FR13 与 FR14 下，每一个都通过单独的 `useAnnounce({hasReplace: true})` 实例发送其结果数，MultiSelector 还发送其创建行，因此只有当前的那一条被朗读，而选择消息保留各自普通的实例。`useAnnounce` 获得该可选选项；Astryx 自身的结果数使用它，包括 `spec:AST-075` DEC-2 所组合的 combobox（其 FR7）以及 Tokenizer 的 sheet。不带该选项的实例保持合并。
+- `spec:AST-037` FR9（Timer 不添加未经请求的 live region）已经符合。
+- 按 `status` 或 `alert` role 查询这些元素的使用方测试会发生变化。发布说明会列出每个受影响的组件。
 
 ## Verification
 
-| Contract      | Verification                                                              | Representative states                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Mutation or failure expectation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1, FR4      | Shared test: one live owner per announced message                         | Toast shown; busy Switch; system notice, FieldStatus error, and failure Banner inside a chat log; busy Button and invalid DateInput inside a chat log (pass)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | A live role on a second element, or a channel announcement of content added inside a live container, fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| FR2, FR3      | Shared test: no live element mounts holding its text                      | Conditional status, toast card, standalone Spinner                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Mounting `role="status"` with text fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| FR5           | Channel routing tests                                                     | Error, warning, success, loading                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Routing an error to polite, or a success to assertive, fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| FR6           | StrictMode and rerender tests on the channel spy                          | Busy start, repeated rerender, same-value update, new occasion                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Two announcements for one occasion, or none for a new one, fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| FR7           | Accessibility-tree check of the visible message                           | FieldStatus attached/detached, toast card                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Hiding the visible text or a word mismatch fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| FR8           | Shared test: no live role inside a busy owner; channel spy on the owner   | Busy TextInput, Selector, Switch thumb, ChatMessageList loader, busy CommandPalette (region inside its dialog), operation that settles before its busy announcement is exposed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | A composed indicator with a live role or its own announcement, or a busy owner that announces nothing, fails, or a busy start announced after its outcome, fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| FR9           | `useAnnounce` tests                                                       | First use, many components, region removed, server render, two messages in one frame, clear after a joined message, the same message twice in one frame, a `hasReplace` instance's messages written in one frame, two pickers' result counts in one frame, a result count followed by its picker's empty-panel message and the reverse, a `hasReplace` message already exposed when the next is written, messages from instances without `hasReplace` in one frame, one picker's result count and selection message in one frame (separate instances), a polite message followed by an assertive one from one `hasReplace` instance                                                                                                                                                                                                                                                                                                                                       | A second document-level region pair, stale text after the clear delay, a dropped same-frame message from another instance or from an instance without `hasReplace`, a `hasReplace` instance's superseded message spoken with its next one, its polite message still spoken after its assertive one, the newer spoken at the older's urgency, an exposed message taken back, or a joined message surviving a clear fails, or an identical same-frame repeat announced twice, fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| FR10          | Accessibility-tree check with a Dialog open                               | Info and error toast shown over an open Dialog                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | A toast that reaches only the body-level channel, no exposed live container, or a live container the viewport adds of its own, fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| FR14          | Hook tests and an accessibility-tree check with an Astryx modal open      | Owner outside any modal, inside an open non-modal dialog, inside an open modal (polite and assertive, repeat of the same words, empty message), busy start inside a modal, busy start inside a native modal an app renders without Astryx, alone and opened inside an Astryx Dialog; a modal sheet's row toggle in a real engine, app code calling `useAnnounce` inside a Dialog, CommandPalette result count and Lightbox position message while each is open, a message followed by closing its Dialog before it is exposed (inside another open modal and on the page), a message pending when a CommandPalette opened over a Dialog closes, app code calling `useAnnounce` outside the Dialog it renders (body-level channel); a search's result counts written in one frame inside a modal sheet; a polite then an assertive message from one `hasReplace` instance inside a modal; a result count followed by its picker's empty-panel message inside a modal sheet | A channel message from inside an open modal that reaches only the body-level channel, an FR14 container mounted holding its text, a second FR14 container of one urgency in one dialog, an FR14 container the engine's accessibility tree omits, a dropped message of two from different instances written before the first is exposed, a `hasReplace` instance's superseded message spoken from an FR14 container, its polite message still spoken from the modal's polite container after its assertive one, or a count spoken with its picker's empty-panel message from an FR14 container, an empty message that leaves text in the modal's FR14 container, an app `useAnnounce` message from inside an Astryx modal that reaches only the body-level channel, a CommandPalette or Lightbox message about its open modal that reaches only the body-level channel, a message lost when its modal closes before it is exposed, or a pending message handed to a channel still inert after the close, a busy start inside an app-rendered native modal that reaches only the body-level channel, or one inside an app-rendered native modal nested in an Astryx Dialog that is delivered to the Dialog's FR14 container fails |
-| FR11, FR12    | Helper and component tests                                                | EmptyState present at page load, server-rendered, inserted later, text changed, hidden and shown again, brought in by a client-rendered route change, inside a chat log, empty Selector panel open at page load, server-rendered message inserted by client navigation, message inserted after first render but before the document finishes loading (silent)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Announcing at page load or during a server render (other than an announcement-only message), missing a later insertion or a server-rendered message inserted by client navigation, a client-rendered route change, or an empty Selector panel at page load, repeating one occasion, or also using the channel inside a live container fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| FR12 (server) | Server-safe component boundary check plus a server render of each adopter | EmptyState rendered on the server and hydrated                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | An adopter that fails the boundary check, or emits an announcement or live role from a server render, fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| FR13          | Helper StrictMode, hide/show, and unmount tests on each adopter           | EmptyState, Spinner, ChatComposer status bar, ChatTypingIndicator; an ancestor's `hidden` attribute removed outside React                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | A duplicate announcement under StrictMode, work while hidden, or a resource left after unmount fails; revealed content not announced on the owner's next render, or an observer, listener, or timer running while the content is hidden, fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| FR6 (AT)      | Recommended `spec:AST-009` real-AT follow-up                              | Toast, busy Switch, chat notice                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Missing, repeated, or out-of-order speech fails                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 契约          | 验证                                                       | 代表性状态                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | 变更或失败预期                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| FR1, FR4      | 共享测试：每条被播报的消息只有一个 live 所有者             | 显示 Toast；忙碌的 Switch；聊天日志内部的系统通知、FieldStatus 错误与失败 Banner；聊天日志内部忙碌的 Button 与无效的 DateInput（通过）                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | 第二个元素上出现 live role，或对添加到 live 容器内部的内容进行通道播报，则失败                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| FR2, FR3      | 共享测试：没有任何 live 元素在挂载时就持有其文本           | 条件状态、Toast 卡片、独立 Spinner                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | 挂载一个带文本的 `role="status"` 则失败                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| FR5           | 通道路由测试                                               | 错误、警告、成功、加载                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | 把错误路由到 polite，或把成功路由到 assertive，则失败                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| FR6           | 针对通道探针的 StrictMode 与重渲染测试                     | 忙碌开始、重复重渲染、同值更新、新的场合                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | 一个场合出现两次播报，或新场合一次都没有，则失败                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| FR7           | 对可见消息的无障碍树检查                                   | FieldStatus 附加/分离、Toast 卡片                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | 隐藏可见文本或出现词语不一致，则失败                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| FR8           | 共享测试：忙碌所有者内部没有 live role；对所有者做通道探针 | 忙碌的 TextInput、Selector、Switch 滑块、ChatMessageList 加载器、忙碌的 CommandPalette（区域位于其 dialog 内部）、在其忙碌播报暴露之前就已结束的操作                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | 组合出来的指示器带有 live role 或自带播报，或忙碌所有者什么都不播报，则失败；或忙碌开始在结果之后才播报，则失败                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| FR9           | `useAnnounce` 测试                                         | 首次使用、多个组件、区域被移除、服务端渲染、一帧内两条消息、合并消息之后的清空、一帧内同一条消息出现两次、一个 `hasReplace` 实例在一帧内写入的多条消息、两个选择器在一帧内的结果数、一个结果数后跟其选择器的空面板消息以及相反顺序、下一条写入时已经暴露的 `hasReplace` 消息、一帧内来自不带 `hasReplace` 的实例的消息、一个选择器的结果数与选择消息在同一帧内（不同实例）、一条 polite 消息后跟来自同一个 `hasReplace` 实例的一条 assertive 消息                                                                                                                                                                                                                                                                                                                        | 第二对文档级区域、清空延迟之后残留的陈旧文本、来自另一个实例或来自不带 `hasReplace` 的实例的同帧消息被丢弃、一个 `hasReplace` 实例被取代的消息与其下一条一起被朗读、其 polite 消息在其 assertive 消息之后仍被朗读、较新的那条以较旧那条的紧迫程度朗读、已暴露的消息被收回、或合并的消息在清空之后仍存活，则失败；或一模一样的同帧重复被播报两次，则失败                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| FR10          | 在 Dialog 打开时做无障碍树检查                             | 在打开的 Dialog 之上显示信息与错误 Toast                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Toast 只到达页面 body 级别的通道、没有已暴露的 live 容器、或视口自行添加了一个 live 容器，则失败                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| FR14          | Hook 测试，以及在 Astryx 模态打开时做无障碍树检查          | 所有者位于任何模态之外、位于打开的非模态 dialog 内部、位于打开的模态内部（polite 与 assertive、相同词语重复、空消息）、模态内部的忙碌开始、应用不经 Astryx 渲染的原生模态内部的忙碌开始、单独使用以及在一个 Astryx Dialog 内部打开；真实引擎中模态 sheet 的行开关、应用代码在 Dialog 内部调用 `useAnnounce`、CommandPalette 的结果数与 Lightbox 的位置消息在各自打开期间、一条消息之后在其暴露之前关闭其 Dialog（位于另一个打开的模态内部以及在页面上）、当覆盖在 Dialog 之上的 CommandPalette 关闭时仍处于待定状态的消息、应用代码在其渲染的 Dialog 之外调用 `useAnnounce`（页面 body 级别的通道）；模态 sheet 内部一帧内写入的搜索结果数；模态内部来自同一个 `hasReplace` 实例的一条 polite 然后一条 assertive 消息；模态 sheet 内部一个结果数后跟其选择器的空面板消息 | 来自打开的模态内部的通道消息只到达页面 body 级别的通道、挂载时就持有其文本的 FR14 容器、一个 dialog 内同一紧迫程度的第二个 FR14 容器、引擎的无障碍树所省略的 FR14 容器、来自不同实例的两条消息在第一条暴露之前写入而其中一条被丢弃、`hasReplace` 实例被取代的消息从 FR14 容器被朗读、其 polite 消息在其 assertive 消息之后仍从模态的 polite 容器被朗读、或一个结果数与其选择器的空面板消息一起从 FR14 容器被朗读、一条空消息在模态的 FR14 容器中留下文本、来自 Astryx 模态内部的应用 `useAnnounce` 消息只到达页面 body 级别的通道、CommandPalette 或 Lightbox 关于其打开的模态的消息只到达页面 body 级别的通道、消息在其模态于暴露之前关闭时丢失、或一条待定消息在关闭之后被交给仍处于 inert 状态的通道、应用渲染的原生模态内部的忙碌开始只到达页面 body 级别的通道、或嵌套在 Astryx Dialog 中的应用渲染原生模态内部的一次忙碌开始被投递到该 Dialog 的 FR14 容器，则失败 |
+| FR11, FR12    | Helper 与组件测试                                          | EmptyState 在页面加载时存在、服务端渲染、稍后插入、文本变化、隐藏后再次显示、由客户端渲染的路由切换带入、位于聊天日志内部、页面加载时打开的空 Selector 面板、由客户端导航插入的服务端渲染消息、在首次渲染之后但在文档加载完成之前插入的消息（静默）                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | 在页面加载时或服务端渲染期间播报（仅播报消息除外）、漏掉稍后的插入或由客户端导航插入的服务端渲染消息、客户端渲染的路由切换、或页面加载时的空 Selector 面板、重复一个场合、或在 live 容器内部同时使用通道，则失败                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| FR12 (server) | 服务端安全的组件边界检查，以及对每个采用方的服务端渲染     | EmptyState 在服务端渲染并水合                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | 采用方未通过边界检查，或从服务端渲染中发出播报或 live role，则失败                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| FR13          | 针对每个采用方的 Helper StrictMode、隐藏/显示与卸载测试    | EmptyState、Spinner、ChatComposer 状态栏、ChatTypingIndicator；在 React 之外移除某个祖先的 `hidden` 属性                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | StrictMode 下出现重复播报、隐藏期间仍做工作、或卸载之后遗留资源，则失败；被揭示的内容未在所有者下一次渲染时播报，或在内容隐藏期间仍有观察器、监听器或定时器在运行，则失败                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| FR6 (AT)      | 推荐的 `spec:AST-009` 真实 AT 后续工作                     | Toast、忙碌的 Switch、聊天提示                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 缺失、重复或顺序错误的语音，则失败                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 ## Decision log
 
 ### DEC-1 — One owner per message, delivered through the shared channel
 
 **Reference:** `spec:AST-086/DEC-1`
-**Decider:** cixzhang, 2026-10-15
 
-Several components show status while also claiming it in a second place, or
-mount a live region already holding its text. Screen-reader users then hear a
-message twice or not at all. One owner and one shared, always-mounted channel
-removes both failures with a single rule, and matches the delivery
-`component:FieldStatus` already uses.
-Owners that `spec:AST-003` rehosts above native modals write to the
-containers of the modal they sit in (FR10, FR14), so no page carries a second
-set of empty live containers.
+**决策者：** cixzhang, 2026-10-15
 
-Rejected: delivering transient messages through each component's own live
-region — the page gains many competing regions and two-owner duplicates recur.
+若干组件在显示状态的同时又在第二个地方声明它，或者挂载一个已经持有其文本的 live 区域。屏幕阅读器用户于是会听到一条消息两次，或者一次都听不到。一个所有者加上一个共享的、始终挂载的通道，用一条规则就消除了这两种失败，并与 `component:FieldStatus` 已经在使用的投递方式一致。被 `spec:AST-003` 重新托管到原生模态之上的所有者，写入它们所位于的模态的容器（FR10、FR14），因此没有页面会携带第二套空的 live 容器。
+
+已否决：通过每个组件自己的 live 区域投递瞬时消息——页面会获得许多互相竞争的区域，两个所有者的重复问题会再次出现。
 
 ### DEC-2 — A message announces when it appears after the page loads
 
 **Reference:** `spec:AST-086/DEC-2`
-**Decider:** cixzhang, 2026-10-22
 
-A message that is on the page when it loads is read with the page. Announcing it
-interrupts people with something they are about to read. A message that appears
-later is news and is announced once. Page load is the boundary because it is the
-one every app shares without extra code.
-Every self-announcing component behaves the same way (FR12).
+**决策者：** cixzhang, 2026-10-22
 
-Rejected: announcing on every mount — page loads would speak every empty state
-and spinner on screen.
+页面加载时就在页面上的消息会随页面一起被读取。对它进行播报，等于用人们即将读到的东西打断他们。稍后出现的消息才是新信息，只播报一次。页面加载就是这条边界，因为它是每个应用无需额外代码就共有的那一个。每个自身内容播报的组件都以同样的方式行事（FR12）。
+
+已否决：在每次挂载时播报——页面加载会把屏幕上每个空状态和 Spinner 都念出来。
 
 ### DEC-3 — An owner inside an Astryx modal announces inside it
 
 **Reference:** `spec:AST-086/DEC-3`
-**Decider:** cixzhang, 2026-10-23
 
-A control rendered inside an open Astryx modal — a modal sheet's checkbox rows,
-its search, a busy control — is heard only through containers inside that
-dialog, because the page-body channel is outside the modal's exposed subtree.
-Busy starts already took that route (FR8); FR14 gives every status message
-from such an owner the same route, chosen per announcement by where the owner
-is, so a component that is sometimes modal-hosted and sometimes inline keeps
-one announcement path. One FR14 container per urgency per dialog keeps FR1's
-single owner and FR9's joining and clearing inside the modal, beside the
-owners' own FR3 regions, which FR4 already lets stand. The public
-`useAnnounce` follows the same route, so a message an app sends from inside a
-modal is heard as well as one a component sends.
+**决策者：** cixzhang, 2026-10-23
 
-Rejected: an internal route that each component adopts while the public
-`useAnnounce` keeps writing to the page body — app messages from inside a modal
-stay silent; admitting the shared channel to modal hosting — `spec:AST-003` owns
-hosting and has not admitted it; a per-component region for each message —
-competing regions and two-owner duplicates inside one dialog.
+在打开的 Astryx 模态内部渲染的控件——模态 sheet 的复选框行、它的搜索、忙碌的控件——只能通过该 dialog 内部的容器被听到，因为页面 body 上的通道位于该模态已暴露的子树之外。忙碌开始已经走了这条路线（FR8）；FR14 让来自这类所有者的每条状态消息都走同一条路线，按每次播报时所有者所在的位置来选择，因此一个有时由模态托管、有时内联的组件可以只保留一条播报路径。每个 dialog 每种紧迫程度一个 FR14 容器，在模态内部保持了 FR1 的单一所有者以及 FR9 的合并与清空，并与所有者自己的 FR3 区域并存——FR4 早已允许后者存在。公开的 `useAnnounce` 遵循同一条路线，因此应用从模态内部发出的消息与组件发出的消息一样能被听到。
+
+已否决：一条由每个组件采用的内部路线，而公开的 `useAnnounce` 继续写入页面 body——来自模态内部的应用消息仍然会静默；让共享通道获准进入模态托管——`spec:AST-003` 拥有托管且尚未允许这样做；为每条消息使用每个组件自己的区域——同一个 dialog 内部会出现互相竞争的区域和两个所有者的重复。
 
 ### DEC-4 — A `hasReplace` instance replaces its own pending message
 
 **Reference:** `spec:AST-086/DEC-4`
-**Decider:** pending (the approving engineering owner)
 
-FR9 joins messages written before the previous one is exposed, so two components
-speaking in the same frame are both heard. Messages that state one current state
-differ: each supersedes the one before, so joining them speaks states that no
-longer apply, and a search typed into faster than a frame says every count in
-between. An instance created with `hasReplace` withdraws its own pending
-message, which keeps every owner heard and speaks only what is true now, in the
-shared channel and in FR14's containers alike. The reasons are those of
-`architecture:interaction-modality` INV8, under which superseded work does not
-change the current status or announcement, and of FR8, which drops a busy start
-its outcome overtakes. The instance is the unit, so a component gives each state
-it reports its own instance, and `useAnnounce` offers the option to every
-caller, because Astryx's comboboxes compose the same hook products do
-(`spec:AST-075` DEC-2); an instance without it keeps joining.
+**决策者：** 待定（负责批准的工程所有者）
 
-Rejected: each owner debouncing its own messages — every announcement waits,
-and every owner repeats the rule.
+FR9 会合并在上一条消息暴露之前写入的消息，因此同一帧内说话的两个组件都能被听到。陈述同一个当前状态的消息则不同：每条都取代前一条，所以合并它们会朗读不再适用的状态，而输入速度快于每帧一次的搜索会把中间的每个计数都念出来。用 `hasReplace` 创建的实例会撤销自己的待定消息，这既让每个所有者都能被听到，又只朗读当下为真的内容，无论是在共享通道中还是在 FR14 的容器中。其理由来自 `architecture:interaction-modality` INV8——被取代的工作不改变当前状态或播报——以及 FR8——被其结果抢先的忙碌开始会被丢弃。实例就是单位，因此组件为它报告的每个状态各给一个实例，而 `useAnnounce` 把该选项提供给每个调用方，因为 Astryx 的组合框组装的正是产品所组装的同一个 hook（`spec:AST-075` DEC-2）；不带该选项的实例继续合并。
+
+已否决：每个所有者对自己的消息做防抖——每次播报都要等待，而且每个所有者都要重复这条规则。
 
 ## Open questions
 
-None.
+无。

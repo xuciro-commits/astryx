@@ -22,425 +22,201 @@ affects_consumer_docs: [cli]
 
 ## Intent
 
-A builder, a person or a coding agent, describes the UI they want in words and
-asks `astryx build` where to begin. A page template already carries the frame,
-the spacing, and the section rhythm the system decided on; a page composed from
-components has to rediscover all of that. So build's answer always starts from
-a template: it names one page template to scaffold, the command that scaffolds
-exactly that template, the next best templates, and the blocks and components
-that fill it.
+构建者——无论是人还是一个编码 agent——用文字描述他们想要的 UI，并询问 `astryx build` 该从哪里开始。页面模板已经承载了系统所决定的框架、间距和区块节奏；而用组件拼出的页面必须把这一切重新发现一遍。因此 build 的回答总是从模板出发：它点名一个要搭建的页面模板、精确搭建该模板的命令、接下来最好的几个模板，以及填充它的区块和组件。
 
-A scaffolded template builds only when the project has what its source needs. So
-the `template.copy` receipt from `astryx template`, and the start and each
-alternative build recommends, also state that template's scaffold readiness: the
-packages its source imports that the project does not declare, one command that
-installs them, and whether the project lacks a StyleX compiler the source needs.
-Scaffold readiness is separate from a template's ready mark (FR1, FR4): a ready
-template can still need packages a project lacks.
+搭建出来的模板只有在项目具备其源码所需之物时才能构建。因此，来自 `astryx template` 的 `template.copy` 回执，以及 build 推荐的起点和每个备选，也会说明该模板的搭建就绪度：其源码导入而项目未声明的包、一条安装它们的命令，以及项目是否缺少源码所需的 StyleX 编译器。搭建就绪度与模板的就绪标记相互独立（FR1、FR4）：一个就绪的模板仍可能需要项目所缺的包。
 
-This record owns what build recommends, how the recommendation reads in text
-and JSON, and the scaffold readiness that the scaffold receipt and build's
-recommended templates report. `spec:AST-017` owns compatibility and
-response-field rules, `spec:AST-042` owns command admission, search owns its
-own ranking and output, and template owners own what each template is.
+本记录拥有 build 推荐什么、推荐在文本和 JSON 中如何呈现，以及回执和 build 推荐的模板所报告的搭建就绪度。`spec:AST-017` 拥有兼容性与响应字段规则，`spec:AST-042` 拥有命令准入，search 拥有自己的排序与输出，模板所有者拥有每个模板是什么。
 
 ## Non-goals
 
-- How candidates are ranked. Word matching, weights, thresholds, and the
-  ranking algorithm are implementation; this record states what the
-  recommendation must be and how a reader can act on it.
-- Which templates exist, how they look, or what they import.
-- Writing files. Build recommends; `astryx template` scaffolds. This record
-  owns only what the scaffold receipt says the project lacks.
-- Installing packages or setting up a compiler. Readiness names what is
-  missing and how to install it; neither command installs or configures
-  anything.
-- New commands, options, flags, or exit codes for build or template;
-  readiness never sets an exit status (FR22).
-- Equivalent internal implementations remain valid when they satisfy this
-  contract.
+- 候选如何排序。词语匹配、权重、阈值和排序算法属于实现；本记录陈述推荐必须是什么，以及读者如何据此行动。
+- 存在哪些模板、它们长什么样，或它们导入了什么。
+- 写文件。build 负责推荐；`astryx template` 负责搭建。本记录只拥有搭建回执就项目所缺之物说了什么。
+- 安装包或配置编译器。就绪度点名缺少什么以及如何安装它；两条命令都不安装或配置任何东西。
+- 为 build 或 template 新增命令、选项、标志或退出码；就绪度绝不设置退出状态（FR22）。
+- 满足本契约的等价内部实现仍然有效。
 
 ## Requirements
 
-- **FR1 — Always one start.** A build that can return pages MUST name exactly
-  one page template to start from, chosen among the ready page templates the
-  project can scaffold, including the ones its integrations provide. A build
-  narrowed to components or hooks names no start, and neither does a project
-  that offers no page template.
-- **FR2 — A shell when nothing leads.** When no template has the evidence to
-  lead, the start MUST be the neutral app shell, or a blank page template when
-  the project has no shell. The start never falls back to "compose from
-  components".
-- **FR3 — A part starts where it lives.** A request for a part of a page (a
-  control, a state, a widget, a section) MUST start from the page template the
-  request places that part in, when the request gives that page, and from the
-  app shell (FR2) when it gives no page. The blocks and components in the kit
-  carry the part itself. A request that changes a page the builder already has
-  starts from the app shell (FR2): the page is the builder's to keep (FR9), and
-  no template scaffolds it. A request that adds something to a place that
-  names no page, only the app or product as a whole, changes no page the
-  builder has: build reads what it adds as if the request gave no place. One
-  exception: when the start would be the app shell, search matched no template
-  directly, and build's fixed shell-start decision reads the request as a
-  whole page (DEC-10), the start is the best-ranked page template even when
-  the request reads as a part. A request with an edit phrase keeps the app
-  shell.
-- **FR4 — Never an unready start.** A template marked not ready MUST NOT be the
-  start or an alternative. When search matches one directly, the start's
-  reason MUST name it and say the start is the closest ready template or the
-  app shell instead.
-- **FR5 — The start is exact and runnable.** The start and every alternative
-  MUST carry the scaffold command that selects exactly that template in the
-  project where build ran. A template an integration provides in place of a
-  Core one is selected the way `astryx template` addresses it, and the command
-  names the page kind so a block with the same id cannot make it ambiguous.
-- **FR6 — The start says why.** The start MUST carry a basis and a one-line
-  reason. The basis is `direct` when the start is also search's direct match,
-  `closest` when no template is exactly this page, and `fallback` for the
-  shell.
-- **FR7 — The builder can overrule.** Beside every start, build MUST offer the
-  next best page templates, at most two, each with its scaffold command.
-  Templates that rank the same keep one fixed order on every host, so the same
-  request gets the same start and alternatives on any machine.
-- **FR8 — The kit fills the template.** Build MUST list the blocks that fill
-  the start before the components, and name the always-on frame and
-  foundation components. The order of the listed blocks follows
-  `spec:AST-083`.
-- **FR9 — An existing page is kept.** Build's text output MUST tell a builder
-  who is changing a page they already have to keep it and use only the blocks
-  and components.
-- **FR10 — The recommendation is data.** The JSON response MUST carry the
-  recommendation itself (the start with its name, command, basis, reason, and
-  alternatives), so no caller derives it from other fields.
-- **FR11 — Additive JSON.** Changes to the recommendation MUST keep the build
-  JSON additive under `spec:AST-017`: new data arrives as new fields, and
-  every existing field keeps its shape and meaning. A ranking change may move
-  values (which templates, blocks, or components appear, and in what order);
-  it does not change a field's shape or meaning.
-- **FR12 — Text leads with the start.** Build's text output MUST lead with the
-  start, then the alternatives, then the blocks, then the components. Every
-  response field keeps a text projection as `spec:AST-017` requires: short by
-  default, and whole under `--verbose`.
-- **FR13 — Every agent-facing surface agrees.** The build playbook, the
-  generated agent docs, and the consumer guides that describe building a page
-  MUST describe the same workflow: scaffold the named template, fill it with
-  blocks, and compose only what is left. No surface tells builders to compose
-  a page from primitives first.
-- **FR14 — The written source names what it needs.** The packages a template
-  needs MUST be the packages named by the imports in the source the command
-  writes: its import declarations, type-only ones included, its export-from
-  declarations, and its `import()` and `require()` calls. An import that sits
-  inside a comment, a string, or a template literal is text and names nothing. A
-  bare specifier names one package, by its scope and name (`@scope/name`) or by
-  its first segment; a Node built-in module, a relative or absolute path, a `#`
-  subpath import, and a URL name none. A specifier that starts with `~/` is a
-  path alias and names no package, because an npm package name has no `~`; so
-  does any other specifier that is not an npm package name, such as
-  `@/components`.
-- **FR15 — The project declares what its package.json files list.** The packages
-  a project declares MUST be the union of the `dependencies`, `devDependencies`,
-  `peerDependencies`, and `optionalDependencies` of every package.json from the
-  target directory up to the workspace root. The target directory is the
-  directory the command writes into, or for build the directory where it ran
-  (FR21). The workspace root is the nearest directory at or above the target
-  directory that declares a workspace, by a `pnpm-workspace.yaml` or a
-  package.json `workspaces` field; outside a workspace it is the directory of
-  the nearest package.json, and with no package.json the project declares
-  nothing. `missingPackages` MUST list each needed package (FR14) that the
-  project does not declare, once, and is empty when none is missing.
-- **FR16 — Astryx packages count like any other.** An Astryx package MUST count
-  under FR14 and FR15 like any other package: a source that imports one the
-  project does not declare lists it in `missingPackages`, and in the install
-  command when there is one (FR17). No package is exempt by name.
-- **FR17 — One install command, in the project's package manager.** When
-  `missingPackages` is not empty and the package manager is not ambiguous
-  (FR19), `installCommand` MUST be one command that installs every missing
-  package with the project's package manager; otherwise it is null. The nearest
-  directory, from the target directory up to the workspace root, that has a
-  package.json `packageManager` field or a lockfile decides the package manager.
-  The field names it. Without the field, the lockfiles name the package manager
-  they belong to; when they belong to several, the directory names the one of
-  those that its files read by only one package manager (such as
-  `pnpm-workspace.yaml` or `.yarnrc.yml`) point to, when they point to exactly
-  one of them. When no directory there has a field or a lockfile, the project's
-  package manager is npm, which ships with Node.
-- **FR18 — The command runs as printed.** Each package in the install command
-  MUST carry the version range declared for it by the package that ships the
-  template's source file, which is not always the package the receipt names as
-  the template's owner: its `peerDependencies` range, else its `dependencies`,
-  `optionalDependencies`, or `devDependencies` range, in that order. The
-  shipping package itself, when the source imports it, carries the version the
-  template was read from. Any other package it declares no version range for, by
-  declaring nothing or only a protocol value such as `workspace:` or `catalog:`,
-  is named without a range. Run as printed, from the directory where the command
-  ran, in any common shell (Platform support), the command MUST hand every
-  argument to the package manager unchanged and MUST add every missing package
-  to the package.json nearest the target directory, so FR15 then finds it
-  declared.
-- **FR19 — No command when the package manager is ambiguous.** When the
-  directory that decides the package manager (FR17) has no `packageManager`
-  field and holds lockfiles of several package managers, and its files read by
-  only one package manager point to none of those or to more than one, the
-  package manager is ambiguous. `installCommand` MUST then be null,
-  `missingPackages` still lists every missing package, and `notes` MUST name
-  them and say why there is no command: the directory and the lockfiles that
-  disagree.
-- **FR20 — A missing StyleX compiler gets a note.** When the source imports
-  StyleX (`@stylexjs/stylex`) by an import that is not type-only, and no package
-  the project declares (FR15) is a StyleX compiler, a package that compiles
-  StyleX at build time, `notes` MUST say that the project needs a StyleX
-  compiler and name the docs that set one up. The compiler stays out of
-  `missingPackages` and the install command, because setting it up takes
-  configuration as well as a package.
-- **FR21 — Every recommended template carries the same readiness.** The
-  `template.copy` receipt MUST carry `notes`, `missingPackages`, and
-  `installCommand`, and build's start and each alternative MUST carry the same
-  fields, with the values the receipt carries when that template is scaffolded
-  into the directory where build ran, from the source its scaffold command (FR5)
-  writes. `notes` holds one line for each thing the project lacks: the missing
-  packages with their install command or the reason there is none (FR19), and a
-  missing StyleX compiler (FR20); the receipt's `notes` is empty when the
-  project lacks nothing. One exception keeps build's response additive (FR22):
-  on build's start and alternatives, `notes` is present only when it holds a
-  line. Text shows each template's readiness beside it, as FR12 and
-  `spec:AST-017/FR13` require.
-- **FR22 — Readiness reports and never fails.** Readiness MUST NOT change either
-  command's exit status: with packages or a compiler missing, `astryx template`
-  writes its file and `astryx build` returns its recommendation, each with the
-  exit status it has without them. JSON changes MUST stay additive under
-  `spec:AST-017`: every existing field keeps its name and type, and new data
-  arrives as new fields. FR14–FR21 decide the values that `notes`,
-  `missingPackages`, and `installCommand` carry (which packages, which ranges,
-  and whether there is a command), as ranking decides values under FR11;
-  `spec:AST-017` classifies a change in those values.
-- **FR23 — Docs and themes point to search.** A build kit has
-  no doc or theme group. With `--type doc` or `--type theme`, build MUST return
-  what it returns without the note: the empty kit for a query, the playbook
-  without one, with the same stdout, JSON response and exit status. In text
-  mode, with or without a query, build MUST also print one stderr note naming
-  `astryx search <query> --type doc` or `--type theme`; JSON mode prints no
-  note.
+- **FR1 — 始终只有一个起点。** 一个能够返回页面的 build 必须点出恰好一个作为起点的页面模板，从项目可以搭建的就绪页面模板中选出，包括其集成所提供的那些。被限定为组件或 hook 的 build 不点出起点，不提供任何页面模板的项目同样不点出起点。
+- **FR2 — 没有引导时用外壳。** 当没有任何模板拥有可以作为引导的证据时，起点必须是中性的应用外壳，或在项目没有外壳时使用空白页面模板。起点绝不回退到“用组件拼装”。
+- **FR3 — 部分从它所在之处开始。** 对页面某一部分（一个控件、一个状态、一个部件、一个区块）的请求，当请求给出了那个页面时，必须从请求把该部分置入的页面模板开始；当请求没有给出页面时，则从应用外壳开始（FR2）。套件中的区块和组件承载该部分本身。修改构建者已有页面的请求从应用外壳开始（FR2）：页面归构建者自己保留（FR9），没有模板会搭建它。向一个不指名页面、只指应用或产品整体的位置添加内容的请求，不改变构建者已有的任何页面：build 读取它所添加的内容，就仿佛请求没有给出位置。一个例外：当起点将是应用外壳、search 没有直接匹配任何模板、而 build 固定的外壳起点决策把请求读作整页（DEC-10）时，起点是排名最好的页面模板，即使该请求读作一个部分。带编辑短语的请求保留应用外壳。
+- **FR4 — 起点绝不未就绪。** 标记为未就绪的模板不得作为起点或备选。当 search 直接匹配到这样一个模板时，起点的理由必须点出它，并说明起点改为最接近的就绪模板或应用外壳。
+- **FR5 — 起点精确且可运行。** 起点和每个备选必须携带这样的搭建命令：它在 build 运行所在的项目中恰好选中那个模板。集成用来替代 Core 模板而提供的模板，按 `astryx template` 寻址它的方式被选中，并且该命令点名页面种类，使同 id 的区块无法使它产生歧义。
+- **FR6 — 起点说明理由。** 起点必须携带一个依据和一行理由。当起点也是 search 的直接匹配时，依据是 `direct`；当没有模板恰好是这个页面时，是 `closest`；对外壳则是 `fallback`。
+- **FR7 — 构建者可以推翻。** 在每个起点旁边，build 必须提供接下来最好的页面模板，最多两个，每个都带其搭建命令。排名相同的模板在每台主机上保持一个固定顺序，因此同一请求在任何机器上得到相同的起点和备选。
+- **FR8 — 套件填充模板。** build 必须在组件之前列出填充起点的区块，并点名始终开启的框架组件和基础组件。所列出区块的顺序遵循 `spec:AST-083`。
+- **FR9 — 已有页面被保留。** build 的文本输出必须告诉正在修改已有页面的构建者保留该页面，只使用区块和组件。
+- **FR10 — 推荐是数据。** JSON 响应必须携带推荐本身（起点及其名称、命令、依据、理由和备选），使任何调用方都不从其他字段推导它。
+- **FR11 — 增量式 JSON。** 对推荐的更改必须保持 build JSON 在 `spec:AST-017` 下是增量式的：新数据以新字段到达，每个现有字段保持其形状与含义。排序变化可能改变取值（出现哪些模板、区块或组件，以及以什么顺序）；它不改变字段的形状或含义。
+- **FR12 — 文本以起点开头。** build 的文本输出必须以起点开头，然后是备选，然后是区块，然后是组件。每个响应字段都按 `spec:AST-017` 的要求保留文本投影：默认简短，在 `--verbose` 下完整。
+- **FR13 — 每个面向 agent 的入口都一致。** build 手册、生成的 agent 文档以及描述构建页面的使用方指南必须描述同一个工作流：搭建所点名的模板，用区块填充它，只组合剩下的部分。任何入口都不告诉构建者先从原始组件拼装页面。
+- **FR14 — 写出的源码点名它需要什么。** 模板所需的包必须是命令所写入的源码中的导入所点名的包：它的 import 声明（包括仅类型的那些）、它的 export-from 声明，以及它的 `import()` 和 `require()` 调用。位于注释、字符串或模板字面量内部的 import 是文本，不点名任何东西。裸说明符通过其作用域和名称（`@scope/name`）或通过其第一段点名一个包；Node 内置模块、相对或绝对路径、`#` 子路径导入以及 URL 都不点名任何包。以 `~/` 开头的说明符是路径别名，不点名任何包，因为 npm 包名不含 `~`；任何其他不是 npm 包名的说明符（例如 `@/components`）也是如此。
+- **FR15 — 项目声明其 package.json 文件所列出的一切。** 项目声明的包必须是从目标目录向上到工作区根的每个 package.json 的 `dependencies`、`devDependencies`、`peerDependencies` 和 `optionalDependencies` 的并集。目标目录是命令写入的目录，对 build 而言是它运行所在的目录（FR21）。工作区根是目标目录处或其上方最近的、通过 `pnpm-workspace.yaml` 或 package.json 的 `workspaces` 字段声明工作区的目录；在工作区之外，它是最近的 package.json 所在目录，而没有 package.json 时项目不声明任何东西。`missingPackages` 必须列出每个所需但项目未声明的包（FR14），每个一次，并在没有缺失时为空。
+- **FR16 — Astryx 包与其他包同样计入。** Astryx 包必须像任何其他包一样在 FR14 和 FR15 下计入：导入了项目未声明的 Astryx 包的源码会把它列入 `missingPackages`，并在存在安装命令时列入该命令（FR17）。没有任何包因名称而豁免。
+- **FR17 — 一条安装命令，使用项目的包管理器。** 当 `missingPackages` 非空且包管理器不歧义（FR19）时，`installCommand` 必须是一条使用项目的包管理器安装每个缺失包的单一命令；否则为 null。从目标目录向上到工作区根，最近一个有 package.json 的 `packageManager` 字段或锁文件的目录决定包管理器。该字段点名它。没有该字段时，锁文件点名它们所属的包管理器；当它们属于多个包管理器时，由该目录中仅由一个包管理器读取的文件（例如 `pnpm-workspace.yaml` 或 `.yarnrc.yml`）所指的那一个来点名——前提是这些文件恰好指向其中之一。当那里没有任何目录有字段或锁文件时，项目的包管理器是 npm，它随 Node 一起提供。
+- **FR18 — 命令按打印的样子运行。** 安装命令中的每个包必须携带发布该模板源文件的包为它声明的版本范围，而这个包并不总是回执点名为模板所有者的包：优先取它的 `peerDependencies` 范围，否则依次取它的 `dependencies`、`optionalDependencies` 或 `devDependencies` 范围。当源码导入发布包本身时，它携带读取该模板时所依据的版本。它没有为其声明任何版本范围的任何其他包（什么也没声明，或只声明了如 `workspace:` 或 `catalog:` 的协议值），以不带范围的方式点名。在命令运行所在目录、在任意常见 shell（平台支持）中按原样运行，命令必须把每个参数原样交给包管理器，并且必须把每个缺失的包添加到最接近目标目录的 package.json，使 FR15 随后发现它已被声明。
+- **FR19 — 包管理器歧义时不给命令。** 当决定包管理器的目录（FR17）没有 `packageManager` 字段，并持有多个包管理器的锁文件，而它仅由一个包管理器读取的文件不指向这些锁文件中的任何一个、或指向多于一个时，包管理器是歧义的。此时 `installCommand` 必须为 null，`missingPackages` 仍列出每个缺失的包，`notes` 必须点名它们并说明为何没有命令：发生分歧的目录和锁文件。
+- **FR20 — 缺失的 StyleX 编译器得到一条提示。** 当源码通过非仅类型的 import 导入 StyleX（`@stylexjs/stylex`），且项目声明的包（FR15）中没有一个属于 StyleX 编译器——一个在构建时编译 StyleX 的包——时，`notes` 必须说明项目需要 StyleX 编译器，并点名设置它的文档。该编译器不进入 `missingPackages` 和安装命令，因为设置它既需要包也需要配置。
+- **FR21 — 每个推荐的模板携带相同的就绪度。** `template.copy` 回执必须携带 `notes`、`missingPackages` 和 `installCommand`，并且 build 的起点和每个备选必须携带相同的字段，取值为把该模板搭建到 build 运行所在目录时从它的搭建命令（FR5）所写入的源码所得的回执取值。`notes` 为项目所缺的每样东西保留一行：缺失的包及其安装命令或没有命令的原因（FR19），以及缺失的 StyleX 编译器（FR20）；当项目什么都不缺时，回执的 `notes` 为空。一个例外保持 build 的响应是增量式的（FR22）：在 build 的起点和备选上，只有当 `notes` 持有一行时它才存在。文本在各个模板旁边显示它就绪度，正如 FR12 和 `spec:AST-017/FR13` 所要求。
+- **FR22 — 就绪度只报告，绝不失败。** 就绪度必须不改变任一条命令的退出状态：在包或编译器缺失时，`astryx template` 写入它的文件，`astryx build` 返回它的推荐，各自保持没有它们时的退出状态。JSON 的更改必须保持增量式于 `spec:AST-017` 之下：每个现有字段保持它的名称和类型，新数据以新字段到达。FR14–FR21 决定 `notes`、`missingPackages` 和 `installCommand` 携带的取值（哪些包、哪些范围、以及是否有命令），正如排序在 FR11 下决定取值；`spec:AST-017` 对这些取值中的变化进行分类。
+- **FR23 — 文档和主题指向 search。** build 套件没有文档分组或主题分组。使用 `--type doc` 或 `--type theme` 时，build 必须返回它不带该提示时所返回的内容：有查询时是空套件，无查询时是手册，stdout、JSON 响应和退出状态都相同。在文本模式下，无论有无查询，build 还必须向 stderr 打印一条提示，点名 `astryx search <query> --type doc` 或 `--type theme`；JSON 模式不打印提示。
 
 ### Platform support
 
-- Supported floor: every shell and package manager the CLI already supports.
-  Commands are printed in text with the command name `spec:AST-081` FR5
-  picks, and without it in JSON, as the CLI does for every command it prints;
-  the install command
-  (FR17) is the package manager's own and reads the same in both. The common
-  shells an install command runs in as printed (FR18) are sh-compatible shells
-  such as bash and zsh, fish, PowerShell (Windows PowerShell 5.1 and PowerShell
-  7), and the Windows command prompt.
-- Unsupported behavior: none; build writes nothing, and readiness only reports
-  (FR22), so there is nothing to degrade. An ambiguous package manager gets a
-  note instead of a command (FR19).
-- Browser evidence: not applicable; the recommendation and the receipt are CLI
-  output.
+- 支持的底线：CLI 已支持的每个 shell 和包管理器。命令在文本中按 `spec:AST-081` FR5 所选的命令名打印，在 JSON 中不带它，正如 CLI 对其打印的每条命令所做的那样；安装命令（FR17）是包管理器自己的命令，在两者中读法相同。安装命令按原样运行（FR18）的常见 shell 包括 sh 兼容 shell（例如 bash 和 zsh）、fish、PowerShell（Windows PowerShell 5.1 和 PowerShell 7）以及 Windows 命令提示符。
+- 不支持的行为：无；build 不写入任何内容，就绪度只做报告（FR22），因此没有可降级的东西。歧义的包管理器得到的是一条提示而不是命令（FR19）。
+- 浏览器证据：不适用；推荐和回执都是 CLI 输出。
 
 ## Current-state impact
 
-This record changes these surfaces:
+本记录改变以下入口：
 
-- the `build.kit` response carries the start, with its command, basis, reason,
-  and alternatives; every existing field keeps its shape and meaning;
-- build's text leads with the start and the alternatives, then the blocks and
-  the components;
-- the build playbook, the generated agent docs, and the consumer guides that
-  describe building a page start from a template;
-- the `template.copy` receipt reports scaffold readiness as FR14–FR20 state,
-  and build's start and each alternative carry the same fields (FR21);
-- the canonical response types and the response docs for `template.copy` and
-  `build.kit` describe `notes`, `missingPackages`, and `installCommand` as
-  FR14–FR22 state.
+- `build.kit` 响应携带起点，包括它的命令、依据、理由和备选；每个现有字段保持其形状与含义；
+- build 的文本以起点和备选开头，然后是区块和组件；
+- build 手册、生成的 agent 文档以及描述构建页面的使用方指南都从模板开始；
+- `template.copy` 回执按 FR14–FR20 的状态报告搭建就绪度，并且 build 的起点和每个备选携带相同的字段（FR21）；
+- `template.copy` 和 `build.kit` 的规范响应类型与响应文档按 FR14–FR22 的状态描述 `notes`、`missingPackages` 和 `installCommand`。
 
-`architecture:cli-surface` keeps the command envelope and its rules unchanged.
+`architecture:cli-surface` 保持命令信封及其规则不变。
 
 ## Verification
 
-| Contract   | Verification                                            | Representative states                                                                                                                                                                                                        | Mutation or failure expectation                                                                                                                                                                                  |
-| ---------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1, FR2   | Build kit tests                                         | a request that names a template; a loose request; a request no template fits                                                                                                                                                 | A page build with no start, or a start that is not a page template                                                                                                                                               |
-| FR3        | Build kit tests                                         | a part placed in a page; a part with no page; a change to an existing page; a whole page the kind call reads as a part                                                                                                       | A part with no page starting from a page template when the shell-start decision does not read it as a whole page, or a request with an edit phrase or a change to an existing page starting from a page template |
-| FR4        | Build kit tests                                         | search's direct match is not ready                                                                                                                                                                                           | An unready template as the start or an alternative, or a reason that hides it                                                                                                                                    |
-| FR5        | Template integration tests                              | an integration template that replaces a Core one; a block sharing a page template's id                                                                                                                                       | A start or alternative command that selects another template, or none                                                                                                                                            |
-| FR6, FR7   | Build kit tests; the `build.test.mjs` host-locale check | direct, closest, and fallback starts; the same requests under English, Czech, Hawaiian and Turkish host locales                                                                                                              | A start without a basis or reason, or without its alternatives; a start or alternatives that differ between host locales                                                                                         |
-| FR8, FR12  | Text field tests                                        | default and `--verbose` text for a build with every field populated                                                                                                                                                          | A response field the text never shows, or text out of the required order                                                                                                                                         |
-| FR9        | CLI text tests                                          | any page build                                                                                                                                                                                                               | Text without the keep-your-page line                                                                                                                                                                             |
-| FR10, FR11 | Response type and build tests                           | the canonical response type, the response docs, and existing fields on a page build                                                                                                                                          | A missing recommendation field, or an existing field whose shape changes                                                                                                                                         |
-| FR13       | Playbook and agent docs tests                           | the playbook steps and the generated agent docs block                                                                                                                                                                        | A surface that tells builders to compose a page from primitives before a template                                                                                                                                |
-| FR14       | Readiness fixture tests                                 | every import form, a type-only import, and a scoped subpath; an import inside a comment, a string, and a template literal; a Node built-in, a relative path, a URL, and a `~/` path alias                                    | An import inside a comment or a string that counts, a path alias that counts as a package, or a real import that does not                                                                                        |
-| FR15       | Readiness fixture tests                                 | a package declared only at the workspace root; one in each dependency field; a target in a nested package; a package.json above the workspace root; no package.json                                                          | A declared package reported missing, or a package.json above the workspace root that counts                                                                                                                      |
-| FR16       | Readiness fixture tests                                 | a source that imports an Astryx package and a framework package the project does not declare                                                                                                                                 | An undeclared package left out of `missingPackages` because of its name                                                                                                                                          |
-| FR17       | Readiness fixture tests                                 | a lockfile only at the workspace root; a `packageManager` field beside another lockfile; two lockfiles and a workspace file; no lockfile                                                                                     | A command in a package manager the deciding directory does not name                                                                                                                                              |
-| FR18       | Readiness fixture tests and shell quoting tests         | ranges with spaces, a caret, comparison operators, a wildcard, and a union; a protocol value; a template an integration ships that imports its own package; a command run outside the target's package                       | A range the shipping package does not declare, an argument a common shell splits, expands, or redirects, or a package not added to the package.json nearest the target                                           |
-| FR19       | Readiness fixture tests                                 | two lockfiles in one directory: with and without a `packageManager` field, with one file only one package manager reads, with two such files for different package managers, and with only a package.json `workspaces` field | A command printed for an ambiguous package manager, or a note that names no lockfile                                                                                                                             |
-| FR20       | Readiness fixture tests                                 | a source that imports StyleX at run time and one that imports only its types, with and without a declared compiler                                                                                                           | A missing compiler with no note, a note beside a declared compiler or for a type-only import, or a compiler in the install command                                                                               |
-| FR21       | Build kit and template copy tests                       | the start and each alternative against the receipt for the same template and directory; default and `--verbose` text                                                                                                         | A recommended template without the fields, a value the receipt would not carry, an empty `notes` on a build entry, or a field the text never shows                                                               |
-| FR22       | CLI exit-code and response type tests                   | a scaffold and a build with packages and a compiler missing                                                                                                                                                                  | A changed exit status, or an existing field whose name or type changes                                                                                                                                           |
-| FR23       | CLI text and JSON tests                                 | `--type doc` and `--type theme`, with and without a query, in text and JSON mode; `--type component`                                                                                                                         | A note on stdout, a second note, a note in JSON mode or for a kind the kit has, or stdout, JSON or exit status that differs from the same build without the note                                                 |
+| 契约       | 验证                                              | 代表性状态                                                                                                                                                            | 变更或失败预期                                                                                                                    |
+| ---------- | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| FR1, FR2   | build 套件测试                                    | 点名某个模板的请求；宽松的请求；没有模板适配的请求                                                                                                                    | 没有起点的页面构建，或起点不是页面模板                                                                                            |
+| FR3        | build 套件测试                                    | 置入某页面的部分；没有页面的部分；对已有页面的修改；种类调用读作部分的整页                                                                                            | 没有页面的部分在外壳起点决策未将其读作整页时却从页面模板开始，或带编辑短语的请求、对已有页面的修改却从页面模板开始                |
+| FR4        | build 套件测试                                    | search 的直接匹配未就绪                                                                                                                                               | 未就绪模板作为起点或备选，或理由将其隐藏                                                                                          |
+| FR5        | 模板集成测试                                      | 替代 Core 模板的集成模板；与页面模板共享 id 的区块                                                                                                                    | 起点或备选的命令选中了另一个模板，或什么都没选中                                                                                  |
+| FR6, FR7   | build 套件测试；`build.test.mjs` 主机区域设置检查 | direct、closest 和 fallback 起点；在英语、捷克语、夏威夷语和土耳其语主机区域设置下的相同请求                                                                          | 起点缺少依据或理由，或缺少备选；起点或备选在不同主机区域设置之间不同                                                              |
+| FR8, FR12  | 文本字段测试                                      | 每个字段都已填充的 build 的默认文本与 `--verbose` 文本                                                                                                                | 文本从未显示的响应字段，或顺序不符合要求的文本                                                                                    |
+| FR9        | CLI 文本测试                                      | 任何页面构建                                                                                                                                                          | 缺少“保留你的页面”那一行的文本                                                                                                    |
+| FR10, FR11 | 响应类型与 build 测试                             | 规范响应类型、响应文档，以及页面构建上的现有字段                                                                                                                      | 缺少推荐字段，或现有字段的形状发生变化                                                                                            |
+| FR13       | 手册与 agent 文档测试                             | 手册步骤和生成的 agent 文档区块                                                                                                                                       | 某个入口告诉构建者在模板之前先从原始组件拼装页面                                                                                  |
+| FR14       | 就绪度测试夹具                                    | 每种 import 形式、一个仅类型 import 和一个带作用域的子路径；位于注释、字符串和模板字面量内的 import；Node 内置模块、相对路径、URL 和 `~/` 路径别名                    | 注释或字符串内的 import 被计入，路径别名被当作包计入，或真实 import 未被计入                                                      |
+| FR15       | 就绪度测试夹具                                    | 仅在工作区根声明的包；每个依赖字段中各有一个；嵌套包中的目标；工作区根之上的 package.json；没有 package.json                                                          | 已声明的包被报告为缺失，或工作区根之上的 package.json 被计入                                                                      |
+| FR16       | 就绪度测试夹具                                    | 导入了项目未声明的 Astryx 包和框架包的源码                                                                                                                            | 未声明的包因其名称而被排除在 `missingPackages` 之外                                                                               |
+| FR17       | 就绪度测试夹具                                    | 仅在工作区根有锁文件；`packageManager` 字段旁边有另一个锁文件；两个锁文件和一个工作区文件；没有锁文件                                                                 | 命令使用了决定目录并未点名的包管理器                                                                                              |
+| FR18       | 就绪度测试夹具与 shell 引用测试                   | 含空格、脱字符、比较运算符、通配符和并集的范围；协议值；由集成发布并导入其自身包的模板；在目标包之外运行的命令                                                        | 发布该范围的包并未声明它，常见 shell 拆分、展开或重定向某个参数，或某个包未被添加到最接近目标的 package.json                      |
+| FR19       | 就绪度测试夹具                                    | 一个目录中的两个锁文件：有和无 `packageManager` 字段，有一个仅由一个包管理器读取的文件，有两个分属不同包管理器的此类文件，以及只有一个 package.json `workspaces` 字段 | 为歧义的包管理器打印了命令，或提示未点名任何锁文件                                                                                |
+| FR20       | 就绪度测试夹具                                    | 在运行时导入 StyleX 的源码和只导入其类型的源码，有和无已声明的编译器                                                                                                  | 缺少编译器却没有提示，在已声明的编译器旁边或针对仅类型 import 出现提示，或安装命令中包含编译器                                    |
+| FR21       | build 套件与模板复制测试                          | 针对同一模板和目录的回执，比对起点和每个备选；默认文本与 `--verbose` 文本                                                                                             | 推荐的模板缺少这些字段，回执不会携带的取值，build 条目上空的 `notes`，或文本从未显示的字段                                        |
+| FR22       | CLI 退出码与响应类型测试                          | 包和编译器缺失时的搭建与 build                                                                                                                                        | 退出状态改变，或现有字段的名称或类型改变                                                                                          |
+| FR23       | CLI 文本与 JSON 测试                              | `--type doc` 与 `--type theme`，有和无查询，文本与 JSON 模式；`--type component`                                                                                      | stdout 上出现提示，出现第二条提示，JSON 模式下或对套件拥有的种类出现提示，或 stdout、JSON 或退出状态与不带该提示的同一 build 不同 |
 
 ## Decision log
 
 ### DEC-1 — Start from a template, always
 
 **Reference:** `spec:AST-048/DEC-1`
+
 **Decider:** `josephfarina`, `2026-09-28`
 
-Templates carry the spacing judgment and a kit of loose parts does not, so the
-recommendation is always a full page template, and blocks and components fill
-it.
+模板承载着间距判断，而一套零散部件的套件并不承载，因此推荐始终是一个完整的页面模板，区块和组件填充它。
 
-Rejected: naming a template only on an exact match and a layout reference
-otherwise, which leaves most builders composing from primitives.
+已否决：仅在精确匹配时点名模板，否则给出布局参考，这会让大多数构建者从原始组件拼装。
 
 ### DEC-2 — A shell when nothing leads
 
 **Reference:** `spec:AST-048/DEC-2`
+
 **Decider:** `josephfarina`, `2026-09-28`
 
-When no template has the evidence to lead, the start is a neutral app shell,
-so even an unusual request starts from a frame the system decided.
+当没有任何模板拥有可以作为引导的证据时，起点是一个中性的应用外壳，因此即使不寻常的请求也从系统决定好的框架开始。
 
-Rejected: no start at all, which hands the builder primitives; and the best
-weak match, which lets one incidental word pick the page.
+已否决：完全没有起点，那等于把原始组件交给构建者；以及使用最好的弱匹配，那会让一个偶然的词决定页面。
 
 ### DEC-3 — The builder can overrule the pick
 
 **Reference:** `spec:AST-048/DEC-3`
+
 **Decider:** `josephfarina`, `2026-09-28`
 
-The builder judges meaning better than word matching does, so every start
-comes with the next best templates and their commands.
+构建者对含义的判断优于词语匹配，因此每个起点都附带接下来最好的模板及其命令。
 
-Rejected: a single pick with no alternatives.
+已否决：只有单个选择，没有备选。
 
 ### DEC-4 — A part starts where it lives
 
 **Reference:** `spec:AST-048/DEC-4`
+
 **Decider:** `josephfarina`, `2026-10-01`
 
-A part is built inside a page. When the request gives that page, its template
-is where the part goes; when it gives none, the app shell is the frame, and the
-blocks and components carry the part. A change to an existing page is the same
-case: the page is the builder's own, so no template is its start.
+部分是在页面内构建的。当请求给出了那个页面时，它的模板就是该部分所在之处；当请求没有给出页面时，应用外壳是框架，由区块和组件承载该部分。对已有页面的修改是同一情形：页面是构建者自己的，因此没有模板是它的起点。
 
-Rejected: starting a part from whichever page template shares a word with it,
-which scaffolds an unrelated page for a single control; and giving a part no
-start, which breaks DEC-1.
+已否决：从与它共享某个词的任意页面模板开始一个部分，这会为一个控件搭建一个不相关的页面；以及给部分不设起点，那会破坏 DEC-1。
 
 ### DEC-5 — The response stays additive
 
 **Reference:** `spec:AST-048/DEC-5`
+
 **Decider:** `josephfarina`, `2026-09-29`
 
-Callers read build's JSON, so the recommendation arrives as new data beside
-the existing fields, and ranking changes move values rather than shapes. Text
-may change with the recommendation.
+调用方读取 build 的 JSON，因此推荐作为新数据到达现有字段旁边，排序变化移动的是取值而非形状。文本可以随推荐一起变化。
 
-Rejected: replacing existing fields with the recommendation, which breaks JSON
-callers for a policy change they did not ask for.
+已否决：用推荐替换现有字段，这会因为一项调用方并未要求的策略变化而破坏 JSON 调用方。
 
 ### DEC-6 — The source and the workspace say what is missing
 
 **Reference:** `spec:AST-048/DEC-6`
+
 **Decider:** `josephfarina`, `2026-10-09`
 
-The source a command writes is the only authority on what it imports, and the
-package.json files from the target directory up to the workspace root are the
-authority on what the project declares; a workspace keeps shared packages at
-its root, so they count for every package below it. What is missing is the
-difference, and no package is exempt by name, because an exemption hides a
-missing package exactly when the project lacks it. A source that uses StyleX
-also needs a compiler, which takes configuration as well as a package, so the
-compiler gets a note and stays out of the install command.
+命令所写入的源码是它导入了什么的唯一权威，而从目标目录向上到工作区根的 package.json 是项目声明了什么的权威；工作区把共享包保留在它的根，因此它们对下面的每个包都计入。缺失的就是差值，并且没有任何包因名称而豁免，因为豁免恰恰在项目缺少该包时把它隐藏起来。使用 StyleX 的源码还需要一个编译器，它既需要包也需要配置，所以编译器得到一条提示，并留在安装命令之外。
 
-Rejected: a list of packages assumed installed, Astryx or framework packages
-among them, which hides what a fresh project lacks; and matching text that
-looks like an import, which counts imports inside comments and strings.
+已否决：一份假定已安装的包清单，其中包含 Astryx 或框架包，这会隐藏一个新项目所缺的东西；以及匹配看起来像 import 的文本，那会把注释和字符串里的 import 计入。
 
 ### DEC-7 — One runnable command, or none
 
 **Reference:** `spec:AST-048/DEC-7`
+
 **Decider:** `josephfarina`, `2026-10-09`
 
-A builder or an agent copies the install command and runs it, so it is one
-command in the project's own package manager that reaches that package manager
-unchanged from every common shell and leaves nothing missing. Its versions are
-the ranges the package that ships the template declares, with that package
-itself at the version the template came from, and a peer range comes first
-because it states what that package supports beside the project's code.
-Installing with the wrong package manager writes a second lockfile and a second
-dependency tree, so when the project's package manager is ambiguous the receipt
-names what to install and why there is no command, and the builder picks the
-tool.
+构建者或 agent 会复制安装命令并运行它，所以它是在项目自己的包管理器中的一条命令，能从每个常见 shell 原样抵达该包管理器，且不留下任何缺失。它的版本是发布该模板的包所声明的范围，那个包本身取读取该模板时的版本；peer 范围优先，因为它说明了该包在项目代码旁边支持什么。用错误的包管理器安装会写出第二个锁文件和第二棵依赖树，因此当项目的包管理器有歧义时，回执点名要安装什么以及为何没有命令，由构建者挑选工具。
 
-Rejected: falling back to npm when lockfiles disagree, which deepens the
-conflict the receipt reports.
+已否决：锁文件不一致时回退到 npm，那会加深回执所报告的冲突。
 
 ### DEC-8 — Every recommended template says what it needs
 
 **Reference:** `spec:AST-048/DEC-8`
+
 **Decider:** `josephfarina`, `2026-10-09`
 
-The builder chooses among the start and its alternatives (DEC-3), and what a
-template needs is part of that choice, so each one carries the receipt's fields
-with the values its scaffold would report.
+构建者在起点及其备选之间选择（DEC-3），而一个模板需要什么正是该选择的一部分，因此每一个都携带回执的字段，其取值是它的搭建会报告的值。
 
-Rejected: readiness on the start only, which hides what an alternative needs
-until it is scaffolded.
+已否决：只在起点上给就绪度，那会在备选被搭建之前隐藏它需要什么。
 
 ### DEC-9 — Readiness reports and never fails
 
 **Reference:** `spec:AST-048/DEC-9`
+
 **Decider:** `josephfarina`, `2026-10-09`
 
-A missing package is the next step after a scaffold, not a failure of it, so
-neither command's exit status depends on readiness, and callers keep reading
-the existing fields as they are (DEC-5).
+缺失的包是搭建之后的下一步，而不是搭建的失败，因此任一条命令的退出状态都不取决于就绪度，调用方照旧读取现有字段（DEC-5）。
 
-Rejected: failing the scaffold when a package is missing, which blocks a
-builder who installs afterwards.
+已否决：包缺失时让搭建失败，那会阻塞之后再安装的构建者。
 
 ### DEC-10 — A whole page reads past the part call
 
 **Reference:** `spec:AST-048/DEC-10`
+
 **Decider:** `josephfarina`, `2026-11-13`
 
-Build's kind call reads some whole-page requests as parts, which leaves them on
-the empty app shell. When the start would be the app shell and search matched
-no template directly, a fixed decision over build's own ranking scores and a
-fixed word table reads the whole request; when its whole-page probability is
-at least 0.30, the start is the best-ranked page template. This is not DEC-2's best weak match:
-one shared word never decides it, and it never applies to a direct match or to
-a request with an edit phrase, so DEC-4 still holds for changes to an existing
-page.
+build 的种类调用把一些整页请求读作部分，使它们停留在空的应用外壳上。当起点将是应用外壳、且 search 没有直接匹配任何模板时，一个基于 build 自身排序分数和一张固定词表的固定决策读取整个请求；当它的整页概率至少为 0.30 时，起点是排名最好的页面模板。这不是 DEC-2 的最好的弱匹配：一个共享的词绝不决定它，且它绝不适用于直接匹配或带编辑短语的请求，因此 DEC-4 对已有页面的修改仍然成立。
 
-Rejected: lifting only requests the kind call reads as pages, which keeps whole
-pages the kind call misreads on the empty shell.
+已否决：只提升种类调用读作页面的那些请求，那会把种类调用误读的整页留在空外壳上。
 
 ### DEC-11 — The page pick reads past weak ranker evidence
 
 **Reference:** `spec:AST-048/DEC-11`
+
 **Decider:** `josephfarina`, `2026-11-14`
 
-When build's fixed word tables read a request as a whole page, its page-pick
-model chooses among the ready page templates even when the page ranker's own
-evidence is too weak for the ranker to lead alone. The pick model reads the
-whole request, so its choice rests on many words rather than one shared word,
-and across representative requests its starts on weak ranker evidence help the
-builder more often than the empty app shell does. DEC-2 still holds when no
-part of build's ranking leads: the start is the app shell. Requests build reads
-as parts or as changes to an existing page keep their placement rules (DEC-4);
-the edit-phrase check belongs to DEC-10's shell lift, not to the page pick.
+当 build 的固定词表把请求读作整页时，它的选页模型在就绪的页面模板中选择，即使页面排序器自身的证据太弱，无法让它单独领先。选页模型读取整个请求，因此它的选择依据许多词而非一个共享的词；在一批有代表性的请求上，它在弱排序证据下的起点比空的应用外壳更常帮到构建者。当 build 排序的任何部分都无法领先时，DEC-2 仍然成立：起点是应用外壳。build 读作部分或读作对已有页面修改的请求保留其放置规则（DEC-4）；编辑短语检查属于 DEC-10 的外壳提升，而不属于选页。
 
-Rejected: sending every start the ranker cannot lead alone to the app shell,
-which leaves more whole pages on the empty shell than it keeps parts off a page
-template.
+已否决：把排序器无法单独领先的每个起点都送到应用外壳，那会把更多整页留在空外壳上，而它让部分离开页面模板的次数更少。
 
 ## Open questions
 
-- **OQ1 — How recommendation quality is measured.** Whether changes to what
-  build recommends must report their effect on a checked-in set of
-  representative requests with accepted templates, separately for requests
-  that describe a whole page and requests that describe a part of one.
-  (`human-design`)
+- **OQ1 — 推荐质量如何衡量。** 对 build 推荐内容的更改，是否必须在已检入的一组带已接受模板的代表性请求上报告其影响，并分别针对描述整页的请求和描述其一部分的请求。（`human-design`）

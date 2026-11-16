@@ -1,8 +1,5 @@
-# Architecture records
+# 架构记录
 
-Architecture documents describe the shipped system in present tense. They are
-not proposals and must not describe an unshipped future as current.
+架构文档用现在时描述已交付的系统。它们不是提案，不得将尚未交付的未来描述为当前状态。
 
-New records start as `draft`. They become `current` only after explicit owner
-approval. Archived records remain for context and state why they no longer
-govern. Use `docs/templates/knowledge/architecture.md`.
+新记录以 `draft` 开始。只有在负责人明确批准后，它们才会变为 `current`。已归档的记录作为背景保留，并说明其为何不再具有约束力。使用 `docs/templates/knowledge/architecture.md`。

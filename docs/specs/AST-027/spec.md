@@ -32,265 +32,160 @@ affects_consumer_docs: []
 
 ## Intent
 
-An Astryx component should be able to order its own painted parts without
-changing how unrelated components, page content, or application chrome stack.
-Menus, dialogs, and other floating interaction surfaces should escape ordinary
-document stacking through Astryx's Layer system and the browser top layer, not
-through larger `z-index` values.
+一个 Astryx 组件应当能够对其自身绘制的组成部分排序，而不改变无关组件、页面内容或应用外壳的堆叠方式。菜单、对话框以及其他浮层交互表面应当通过 Astryx 的 Layer 系统与浏览器顶层摆脱普通的文档堆叠，而不是通过更大的 `z-index` 值。
 
-This spec separates two mechanisms:
+本规格区分两种机制：
 
-- **local stacking** orders parts inside one component-owned surface; and
-- **top-layer routing** hosts floating interaction surfaces through
-  [`architecture:layer-runtime`](../../architecture/layer-runtime.md).
+- **局部堆叠（local stacking）**在一个组件自有表面内部排序其组成部分；以及
+- **顶层路由（top-layer routing）**通过 [`architecture:layer-runtime`](../../architecture/layer-runtime.md) 托管浮层交互表面。
 
-A local number never becomes a claim on the whole page.
+一个局部数值永远不会变成对整个页面的主张。
 
 ## Non-goals
 
-- Define shadows, borders, or perceived elevation. Those remain visual-design
-  concerns.
-- Create a global numeric z-index scale or semantic page-wide z-index tokens.
-- Change which interaction dismisses a menu, dialog, popover, or other overlay.
-- Require `isolation: isolate` on components that have no local paint-order
-  relationship.
-- Treat a React portal as equivalent to browser top-layer promotion.
+- 定义阴影、边框或感知的层次高度。这些仍属于视觉设计关注点。
+- 创建全局的数值 z-index 刻度或语义化的全页 z-index token。
+- 改变哪种交互会关闭菜单、对话框、popover 或其他浮层。
+- 要求在没有局部绘制顺序关系的组件上使用 `isolation: isolate`。
+- 将 React portal 视为等同于浏览器顶层提升。
 
 ## Terms
 
-- **Local layer:** a positioned or stacking-context descendant whose paint order
-  is meaningful only inside one component-owned surface.
-- **Isolation owner:** the component-owned element that establishes
-  `isolation: isolate` for one local stacking relationship.
-- **Surface owner:** the element that paints or directly owns the component
-  surface whose parts are being ordered, including its background, border,
-  clipping, or elevation boundary.
-- **Floating interaction surface:** a menu, dialog, popover, tooltip, hover card,
-  sheet, command surface, or similar UI that must escape ordinary content or
-  clipping to perform its interaction role.
-- **Browser top layer:** the platform stacking plane entered through native
-  mechanisms such as the Popover API or modal `<dialog>`.
+- **局部层（Local layer）：**一个定位元素或堆叠上下文后代，其绘制顺序只在一个组件自有表面内部有意义。
+- **隔离所有者（Isolation owner）：**为某一个局部堆叠关系建立 `isolation: isolate` 的组件自有元素。
+- **表面所有者（Surface owner）：**绘制或直接拥有该组件表面的元素，该表面的组成部分正在被排序，包括其背景、边框、裁剪或高度边界。
+- **浮层交互表面（Floating interaction surface）：**为履行其交互角色必须摆脱普通内容或裁剪的菜单、对话框、popover、tooltip、hover card、sheet、命令表面或类似 UI。
+- **浏览器顶层（Browser top layer）：**通过原生机制（如 Popover API 或模态 `<dialog>`）进入的平台堆叠平面。
 
 ## Requirements
 
 ### Local stacking
 
-- **FR1 — z-index is local only.** A `z-index` value in Astryx MUST order parts
-  within one component-owned stacking relationship. It MUST NOT establish an
-  ordering contract against unrelated components, application content,
-  AppShell chrome, or another page region.
-- **FR2 — The surface owns the isolation boundary.** Every local stacking
-  relationship MUST have an `isolation: isolate` owner on the component surface
-  that contains the relationship. The isolation boundary MUST live on the
-  surface owner rather than an arbitrary page wrapper or distant ancestor.
-- **FR3 — The isolation owner does not escalate itself.** The outer isolation
-  owner MUST remain at its normal parent paint level. Local `z-index` values
-  belong to descendants inside that owner. If a nested surface must be ordered
-  inside a larger component, that larger component supplies another local
-  isolation owner.
-- **FR4 — Local values have no system-wide rank.** Values such as `-1`, `0`, `1`,
-  `2`, or a dynamic local depth MAY express a relationship inside an isolation
-  owner. The same value MAY mean something different in another component.
-  Astryx MUST NOT document or depend on page-wide bands such as “inputs at 1,”
-  “sticky content at 10,” or “overlays at 1000.”
-- **FR5 — Fix the leaking owner, not the unrelated neighbor.** When a component
-  part paints above unrelated UI, the fix MUST contain that part at its
-  component-owned surface. Raising the unrelated header, shell, or neighbor to a
-  larger value is not a conforming fix.
-- **FR6 — Every local state stays contained.** Hover, focus, validation, drag,
-  sticky, selected, resized, animated, and negative-layer states MUST remain
-  inside the same isolation boundary. A state change MUST NOT promote the
-  component surface into a page-level stacking competitor.
+- **FR1 — z-index 仅限局部。**Astryx 中的 `z-index` 值必须在单个组件自有的堆叠关系内排序其组成部分。它不得与无关组件、应用内容、AppShell 外壳或其他页面区域建立排序契约。
+- **FR2 — 隔离边界归表面所有。**每个局部堆叠关系都必须在包含该关系的组件表面上有一个 `isolation: isolate` 所有者。隔离边界必须位于表面所有者上，而不是任意的页面包装器或更远的祖先上。
+- **FR3 — 隔离所有者不提升自身。**外层隔离所有者必须保持在其正常的父级绘制层级。局部 `z-index` 值属于该所有者内部的后代。如果嵌套表面必须在一个更大的组件内部排序，则该更大的组件提供另一个局部隔离所有者。
+- **FR4 — 局部数值没有系统级排名。**诸如 `-1`、`0`、`1`、`2` 或动态局部深度这样的值可以表达隔离所有者内部的关系。同一个值在另一个组件中可能表示不同的含义。Astryx 不得记录或依赖全页范围的数值带，例如“输入框在 1”“粘性内容在 10”或“浮层在 1000”。
+- **FR5 — 修复泄漏的所有者，而不是无关的邻居。**当一个组件部件绘制在无关 UI 之上时，修复必须把该部件限制在其组件自有的表面内。把无关的表头、外壳或邻居提升到更大的数值不是符合规范的修复。
+- **FR6 — 每个局部状态都保持被包含。**hover、focus、校验、拖拽、粘性、选中、调整大小、动画以及负层级状态都必须留在同一个隔离边界内。状态变化不得把组件表面提升为页面级的堆叠竞争者。
 
 ### Floating interaction surfaces
 
-- **FR7 — Floating interactions use the Layer system.** Menus, dialogs,
-  popovers, tooltips, hover cards, sheets, command surfaces, and equivalent
-  floating interactions MUST use the hosting and promotion mechanisms owned by
-  [`architecture:layer-runtime`](../../architecture/layer-runtime.md). A local
-  component MUST NOT recreate that system with positioned DOM and page-level
-  `z-index`.
-- **FR8 — Browser promotion owns cross-surface order.** A floating interaction
-  that must escape ordinary content or clipping MUST enter the browser top layer
-  through the applicable Layer/native host. A body portal, a fixed position, or
-  a larger number is not a substitute.
-- **FR9 — Numeric values inside a top-layer host remain local.** A promoted
-  surface MAY use locally isolated z-index values to order its own backdrop,
-  panel, arrow, controls, or animation plates. Those values MUST NOT be treated
-  as the reason the surface appears above page content or another native host.
-- **FR10 — Existing Layer support boundaries remain authoritative.** Native
-  Popover and modal-dialog behavior, corrective portals, anchored positioning,
-  reduced browser fallback, and global-host admission continue to follow
-  `architecture:layer-runtime` and
-  [AST-003](../AST-003/spec.md). This spec does not authorize a component to
-  bypass those contracts when native support is unavailable.
-- **FR11 — In-flow UI remains in flow.** A label, status message, banner, sticky
-  page region, focus ring, or other in-flow presentation does not become a
-  floating interaction merely because it needs local paint ordering. It follows
-  FR1–FR6 unless its owning contract explicitly assigns it to Layer.
+- **FR7 — 浮层交互使用 Layer 系统。**菜单、对话框、popover、tooltip、hover card、sheet、命令表面以及等价的浮层交互必须使用由 [`architecture:layer-runtime`](../../architecture/layer-runtime.md) 拥有的托管与提升机制。局部组件不得用定位 DOM 和页面级 `z-index` 重建该系统。
+- **FR8 — 浏览器提升拥有跨表面顺序。**必须摆脱普通内容或裁剪的浮层交互，必须通过适用的 Layer/原生宿主进入浏览器顶层。body portal、fixed 定位或更大的数值都不是替代品。
+- **FR9 — 顶层宿主内部的数值仍为局部。**被提升的表面可以使用局部隔离的 z-index 值来排序其自身的背景遮罩、面板、箭头、控件或动画层级。这些值不得被当作该表面出现在页面内容或其他原生宿主之上的原因。
+- **FR10 — 现有 Layer 支持边界仍然具有权威性。**原生 Popover 与模态对话框行为、纠正性 portal、锚定定位、降级的浏览器回退以及全局宿主准入，继续遵循 `architecture:layer-runtime` 和 [AST-003](../AST-003/spec.md)。本规格不授权组件在原生支持不可用时绕过这些契约。
+- **FR11 — 流内 UI 保持在流内。**label、状态消息、banner、粘性页面区域、focus ring 或其他流内呈现，不会仅仅因为它需要局部绘制排序就变成浮层交互。它遵循 FR1–FR6，除非其所属契约明确将其指派给 Layer。
 
 ### Implementation requirements
 
-- **IR1 — Every shipped z-index is classified.** Before this spec ships,
-  every production `z-index` in published package source and CLI-emitted template
-  source MUST be classified as a contained local relationship, a local
-  relationship inside a Layer/native top-layer host, or a migration gap.
-  Unclassified values fail the migration.
-- **IR2 — New leaks fail mechanically.** Repository checks MUST reject a new
-  local z-index relationship that has no component-owned isolation surface.
-  The check MAY use source metadata or a narrow allowlist for relationships
-  whose owner cannot be derived statically, but an allowlist entry MUST name
-  its owner and verification.
-- **IR3 — Layer bypasses fail mechanically.** Repository checks MUST reject a
-  new menu, dialog, popover, tooltip, hover card, sheet, command surface, or
-  equivalent overlay that uses page-level z-index instead of the shared Layer
-  or native top-layer path.
-- **IR4 — Migrations remove obsolete bands.** When a surface is contained or
-  moved into the top layer, obsolete page-wide z-index comments, constants,
-  tokens, tests, and compensating neighbor values MUST be removed in the same
-  change.
+- **IR1 — 每个已发布的 z-index 都被分类。**在本规格发布之前，已发布包源码和 CLI 生成模板源码中的每个生产 `z-index` 都必须被分类为被包含的局部关系、Layer/原生顶层宿主内部的局部关系，或迁移缺口。未分类的值视为迁移不通过。
+- **IR2 — 新的泄漏会在机制上失败。**仓库检查必须拒绝没有组件自有隔离表面的新局部 z-index 关系。检查可以使用源码元数据，或对所有者无法静态推导的关系使用窄范围允许列表，但允许列表条目必须指明其所有者与验证方式。
+- **IR3 — Layer 绕过会在机制上失败。**仓库检查必须拒绝新的菜单、对话框、popover、tooltip、hover card、sheet、命令表面或等价的浮层，若其使用页面级 z-index 而不是共享的 Layer 或原生顶层路径。
+- **IR4 — 迁移移除过时的数值带。**当一个表面被包含或移入顶层时，过时的全页 z-index 注释、常量、token、测试以及补偿性邻居值必须在同一次变更中移除。
 
 ### Platform support
 
-- Supported feature/engine floor: `isolation: isolate` defines local stacking in
-  every browser supported by Astryx. Floating-surface support follows the matrix
-  and reduced fallback in `architecture:layer-runtime`.
-- Unsupported behavior: a browser below the native Layer feature floor receives
-  the documented reduced fallback. It MUST NOT receive an undocumented global
-  z-index ladder as an attempted top-layer polyfill.
-- Browser evidence: local containment requires real-browser paint and hit-test
-  evidence. Popover, modal-dialog, focus/inertness, and top-layer ordering require
-  the real-browser matrix named by `architecture:layer-runtime`; Playwright WebKit
-  does not substitute for Safari-specific evidence.
+- 支持的特性/引擎下限：`isolation: isolate` 在 Astryx 支持的每个浏览器中定义局部堆叠。浮层表面的支持遵循 `architecture:layer-runtime` 中的矩阵与降级回退。
+- 不支持的行为：低于原生 Layer 特性下限的浏览器会收到文档化的降级回退。它不得收到未文档化的全局 z-index 阶梯作为尝试性的顶层 polyfill。
+- 浏览器证据：局部包含需要真实浏览器的绘制与命中测试证据。Popover、模态对话框、焦点/惰性以及顶层排序需要 `architecture:layer-runtime` 所指定的真实浏览器矩阵；Playwright WebKit 不能替代 Safari 专属证据。
 
 ## Current-state impact
 
-The repository already contains good examples of the intended local pattern:
-Thumbnail, Calendar, ChatComposer, ChatLayout, CodeBlock, CheckboxInput,
-RadioList, Switch, Slider, Field's attached-status wrapper, and the touch
-DateInput panel place internal z-index relationships beneath a local
-`isolation: isolate` owner. They are migration references, not blanket proof
-that every descendant is correct.
+仓库中已经包含符合预期局部模式的良好示例：Thumbnail、Calendar、ChatComposer、ChatLayout、CodeBlock、CheckboxInput、RadioList、Switch、Slider、Field 的附连状态包装器，以及触摸版 DateInput 面板，都把内部 z-index 关系置于局部 `isolation: isolate` 所有者之下。它们是迁移参考，而不是每个后代都正确的全面证明。
 
-The source audit covered published package source and CLI-emitted template source:
-`packages/{core,lab,charts,richtext}/src` and
-`packages/cli/assets/templates`, excluding tests and stories. It found 56
-production declarations across 40 files and these current gaps:
+源码审计覆盖了已发布包源码与 CLI 生成模板源码：`packages/{core,lab,charts,richtext}/src` 和 `packages/cli/assets/templates`，排除测试与 stories。它发现了跨 40 个文件的 56 条生产声明，以及以下当前缺口：
 
-| Surface                                                                                                | Current mechanism                                                                                                                                                                                                                       | Impact under this spec                                                                                                                                             | Required migration or proof                                                                                                                                      |
-| ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Shared Field input wrappers, including TextInput, FileInput, TextArea, NumberInput, and RichTextEditor | `inputWrapperStyles.base` places the painted input surface itself at `z-index: 1`; only the attached-status composition adds an isolated wrapper; RichTextEditor also places its status icon at local `1` inside the unisolated surface | **Confirmed leak.** Detached and tooltip Field compositions compete directly with AppShell and later page content                                                  | Put isolation on the Field-owned surface for every variant, keep wrapper and status-icon layers beneath it, and remove the painted input surface's external rank |
-| Production docsite component pages                                                                     | A live Chromium probe on `/components/TextInput` found a rendered input and the sticky AppShell header both at `z-index: 1` with `isolation: auto`; after the input was scrolled into the header, it won browser hit-testing            | **Confirmed user-facing leak.** A real component example covers navigation on the production route                                                                 | Preserve that route and overlapping-control relationship as a Chromium regression fixture; prove the contained field passes below unrelated sticky chrome        |
-| AppShell header and skip link                                                                          | The sticky header uses `1`, the focused skip link uses `9999`, and the shell root is not isolated; only transparent content establishes a local isolation boundary                                                                      | **Confirmed page-level coupling.** AppShell exposes numeric bands for ordinary shell parts                                                                         | Isolate the AppShell-owned surface and use only local depths inside it; the skip link remains local AppShell content rather than a reusable global band          |
-| ChatComposerDrawer and ChatDictationButton                                                             | The separately exported drawer root and dictation bars use `z-index: 1` without owning isolation; placement inside ChatComposer is only a consumer convention                                                                           | **Confirmed implicit-containment gaps.** Either export can be composed outside ChatComposer's isolated root                                                        | Give each exported part a component-owned isolation surface and keep its internal ordering local; do not rely on a consumer ancestor                             |
-| InputGroup focus ordering                                                                              | A focused connected child uses `z-index: 1`; InputGroup composes Field through the detached path                                                                                                                                        | **Confirmed leak.** Focus ordering can escape the group                                                                                                            | Isolate the complete painted group owner and verify connected-border focus ordering against neighboring components                                               |
-| SideNav sticky content                                                                                 | The sticky top region uses `z-index: 1`; the SideNav root is not isolated                                                                                                                                                               | **Confirmed leak.** Sticky navigation internals can compete with siblings                                                                                          | Add isolation to the SideNav surface; collapsed menus continue to use Popover/Layer                                                                              |
-| Outline active indicator                                                                               | The positioned indicator uses `z-index: 1` beneath an unisolated root                                                                                                                                                                   | **Confirmed leak.** The visual indicator can compete outside Outline                                                                                               | Isolate the Outline root and keep the indicator relationship local                                                                                               |
-| Table sticky columns and resize handle                                                                 | Sticky header/body cells use `3` and `1`, the row overlay uses `-1`, and the resize handle uses `1`; `TableScrollWrapper` is not isolated                                                                                               | **Confirmed leak.** Table internals can meet unrelated shell content                                                                                               | Isolate `TableScrollWrapper`; retain header/body/overlay/resize ordering beneath it and verify sticky states under shell chrome                                  |
-| Resizable handles and local overlays                                                                   | Overlay root, hit area, and pill use `1` and `2`; no resized surface owner is isolated                                                                                                                                                  | **Confirmed leak.** Resize affordances can escape their region                                                                                                     | Isolate each resized panel or region owner, not only the handle descendant; verify drag and focus states against adjacent content                                |
-| Lab Schedule and ChartZoom overlays                                                                    | Schedule uses `1`, dynamic event levels, and `20`; ChartZoom uses `1`; neither painted root is isolated                                                                                                                                 | **Confirmed leaks.** Visualization internals create page-level ranks                                                                                               | Isolate the Schedule and Chart painted roots; Chart also establishes the containing block required by its absolute toolbar                                       |
-| ChartTooltip                                                                                           | The published Charts package renders the tooltip with `position: fixed` and `z-index: 9999` instead of Layer                                                                                                                            | **Confirmed Layer bypass and page-level leak.** It uses exactly the substitute prohibited by FR7–FR8                                                               | Route ChartTooltip through Layer's fixed mode and the browser top layer; keep tooltip-internal ordering inside its surface                                       |
-| Lab ListInput and TransferList reorder indicators                                                      | Shared reorder styles use `z-index: 2`; ListInput's detached Field path is unisolated, while TransferList relies incidentally on `container-type`                                                                                       | **Confirmed gap for ListInput; implicit containment for TransferList is not the explicit contract**                                                                | Add explicit isolation to both painted owners and verify reorder hit-testing in Chromium                                                                         |
-| CLI-emitted page templates                                                                             | Dashboard alert rail and Settings dialog use local `1`; Table filter uses reorder `2`; Kanban renders a fixed drag clone at `1000`                                                                                                      | **Generated leaks.** New consumer apps inherit implicit local boundaries and, for Kanban, a page-level floating band                                               | Add explicit surface isolation to local template relationships; route the Kanban drag clone through a visual-only Layer/top-layer host                           |
-| Popover, Lightbox, and modal panel internals                                                           | Small values order arrows, controls, handles, panels, and tints inside native Popover or dialog hosts                                                                                                                                   | **Correct cross-page mechanism; local ownership still requires proof.** The browser host, not the number, places the surface above page content                    | Preserve top-layer hosting and add or identify an explicit isolation owner for each internal relationship                                                        |
-| ToastViewport                                                                                          | The viewport enters `popover="manual"` but also carries `z-index: 500`                                                                                                                                                                  | **Redundant page-band value plus the AST-003 hosting gap.** Native promotion, not `500`, owns page-content order; current Toast can still sit behind a later modal | Complete AST-003's global host first or in the same change, then remove `500` and keep any internal ordering beneath an isolated viewport surface                |
-| BottomSheet and BottomSheetSwitcher non-modal paths                                                    | Non-modal `dialog.show()` paths use static or dynamic values beginning at `1000`                                                                                                                                                        | **Confirmed global leaks.** A page band cannot provide dialog-layer semantics                                                                                      | Route non-modal hosting through Layer/native top-layer infrastructure; keep panel, handle, tint, action, and stack ordering locally isolated inside the host     |
+| 表面                                                                                        | 当前机制                                                                                                                                                                            | 本规格下的影响                                                                                                                     | 必需的迁移或证明                                                                                             |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| 共享的 Field 输入包装器，包括 TextInput、FileInput、TextArea、NumberInput 和 RichTextEditor | `inputWrapperStyles.base` 把绘制出来的输入表面本身置于 `z-index: 1`；只有附连状态组合会添加隔离包装器；RichTextEditor 还把其状态图标置于未隔离表面内部的局部 `1`                    | **已确认泄漏。**分离式与 tooltip 的 Field 组合直接与 AppShell 以及后续页面内容竞争                                                 | 为每个变体把隔离放在 Field 自有的表面上，把包装器与状态图标层保持在其下，并移除绘制输入表面的外部排名        |
+| 生产 docsite 组件页面                                                                       | 在 `/components/TextInput` 上的一次实时 Chromium 探测发现，渲染的输入框与粘性 AppShell 表头都处于 `z-index: 1` 且为 `isolation: auto`；输入框滚动进表头后，它在浏览器命中测试中胜出 | **已确认的面向用户的泄漏。**生产路由上的一个真实组件示例覆盖了导航                                                                 | 把该路由与重叠控件关系保留为 Chromium 回归测试夹具；证明被包含的 field 在无关粘性外壳之下通过                |
+| AppShell 表头与跳过链接                                                                     | 粘性表头使用 `1`，获得焦点的跳过链接使用 `9999`，且外壳根未隔离；只有透明内容建立了局部隔离边界                                                                                     | **已确认的页面级耦合。**AppShell 为普通外壳部件暴露数值带                                                                          | 隔离 AppShell 自有的表面并只在其内部使用局部深度；跳过链接保持为局部 AppShell 内容，而不是可复用的全局数值带 |
+| ChatComposerDrawer 与 ChatDictationButton                                                   | 单独导出的抽屉根与听写条使用 `z-index: 1` 却没有自有隔离；放在 ChatComposer 内部只是一种使用方约定                                                                                  | **已确认的隐式包含缺口。**任一导出都可以被组合到 ChatComposer 的隔离根之外                                                         | 为每个导出的部件提供组件自有的隔离表面并保持其内部排序为局部；不要依赖使用方祖先                             |
+| InputGroup 焦点排序                                                                         | 获得焦点的连通子元素使用 `z-index: 1`；InputGroup 通过分离路径组合 Field                                                                                                            | **已确认泄漏。**焦点排序可以逃出该组                                                                                               | 隔离完整的绘制组所有者，并针对相邻组件验证连通边框的焦点排序                                                 |
+| SideNav 粘性内容                                                                            | 粘性顶部区域使用 `z-index: 1`；SideNav 根未隔离                                                                                                                                     | **已确认泄漏。**粘性导航内部可以与兄弟元素竞争                                                                                     | 为 SideNav 表面添加隔离；折叠菜单继续使用 Popover/Layer                                                      |
+| Outline 活动指示器                                                                          | 定位的指示器在未隔离的根之下使用 `z-index: 1`                                                                                                                                       | **已确认泄漏。**视觉指示器可以在 Outline 之外竞争                                                                                  | 隔离 Outline 根并保持指示器关系为局部                                                                        |
+| Table 粘性列与调整大小手柄                                                                  | 粘性表头/表体单元格使用 `3` 和 `1`，行浮层使用 `-1`，调整大小手柄使用 `1`；`TableScrollWrapper` 未隔离                                                                              | **已确认泄漏。**Table 内部可能遇到无关的外壳内容                                                                                   | 隔离 `TableScrollWrapper`；将表头/表体/浮层/调整大小的排序保持在其下，并在外壳 chrome 之下验证粘性状态       |
+| 可调整大小的手柄与局部浮层                                                                  | 浮层根、命中区域与 pill 使用 `1` 和 `2`；没有调整大小后的表面所有者被隔离                                                                                                           | **已确认泄漏。**调整大小的可供性元素可以逃出其区域                                                                                 | 隔离每个被调整大小的面板或区域所有者，而不仅是手柄后代；针对相邻内容验证拖拽与焦点状态                       |
+| Lab Schedule 与 ChartZoom 浮层                                                              | Schedule 使用 `1`、动态事件级别和 `20`；ChartZoom 使用 `1`；两个绘制根都未隔离                                                                                                      | **已确认泄漏。**可视化内部创建了页面级排名                                                                                         | 隔离 Schedule 与 Chart 的绘制根；Chart 还要建立其绝对定位工具栏所需的包含块                                  |
+| ChartTooltip                                                                                | 已发布的 Charts 包使用 `position: fixed` 和 `z-index: 9999` 渲染 tooltip，而不是 Layer                                                                                              | **已确认的 Layer 绕过与页面级泄漏。**它使用的正是 FR7–FR8 所禁止的替代品                                                           | 让 ChartTooltip 通过 Layer 的 fixed 模式与浏览器顶层路由；把 tooltip 内部排序保持在其表面内                  |
+| Lab ListInput 与 TransferList 重排指示器                                                    | 共享的重排样式使用 `z-index: 2`；ListInput 的分离 Field 路径未隔离，而 TransferList 只是偶然依赖 `container-type`                                                                   | **ListInput 已确认存在缺口；TransferList 的隐式包含不是显式契约**                                                                  | 为两个绘制所有者添加显式隔离，并在 Chromium 中验证重排命中测试                                               |
+| CLI 生成的页面模板                                                                          | Dashboard 告警栏与 Settings 对话框使用局部 `1`；Table 过滤器使用重排 `2`；Kanban 以 `1000` 渲染固定的拖拽克隆                                                                       | **生成的泄漏。**新的使用方应用继承了隐式局部边界，并且对 Kanban 而言继承了一个页面级浮层数值带                                     | 为局部模板关系添加显式表面隔离；让 Kanban 拖拽克隆通过仅视觉的 Layer/顶层宿主路由                            |
+| Popover、Lightbox 与模态面板内部                                                            | 小数值在原生 Popover 或对话框宿主内部排序箭头、控件、手柄、面板与色调                                                                                                               | **跨页面机制正确；局部所有权仍需证明。**是浏览器宿主（而非数值）把表面置于页面内容之上                                             | 保留顶层托管，并为每个内部关系添加或识别一个显式隔离所有者                                                   |
+| ToastViewport                                                                               | 视口进入 `popover="manual"`，但同时也带有 `z-index: 500`                                                                                                                            | **冗余的页面数值带，加上 AST-003 的托管缺口。**是原生提升（而非 `500`）拥有页面内容排序；当前的 Toast 仍可能位于后来打开的模态之后 | 先完成 AST-003 的全局宿主，或在同一次变更中完成，然后移除 `500` 并把任何内部排序保持在隔离的视口表面之下     |
+| BottomSheet 与 BottomSheetSwitcher 的非模态路径                                             | 非模态 `dialog.show()` 路径使用从 `1000` 开始的静态或动态值                                                                                                                         | **已确认的全局泄漏。**页面数值带无法提供对话框层语义                                                                               | 让非模态托管通过 Layer/原生顶层基础设施路由；把面板、手柄、色调、操作与堆栈排序在宿主内部保持局部隔离        |
 
-Current source already routes Tooltip, HoverCard, Popover, DropdownMenu and its
-submenus, ContextMenu, CommandPalette, modal Dialog, Drawer, Lightbox,
-MobileNav, Tour, Date-input layers, and RadialTooltip through Layer, native
-Popover, or `showModal()`. Their cross-page mechanism is directionally
-conforming. The confirmed exceptions are ChartTooltip and the non-modal
-BottomSheet and BottomSheetSwitcher paths. Toast is promoted but still has the
-global-host limitation already owned by AST-003.
+现有源码已经把 Tooltip、HoverCard、Popover、DropdownMenu 及其子菜单、ContextMenu、CommandPalette、模态 Dialog、Drawer、Lightbox、MobileNav、Tour、日期输入层与 RadialTooltip 路由到 Layer、原生 Popover 或 `showModal()`。它们的跨页面机制在方向上是符合规范的。已确认的例外是 ChartTooltip，以及非模态的 BottomSheet 与 BottomSheetSwitcher 路径。Toast 已被提升，但仍存在 AST-003 已经接管的全局宿主限制。
 
-This table is an impact inventory, not an implementation approval. Each row still
-requires its named browser evidence before migration lands. The exhaustive IR1
-audit may add rows; a row may be cleared only with named ownership and evidence.
+这张表是影响清单，而不是实现批准。每一行在迁移落地之前仍然需要其指定的浏览器证据。穷尽式的 IR1 审计可能增加行；一行只有具备指定的所有权与证据才能被清除。
 
 ## Verification
 
-| Contract | Verification                                                   | Representative states                                                                   | Mutation or failure expectation                                                                                                  |
-| -------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| FR1–FR6  | Source classification plus real Chromium paint/hit-test matrix | positive, zero, negative, sticky, focused, dragged, selected, and animated local layers | Removing the isolation owner lets a descendant cover an unrelated sibling; changing a local value never changes page-level order |
-| FR2, FR3 | DOM ownership and computed-style assertions                    | painted surface root, nested local surface, transparent surface, consumer wrapper       | Isolation appears on a distant page ancestor, or the isolation owner itself competes through a page-level z-index                |
-| FR5      | Before/after regression fixtures                               | docsite Field under sticky AppShell header; Table under shell chrome                    | A neighbor must be raised to make the fixture pass, or the leaking surface still wins hit-testing                                |
-| FR7–FR10 | Layer unit tests and real browser top-layer matrix             | menu, submenu, dialog, popover, tooltip, hover card, sheet, CommandPalette, Toast       | Positioned DOM or a body portal replaces Layer, or a numeric band determines cross-surface order                                 |
-| FR11     | Component and browser tests                                    | label/status overlap, sticky region, focus ring, banner                                 | In-flow UI is unnecessarily promoted, or its local paint state escapes its surface                                               |
-| IR1      | Generated shipped z-index inventory checked in CI              | every published package and emitted template declaration                                | A declaration is missing, duplicated, or has no owner/classification                                                             |
-| IR2, IR3 | Static-rule fixtures with valid and invalid examples           | isolated local component, leaking field, hand-built menu, native Layer surface          | A leak or Layer bypass passes, or a valid isolated relationship is rejected                                                      |
-| IR4      | Changed-file and source scans                                  | migrated Field, AppShell, Table, Toast, BottomSheet, Drawer                             | Obsolete bands, comments, tests, or compensating values remain after migration                                                   |
+| 契约     | 验证                                        | 代表性状态                                                                       | 变更或失败预期                                                             |
+| -------- | ------------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| FR1–FR6  | 源码分类加上真实 Chromium 绘制/命中测试矩阵 | 正、零、负、粘性、聚焦、拖拽、选中以及动画的局部层                               | 移除隔离所有者会让后代覆盖无关的兄弟元素；改变局部值永远不会改变页面级顺序 |
+| FR2, FR3 | DOM 所有权与计算样式断言                    | 绘制表面根、嵌套局部表面、透明表面、使用方包装器                                 | 隔离出现在遥远的页面祖先上，或隔离所有者本身通过页面级 z-index 竞争        |
+| FR5      | 前后对比回归夹具                            | 粘性 AppShell 表头下的 docsite Field；外壳 chrome 下的 Table                     | 必须提升邻居才能让夹具通过，或泄漏表面仍在命中测试中胜出                   |
+| FR7–FR10 | Layer 单元测试与真实浏览器顶层矩阵          | 菜单、子菜单、对话框、popover、tooltip、hover card、sheet、CommandPalette、Toast | 定位 DOM 或 body portal 取代 Layer，或数值带决定了跨表面顺序               |
+| FR11     | 组件与浏览器测试                            | label/状态重叠、粘性区域、focus ring、banner                                     | 流内 UI 被不必要地提升，或其局部绘制状态逃出其表面                         |
+| IR1      | 生成的已发布 z-index 清单在 CI 中检查       | 每个已发布包与生成的模板声明                                                     | 声明缺失、重复，或没有所有者/分类                                          |
+| IR2, IR3 | 带有效与无效示例的静态规则夹具              | 隔离的局部组件、泄漏的 field、手工构建的菜单、原生 Layer 表面                    | 泄漏或 Layer 绕过通过，或有效的隔离关系被拒绝                              |
+| IR4      | 变更文件与源码扫描                          | 已迁移的 Field、AppShell、Table、Toast、BottomSheet、Drawer                      | 迁移后仍残留过时的数值带、注释、测试或补偿值                               |
 
 ### Completion criteria
 
-This spec moves to `shipped` only when:
+仅当以下条件满足时，本规格才转为 `shipped`：
 
-- every z-index in published package source and CLI-emitted template source has
-  an owner and classification;
-- every ordinary local relationship is contained by its component-owned painted
-  surface;
-- the real docsite Field/AppShell failure is reproduced before the fix and passes
-  through local containment afterward;
-- menus, dialogs, popovers, tooltips, hover cards, sheets, command surfaces, and
-  equivalent overlays use the Layer/native top-layer path;
-- numeric bands no longer determine cross-component, page-shell, or overlay
-  order;
-- mechanical checks reject a representative local leak and Layer bypass;
-- the browser matrices for local containment and Layer hosting pass; and
-- `architecture:layer-runtime` plus affected family/component records describe
-  the shipped ownership without relying on this impact inventory.
+- 已发布包源码与 CLI 生成模板源码中的每个 z-index 都有所有者和分类；
+- 每个普通局部关系都被其组件自有的绘制表面所包含；
+- 真实的 docsite Field/AppShell 失败在修复前被复现，修复后通过局部包含；
+- 菜单、对话框、popover、tooltip、hover card、sheet、命令表面与等价浮层使用 Layer/原生顶层路径；
+- 数值带不再决定跨组件、页面外壳或浮层的顺序；
+- 机制化检查拒绝代表性的局部泄漏与 Layer 绕过；
+- 局部包含与 Layer 托管的浏览器矩阵通过；以及
+- `architecture:layer-runtime` 以及受影响的 family/组件记录描述了已发布的归属关系，且不依赖本影响清单。
 
 ## Decision log
 
 ### DEC-1 — z-index expresses local relationships only
 
 **Reference:** `spec:AST-027/DEC-1`
+
 **Decider:** `cixzhang`, `2026-09-04`
 
-A z-index value belongs to one component-owned stacking relationship. Reusing a
-number elsewhere creates no relationship between the components.
+一个 z-index 值属于一个组件自有的堆叠关系。在别处复用同一个数字不会在组件之间建立任何关系。
 
-Rejected: a global scale that ranks inputs, sticky navigation, page chrome, and
-overlays against one another. That scale turns every local change into a page-wide
-compatibility problem.
+已否决：用全局刻度把输入框、粘性导航、页面 chrome 与浮层相互排名。这种刻度把每次局部变更变成全页兼容性问题。
 
 ### DEC-2 — Isolation lives on the component surface
 
 **Reference:** `spec:AST-027/DEC-2`
+
 **Decider:** `cixzhang`, `2026-09-04`
 
-The element that owns the painted surface also establishes `isolation: isolate`.
-Descendant z-index values can then order that surface's parts without escaping to
-unrelated content.
+拥有绘制表面的元素同时建立 `isolation: isolate`。随后后代 z-index 值可以排序该表面的组成部分，而不会逃逸到无关内容。
 
-Rejected: placing isolation on an arbitrary page wrapper or raising the surface
-root itself. Both preserve hidden coupling between the component and its caller.
+已否决：把隔离放在任意的页面包装器上，或提升表面根本身。两者都保留了组件与其调用者之间的隐藏耦合。
 
 ### DEC-3 — Floating interactions use the browser top layer through Layer
 
 **Reference:** `spec:AST-027/DEC-3`
+
 **Decider:** `cixzhang`, `2026-09-04`
 
-Menus, dialogs, and equivalent floating interactions route through Astryx's Layer
-system and applicable native top-layer host. Their cross-surface order comes from
-the browser host and Layer contract, not a number.
+菜单、对话框与等价浮层交互通过 Astryx 的 Layer 系统与适用的原生顶层宿主路由。它们的跨表面顺序来自浏览器宿主与 Layer 契约，而不是某个数字。
 
-Rejected: fixed positioning, a body portal, or a large z-index as a substitute for
-Layer. These mechanisms do not provide native top-layer, modal, association,
-positioning, or dismissal behavior.
+已否决：以 fixed 定位、body portal 或大 z-index 作为 Layer 的替代。这些机制不提供原生顶层、模态、关联、定位或关闭行为。
 
 ### DEC-4 — Leaks are repaired at their owner
 
 **Reference:** `spec:AST-027/DEC-4`
+
 **Decider:** `cixzhang`, `2026-09-04`
 
-When a Field or another component covers unrelated shell chrome, contain the
-component at its own surface. Do not raise AppShell or add another global band.
+当 Field 或其他组件覆盖了无关的外壳 chrome 时，把该组件包含在其自身表面内。不要提升 AppShell，也不要添加另一个全局数值带。
 
-Rejected: escalating the AppShell header to a larger page-level value. It can
-pass a known comparison only by outranking today's values and leaves the next
-larger value to recreate the same defect.
+已否决：把 AppShell 表头提升到更大的页面级数值。它只能通过压过今天的值来通过某个已知比较，并把同样的缺陷留给下一个更大的值来重现。
 
 ## Open questions
 
-None.
+无。

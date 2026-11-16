@@ -47,183 +47,103 @@ deciding_specs: [spec:AST-020]
 
 ## User intent
 
-People should understand and operate the same Astryx interface whether their
-page, region, or content flows left-to-right or right-to-left. RTL support is not
-a mechanical reflection of every pixel. It preserves meaning, reading order,
-spatial relationships, target size, and interaction behavior for the active
-writing direction.
+无论用户的页面、区域或内容是从左到右还是从右到左流动，用户都应能理解并操作同一个 Astryx 界面。RTL 支持不是对每个像素做机械镜像。它要在当前书写方向上保留含义、阅读顺序、空间关系、目标尺寸和交互行为。
 
 ## Design principles
 
-- **DR1 — Preserve meaning, not coordinates.** An RTL presentation MUST preserve
-  the same task meaning and affordance relationships as LTR. A physical left/right
-  implementation detail is not a design requirement unless the content itself is
-  physical.
-- **DR2 — Content direction and layout direction are distinct.** A page or region
-  has an ambient direction, while text, code, URLs, identifiers, and user content
-  may carry their own direction. Mixed-direction content MUST retain readable
-  character order and punctuation without moving to a different semantic slot.
-- **DR3 — Reading-order relationships follow inline start and end.** Navigation,
-  ordered progression, primary/supporting lanes, leading/trailing content, and
-  start/end alignment MUST follow the containing region's direction.
-- **DR4 — Directional artwork is handled exactly once.** A horizontal icon or
-  decorative glyph whose meaning is previous, next, back, forward, start, end, or
-  progression MUST mirror or swap once. Artwork that the Unicode bidi algorithm
-  already mirrors MUST NOT receive a second manual mirror.
-- **DR5 — Direction-neutral and physical content stays stable.** Vertical,
-  symmetric, brand, media, chart, map, clock, hardware, and other physically
-  meaningful content MUST remain unchanged unless its specific semantic role is
-  directional. A reference sample that exposes caller-supplied left/right glyph
-  geometry as data preserves that geometry; the same glyph used as a previous,
-  next, or progression cue follows DR4 instead.
-- **DR6 — Interaction follows the visual relationship.** Horizontal keyboard
-  movement, drag/resize math, carousel or scroll progression, range navigation,
-  and side placement MUST produce the action indicated by the RTL visual state.
-- **DR7 — Overlays stay attached to their logical owner.** Menus, dialogs,
-  tooltips, popovers, drawers, and other layered surfaces MUST preserve their
-  start/end alignment and relationship to the trigger in the trigger's region.
-- **DR8 — Hit targets follow visible controls.** A pointer or touch target MUST
-  remain centered on the visible control in both directions and MUST preserve the
-  component's required target size. Mirroring MUST NOT displace, shrink, or make
-  only part of the visible control clickable.
-- **DR9 — Direction changes must not flash the wrong relationship.** Server and
-  first-paint output SHOULD agree with the document or region direction. A
-  direction-dependent relationship MUST NOT wait for a post-render JavaScript
-  correction when platform layout can express it.
-- **DR10 — Exceptions require semantics, not convenience.** A component may keep a
-  physical orientation only when that orientation carries stable user meaning.
-  Implementation difficulty, current LTR behavior, or an all-N/A audit does not
-  establish an exception.
+- **DR1 — 保留含义，而非坐标。** RTL 呈现必须保留与 LTR 相同的任务含义和可供性关系。物理上的左/右实现细节不是设计要求，除非内容本身就是物理的。
+- **DR2 — 内容方向与布局方向不同。** 页面或区域具有环境方向，而文本、代码、URL、标识符和用户内容可能带有自己的方向。混合方向的内容必须保持可读的字符顺序和标点，并且不移动到不同的语义槽位。
+- **DR3 — 阅读顺序关系遵循行内起始和结束。** 导航、有序推进、主要/辅助通道、前置/后置内容以及起始/结束对齐必须遵循所在区域的方向。
+- **DR4 — 方向性图形只处理一次。** 含义为上一项、下一项、后退、前进、起点、终点或推进的水平图标或装饰字形，必须镜像或交换一次。Unicode bidi 算法已经镜像的图形，绝不能再次手动镜像。
+- **DR5 — 方向中立和物理性内容保持稳定。** 垂直、对称、品牌、媒体、图表、地图、时钟、硬件以及其他具有物理含义的内容必须保持不变，除非其特定语义角色具有方向性。将调用方提供的左/右字形几何作为数据公开的参考示例会保留该几何；同一字形若用作上一项、下一项或推进提示，则改为遵循 DR4。
+- **DR6 — 交互遵循视觉关系。** 水平键盘移动、拖拽/调整大小的计算、轮播或滚动推进、范围导航以及侧边放置，必须产生 RTL 视觉状态所指示的动作。
+- **DR7 — 覆盖层保持附着于其逻辑所有者。** 菜单、对话框、工具提示、弹出层、抽屉和其他分层表面必须保持其起始/结束对齐，以及与触发器所在区域中触发器的关系。
+- **DR8 — 命中目标跟随可见控件。** 指针或触摸目标在两个方向上都必须保持居中于可见控件，并且必须保持组件要求的目标尺寸。镜像绝不能使可见控件发生位移、缩小，或只让其中一部分可点击。
+- **DR9 — 方向变化不得闪现错误关系。** 服务器和首次绘制输出应与文档或区域方向一致。当平台布局能够表达时，依赖方向的关系绝不能等待渲染后的 JavaScript 修正。
+- **DR10 — 例外需要语义依据，而非便利。** 只有当物理方向承载稳定的用户含义时，组件才可以保留该方向。实现难度、当前 LTR 行为或全 N/A 的审计结果都不能构成例外。
 
 ## Anatomy and hierarchy
 
-Bidirectionality applies to relationships rather than one shared DOM anatomy.
+双向性适用于关系，而不是一个共享的 DOM 结构。
 
-| Role                      | Purpose                                                            | Required relationship                                                                     |
-| ------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| Ambient region            | Establishes layout and browser text-flow direction                 | Descendants follow its `dir` unless a nested content region establishes another direction |
-| Ordered sequence          | Communicates progression or reading order                          | First/previous/start and last/next/end exchange physical sides under RTL                  |
-| Directional control       | Moves, reveals, or points along the inline axis                    | Artwork and behavior agree after exactly one directional treatment                        |
-| Directional decoration    | Communicates hierarchy or progression without interactive behavior | Mirrors exactly once when its UI role is directional                                      |
-| Direction-neutral content | Carries visual meaning independent of inline direction             | Retains its orientation                                                                   |
-| Interactive target        | Receives pointer, touch, or keyboard input                         | Remains aligned with the visible affordance and preserves required size                   |
-| Nested bidi content       | Carries text whose direction differs from its surrounding region   | Preserves its own character order, punctuation, and readable isolation                    |
+| 角色         | 用途                                 | 必需关系                                                |
+| ------------ | ------------------------------------ | ------------------------------------------------------- |
+| 环境区域     | 确立布局和浏览器文本流方向           | 后代遵循其 `dir`，除非嵌套内容区域确立了另一个方向      |
+| 有序序列     | 传达推进或阅读顺序                   | 在 RTL 下，首项/上一项/起点与末项/下一项/终点交换物理侧 |
+| 方向性控件   | 沿行内轴移动、显示或指向             | 经过恰好一次方向处理后，图形与行为一致                  |
+| 方向性装饰   | 在没有交互行为的情况下传达层级或推进 | 当其 UI 角色具有方向性时，恰好镜像一次                  |
+| 方向中立内容 | 承载与行内方向无关的视觉含义         | 保持其方向                                              |
+| 交互目标     | 接收指针、触摸或键盘输入             | 与可见可供性保持对齐，并保持所需尺寸                    |
+| 嵌套双向内容 | 承载方向与周围区域不同的文本         | 保持自身的字符顺序、标点以及可读的隔离                  |
 
 ## State representation
 
-| State                                           | Required representation                                                                      | Allowed variation                                          |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| LTR region                                      | Inline progression begins at the left and ends at the right                                  | Component-specific spacing and artwork                     |
-| RTL region                                      | Inline progression begins at the right and ends at the left                                  | Component-specific spacing and artwork                     |
-| Explicit direction override                     | The chosen direction governs the subtree even when locale normally implies another direction | Test and product reasons for the override                  |
-| Nested opposite-direction region                | Local content flow changes without moving the region to another semantic slot                | Alignment chosen by the owning layout contract             |
-| Mixed text, code, URL, or identifier            | Character order and ending punctuation remain readable                                       | Browser bidi behavior plus explicit isolation where needed |
-| Manual-mirror glyph or icon                     | One horizontal mirror or one paired-glyph swap                                               | CSS transform or semantic glyph pair                       |
-| Unicode bidi-mirrored glyph                     | Browser mirrors the unchanged glyph                                                          | Exact glyph choice                                         |
-| Vertical, symmetric, brand, or physical artwork | Orientation remains unchanged                                                                | Scale, color, and theme treatment                          |
-| Coarse-pointer control                          | Target stays centered and meets the component's minimum target size                          | Invisible hit-area shape beyond that minimum               |
+| 状态                         | 必需表示                                         | 允许的变体                             |
+| ---------------------------- | ------------------------------------------------ | -------------------------------------- |
+| LTR 区域                     | 行内推进从左开始、到右结束                       | 组件特定的间距和图形                   |
+| RTL 区域                     | 行内推进从右开始、到左结束                       | 组件特定的间距和图形                   |
+| 显式方向覆盖                 | 所选方向管辖该子树，即使语言环境通常隐含另一方向 | 覆盖的测试和产品理由                   |
+| 嵌套反向区域                 | 本地内容流改变，但区域不移动到另一个语义槽位     | 由所属布局契约选择对齐方式             |
+| 混合文本、代码、URL 或标识符 | 字符顺序和结尾标点保持可读                       | 浏览器 bidi 行为，加上需要时的显式隔离 |
+| 手动镜像字形或图标           | 一次水平镜像或一次成对字形交换                   | CSS transform 或语义字形对             |
+| Unicode bidi 镜像字形        | 浏览器镜像未更改的字形                           | 具体的字形选择                         |
+| 垂直、对称、品牌或物理性图形 | 方向保持不变                                     | 缩放、颜色和主题处理                   |
+| 粗指针控件                   | 目标保持居中并满足组件的最小目标尺寸             | 超出该最小尺寸的不可见命中区域形状     |
 
 ## Responsive and input behavior
 
-- **DR11 — Keyboard direction is resolved at interaction time.** Left/right
-  behavior MUST follow the current rendered region, including nested regions and
-  runtime direction changes. Labels remain semantic (`previous`, `next`, `start`,
-  `end`) rather than becoming physical left/right instructions.
-- **DR12 — Pointer and touch geometry is direction-invariant in quality.** The
-  visible control, native input, and effective hit area MUST share a center within
-  the component's stated tolerance in LTR and RTL, and MUST preserve the owning
-  component's stated minimum target size. Proving centering alone is insufficient.
-  WCAG 2.5.8 target-size ownership and exceptions remain with AST-020 and the
-  component/composition contract.
-- **DR13 — Drag, resize, and scroll outcomes mirror.** A gesture toward logical
-  next/end MUST move toward logical next/end in both directions. Physical deltas
-  may invert while the user-visible action remains equivalent.
-- **DR14 — Responsive reflow preserves logical ownership.** Moving content into a
-  drawer, sheet, overflow menu, or alternate layout MUST preserve which content is
-  leading/trailing and how focus returns to its logical trigger.
+- **DR11 — 键盘方向在交互时解析。** 左/右行为必须遵循当前渲染的区域，包括嵌套区域和运行时方向变化。标签保持语义（`previous`、`next`、`start`、`end`），而不是变成物理的左/右指令。
+- **DR12 — 指针和触摸几何在质量上不随方向变化。** 可见控件、原生输入和有效命中区域必须在 LTR 和 RTL 下于组件声明的容差内共享同一中心，并且必须保持所属组件声明的最小目标尺寸。仅证明居中是不够的。WCAG 2.5.8 目标尺寸的所有权和例外仍属于 AST-020 以及组件/组合契约。
+- **DR13 — 拖拽、调整大小和滚动结果镜像。** 朝向逻辑下一项/终点的手势在两个方向上都必须朝逻辑下一项/终点移动。物理增量可以反转，而用户可见的动作保持等效。
+- **DR14 — 响应式重排保留逻辑所有权。** 将内容移入抽屉、底部面板、溢出菜单或替代布局时，必须保留哪些内容是前置/后置，以及焦点如何返回到其逻辑触发器。
 
 ## Accessibility intent
 
-- Accessible names describe semantic actions, not physical icon direction. Use
-  "Previous month" and "Next month," not "Left arrow" and "Right arrow."
-- DOM `dir` must describe the browser's actual region direction so text flow,
-  punctuation, native control behavior, focus/navigation order, and accessibility
-  APIs agree with the visual presentation.
-- Mixed-direction user content needs an explicit local direction or isolation when
-  browser inference cannot keep weak punctuation, numbers, or URLs readable.
-- RTL support must preserve focus visibility, keyboard reachability, target size,
-  and announcement meaning. A mirrored picture with displaced focus or touch
-  geometry is not equivalent behavior.
-- Automated all-N/A output is not evidence that a component is RTL-ready. The
-  evidence policy is owned separately by RTL audit architecture.
+- 无障碍名称描述语义动作，而不是物理图标方向。使用“上个月”和“下个月”，而不是“左箭头”和“右箭头”。
+- DOM `dir` 必须描述浏览器实际的区域方向，以便文本流、标点、原生控件行为、焦点/导航顺序和无障碍 API 与视觉呈现一致。
+- 当浏览器推断无法保持弱标点、数字或 URL 可读时，混合方向的用户内容需要显式的本地方向或隔离。
+- RTL 支持必须保持焦点可见性、键盘可达性、目标尺寸和播报含义。焦点或触摸几何发生位移的镜像画面不是等效行为。
+- 自动化的全 N/A 输出不能证明组件已准备好支持 RTL。证据策略由 RTL 审计架构单独拥有。
 
 ## Representative examples
 
-| Example                                         | Required outcome                                                                                                                   |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Breadcrumb slash between hierarchy items        | Mirrors as progression decoration; `/` in a date, path, fraction, or prose does not                                                |
-| Calendar previous/next buttons                  | Buttons exchange sides, chevrons point toward their action, and semantic labels stay previous/next                                 |
-| Checkbox, Radio, and Switch on a coarse pointer | Native input remains centered over the visible control and preserves the owning component's minimum target size in both directions |
-| Carousel next action                            | Control placement, icon, and scroll delta agree on logical next                                                                    |
-| Arabic sentence containing a URL                | Arabic text flows RTL while the URL remains readable LTR and punctuation stays with the intended content                           |
-| Raw glyph registry reference sample             | Caller-supplied left/right geometry remains unchanged as data; no directional-control behavior is implied                          |
-| Brand logo or photograph                        | Does not mirror merely because the surrounding layout is RTL                                                                       |
+| 示例                                 | 必需结果                                                                 |
+| ------------------------------------ | ------------------------------------------------------------------------ |
+| 层级项之间的面包屑斜杠               | 作为推进装饰进行镜像；日期、路径、分数或正文中的 `/` 不镜像              |
+| 日历的上一个/下一个按钮              | 按钮交换两侧，箭头指向其动作，语义标签保持为上一个/下一个                |
+| 粗指针下的 Checkbox、Radio 和 Switch | 原生输入保持居中于可见控件之上，并在两个方向上保持所属组件的最小目标尺寸 |
+| 轮播的下一项动作                     | 控件放置、图标和滚动增量在逻辑下一项上保持一致                           |
+| 包含 URL 的阿拉伯语句子              | 阿拉伯文本按 RTL 流动，同时 URL 保持可读的 LTR，标点保持在预期内容旁     |
+| 原始字形注册表参考示例               | 调用方提供的左/右几何作为数据保持不变；不隐含方向性控件行为              |
+| 品牌徽标或照片                       | 不会仅因周围布局是 RTL 而镜像                                            |
 
 ## Visual references
 
-No normative screenshots are required for this record. Repo-owned component
-stories and relationship-based LTR/RTL audit output provide implementation
-evidence; they do not replace the human intent in this record.
+本记录不要求规范性截图。仓库自有的组件 stories 和基于关系的 LTR/RTL 审计输出提供实现证据；它们不能取代本记录中的人类意图。
 
 ## Component contract links
 
-No component record currently links this record. The explicit global routes
-supply the matched RTL relationships to component and module reviews without
-requiring a backlink from each component. A visual change loads
-artwork meaning and exceptions; navigation, interaction, and scrolling load their
-own directional outcomes together with the semantic-exception boundary. The routes
-do not make every glyph directional, require a
-particular implementation, or settle the open questions below.
+目前没有组件记录链接到本记录。显式全局路由向组件和模块评审提供匹配的 RTL 关系，而无需每个组件提供反向链接。视觉变更会加载图形含义和例外；导航、交互和滚动会加载各自的方向性结果以及语义例外边界。这些路由并不会使每个字形都具有方向性、要求特定实现，或解决下面的开放问题。
 
-Component, module, and family contracts own their local semantic relationships:
-which artwork is a navigation cue versus data, which parts are leading/trailing,
-which keyboard/scroll actions they expose, supported states, target-size
-requirements, and the tests that prove those outcomes. They cite a specific shared
-DR when a local requirement or exception needs that relationship; they do not
-copy a universal RTL checklist or redefine the shared rules.
+组件、模块和家族契约拥有其本地语义关系：哪些图形是导航提示还是数据，哪些部分是前置/后置，它们暴露哪些键盘/滚动动作，支持哪些状态，目标尺寸要求，以及证明这些结果的测试。当本地需求或例外需要该关系时，它们会引用特定的共享 DR；它们不会复制通用的 RTL 清单或重新定义共享规则。
 
-Review resolves the direct owner for the exact delta and applies only the matched
-shared claims within their stated scope. Local exceptions require a consistent
-semantic reason under DR5/DR10, not an implicit override of current authority.
-Runtime/helper responsibility remains in `architecture:internationalization`;
-RTL audit evidence and deliberate D1 exemption review remain in
-`architecture:rtl-audit-evidence`.
+评审会为确切的变更解析直接所有者，并仅在其声明范围内应用匹配的共享声明。本地例外需要 DR5/DR10 下一致的语义理由，而不是对当前权威的隐式覆盖。运行时/辅助工具的职责仍属于 `architecture:internationalization`；RTL 审计证据和有意为之的 D1 豁免评审仍属于 `architecture:rtl-audit-evidence`。
 
 ## Decision log
 
 ### DEC-1 — Adopt DR1–DR14 as the shared bidirectional relationships
 
-**Reference:** `design:bidirectionality/DEC-1`
-**Decider:** `nynexman4464`, `2026-10-15`
+**参考：** `design:bidirectionality/DEC-1`
+**决策者：** `nynexman4464`、`2026-10-15`
 
-People reading in either direction get the same task meaning, reading order,
-and interaction outcomes when components follow DR1–DR14. Audit admission and
-implementation evidence remain with their separate owners, and the open
-questions below stay undecided.
+当组件遵循 DR1–DR14 时，无论人们从哪个方向阅读，都能获得相同的任务含义、阅读顺序和交互结果。审计准入和实现证据仍属于各自的所有者，下面的开放问题仍未决定。
 
 ## Open questions
 
-- **OQ1 — Physical-orientation exception vocabulary.** Do components need a
-  shared explicit way to document physical/world-oriented artwork exceptions, or
-  are component-local decisions sufficient?
-- **OQ3 — Mixed-content fixtures.** Which public-safe mixed Arabic/Hebrew plus
-  URL/number/punctuation fixtures should become required representative stories?
-- **OQ4 — Direction-change transitions.** Should runtime `dir` changes have an
-  explicit no-animation rule, or may components animate when the resulting
-  intermediate relationships remain understandable?
+- **OQ1 — 物理方向例外的词汇。** 组件是否需要共享的显式方式来记录物理/面向真实世界的图形例外，还是组件本地决策就足够了？
+- **OQ3 — 混合内容测试夹具。** 哪些公开安全的阿拉伯语/希伯来语加 URL/数字/标点的夹具应成为必需的示例故事？
+- **OQ4 — 方向变化过渡。** 运行时 `dir` 变化是否应有明确的“无动画”规则，还是当由此产生的中间关系仍然可理解时，组件可以进行动画？
 
 ## Content boundary
 
-This file does not define provider APIs, CSS or hook implementation, lint rules,
-current audit scores, verified-N/A admission, or consumer examples. It links to
-those owners.
+本文件不定义 provider API、CSS 或 hook 实现、lint 规则、当前审计分数、已验证 N/A 的准入或消费者示例。它链接到这些所有者。

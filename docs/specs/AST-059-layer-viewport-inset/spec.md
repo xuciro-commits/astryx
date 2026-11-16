@@ -68,658 +68,253 @@ review_triggers: [layering, layout, behavior, public-api]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | The layer runtime owns the viewport inset: one gutter definition (FR1), one size cap — the viewport, never the span beside the trigger (FR2, FR3) — one standard fallback order and an anchor-clear order for a layer that keeps its anchor clear (FR4, FR5), and one place an app declares a persistent bar floating over a viewport edge: `LayerProvider`'s `inset`, read by anchored layers and the toast viewport alike (FR6, DEC-4, DEC-5). Popover is an application of the layer that adds styling on top (DEC-1).                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| Behavior                | A layer renders at its own size — the caller's explicit size, or its content's — up to the viewport minus its gutters, and never beyond: content that cannot fit the viewport overflows inside the layer, where the composing component scrolls or clips it (FR2, FR3). Content that can wrap fits beside the trigger by wrapping; a size that cannot shrink flips, and fitting neither side it keeps its size and slides along the alignment axis into view (FR4, DEC-2); a tooltip instead flips to the opposite side, then goes beside its trigger, then to the roomier side (FR4). A layer whose anchor has left the viewport holds its position and its size (FR5, DEC-3). The first frame a layer paints is its settled frame; it never paints and then moves, save the keyboard cap's change that FR8 names. During a scroll, CSS places every anchored layer and the runtime does no layout work per scroll frame (FR4, FR8, DEC-7). |
-| End-user impact         | A person who opens a 352px menu from a control near the edge of a panel gets a 352px menu, not a 274px one. A long menu on a phone keeps its labels readable instead of squeezing beside its trigger. A layer never ends under a phone navigation bar the app has declared (FR6). Nothing moves for an app that declares no bar. On a phone, a layer that would run under the software keyboard ends 10 px above it, its content scrolling (FR9).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Builder impact          | `Popover.width` and `DropdownMenu.menuWidth` become ordinary sizes. An app with a floating bar declares it once, as `inset` on the `LayerProvider` it already mounts, beside `toast`; toasts and anchored layers both clear it. Components that compose `useLayer` or `usePopover` inherit the gutter, the caps, and the fallbacks without a record change (FR7).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Compatibility/readiness | Behavior change, one additive prop. An explicit size near an edge renders at its size instead of shrinking; unwrappable content near an edge flips or slides instead of overflowing its box; prose still wraps beside its trigger (DEC-2). Every anchor-mode layer gains the gutter and caps (FR7). `LayerProvider.inset` defaults to zero on every edge, so an app that declares none renders as before, with or without a provider; an existing `toast.inset` keeps its meaning (DEC-5). Authority: `current`, approved by the owner on 2026-10-03.                                                                                                                                                                                                                                                                                                                                                                                        |
-| Review checks           | Reject a second definition of the viewport gutter outside the layer runtime; a `max-inline-size` resolved against the anchor's span; a layer box that can exceed the viewport on either axis; a fallback list authored by a component for an anchor-mode layer; a branch on whether a size was explicit; a slide that continues once the anchor has left the viewport; a `layer` theme target or a theme value standing in for an app's bar; a second place to declare the bar beside `LayerProvider.inset`; a consumer minimum that is not clamped by the runtime's cap; a layer under a default provider that renders differently from one with no provider; a geometry input read after paint and applied, except as FR8 permits; a layout read, forced layout, or forced new choice of option in a scroll path; an option in an anchor-clear list that can overlap its anchor; a story that asserts only settled geometry.               |
-| Governing rules         | [`architecture:layer-runtime`](../../architecture/layer-runtime.md) INV3, INV5 for anchor-mode placement, fallbacks, and direction, INV10 for what `LayerProvider` is; [`spec:AST-003`](../AST-003/spec.md) FR21–FR23 for the reduced behavior where CSS Anchor Positioning is absent; `component:Popover` FR4, ORD4 for Popover's conditional scrolling, which this record leaves in place.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 方面                    | 契约                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Public contract         | 层运行时拥有视口内缩：一处留白定义（FR1）；一处尺寸上限——视口，而绝不是触发器旁的跨度（FR2, FR3）；一套标准回退顺序，以及为保持锚点不被遮挡的层准备的一套锚点避让顺序（FR4, FR5）；还有一处让应用声明悬浮在视口边缘之上的常驻栏：`LayerProvider` 的 `inset`，锚定层与 toast 视口都读取它（FR6, DEC-4, DEC-5）。Popover 是层的一种应用，在其之上叠加样式（DEC-1）。                                                                                                                                                                                                                   |
+| Behavior                | 层以自身尺寸渲染——调用方显式给出的尺寸，或内容自身的尺寸——最大到视口减去其留白，绝不超出：无法装进视口的内容在层内部溢出，由组合组件决定滚动还是裁剪（FR2, FR3）。可换行的内容通过换行安置在触发器旁；无法收缩的尺寸则翻转，两侧都放不下时它保持尺寸并沿对齐轴滑入视口（FR4, DEC-2）；提示框则改为翻到相反一侧，再到触发器旁，最后到空间更大的一侧（FR4）。锚点已离开视口的层保持其位置与尺寸（FR5, DEC-3）。层绘制的第一帧就是其稳定帧；它绝不先绘制再移动，只有 FR8 所述键盘上限的变化除外。滚动期间，由 CSS 放置每个锚定层，运行时在每个滚动帧都不做布局计算（FR4, FR8, DEC-7）。 |
+| End-user impact         | 用户从面板边缘附近的控件打开 352px 的菜单，得到的是 352px 菜单，而不是 274px 的。手机上的长菜单能保持标签可读，而不是被挤在触发器旁。层绝不会终止于应用已声明的手机导航栏下方（FR6）。对未声明栏的应用，一切照旧不动。在手机上，本会伸到软件键盘下方的层会结束在键盘上方 10 px 处，其内容滚动（FR9）。                                                                                                                                                                                                                                                                               |
+| Builder impact          | `Popover.width` 与 `DropdownMenu.menuWidth` 成为普通尺寸。带悬浮栏的应用只需声明一次，作为 `inset` 放在它本就挂载的 `LayerProvider` 上，与 `toast` 并列；toast 与锚定层都会避让该栏。通过 `useLayer` 或 `usePopover` 组合的组件无需改动记录即可继承留白、上限与回退（FR7）。                                                                                                                                                                                                                                                                                                         |
+| Compatibility/readiness | 行为变更，新增一个 prop。边缘附近的显式尺寸按该尺寸渲染，而不再收缩；边缘附近无法换行的内容会翻转或滑动，而不是溢出其盒子；散文式文本仍在触发器旁换行（DEC-2）。每个锚点模式层都获得留白与上限（FR7）。`LayerProvider.inset` 在每条边上默认为 0，因此未声明内缩的应用与之前渲染一致，无论有没有 provider；已有的 `toast.inset` 保持其含义（DEC-5）。权威：`current`，所有者已于 2026-10-03 批准。                                                                                                                                                                                    |
+| Review checks           | 否决以下各项：在层运行时之外出现第二处视口留白定义；`max-inline-size` 以锚点跨度为参照解析；层盒子在任一轴上可能超出视口；由组件为锚点模式层编写回退列表；按尺寸是否显式而分支；锚点离开视口后仍继续的滑动；用 `layer` 主题目标或主题值代替应用的栏；在 `LayerProvider.inset` 之外出现第二处声明栏的地方；使用方的最小值未被运行时上限钳制；默认 provider 下的层与无 provider 时的渲染不同；绘制之后读取并应用的几何输入，FR8 允许的情形除外；滚动路径中的布局读取、强制布局或强制重新选择选项；锚点避让列表中的某个选项可能与其锚点重叠；只断言稳定几何的 story。                   |
+| Governing rules         | [`architecture:layer-runtime`](../../architecture/layer-runtime.md) 的 INV3、INV5（针对锚点模式的放置、回退与方向），INV10（说明 `LayerProvider` 是什么）；[`spec:AST-003`](../AST-003/spec.md) 的 FR21–FR23（针对缺少 CSS 锚点定位时的简化行为）；`component:Popover` 的 FR4、ORD4（针对 Popover 的条件滚动，本记录保持原样）。                                                                                                                                                                                                                                                     |
 
-This table is a review projection; the body below is authoritative.
+本表是供审查用的投影；下方正文具有权威性。
 
 ## Intent
 
-An anchored layer must stay on screen with a breathing gap from the viewport
-edge and from the device's own insets, must choose a position that fits, and
-must know where the viewport really ends when an app floats a bar over it. A
-person who opens a menu from a control near the edge of a panel needs the menu
-at the size it was given; a person on a phone needs a long menu's labels
-readable rather than squeezed beside the trigger; a person using an app with a
-floating navigation bar needs no layer to end underneath it.
+锚定层必须留在屏幕上，与视口边缘以及设备自身的内缩保持一段呼吸间隙；必须选择能放得下的位置；并且当应用在视口上悬浮一条栏时，必须知道视口真正的边界在哪里。用户从面板边缘附近的控件打开菜单时，需要菜单就是被给定的尺寸；手机用户需要长菜单的标签可读，而不是被挤在触发器旁；使用带悬浮导航栏的应用的用户，需要没有任何层终止在其下方。
 
-This record owns one answer: **the layer runtime owns the viewport inset —
-the gutter, the size cap, the fallback order, the app-declared inset, and the
-stories that show them. Popover is an application of the layer that adds
-styling on top.** A gutter defined in one place cannot drift between
-components; a size capped by the viewport rather than by the span beside the
-trigger cannot shrink an explicit width near an edge; an inset declared once by
-the app reaches every layer instead of the components that happen to read it.
+本记录只拥有一个答案：**层运行时拥有视口内缩——留白、尺寸上限、回退顺序、应用声明的内缩，以及展示它们的故事。Popover 是层的一种应用，在其之上叠加样式。** 在一处定义的留白不会在组件之间漂移；由视口而非触发器旁的跨度来限制的尺寸，不会在边缘附近压缩显式宽度；由应用声明一次的内缩会到达每个层，而不是只到达恰好读取它的那些组件。
 
 ## Ownership boundary
 
 **Owns**
 
-- The viewport gutter: its one definition, which edges it applies to, how the
-  device safe area and an app-declared inset feed it.
-- The size cap of an anchor-mode layer on both axes, and that no span beside
-  the trigger ever caps a layer.
-- The fallback order of an anchor-mode layer, including the slide and the
-  condition under which it applies.
-- Where an app declares a persistent bar floating over a viewport edge —
-  once, for anchored layers and toasts together — and that a theme does not.
-- That every anchor-mode layer inherits these behaviors without a component
-  record change, and what a composing component may still add on top.
-- The Layer stories that demonstrate the viewport behaviors.
+- 视口留白：它的唯一定义、它作用于哪些边、设备安全区与应用声明的内缩如何汇入它。
+- 锚点模式层在两个轴上的尺寸上限，以及触发器旁的任何跨度都绝不限制层。
+- 锚点模式层的回退顺序，包括滑动以及滑动适用的条件。
+- 应用在何处声明悬浮于视口边缘之上的常驻栏——一次声明，同时供锚定层与 toast 使用——以及主题不承担此事。
+- 每个锚点模式层都无需改动组件记录即可继承这些行为，以及组合组件仍可在其上添加什么。
+- 展示这些视口行为的 Layer story。
 
 **What Popover keeps**
 
-- Its props and their meaning, including that an explicit `width` wins over
-  trigger matching and that, without one, the surface prefers the trigger's
-  minimum width — the one fact the layer cannot know is whether this instance
-  was given a size, and the layer does not need to know it (DEC-2).
-- Its visual treatment, the painted surface and its `popover` theme target,
-  its surface padding, and conditional internal scrolling once the layer has
-  capped the surface (`component:Popover` FR4, ORD4).
+- 它的 props 及其含义，包括显式 `width` 优先于触发器匹配，以及在没有显式宽度时表面偏好触发器的宽度最小值——层无法知道的唯一事实是这个实例是否被赋予了尺寸，而层并不需要知道它（DEC-2）。
+- 它的视觉处理、所绘制的表面及其 `popover` 主题目标、表面内边距，以及层对表面封顶之后的条件式内部滚动（`component:Popover` FR4, ORD4）。
 
 **Why no existing record can hold it**
 
-- [`architecture:layer-runtime`](../../architecture/layer-runtime.md) is
-  `current` and describes the layer runtime as shipped; it incorporates an
-  accepted layer change only as that change ships (`spec:AST-003` is its
-  precedent). A `current` record carries one `authority` value, so an
-  unshipped behavior written into it would read as both approved and shipped
-  (`architecture:knowledge-contracts` INV1, INV14). The architecture-record
-  deltas this record requires are listed under Current-state impact.
-- `component:Popover` is `current` and records Popover's shipped behavior,
-  including viewport fitting (its FR3, ORD2, ORD3). The same authority rule
-  applies; its deltas are listed below.
-- `component:DropdownMenu`, `component:BaseTypeahead`, and the other
-  composing components are consumers of the behavior, not owners of it. One
-  rule binding five-plus components through one hook is a system fact.
+- [`architecture:layer-runtime`](../../architecture/layer-runtime.md) 是 `current`，描述已上线的层运行时；它只在那项已被接受的层变更上线时才纳入该变更（`spec:AST-003` 是其先例）。一条 `current` 记录只携带一个 `authority` 值，因此把尚未上线的行为写进去，会被读成既已批准又已上线（`architecture:knowledge-contracts` INV1, INV14）。本记录所需的架构记录增量列在“Current-state impact”下。
+- `component:Popover` 是 `current`，记录 Popover 已上线的行为，包括视口适配（其 FR3、ORD2、ORD3）。同样的权威规则适用；其增量列在下面。
+- `component:DropdownMenu`、`component:BaseTypeahead` 以及其他组合组件是该行为的使用方，而不是其所有者。一条通过同一个 hook 约束五个以上组件的规则，是一个系统事实。
 
 ## Non-goals
 
-- **Sizing a standard layer to the room on one side of its trigger on the
-  placement axis.** A layer taller than the room both above and below its
-  trigger is capped to the viewport and shifted into it. Whether standard
-  layers prefer the roomier side is not settled here; a layer that keeps its
-  anchor clear is the one case FR4 settles, and the software keyboard caps
-  a layer that would run under it (FR9).
-- **Fullscreen Dialog.** It keeps the same gutter value by convention but is
-  not an anchor-mode layer; whether the app-declared inset (FR6) reaches it is
-  a later decision. The toast viewport does read it (FR6, DEC-5).
-- **Public docs for the reduced behavior where CSS Anchor Positioning is
-  absent.** `spec:AST-003` FR21–FR23 own that boundary.
-- **Component scrolling, measurement, focus, dismissal, visual treatment, and
-  theming anatomy.** They stay with their owners.
-- Equivalent internal implementations remain valid when they satisfy this
-  contract. Module names, the mechanism that observes anchor visibility, which
-  CSS properties carry the cap, and the custom properties through which the
-  provider's inset reaches a layer are implementation; `LayerProvider.inset`
-  is the public surface, and a property written by hand is an unsupported
-  escape hatch.
+- **把标准层的尺寸设为触发器在放置轴一侧的空间。** 比触发器上方和下方空间都高的层会被限制到视口并移入视口。标准层是否偏好空间更大的一侧，这里不作定论；保持锚点不被遮挡的层是 FR4 唯一定论的情形，而软件键盘会给本会伸到其下方的层封顶（FR9）。
+- **全屏 Dialog。** 按约定它沿用相同的留白值，但它不是锚点模式层；应用声明的内缩（FR6）是否触及它，留待之后的决策。toast 视口确实读取它（FR6, DEC-5）。
+- **CSS 锚点定位缺失时简化行为的公开文档。** `spec:AST-003` FR21–FR23 拥有该边界。
+- **组件滚动、测量、焦点、关闭、视觉处理与主题解剖。** 它们仍归各自所有者。
+- 等价的内部实现在满足本契约时仍然有效。模块名、观察锚点可见性的机制、哪些 CSS 属性承载上限、以及 provider 的内缩经由哪些自定义属性到达层，都属于实现；`LayerProvider.inset` 是公开表面，而手写的属性是不受支持的逃生通道。
 
 ## Requirements
 
-- **FR1 — One gutter.** Every anchor-mode layer keeps a gutter from each
-  viewport edge equal to `max(--spacing-4, env(safe-area-inset-<edge>))` plus
-  that edge's app-declared inset (FR6). The inline gutter reads the larger of
-  the two physical safe-area insets, so a layer that flips across the inline
-  axis still clears a notch on either side. The definition lives in the layer
-  runtime; no component or family defines its own.
-- **FR2 — The cap is the viewport, never the span.** On the alignment axis, a
-  layer box's size is capped to the viewport minus both gutters, and the box
-  never exceeds that cap. The span of viewport beside the trigger never caps a
-  layer. An explicit size the caller gives renders at that size up to the cap.
-  A content-sized layer wraps its content to the room beside its trigger when
-  the content can wrap, and keeps its content's size up to the cap when it
-  cannot (FR4 then moves it). Content that cannot fit the cap — an explicit
-  size wider than the viewport, an unbreakable run — overflows inside the
-  layer box, where the composing component decides whether it scrolls or
-  clips; the box itself stays on screen. The layer does not know, and does not
-  need to know, whether a size was given; no component branches on it. A
-  composing component may cap lower (Tooltip's 300px); it may not cap higher.
-- **FR3 — Placement-axis cap.** On the placement axis, a layer box's size is
-  capped to the viewport minus both gutters, and the box never exceeds it.
-  A composing component may cap lower (DropdownMenu's 300px) and may become a
-  scroll container when its content exceeds the cap; it may not cap higher.
-- **FR4 — The runtime's fallback orders.** An anchor-mode layer tries, in order:
-  its preferred position; the flip across the placement axis; the flip across
-  the alignment axis; both flips; then, while its anchor is in view, a slide
-  along the alignment axis that keeps the layer's size and moves it the least
-  distance that brings it inside the gutters, on the preferred side of the
-  trigger first and the opposite side second. The slide is a position option
-  of its own, not a side effect of the flips failing: a layer wider than the
-  room beside its trigger on both sides still reaches the side of the trigger
-  that has room on the placement axis. Side placements slide along the block
-  axis. The gutter bounds position as well as size on both axes: a layer that
-  would end inside a gutter, or under a declared bar, does not fit there and
-  the next option is tried; a slid layer keeps the gutter on both edges. On
-  the placement axis that positional bound is the larger of the axis's two
-  gutters, applied to both edges, so a bar declared on one block edge keeps a
-  layer the same distance from the opposite edge (the size cap still
-  subtracts each edge's own gutter). Content taller than either side can hold
-  is capped to the viewport and shifted into it, keeping its anchor clearance
-  from the edge it meets. A layer that keeps its anchor clear — Tooltip, which
-  the hover on its trigger keeps open — never settles over its anchor, and no
-  painted frame shows it there. An above or below layer of this kind uses one
-  combined list in place of the order above: its preferred position, then the
-  opposite block side at its own size (the flip), then beside the anchor on
-  the inline end, then on the inline start, each at its content's inline size
-  and capped to the viewport, and only then the preferred block side and the
-  other, each only while it is the side with more room and sized to the room
-  on that side. A fitting layer that loses room on its side flips to the
-  opposite side before it moves beside the trigger; it goes beside the trigger
-  only when neither its preferred side nor the flip fits. No option in the list lets the box overlap its anchor, at any scroll
-  position: an option that runs out of room overflows away from the anchor and
-  is never shifted onto it, because inside a scrolling panel Chrome does not
-  choose a layer's option again while the panel scrolls, so a layer that could
-  be pushed over its trigger would stay there. Chromium tries no more than
-  five fallbacks after a layer's own position, so the combined list replaces
-  the standard order rather than extending it. A layer whose content fits on
-  some side keeps its own size there; only content taller than the room on
-  both sides is sized to a room. No option is sized to whatever room is left,
-  because a browser keeps an open layer on the option it last used for as long
-  as that option still fits: when its anchor moves, the layer moves to the
-  side that is now roomier rather than shrinking to a sliver. During a scroll,
-  CSS anchor positioning alone places the layer: the runtime reads no layout,
-  forces no layout, and does not make the engine choose an option again. When
-  scrolling stops, the runtime re-picks the layer's position once, so a layer
-  a scroll carried to the edge does not stay off-screen. Scrolling stops when
-  the `scrollend` event fires on any scrolling ancestor of the anchor, the page
-  included; the single re-pick runs in the first painted frame after each such
-  event. `scrollend` fires per wheel step in Chromium; the read waits one
-  painted frame after each `scrollend`, so a long wheel scroll re-checks more
-  than once; no read happens during the scroll itself. Where `scrollend` is not
-  supported at the browser floor (Safari before 26.2), the same single re-pick
-  runs after 150 ms with no `scroll` event on those ancestors; the scroll
-  listener only arms the timer and reads nothing. No layout read happens in any
-  scroll handler (DEC-8). The
-  don't-cover check — whether the box covers its anchor or, while the anchor is
-  in view, leaves the viewport on the block axis, read from the layer's settled
-  box without the transform its entry animation applies — runs only when the
-  layer shows or remounts, on ResizeObserver reports (the layer's size, its
-  content's, its anchor's, and a replacement anchor's when the caller replaces
-  the anchor element while the layer stays open) and on window resize. No
-  frame during a scroll re-checks it, and no observer watches for a trigger
-  that moves without resizing. A check that
-  fails places the layer afresh from the combined list in the same task,
-  without painting and without closing it. Every CSS animation and transition
-  of the layer and its content keeps every writable member the engine exposes
-  on it and its effect, its timing, keyframes, play and replace state, and its
-  time. Three things are not kept: the Animation and effect objects (the
-  browser replaces them, with their listeners and promises, and fires cancel
-  and start events), a finished animation's start time (its held end time is
-  kept), and a transition's own object (a script animation resumes it, so it
-  fires no `transitionend`). The layer scrolls what it cannot show through CSS
-  `overflow-y: auto` with no overscroll containment, and the runtime reads
-  nothing to decide it: a wheel over a layer that fits still scrolls the page,
-  and a tall layer's scroll chains to the page at its end, as native scrolling
-  does (FR3). `component:Tooltip` records what that means for content inside
-  the layer: it is always a scroll container. The runtime authors both orders; a component passes no fallbacks
-  of its own to an anchor-mode layer.
-- **FR5 — An off-screen anchor holds.** A layer whose anchor has left the
-  viewport does not slide. It keeps the position the flips give it and its
-  size until the anchor returns (DEC-3).
-- **FR6 — The app declares a floating bar once, on `LayerProvider`.** An app
-  that keeps a persistent bar floating over a viewport edge declares its
-  extent per logical edge through `LayerProvider`'s `inset` — `blockStart`,
-  `blockEnd`, `inlineStart`, `inlineEnd`, each a pixel number or a CSS length
-  — beside the provider's `toast` configuration. Every edge defaults to zero.
-  Each declared edge adds to that edge's gutter (FR1) for every anchored layer
-  under the provider and moves the toast viewport by the same amount, so one
-  bar is declared once and cleared by both (DEC-5). A `toast.inset` edge, when
-  set, replaces the provider's value for the toast viewport on that edge. A
-  layer or toast with no provider renders exactly as one under a provider with
-  the default inset. The declaration reaches a layer wherever the layer is
-  hosted — a layer portaled out of its JSX position receives it the same as
-  one hosted in place. A provider nested under another is otherwise inert, but
-  one that declares an inset narrows it for the anchored layers in its
-  subtree; the toast viewport is the root provider's and reads the root's
-  declaration. The inset is app state, not a theme value (DEC-4).
-- **FR7 — Consumers inherit; a consumer's own size rule cannot defeat the
-  cap.** Every component that renders through `useLayer` in anchor mode or
-  through `usePopover` receives FR1–FR6 and FR8–FR10 with no record change and no
-  option to pass. A component that sets its own minimum size — trigger
-  matching, a `menuWidth` applied as a minimum — clamps that minimum with the
-  runtime's cap expression, because a CSS minimum otherwise wins over a
-  maximum.
-- **FR8 — The first frame is the settled frame.** A layer MUST NOT paint at a
-  geometry it is about to correct. Every input to a layer's geometry under
-  this record — the gutter, the caps, the declared inset, the fallback order —
-  is resolved by the browser's style and layout in the same frame as the
-  render that produced it; the runtime measures nothing after paint to apply
-  them. During a scroll, CSS anchor positioning places every anchor-mode
-  layer: no scroll frame reads layout or forces it for a layer, and the
-  runtime makes no new choice of option mid-scroll (FR4). The runtime makes
-  four observations, each driven by an event rather than by the scroll. Once
-  scrolling stops, it re-picks the layer's position once, in the first painted
-  frame after the stop (FR4, DEC-8). Whether the anchor is in view
-  (FR5) is read before the layer's first paint and thereafter only when the
-  anchor's visibility changes, so a layer opened while its anchor is already
-  out of view holds from its first frame. The runtime keeps this hold rather
-  than leaving it to CSS: `position-visibility: anchors-visible` hides a layer
-  instead of holding it, and on a page scroll it does not hide a top-layer
-  layer whose anchor leaves the page. For a layer that keeps its anchor clear
-  (FR4), the don't-cover check runs only when the layer shows or remounts, on
-  ResizeObserver reports and on window resize, never per scroll frame; each of
-  those reads lands before the next frame paints, and the window-resize read
-  stays because a resize is not a scroll path. The runtime polls nothing. When a declared inset changes while a layer is open,
-  the layer
-  and the declaration
-  change in the same frame.
-  Latency between an app measuring its own bar and declaring the result is the
-  app's; the runtime renders what is declared, when it is declared. Apart from
-  FR10's change of the keyboard cap, which waits
-  for the keyboard to arrive or a press to finish, a paint-then-shift is a
-  failure of this contract, not a quality concern. The
-  software keyboard's cap (FR9) is the third observation. It stays the
-  runtime's because iOS Safari offers no CSS for it: `env(keyboard-inset-*)`
-  is Chrome-only, and iOS Safari does not support the `interactive-widget`
-  viewport key. It is read from the layer's own box without its
-  entrance transform, as FR4 reads it, so an entrance in progress never needs a
-  second read: before the first paint when a layer opens with a keyboard up, when the
-  keyboard moves (FR10), and in the commit that
-  brings a layer element the runtime swapped in while the layer is open.
-- **FR9 — The software keyboard caps a layer that would run under it.**
-  While
-  a software keyboard covers the bottom of the viewport, an anchor-mode layer
-  whose block-end edge would run under it keeps its block-start edge and caps
-  its block size so that edge sits 10 px above the keyboard, the clearance
-  UIKit keeps under a popover. Its content overflows inside the layer box,
-  where the composing component scrolls it, and the field being typed into
-  stays in view. When a person presses, touches or turns a wheel inside the
-  layer after the cap lands, the content stays where they put it. A later
-  keyboard change brings the field into view again.
-  A layer the keyboard does not reach, and a layer whose
-  block-end edge the fallback order holds (placed above its trigger), stay as
-  they are. The keyboard's height is the keyboard module's one height
-  (`architecture:react-component-runtime` INV11); no layer measures the
-  keyboard on its own.
-  The cap folds into the block-axis cap (FR2 or FR3, whichever caps the
-  block axis), so the layer box and every
-  surface inside it capped by that definition shrink together. Each layer
-  carries its own cap on its own element: a layer opened inside a capped
-  layer is capped only for its own box, never by its host's.
-  Once a software keyboard is up, the runtime also writes its block-end inset
-  on each open anchor-mode layer, beside the cap: the keyboard's height plus
-  the 10 px clearance. The inset keeps its largest value until the layer
-  closes. The inset is a private custom property that only the runtime writes,
-  never public API, and the fallback order never reads it. A layer that places
-  itself on its block axis, such as Selector's selected-item overlay, ends
-  above the line the inset marks. It moves in the commit that publishes the
-  inset, before the cap reads its box. A keyboard that goes down then leaves
-  it where it is.
-- **FR10 — The keyboard cap changes where the keyboard hides the change.**
-  A
-  box's height cannot change on the compositor, so the cap changes once per
-  keyboard movement: when a rising keyboard has arrived, at once as a falling
-  keyboard starts down, and at once for a keyboard that changes without
-  moving. A change that would move the layer under a press in progress inside
-  it waits for that press's click.
+- **FR1 — 单一留白。** 每个锚点模式层与各视口边缘之间都保持一段留白，其值等于 `max(--spacing-4, env(safe-area-inset-<edge>))` 加上该边由应用声明的内缩（FR6）。行内留白取两个物理安全区内缩中较大的一个，因此跨行内轴翻转的层在任一侧仍能避开缺口。该定义位于层运行时中；任何组件或 family 都不得定义自己的留白。
+- **FR2 — 上限是视口，绝不是跨度。** 在对齐轴上，层盒子的尺寸被限制为视口减去两侧留白，且盒子绝不超过该上限。触发器旁的那段视口绝不限制层。调用方给出的显式尺寸按该尺寸渲染，直到达到上限。内容决定尺寸的层，在内容可换行时让内容在触发器旁的空间内换行，在不可换行时保持内容尺寸直到上限（随后由 FR4 移动它）。无法装进上限的内容——比视口更宽的显式尺寸、不可断行的长串——在层盒子内部溢出，由组合组件决定滚动还是裁剪；盒子本身仍留在屏幕上。层不知道、也不需要知道是否给定了尺寸；没有组件据此分支。组合组件可以设置更低的上限（Tooltip 的 300px）；不可设置更高的上限。
+- **FR3 — 放置轴上限。** 在放置轴上，层盒子的尺寸被限制为视口减去两侧留白，且盒子绝不超出。组合组件可以设置更低的上限（DropdownMenu 的 300px），并可在内容超过上限时成为滚动容器；不可设置更高的上限。
+- **FR4 — 运行时的回退顺序。** 锚点模式层按以下顺序尝试：其首选位置；跨放置轴翻转；跨对齐轴翻转；两次翻转同时；然后，在锚点位于视图中时，沿对齐轴滑动，保持层的尺寸并以最小距离把它移入留白之内，先在触发器的首选一侧，再在相反一侧。滑动是一种独立的位置选项，而不是翻转失败的副作用：比触发器旁两侧空间都宽的层，仍会到达触发器在放置轴上有空间的那一侧。侧向放置沿块轴滑动。留白在两个轴上都同时约束位置与尺寸：本会结束在留白之内、或位于已声明栏之下的层，在那里放不下，于是尝试下一个选项；滑动过的层在两侧都保持留白。在放置轴上，该位置约束是该轴两个留白中较大的一个，应用于两侧，因此在某个块边上声明的栏会让层与相反边保持相同的距离（尺寸上限仍会减去每条边自身的留白）。高于任一侧所能容纳高度的内容会被限制到视口并移入视口，同时保持其与所遇边缘的锚点间隙。保持锚点不被遮挡的层——Tooltip，其触发器上的 hover 使其保持打开——绝不会停在锚点之上，也没有任何绘制帧会显示它在那里。这类位于上方或下方的层使用一份合并列表来代替上述顺序：其首选位置；然后是以自身尺寸放在相反的块侧（即翻转）；然后是在锚点的行内结束侧；然后是在行内起始侧，各按其内容的行内尺寸并限制到视口；只有到那时，才是首选的块侧与另一侧，且各自只在它是空间更大的一侧时、并按该侧的空间定尺寸。一个放得下却在其一侧失去空间的层，会先翻转到相反一侧，然后才移动到触发器旁；只有当首选侧与翻转都放不下时，它才去到触发器旁。列表中的任何选项都不允许盒子与锚点重叠，在任何滚动位置都是如此：空间耗尽的选项会向远离锚点的方向溢出，绝不会被移到锚点之上，因为在可滚动面板内部，Chrome 不会在面板滚动时重新选择层的选项，所以本可能被推到触发器之上的层会一直待在那里。在层自身位置之后，Chromium 最多只尝试五个回退，因此这份合并列表替换标准顺序，而不是扩展它。内容在某侧放得下的层会在那里保持自己的尺寸；只有高于两侧空间的内容才按某个空间定尺寸。没有任何选项按剩余空间定尺寸，因为浏览器会让打开的层一直停在其上次使用的选项上，只要该选项仍然放得下：当锚点移动时，层会移到此时空间更大的一侧，而不是缩成一条细条。滚动期间，仅由 CSS 锚点定位放置该层：运行时不读取布局、不强制布局，也不让引擎重新选择选项。滚动停止时，运行时一次性重新选取层的位置，因此被滚动带到边缘的层不会停留在屏幕外。滚动在锚点的任一可滚动祖先（包括页面）上触发 `scrollend` 事件时停止；这次单独的重选在每个此类事件之后的第一个绘制帧中运行。在 Chromium 中，`scrollend` 按每个滚轮步进触发；读取在每个 `scrollend` 之后等待一个绘制帧，因此一次长时间的滚轮滚动会重新检查不止一次；滚动本身期间不发生任何读取。在浏览器下限（Safari 26.2 之前）不支持 `scrollend` 的地方，同样的单独重选会在这些祖先上 150 ms 无 `scroll` 事件之后运行；滚动监听器只启动计时器，不读取任何内容。任何滚动处理器中都不发生布局读取（DEC-8）。“不遮挡”检查——盒子是否遮住其锚点，或当锚点在视图中时在块轴上离开视口，从层稳定后的盒子读取，不含其入场动画所应用的变换——只在层显示或重新挂载时、在 ResizeObserver 报告时（层的尺寸、其内容的尺寸、其锚点的尺寸，以及当调用方在层保持打开时替换锚点元素后新锚点的尺寸）以及在窗口 resize 时运行。滚动期间的任何帧都不会重新检查它，也没有观察器监视不改变尺寸就移动的触发器。检查失败会在同一任务内依据合并列表重新放置层，不绘制也不关闭它。层及其内容的每个 CSS 动画与过渡都保留引擎在其上及在其效果上暴露的每个可写成员，以及它的时机、关键帧、播放与替换状态、以及它的时间。有三样东西不被保留：Animation 与 effect 对象（浏览器会替换它们，连同其监听器与 promise，并触发 cancel 与 start 事件）、已完成动画的开始时间（其保持的结束时间会被保留）、以及过渡自身的对象（脚本动画会恢复它，因此它不触发 `transitionend`）。层通过 CSS `overflow-y: auto` 滚动它无法展示的内容，且不做 overscroll 遏制，运行时也不读取任何内容来决定这一点：在放得下的层上滚动滚轮仍会滚动页面，高层的滚动在其末尾链接到页面，正如原生滚动那样（FR3）。`component:Tooltip` 记录了这对层内内容意味着什么：它始终是滚动容器。两份顺序都由运行时编写；组件不向锚点模式层传入自己的任何回退。
+- **FR5 — 离屏锚点保持不变。** 锚点已离开视口的层不滑动。它保持翻转所给的位置与自身尺寸，直到锚点返回（DEC-3）。
+- **FR6 — 应用在 `LayerProvider` 上一次性声明悬浮栏。** 若应用让一条常驻栏悬浮在视口边缘之上，它通过 `LayerProvider` 的 `inset` 按逻辑边声明其范围——`blockStart`、`blockEnd`、`inlineStart`、`inlineEnd`，每个都是像素数字或 CSS 长度——与 provider 的 `toast` 配置并列。每条边默认为 0。每条已声明的边都会为该边增加留白（FR1），对 provider 下的每个锚定层生效，并把 toast 视口移动相同的量，因此一条栏只需声明一次，两者都会避让（DEC-5）。当 `toast.inset` 的某条边被设置时，它在该边上替换 provider 对 toast 视口的值。没有 provider 的层或 toast，与默认内缩 provider 下的层或 toast 渲染完全一致。该声明无论层被托管在哪里都会到达该层——从 JSX 位置 portal 出去的层与就地托管的层收到的一样。嵌套在另一个 provider 之下的 provider 在其他方面不起作用，但声明了内缩的那个会为其子树中的锚定层收窄内缩；toast 视口属于根 provider，读取根的声明。内缩是应用状态，不是主题值（DEC-4）。
+- **FR7 — 使用方继承；使用方自己的尺寸规则不能战胜上限。** 每个通过锚点模式下的 `useLayer` 或通过 `usePopover` 渲染的组件都会获得 FR1–FR6 与 FR8–FR10，无需改动记录，也没有可传入的选项。设置自身最小尺寸的组件——触发器匹配、作为最小值应用的 `menuWidth`——须用运行时的上限表达式钳制该最小值，因为否则 CSS 最小值会胜过最大值。
+- **FR8 — 第一帧就是稳定帧。** 层绝不能以它即将修正的几何绘制。本记录下层的几何的每一项输入——留白、上限、已声明的内缩、回退顺序——都由浏览器在同一帧的样式与布局中随产生它的渲染一并解析；运行时不在绘制后测量任何内容再加以应用。滚动期间，由 CSS 锚点定位放置每个锚点模式层：没有任何滚动帧为层读取或强制布局，运行时也不会在滚动中途做出新的选项选择（FR4）。运行时进行四项观察，每项都由事件而非滚动驱动。滚动停止后，它在停止后的第一个绘制帧中一次性重新选取层的位置（FR4, DEC-8）。锚点是否在视图中（FR5）在层的首次绘制之前读取，此后只在锚点可见性变化时读取，因此锚点已在视图外时打开的层从第一帧起就保持住。运行时自己保持这种保持，而不交给 CSS：`position-visibility: anchors-visible` 会隐藏层而不是保持它，并且在页面滚动时，它不会隐藏锚点离开页面的顶层层。对于保持锚点不被遮挡的层（FR4），“不遮挡”检查只在层显示或重新挂载时、在 ResizeObserver 报告时以及在窗口 resize 时运行，绝不逐滚动帧运行；这些读取都发生在下一帧绘制之前，而窗口 resize 的读取保留下来，因为 resize 不是滚动路径。运行时不做任何轮询。当已声明的内缩在层打开期间变化时，层与声明在同一帧内一起变化。应用测量自己的栏与声明结果之间的延迟是应用自身的；运行时在声明之时渲染所声明的内容。除了 FR10 对键盘上限的变更——它等待键盘到达或一次按压结束——之外，先绘制后移动都是本契约的失败，而不是质量问题。软件键盘的上限（FR9）是第三项观察。它归运行时所有，因为 iOS Safari 没有为此提供 CSS：`env(keyboard-inset-*)` 仅 Chrome 支持，而 iOS Safari 不支持 `interactive-widget` 视口键。它像 FR4 那样，从层自身盒子（不含入场变换）读取，因此进行中的入场从不需要第二次读取：层在键盘已弹出时打开的首帧绘制之前、键盘移动时（FR10），以及在层打开期间运行时换入的层元素所带来的那次提交中。
+- **FR9 — 软件键盘给本会伸到其下方的层封顶。** 当软件键盘遮住视口底部时，块结束边本会伸到键盘下方的锚点模式层保持其块起始边，并限制其块尺寸，使该边位于键盘上方 10 px 处——UIKit 在 popover 下方保持的间隙。其内容在层盒子内部溢出，由组合组件滚动它，而正在输入的字段保持在视图中。当封顶落地后有人在层内按压、触摸或滚动滚轮时，内容保持在他们放置的位置。之后的键盘变化会再次把该字段带入视图。键盘触及不到的层，以及块结束边被回退顺序保持住的层（放置在触发器上方），保持原样。键盘的高度是键盘模块的唯一高度（`architecture:react-component-runtime` INV11）；没有层自行测量键盘。该上限折叠进块轴上限（FR2 或 FR3，取决于哪个给块轴封顶），因此层盒子与其中被该定义封顶的每个表面一起收缩。每个层在自己的元素上携带自己的上限：在已封顶层内打开的层只为其自身盒子封顶，绝不受其宿主影响。一旦软件键盘弹出，运行时还会在每个打开的锚点模式层上、紧邻上限写入其块结束内缩：键盘高度加上 10 px 间隙。该内缩在层关闭之前保持其最大值。该内缩是一个只有运行时写入的私有自定义属性，绝不是公开 API，回退顺序也从不读取它。在块轴上自行放置的层，例如 Selector 的选中项浮层，会结束在该内缩所标记的线之上。它在发布该内缩的提交中移动，先于上限读取其盒子。随后收起的键盘会让它留在原处。
+- **FR10 — 键盘上限在键盘遮住该变化之处变更。** 盒子高度无法在合成器上变化，因此上限在每次键盘移动时变更一次：上升的键盘到达时、下降的键盘开始下行时立即变更，对于不移动而变化的情况也立即变更。若某次变更会在层内一次进行中的按压期间移动层，它会等待该按压的 click。
 
 ### Platform support
 
-- Supported feature/engine floor: CSS Anchor Positioning (`position-area`,
-  `position-try-fallbacks`, `anchor-size()`) and the Popover API, as
-  `architecture:layer-runtime` already requires for anchor mode. FR5 needs
-  the runtime to know whether the anchor is in view; a synchronous read before
-  first paint plus an observation while open is the layer's mechanism to own.
-- Unsupported behavior: without anchor positioning, FR1–FR3 still bound a
-  layer's size to the viewport; FR4 and FR5 have no fallbacks to order and do
-  not apply. This is the reduced behavior `spec:AST-003` FR22 describes, not
-  an equivalent.
-- Browser evidence: rendered geometry in real Chromium for each Layer story
-  below, at a desktop viewport and at a phone's — the layer's bounding
-  rectangle against the viewport, its gutters, and its size before and after a
-  flip or slide — and, for FR8, the rectangle of the first painted frame read
-  synchronously after the opening commit and compared with the settled one.
-  Emitted style strings prove the definition is shared; they do not prove a
-  layer landed on screen or that it did not move.
+- 支持的功能/引擎下限：CSS 锚点定位（`position-area`、`position-try-fallbacks`、`anchor-size()`）与 Popover API，正如 `architecture:layer-runtime` 已为锚点模式所要求的。FR5 需要运行时知道锚点是否在视图中；首次绘制前的同步读取加上打开期间的观察，是层要拥有的机制。
+- 不支持时的行为：没有锚点定位时，FR1–FR3 仍会把层的尺寸限制到视口；FR4 与 FR5 没有可排序的回退，不适用。这是 `spec:AST-003` FR22 所描述的简化行为，而不是等价物。
+- 浏览器证据：下方每个 Layer story 在真实 Chromium 中、在桌面视口与手机视口下渲染出的几何——层相对于视口的边界矩形、其留白，以及翻转或滑动前后的尺寸——并且对 FR8 而言，是打开提交之后同步读取的首个绘制帧矩形，与稳定帧比较。生成的样式字符串证明定义是共享的；它们不能证明层落到了屏幕上，也不能证明它没有移动。
 
 ## Current-state impact
 
 ### `architecture:layer-runtime` (`current`)
 
-When this ships:
+本项上线后：
 
-- Positioning: replace "Popover adds component-specific viewport sizing and
-  overflow behavior above this geometry. Those constraints are not universal
-  Layer behavior." with the gutter, cap, fallback order, and app-declared
-  inset of FR1–FR6 as shipped behavior; state that the slide applies to every
-  alignment while the anchor is in view and that an off-screen anchor holds.
-- INV3 becomes "Anchor mode owns logical placement, fallbacks, and the
-  viewport inset; custom mode owns its geometry; fixed mode owns explicit
-  coordinates."
-- Add an invariant for FR1 and FR7: the gutter has one definition, every
-  anchor-mode layer inherits it, and a consumer minimum is clamped by it.
-- INV10 stays true and says so plainly: `LayerProvider` is configuration —
-  Toast and the viewport inset — not a layer host; a layer reads the inset
-  from the provider's context and carries it on itself, so hosting never
-  decides whether it arrives, and no layer resolves placement through it.
-- Add an invariant for FR8: no geometry input is measured after paint and
-  then applied; the first painted frame is the settled frame; no scroll frame
-  reads or forces layout for a layer (DEC-7, DEC-8).
-- Positioning and INV12 follow FR4, FR8, DEC-7 and DEC-8: one combined list
-  from the first frame, CSS overflow for whether a layer scrolls, no observer
-  of an anchor that moves without resizing, and one check in the first
-  painted frame after a scroll stops.
-- INV11 and INV12 add the software keyboard's cap (FR9) and FR10's timing:
-  the cap is read from the layer's own box without its entrance transform when
-  the keyboard moves, and it changes once per keyboard movement, the one
-  permitted paint-then-shift.
-- Owning code: add the module that holds the gutter and cap expressions,
-  `LayerProvider` as the owner of the declared inset, and the module that
-  owns the software keyboard's cap on an open anchor-mode layer.
-- Change coupling: a keyboard-cap change verifies the cap's timing, a layer
-  opened with the keyboard up, and the layers it leaves alone.
-- Change coupling: the positioning row already names viewport-edge fallbacks;
-  add explicit-size, content-size, neither-side-fits, and off-screen-anchor
-  states, and the app-declared inset.
-- Verification: add the Layer stories as the rendered evidence for the new
-  invariant and for INV3; name the explicit-width story's failure signal (a
-  layer narrower than its given size).
-- `deciding_specs`: add `spec:AST-059`.
+- 定位：把“Popover 在此几何之上添加组件特有的视口尺寸与溢出行为。这些约束并非通用的 Layer 行为。”替换为 FR1–FR6 的留白、上限、回退顺序与应用声明的内缩，作为已上线行为；并说明滑动在锚点位于视图中时适用于每种对齐，离屏锚点保持。
+- INV3 变为“锚点模式拥有逻辑放置、回退与视口内缩；自定义模式拥有其几何；固定模式拥有显式坐标。”
+- 为 FR1 与 FR7 增加一条不变式：留白只有一处定义，每个锚点模式层都继承它，使用方的最小值也被它钳制。
+- INV10 保持成立并明确说明：`LayerProvider` 是配置——Toast 与视口内缩——而非层的宿主；层从 provider 的 context 读取内缩并携带在自身上，因此托管从不决定它是否到达，也没有层通过它来解析放置。
+- 为 FR8 增加一条不变式：没有任何几何输入是在绘制之后测量再应用的；首个绘制帧就是稳定帧；没有任何滚动帧为层读取或强制布局（DEC-7, DEC-8）。
+- 定位与 INV12 遵循 FR4、FR8、DEC-7 与 DEC-8：从第一帧起就是一份合并列表，层是否滚动由 CSS 溢出决定，不观察不改变尺寸而移动的锚点，并在滚动停止后的第一个绘制帧中做一次检查。
+- INV11 与 INV12 增加软件键盘的上限（FR9）与 FR10 的时机：键盘移动时，上限从层自身盒子（不含入场变换）读取，且每次键盘移动只变更一次，这是唯一被允许的先绘制后移动。
+- 拥有代码：增加持有留白与上限表达式的模块、作为已声明内缩所有者的 `LayerProvider`，以及拥有打开中锚点模式层上软件键盘上限的模块。
+- 变更耦合：键盘上限的变更验证上限的时机、键盘已弹出时打开的层，以及它不触及的层。
+- 变更耦合：定位那一行已经列明视口边缘回退；增加显式尺寸、内容尺寸、两侧都放不下、离屏锚点等状态，以及应用声明的内缩。
+- 验证：把 Layer story 作为新不变式与 INV3 的渲染证据；写明显式宽度 story 的失败信号（层比给定尺寸更窄）。
+- `deciding_specs`：增加 `spec:AST-059`。
 
 ### `component:Popover` (`current`)
 
-When this ships:
+本项上线后：
 
-- Ownership boundary, Owns: remove "viewport fitting, safe-area gutters" from
-  the third bullet; it keeps focus destination, match-trigger sizing,
-  conditional internal scrolling, and the measurement lifecycle.
-- Ownership boundary, Does not own: add the viewport inset — gutter, size
-  caps, fallback order, app-declared inset — owned by
-  `architecture:layer-runtime`.
-- Public concepts, "Placement and fit": becomes "Placement and preferred
-  size" — Popover owns the preference (explicit width, else trigger minimum);
-  the cap and fit are the layer's.
-- FR3 is retired; its claim moves to this record's FR2 and FR3.
-- ORD2 becomes: "An explicit width wins over trigger matching. Without
-  explicit width, Popover prefers trigger minimum width, clamped by the
-  layer's cap (`spec:AST-059` FR7)." The sentence about viewport and
-  safe-area capping is removed.
-- ORD3 is retired; the viewport fit is the layer's. ORD4's overflow
-  evaluation follows the layer's cap.
-- AV4 drops "available viewport size" from what Popover varies.
-- Design relationships: the Popover surface "carries scroll, focus, and
-  dialog behavior"; fit is removed.
-- Verification map: the FR3/FR4 row becomes FR4 only; its Storybook
-  reference points at the Layer stories for geometry and keeps Popover's
-  overflow story for scrolling.
-- `width` is an ordinary CSS width clamped by the layer's cap. Popover's one
-  sizing branch is its own — explicit width, else trigger-matching minimum —
-  and nothing in it depends on whether that width fits beside the trigger.
+- 所有权边界，拥有：从第三条中移除“视口适配、安全区留白”；它保留焦点目标、匹配触发器尺寸、条件式内部滚动与测量生命周期。
+- 所有权边界，不拥有：增加视口内缩——留白、尺寸上限、回退顺序、应用声明的内缩——由 `architecture:layer-runtime` 拥有。
+- 公开概念，“Placement and fit”：变为“Placement and preferred size”——Popover 拥有偏好（显式宽度，否则触发器最小值）；上限与适配属于层。
+- FR3 退役；其主张移至本记录的 FR2 与 FR3。
+- ORD2 变为：“显式宽度优先于触发器匹配。没有显式宽度时，Popover 偏好触发器的最小宽度，并由层的上限钳制（`spec:AST-059` FR7）。”关于视口与安全区封顶的句子被移除。
+- ORD3 退役；视口适配属于层。ORD4 的溢出评估遵循层的上限。
+- AV4 从 Popover 所变化的内容中删去“可用视口尺寸”。
+- 设计关系：Popover 表面“承载滚动、焦点与 dialog 行为”；适配被移除。
+- 验证映射：FR3/FR4 一行只保留 FR4；其 Storybook 引用指向 Layer story 以验证几何，并保留 Popover 的溢出 story 以验证滚动。
+- `width` 是受层上限钳制的普通 CSS 宽度。Popover 唯一的尺寸分支是它自己的——显式宽度，否则触发器匹配最小值——其中没有任何部分取决于该宽度是否能在触发器旁放下。
 
 ### What the other consumers inherit without a record change
 
-- `DropdownMenu` and `DropdownMenuSubMenu` read the runtime's gutter. An
-  explicit `menuWidth` is a minimum clamped by the viewport cap (FR7), never
-  by the room beside the trigger; the menus' 300px block cap is a lower cap
-  FR3 permits.
-- `BaseTypeahead` reads the runtime's gutter; `menuWidth` and its
-  match-trigger minimum are both clamped by the viewport cap (FR2, FR7).
-- `PowerSearch` clamps its 400px editor floor with the viewport cap (FR7).
-- `ComplexSelector` keeps 480px and `TopNavMegaMenu` keeps the room below its
-  trigger as lower caps on the placement axis (FR3).
-- `Tooltip`, `HoverCard`, `ContextMenu`, the Selector family, `TabMenu`, the
-  TopNav menus, and the date inputs render through anchor mode or
-  `usePopover` and receive FR1–FR5 with no change of their own. A layer that
-  fits is unchanged; one that would overflow the viewport is capped, flipped,
-  or slid. Tooltip also keeps its anchor clear (FR4) and scrolls content
-  taller than the room it is given (FR3).
-- `ToastViewport` positions itself at the provider's inset on each edge; its
-  own `inset` keeps its meaning as the per-edge override (FR6, DEC-5).
+- `DropdownMenu` 与 `DropdownMenuSubMenu` 读取运行时的留白。显式 `menuWidth` 是由视口上限钳制的最小值（FR7），绝不由触发器旁的空间钳制；菜单 300px 的块轴上限是 FR3 允许的更低上限。
+- `BaseTypeahead` 读取运行时的留白；`menuWidth` 与其匹配触发器最小值都由视口上限钳制（FR2, FR7）。
+- `PowerSearch` 用视口上限钳制其 400px 的编辑器下限（FR7）。
+- `ComplexSelector` 保留 480px，`TopNavMegaMenu` 保留其触发器下方的空间，作为放置轴上的更低上限（FR3）。
+- `Tooltip`、`HoverCard`、`ContextMenu`、Selector 家族、`TabMenu`、TopNav 菜单以及日期输入通过锚点模式或 `usePopover` 渲染，并无需自身改动即获得 FR1–FR5。能放下的层保持不变；会溢出视口的层被封顶、翻转或滑动。Tooltip 还保持其锚点不被遮挡（FR4），并滚动高于其所获空间的内容（FR3）。
+- `ToastViewport` 在每条边上按 provider 的内缩自行定位；它自己的 `inset` 保持其作为逐边覆盖的含义（FR6, DEC-5）。
 
 ## Verification
 
-Stories live under `Core/Layer` as "Viewport inset: …" and run in real
-Chromium under the story play guard at two viewports, 1280×900 and a 390×844
-phone; each is a claim a person can open and look at. Every one of these
-stories reads the layer's rectangle synchronously after the opening commit —
-the geometry the first frame paints — and again after two animation frames,
-and fails on any difference (FR8). Popover's stories keep only what is
-Popover's: its match-trigger preference, scrolling, focus, dismissal, and
-surface styling. A playground story with a draggable trigger and live width,
-placement, and alignment controls exists for exploration; it is not evidence
-for any row.
+story 位于 `Core/Layer` 下，名为“Viewport inset: …”，在 story play 守卫下于真实 Chromium 中运行，覆盖两个视口：1280×900 与 390×844 的手机；每一个都是人可以打开查看的主张。这些 story 中的每一个都在打开提交之后同步读取层的矩形——即第一帧所绘制的几何——并在两个动画帧之后再次读取，任何差异都会失败（FR8）。Popover 的 story 只保留属于 Popover 的内容：其匹配触发器偏好、滚动、焦点、关闭与表面样式。另有一个带可拖动触发器以及实时宽度、放置、对齐控件的 playground story 供探索；它不是任何一行的证据。
 
-| Contract                       | Verification                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Representative states                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Mutation or failure expectation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1, FR7                       | One gutter module; a source scan for a second gutter or a `100%`-of-span cap among anchor-mode layers; story "the gutter" at both viewports                                                                                                                                                                                                                                                                                                                                                                                   | Default gutter at every edge; a wrapping layer beside a trigger flush with the edge                                                                                                                                                                                                                                                                                                                                                                                                                                                  | A second gutter constant among anchor-mode layers, or a layer inside the 16px gutter                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| FR2                            | Stories "explicit size near an edge (352px)", "content-sized, fits beside the trigger", "content-sized, does not fit beside the trigger", "neither side fits" at both viewports; clamp strings in Popover and DropdownMenu suites                                                                                                                                                                                                                                                                                             | 352px end-aligned on a trigger 45px from the edge; a short content-sized layer; an unbreakable run wider than a phone; a 1000px layer on a phone, where the cap is 358px                                                                                                                                                                                                                                                                                                                                                             | A layer narrower than `min(asked, cap)`, a layer box wider than the cap at any viewport, or `100%` of the anchor span in a cap                                                                                                                                                                                                                                                                                                                                                                                    |
-| FR3                            | Story "taller than the viewport" at both viewports; the runtime's viewport-fit style on every anchor-mode layer                                                                                                                                                                                                                                                                                                                                                                                                               | Content 2000px tall                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | The layer box's block size exceeds the viewport minus gutters                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| FR4                            | Stories "content-sized, does not fit beside the trigger", "trigger near an edge flips", "neither side fits", "trigger near the bottom flips above", "wide layer, trigger near the bottom" at both viewports                                                                                                                                                                                                                                                                                                                   | A flip to end alignment at content size and at an explicit size; a 1000px layer slid inside the gutters where it fits; a block flip with room only above; a block flip when the inline axis is also capped                                                                                                                                                                                                                                                                                                                           | A layer squeezed into the span, a flipped edge off the trigger's edge, a layer outside the gutters on either axis, or a layer left on the side with no room                                                                                                                                                                                                                                                                                                                                                       |
-| FR4, Tooltip                   | The `TooltipTallContent` and `TooltipTallContentTracking` real-engine suites (Chromium, WebKit) at 1280×720 and 390×700; the runtime's anchor-clear unit suite; a wheel and a keyboard pass over a fitting and a tall tooltip in Chromium, before and after                                                                                                                                                                                                                                                                   | A 60-line tooltip mid-page (beside it); a fitting tooltip whose side loses room in a scroll (it flips to the opposite side, not beside); on a phone, trigger in the upper or lower half (roomier side); a fitting tooltip; content growth, host move, trigger move by layout, a page scroll and a scroll inside a scrolling panel that carry the trigger past an edge, window resize, replaced trigger; a wheel over a fitting tooltip and at the end of a tall one; Tab through a page that holds a fitting and a scrolling tooltip | Moves beside its trigger while the flip to the opposite side fits; covers its trigger in any frame, including every frame of a scroll inside a panel; closes under a resting pointer, leaves the viewport, won't scroll, or a fitting tooltip moves; a wheel over a fitting tooltip does not scroll the page, or a tall tooltip's scroll does not chain to the page at its end; CSS `overflow-y: auto` adds a Tab stop in Chromium                                                                                |
-| FR5                            | Stories "anchor leaves the viewport" and "anchor already off-screen when the layer opens"; the runtime's anchor-visibility unit suite                                                                                                                                                                                                                                                                                                                                                                                         | Horizontal scroll carries the trigger out of view while the layer is open, then back; a layer opened with its anchor already off-screen                                                                                                                                                                                                                                                                                                                                                                                              | The layer slides toward the viewport edge after the anchor is gone, changes size, does not return with its anchor, or opens pinned to the edge                                                                                                                                                                                                                                                                                                                                                                    |
-| FR6                            | Stories "app-declared inset (floating bar)" and "layer portaled out of its JSX position"; `LayerProvider` and `ToastViewport` unit suites                                                                                                                                                                                                                                                                                                                                                                                     | An 80px bar declared as `inset={{blockEnd: 80}}`; a toast under the same provider; a `toast.inset` override; no provider; a layer hosted outside the paragraph it was rendered in                                                                                                                                                                                                                                                                                                                                                    | A layer or toast ends under the bar, an unset edge moves anything, a `toast.inset` edge stops overriding, no-provider geometry differs from the default provider's, or a portaled layer loses the inset                                                                                                                                                                                                                                                                                                           |
-| FR8                            | Every story above (first frame compared with settled); stories "inset changes while the layer is open", "layer opens in the frame the inset arrives", "inset measured by the app", "anchor already off-screen when the layer opens"                                                                                                                                                                                                                                                                                           | The provider's inset changes 80→160 with the layer open; a layer mounted open in the provider's first commit; a bar the app measures before paint and declares; an off-screen anchor at open                                                                                                                                                                                                                                                                                                                                         | The first frame's rectangle differs from the settled one, or the first frame after a declaration change is not already at the new geometry                                                                                                                                                                                                                                                                                                                                                                        |
-| FR4, FR8 scroll (DEC-7, DEC-8) | Before-and-after evidence in real Chromium for each of DEC-7's seven rows; a performance trace of a page scroll and a scroll inside a scrolling panel that carry a tooltip's trigger past the scroll edge, counting forced layouts per scroll frame before and after; the runtime's anchor-clear unit suite for when the don't-cover check runs; the tooltip suite's scroll-edge case; a count of forced layouts per scroll with the re-pick after `scrollend`, and with the 150 ms fallback where `scrollend` is unsupported | An open tooltip whose trigger a page scroll carries out of the page and back; the same inside a scrolling panel; the layer's show, a remount, a ResizeObserver report, and a window resize; a top-layer layer whose anchor leaves the page; a wheel scroll that ends with the trigger at the scroll edge                                                                                                                                                                                                                             | A forced layout or layout read for a layer in a scroll frame other than one in which the anchor's visibility changes; a don't-cover check, `scroll` or `scrollend` read, or forced re-pick during a scroll; an observer of a trigger that moves without resizing; a layer that slides or vanishes instead of holding when its anchor leaves the page; the scroll-edge case fails, a layout read lands during the scroll or in a scroll handler, or the re-pick runs before the first painted frame after the stop |
-| FR9                            | `useLayerKeyboardClearance.test.tsx`; Popover's keyboard browser proofs in Chromium and WebKit with a stand-in keyboard; the iOS simulator; Selector's keyboard inset browser proof                                                                                                                                                                                                                                                                                                                                           | A tall Popover below its trigger with a field; a keyboard already up at the open; a short layer; a layer above its trigger; a Selector overlay that slides above the keyboard                                                                                                                                                                                                                                                                                                                                                        | A capped layer ending under the keyboard or more than 10 px above it, an unreached layer that changes, a bottom-held layer that moves, or a layer measuring the keyboard itself                                                                                                                                                                                                                                                                                                                                   |
-| FR10                           | `useLayerKeyboardClearance.test.tsx`; Popover's keyboard browser proofs                                                                                                                                                                                                                                                                                                                                                                                                                                                       | A rising keyboard before and after it arrives; a falling keyboard; a keyboard that changes at once; a tap on Save as the keyboard falls                                                                                                                                                                                                                                                                                                                                                                                              | A cap written while the keyboard rises, kept as it falls, or taken off under a press before its click                                                                                                                                                                                                                                                                                                                                                                                                             |
-| FR1 safe area                  | A device run: `env(safe-area-inset-*)` is set only by a real device and Chromium emulation does not populate it, so no Storybook story can show it.                                                                                                                                                                                                                                                                                                                                                                           | Landscape phone with a notch on one side                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | A layer under the notch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 契约                           | 验证                                                                                                                                                                                                                                                                                                                                                                                      | 代表状态                                                                                                                                                                                                                                                                                                                                                                                                                                              | 变动或失败预期                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| FR1, FR7                       | 单一的 gutter 模块；源码扫描确认锚点模式层中不存在第二个 gutter，也不存在以跨度 `100%` 为上限的封顶；在两种视口下运行 story “the gutter”                                                                                                                                                                                                                                                  | 每条边都使用默认 gutter；一个折行的层位于与边齐平的触发元素旁                                                                                                                                                                                                                                                                                                                                                                                         | 锚点模式层中出现第二个 gutter 常量，或某个层落入 16px 的 gutter 之内                                                                                                                                                                                                                                                                       |
+| FR2                            | 在两种视口下运行 story “explicit size near an edge (352px)”、“content-sized, fits beside the trigger”、“content-sized, does not fit beside the trigger”、“neither side fits”；Popover 与 DropdownMenu 测试套件中的 clamp 字符串                                                                                                                                                           | 距边 45px 的触发元素上、末端对齐的 352px；一个较短的按内容定尺寸的层；一段比手机还宽的不可断行文本；手机上的 1000px 层，此时上限为 358px                                                                                                                                                                                                                                                                                                              | 某个层窄于 `min(asked, cap)`；任一视口下某个层盒宽于上限；或上限中出现锚点跨度的 `100%`                                                                                                                                                                                                                                                    |
+| FR3                            | 在两种视口下运行 story “taller than the viewport”；每个锚点模式层上运行时设置的视口适配样式                                                                                                                                                                                                                                                                                               | 高度为 2000px 的内容                                                                                                                                                                                                                                                                                                                                                                                                                                  | 层盒的块向尺寸超出视口减去 gutter 后的范围                                                                                                                                                                                                                                                                                                 |
+| FR4                            | 在两种视口下运行 story “content-sized, does not fit beside the trigger”、“trigger near an edge flips”、“neither side fits”、“trigger near the bottom flips above”、“wide layer, trigger near the bottom”                                                                                                                                                                                  | 按内容尺寸和按显式尺寸时翻转到末端对齐；一个 1000px 的层在放得下时被滑入 gutter 之内；仅上方有空间时的块向翻转；行内轴也被限制上限时的块向翻转                                                                                                                                                                                                                                                                                                        | 某个层被挤进跨度内；翻转后的边偏离触发元素的边；层在任一轴上落在 gutter 之外；或层被留在没有空间的一侧                                                                                                                                                                                                                                     |
+| FR4, Tooltip                   | `TooltipTallContent` 与 `TooltipTallContentTracking` 真实引擎测试套件（Chromium、WebKit），在 1280×720 与 390×700 下；运行时的锚点避让单元测试套件；在 Chromium 中对一个放得下的提示框和一个高提示框做滚轮与键盘操作，改动前与改动后各一次                                                                                                                                                | 页面中部的一个 60 行提示框（位于其旁边）；一个放得下的提示框，其所在侧在滚动中失去空间（它翻转到对侧，而不是移到旁边）；在手机上，触发元素位于上半部或下半部（取空间充裕的一侧）；一个放得下的提示框；内容增长、宿主移动、由布局导致的触发元素移动、页面滚动以及在滚动面板内的滚动使触发元素越过某条边、窗口尺寸变化、触发元素被替换；在一个放得下的提示框上以及一个高提示框末尾处滚动滚轮；用 Tab 遍历一个同时包含放得下的提示框和可滚动提示框的页面 | 在对侧翻转放得下时却移到触发元素旁；在任意帧中遮挡其触发元素，包括面板内滚动过程中的每一帧；在指针静止时关闭、离开视口、无法滚动，或放得下的提示框发生移动；在放得下的提示框上滚动滚轮不会滚动页面，或高提示框的滚动在其末尾不能链式传递给页面；CSS `overflow-y: auto` 在 Chromium 中增加一个 Tab 停留点                                   |
+| FR5                            | story “anchor leaves the viewport” 与 “anchor already off-screen when the layer opens”；运行时的锚点可见性单元测试套件                                                                                                                                                                                                                                                                    | 层打开时水平滚动把触发元素带出视野，然后带回；一个在其锚点已离屏时打开的层                                                                                                                                                                                                                                                                                                                                                                            | 锚点消失后层向视口边缘滑动、尺寸变化、没有随锚点一起返回，或打开时就被固定到边缘                                                                                                                                                                                                                                                           |
+| FR6                            | story “app-declared inset (floating bar)” 与 “layer portaled out of its JSX position”；`LayerProvider` 与 `ToastViewport` 单元测试套件                                                                                                                                                                                                                                                    | 以 `inset={{blockEnd: 80}}` 声明的 80px 条；同一 provider 下的 toast；一次 `toast.inset` 覆盖；无 provider；一个被承载到其渲染位置所在段落之外的层                                                                                                                                                                                                                                                                                                    | 层或 toast 结束在条之下；未设置的边移动了任何东西；某条 `toast.inset` 边不再覆盖；无 provider 时的几何与默认 provider 的不同；或被 portal 的层丢失了内缩                                                                                                                                                                                   |
+| FR8                            | 上述每个 story（首帧与稳定后状态对比）；story “inset changes while the layer is open”、“layer opens in the frame the inset arrives”、“inset measured by the app”、“anchor already off-screen when the layer opens”                                                                                                                                                                        | 层打开时 provider 的内缩从 80 变为 160；在 provider 的首次 commit 中就以打开状态挂载的层；由应用在绘制前测量并声明的条；打开时已离屏的锚点                                                                                                                                                                                                                                                                                                            | 首帧的矩形与稳定后的不同，或声明变化后的首帧尚未处于新的几何位置                                                                                                                                                                                                                                                                           |
+| FR4, FR8 scroll (DEC-7, DEC-8) | 在真实 Chromium 中为 DEC-7 的七行分别提供改动前后的证据；对页面滚动以及滚动面板内的滚动（二者都把提示框的触发元素带过滚动边缘）做性能跟踪，统计改动前后每个滚动帧内的强制布局次数；运行时的锚点避让单元测试套件，用于确定不遮挡检查何时运行；提示框套件的滚动边缘用例；统计每次滚动在 `scrollend` 之后重新选取时的强制布局次数，以及 `scrollend` 不受支持时采用 150 ms 回退的强制布局次数 | 一个打开的提示框，其触发元素被页面滚动带出页面后又带回；在滚动面板内出现同样情形；层的显示、重新挂载、一次 ResizeObserver 报告以及一次窗口尺寸变化；一个位于 top-layer 且其锚点离开页面的层；一次以触发元素停在滚动边缘结束的滚轮滚动                                                                                                                                                                                                                 | 在锚点可见性发生变化的那一帧之外的滚动帧中，对某个层执行强制布局或布局读取；滚动期间执行不遮挡检查、读取 `scroll` 或 `scrollend`，或强制重新选取；对一个只移动、未改变尺寸的触发元素建立观察；层在其锚点离开页面时滑动或消失而非保持；滚动边缘用例失败；布局读取发生在滚动过程中或滚动处理函数中；或重新选取在停止后的首个已绘制帧之前运行 |
+| FR9                            | `useLayerKeyboardClearance.test.tsx`；Popover 在 Chromium 与 WebKit 中使用替代键盘的键盘浏览器验证；iOS 模拟器；Selector 的键盘内缩浏览器验证                                                                                                                                                                                                                                             | 触发元素下方带输入字段的高 Popover；打开时键盘已经升起；一个较短的层；位于其触发元素上方的层；一个滑动到键盘上方的 Selector 覆盖层                                                                                                                                                                                                                                                                                                                    | 被限制上限的层结束在键盘之下或高出键盘超过 10 px；一个未被上限触及的层发生变化；一个底部保持的层发生移动；或层自行测量键盘                                                                                                                                                                                                                 |
+| FR10                           | `useLayerKeyboardClearance.test.tsx`；Popover 的键盘浏览器验证                                                                                                                                                                                                                                                                                                                            | 键盘升起前与升起后；键盘落下；键盘立即发生变化；键盘下落时点击保存                                                                                                                                                                                                                                                                                                                                                                                    | 在键盘升起时写入上限、在键盘下落时仍然保留，或在一次按压尚未产生点击前就撤销上限                                                                                                                                                                                                                                                           |
+| FR1 safe area                  | 真机运行：`env(safe-area-inset-*)` 只会由真实设备设置，Chromium 仿真不会填充它，因此任何 Storybook story 都无法展示它。                                                                                                                                                                                                                                                                   | 一侧带刘海凹口的横屏手机                                                                                                                                                                                                                                                                                                                                                                                                                              | 层落在凹口之下                                                                                                                                                                                                                                                                                                                             |
 
-**Verification gap — VG1.** A layer that had to slide (it fit on neither
-side of its trigger) and whose anchor leaves and returns can come back
-start-aligned to its anchor and off-screen until its next layout: Chromium
-does not re-run the slide when the off-screen pin is withdrawn. The "anchor
-leaves the viewport" story asserts the return only where the layer fit beside
-its trigger. FR5's hold is verified; the return after a slide is not.
+**验证缺口 — VG1。** 一个不得不滑动（它在其触发元素两侧都放不下）且其锚点离开后又返回的层，可能返回时与其锚点起始对齐并处于屏外，直到下一次布局：当屏外固定被撤销时，Chromium 不会重新执行滑动。“anchor leaves the viewport” story 只在层放得下其触发元素旁时断言返回。FR5 的保持已验证；滑动后的返回未验证。
 
-The first-frame assertion observes style and layout after the commit and
-before any animation frame; it cannot observe compositor-only effects, and a
-shift produced by an input outside this record (the app re-laying out its
-own bar after paint) is reported as the app's.
+首帧断言观察的是 commit 之后、任何动画帧之前的样式与布局；它无法观察仅由合成器产生的效果，而由本记录之外的输入（应用在绘制后重新布局自己的条）造成的位移，会归因于应用。
 
 ## Decision log
 
 ### DEC-1 — The layer owns the viewport inset; Popover is an application of it
 
-**Reference:** `spec:AST-059/DEC-1`
-**Decider:** Cindy Zhang, 2026-10-03
+**参考：** `spec:AST-059/DEC-1`
 
-The layer runtime owns the viewport inset behaviors, their specification, and
-their stories. Popover is an application of the layer that adds styling
-considerations on top. A gutter defined once cannot drift; a fallback list
-authored once cannot be extended by one component for its own case; a person
-sees the same edge behavior from a menu, a popover, a typeahead, and a
-tooltip, apart from the anchor-clear order FR4 gives a tooltip, which the
-runtime also authors.
+**决定者：** Cindy Zhang，2026-10-03
 
-Rejected: a shared constant each component imports while keeping its own fit
-styles — it removes the drift and keeps the ownership problem.
+层运行时拥有视口内缩行为、它们的规格以及它们的 story。Popover 是该层的一种应用，在其之上增加了样式方面的考量。只定义一次的 gutter 不会漂移；只编写一次的备选列表不会被某个组件为自身的个例而扩展；一个人从菜单、popover、typeahead 和提示框看到的是相同的边缘行为，唯一的例外是 FR4 为提示框规定的锚点避让顺序，而该顺序同样由运行时编写。
+
+否决：由每个组件导入一个共享常量，同时各自保留自己的适配样式 —— 这消除了漂移，却保留了归属问题。
 
 ### DEC-2 — A content-sized layer wraps if it can and moves if it cannot
 
-**Reference:** `spec:AST-059/DEC-2`
-**Decider:** Cindy Zhang, 2026-10-03
+**参考：** `spec:AST-059/DEC-2`
 
-A content-sized layer fits beside its trigger by wrapping its content into the
-room there, as an auto-width positioned box does on its own. A size that
-cannot shrink — an explicit width, a `menuWidth`, a label that does not wrap —
-keeps its size and moves: it flips to the other side, and when neither side
-fits it slides along the alignment axis into view (FR4). No size is ever capped
-to the span beside the trigger, so the runtime needs no knowledge of whether a
-size was given, and `Popover.width` and `DropdownMenu.menuWidth` are ordinary
-CSS sizes clamped only by the viewport.
+**决定者：** Cindy Zhang，2026-10-03
 
-Rejected: forcing every content-sized layer to its `max-content` width so it
-always moves rather than wraps — prose beside a trigger would open as wide as
-the viewport.
+按内容定尺寸的层通过把内容折行进该处的空间，从而放在其触发元素旁，正如自动宽度的定位盒自身所做的那样。无法收缩的尺寸 —— 显式宽度、`menuWidth`、不折行的标签 —— 保持其尺寸并移动：它翻转到另一侧，当两侧都放不下时沿对齐轴滑入视野（FR4）。任何尺寸都不会被限制到触发元素旁的跨度，因此运行时无需知道是否给定了尺寸，而 `Popover.width` 与 `DropdownMenu.menuWidth` 只是普通的 CSS 尺寸，仅受视口约束。
+
+否决：强制每个按内容定尺寸的层取 `max-content` 宽度，使其总是移动而不是折行 —— 触发元素旁的散文会以与视口一样宽打开。
 
 ### DEC-3 — An aligned layer does not slide toward an off-screen anchor
 
-**Reference:** `spec:AST-059/DEC-3`
-**Decider:** Cindy Zhang, 2026-10-03
+**参考：** `spec:AST-059/DEC-3`
 
-The slide (FR4) serves a visible trigger whose layer fits on neither side. Once
-the anchor has left the viewport, the layer holds the position the flips give
-it and holds its size (FR5). A layer that kept sliding would pin itself into
-the narrowest strip at the edge, giving up room it had a moment earlier for
-an anchor nobody can see. The condition belongs in the ordering rules, not
-left to emerge from a fallback list.
+**决定者：** Cindy Zhang，2026-10-03
 
-Rejected: closing the layer when its anchor leaves — a product decision about
-staleness, not a geometry rule, and it takes the layer from a person reading it.
+滑动（FR4）服务于一个可见触发元素，而该层在其两侧都放不下。一旦锚点离开视口，层就保持翻转所给出的位置并保持其尺寸（FR5）。持续滑动的层会把自己钉在边缘最窄的条带里，为一个谁也看不见的锚点放弃它片刻之前还拥有的空间。该条件属于排序规则，而不是听任其从备选列表中涌现。
+
+否决：在锚点离开时关闭层 —— 这是关于内容过时的产品决策，而不是几何规则，而且它会把层从正在阅读的人手中拿走。
 
 ### DEC-4 — An app's floating bar is app state, not a theme value
 
-**Reference:** `spec:AST-059/DEC-4`
-**Decider:** Cindy Zhang, 2026-10-03
+**参考：** `spec:AST-059/DEC-4`
 
-A persistent bar floating over a viewport edge is a fact about an app's
-shell — whether it exists and how tall it is — and two apps sharing one theme
-differ on it. The app therefore declares it as provider configuration
-(`LayerProvider.inset`, FR6), not through `defineTheme`. There is no `layer`
-theme target: a theme target is a component's anatomy vocabulary, and the
-layer has no painted anatomy of its own; the gutter is geometry, not
-treatment.
+**决定者：** Cindy Zhang，2026-10-03
 
-Rejected: routing the inset through the `popover` theme target — one
-component's theme would govern every other consumer. Rejected: a per-layer
-prop — the bar would be restated on every surface, and two could disagree.
-Rejected: hand-written CSS custom properties as the public surface — untyped,
-undiscoverable beside `toast`, and unable to carry a default.
+悬浮在视口边缘之上的常驻条是应用外壳的事实 —— 它是否存在以及有多高 —— 而共享同一主题的两个应用在此各不相同。因此应用把它声明为 provider 配置（`LayerProvider.inset`，FR6），而不是通过 `defineTheme`。不存在 `layer` 主题目标：主题目标是组件的解剖结构词汇，而层本身没有绘制出来的解剖结构；gutter 是几何，不是表现。
+
+否决：通过 `popover` 主题目标传递内缩 —— 一个组件的主题会支配其他每个使用方。否决：逐层传入的 prop —— 条会在每个界面上被重复声明，而且两处可能不一致。否决：以手写的 CSS 自定义属性作为公共接口 —— 无类型、在 `toast` 旁难以发现，且无法携带默认值。
 
 ### DEC-5 — One declaration serves toasts and anchored layers; zero is the default
 
-**Reference:** `spec:AST-059/DEC-5`
-**Decider:** Cindy Zhang, 2026-10-03
+**参考：** `spec:AST-059/DEC-5`
 
-`LayerProvider.inset` is the provider-level declaration. The toast viewport
-and every anchored layer under the provider read it, because a bar at a
-viewport edge is one physical obstruction and the provider is already where
-an app says there is something at an edge. `toast.inset` stays as the
-toast-only override: on an edge it sets, it replaces the provider's value for
-the toast viewport, so a toast may clear more or less than a layer when an app
-asks for that, and an app that set `toast.inset` before this record sees its
-toasts exactly where they were. The two are never added: adding would clear
-the same bar twice in the common case.
+**决定者：** Cindy Zhang，2026-10-03
 
-The default is zero on every edge, as a decision: the system already knows
-the device's own edges and carries them in the gutter (FR1, `env()`); only the
-app knows the bars it draws, and a non-zero default would move every layer in
-every app for a reason no one could find in that app. A surface with no
-provider is a surface under the default provider.
+`LayerProvider.inset` 是 provider 级别的声明。toast 视口以及该 provider 下的每个锚定层都会读取它，因为视口边缘的条是一种物理阻挡，而 provider 本来就是应用声明边缘处有东西的地方。`toast.inset` 保留为仅作用于 toast 的覆盖：在它设置的边上，它替换 toast 视口的 provider 值，因此当应用这样要求时，toast 可以比层多让出或少让出一些空间，而在此记录之前设置过 `toast.inset` 的应用，其 toast 显示的位置与原来完全相同。两者绝不会相加：相加会在常见情况下把同一条遮挡两次。
 
-Rejected: a shared inset that the toast cannot override — a toast that must
-clear a control an anchored layer may cover would have no route.
+每条边的默认值都是零，这是一个决策：系统已经知道设备自身的边缘，并将其携带在 gutter 中（FR1、`env()`）；只有应用知道它绘制的条，而非零的默认值会因某个在该应用中谁也找不到的原因，移动每个应用中的每一个层。没有 provider 的界面就是处于默认 provider 之下的界面。
+
+否决：让 toast 无法覆盖的共享内缩 —— 一个必须避开锚定层可能遮挡的控件的 toast 将无路可走。
 
 ### DEC-6 — The runtime caps a layer above the software keyboard, holding its start edge
 
-**Reference:** `spec:AST-059/DEC-6`
-**Decider:** `cixzhang`, `2026-10-26`
+**参考：** `spec:AST-059/DEC-6`
 
-A layer that would run under the software keyboard is capped by the layer
-runtime, for every anchor-mode layer at once, from the keyboard module's one
-height: the keyboard narrows the viewport the way the gutter does, and a rule
-that one component applies leaves every other layer under the keyboard. The
-capped layer keeps its block-start edge and ends 10 px above the keyboard, as
-a UIKit popover does.
+**决定者：** `cixzhang`, `2026-10-26`
 
-Rejected: the keyboard as a declared block-end inset (FR6), because the
-fallback order applies a block inset to both block edges (FR4).
+会延伸到软件键盘之下的层由层运行时统一限制上限，对所有锚点模式层一次性生效，依据键盘模块提供的唯一高度：键盘像 gutter 一样收窄视口，而只由一个组件施加的规则会让其他每个层都留在键盘之下。被限制上限的层保持其块起始边，并在键盘上方 10 px 处结束，正如 UIKit 的 popover 那样。
+
+否决：把键盘作为声明的块末内缩（FR6），因为备选顺序会把块向内缩应用到两个块向边缘（FR4）。
 
 ### DEC-7 — During a scroll, CSS places anchored layers; the runtime keeps event-driven reads
 
-**Reference:** `spec:AST-059/DEC-7`
-**Decider:** `cixzhang`, `2026-11-06`
+**参考：** `spec:AST-059/DEC-7`
 
-Placement during a scroll belongs to the browser's anchor positioning. Each
-runtime mechanism near that path has one disposition:
+**决定者：** `cixzhang`, `2026-11-06`
 
-- CSS carries it: a trigger that moves without resizing needs no observer,
-  because the anchor-clear options are in the layer's list from the start;
-  the choice of option during a scroll comes from one combined list, within
-  Chromium's five fallbacks, whose options never overlap the trigger and run
-  preferred side, flip, beside the trigger, then a room-sized side, so a
-  fitting layer that loses room on its side flips to the opposite side before
-  it moves beside the trigger, with no forced new choice; and whether a layer scrolls is CSS overflow, not a
-  read (FR4).
-- Off the scroll path: the don't-cover check runs at show and on a size
-  change, never per scroll frame (FR4, FR8).
-- The runtime keeps it: the out-of-view hold (FR5), the read on window
-  resize, the keyboard clearance (FR9), and the single re-pick after
-  scrolling stops (DEC-8).
+滚动期间的放置属于浏览器的锚点定位。靠近该路径的每个运行时机制都有一种处置方式：
 
-Two measured gaps in CSS alone decide the keeps and the shape of the list.
-Inside a scrolling panel, Chrome does not choose a CSS-anchored layer's option
-again during the scroll, so a layer can be pushed over its trigger and stay
-there: every option therefore keeps clear of the trigger by construction, and
-the don't-cover check stays at show and on a size change. On a page scroll,
-`position-visibility: anchors-visible` does not hide a top-layer layer whose
-anchor leaves the page, and where it applies it hides rather than holds: the
-hold stays the runtime's, event-driven and with no work per frame. A window
-resize is not a scroll path. iOS Safari has no CSS for the software keyboard
-(`env(keyboard-inset-*)` is Chrome-only, and the `interactive-widget`
-viewport key is not supported there), so the keyboard clearance stays. A
-scroll therefore costs the runtime layout work only in the frame in which an
-anchor's visibility changes and in the frame after scrolling stops (DEC-8).
+- CSS 承担它：只移动、不改变尺寸的触发元素不需要观察者，因为锚点避让选项从一开始就在层的列表中；滚动期间选项的选择来自一个合并列表，处于 Chromium 的五种回退之内，这些选项绝不与触发元素重叠，并按首选侧、翻转、触发元素旁、再到按空间定尺寸的一侧的顺序排列，因此一个在其所在侧失去空间的放得下的层，会先翻转到对侧，然后才移到触发元素旁，期间没有强制的新选择；而层是否滚动由 CSS overflow 决定，不是读取的结果（FR4）。
+- 在滚动路径之外：不遮挡检查在显示时和尺寸变化时运行，绝不在每个滚动帧运行（FR4、FR8）。
+- 运行时保留它：出视口保持（FR5）、窗口尺寸变化时的读取、键盘避让（FR9），以及滚动停止后的单次重新选取（DEC-8）。
 
-Rejected: CSS alone for every row (the two gaps above), and per-frame checks
-during a scroll (each forces layout in every scroll frame).
+仅用 CSS 时的两处实测缺口决定了哪些由运行时保留以及列表的形状。在滚动面板内，Chrome 在滚动期间不会再次选择 CSS 锚定层的选项，因此层可能被推到其触发元素之上并留在那里：因此每个选项在构造上都不与触发元素重叠，而不遮挡检查仍只在显示时和尺寸变化时运行。在页面滚动时，`position-visibility: anchors-visible` 不会隐藏锚点离开页面的 top-layer 层，而在它生效之处它是隐藏而非保持：保持仍归运行时，事件驱动且每帧无工作。窗口尺寸变化不是滚动路径。iOS Safari 没有针对软件键盘的 CSS（`env(keyboard-inset-*)` 仅 Chrome 支持，而 `interactive-widget` 视口键在那里不受支持），因此键盘避让保留。因此一次滚动只在锚点可见性发生变化的那一帧以及滚动停止后的那一帧，才让运行时付出布局工作（DEC-8）。
+
+否决：每一行都只用 CSS（即上面两处缺口），以及在滚动期间进行逐帧检查（每次都会在每个滚动帧中强制布局）。
 
 ### DEC-8 — Anchored layers re-pick once, a painted frame after scrolling stops
 
-**Reference:** `spec:AST-059/DEC-8`
-**Decider:** `cixzhang`, `2026-11-06`
+**参考：** `spec:AST-059/DEC-8`
 
-An anchored layer re-picks its position once, in the first painted frame after
-scrolling stops; nothing reads layout during the scroll (FR4). Chromium never
-chooses a CSS-anchored layer's option again during a scroll, so a tooltip a
-scroll carried to the edge would otherwise stay off-screen. Measured in
-Chromium, a scroll costs 5 to 20 forced layouts with this re-pick, against 12
-to 27 with a re-pick in every frame, and the edge case of the tooltip suite
-passes.
+**决定者：** `cixzhang`, `2026-11-06`
 
-Rejected: CSS alone (the tooltip stays off-screen at the edge), and a re-pick
-in every scroll frame (the layer bounces mid-scroll).
+锚定层在滚动停止后的第一个已绘制帧中重新选取其位置一次；滚动期间没有任何东西读取布局（FR4）。Chromium 在滚动期间绝不会再次选择 CSS 锚定层的选项，因此被滚动带到边缘的提示框否则会一直留在屏外。在 Chromium 中实测，采用这种重新选取时一次滚动花费 5 到 20 次强制布局，而在每帧重新选取时为 12 到 27 次，并且提示框套件的边缘用例通过。
+
+否决：只用 CSS（提示框在边缘处留在屏外），以及在每个滚动帧中重新选取（层会在滚动中途弹跳）。
 
 ### DEC-9 — Script never moves a layer to follow its anchor
 
-**Reference:** `spec:AST-059/DEC-9`
-**Decider:** `cixzhang`, `2026-11-10`
+**参考：** `spec:AST-059/DEC-9`
 
-An anchored layer follows its anchor only through CSS anchor positioning
-(`position-anchor`, `position-area`, `anchor()` and `@position-try`). No script
-moves a layer to keep it on its anchor: no scroll, resize, observer or
-animation-frame handler writes a layer's `top`, `left`, `inset`, `translate`
-or `transform` from a measured anchor or layer rectangle. The out-of-view hold and the re-pick that DEC-7 keeps choose among the
-layer's CSS options or hold it in place, and write no coordinates. Four uses stay
-outside this rule because none of them follows an anchor: fixed mode's coordinates, which a caller sets once from
-an event such as a context-menu press; a one-time entrance or exit transform
-that plays and ends; the software keyboard's lift (FR9, DEC-6), which writes an
-inset to keep a layer clear of the keyboard, not to follow its anchor; and the
-reduced fallback for browsers without anchor
-positioning, which has no anchored geometry (`spec:AST-003` FR22).
+**决定者：** `cixzhang`, `2026-11-10`
 
-The owner, on popover scroll jank: "We should avoid repositioning layers to
-meet the anchor manually in js and ban such strategies in speed since we keep
-seeing this happen".
+锚定层只通过 CSS 锚点定位来跟随其锚点（`position-anchor`、`position-area`、`anchor()` 和 `@position-try`）。没有任何脚本移动层来让它停在其锚点上：没有滚动、尺寸变化、观察者或动画帧处理函数会依据测量到的锚点或层矩形，写入层的 `top`、`left`、`inset`、`translate` 或 `transform`。DEC-7 保留的出视口保持与重新选取，是在层的 CSS 选项之间选择或将其原地保持，不写入任何坐标。有四种用法不在本规则之内，因为它们都不跟随锚点：固定模式的坐标，由调用方根据诸如上下文菜单按下之类的事件设置一次；一次播放后即结束的一次性进入或退出变换；软件键盘的抬升（FR9、DEC-6），它写入内缩以使层避开键盘，而不是跟随其锚点；以及为不支持锚点定位的浏览器提供的简化回退，它没有锚定几何（`spec:AST-003` FR22）。
 
-Rejected: script positioning as a fallback for CSS anchor positioning in
-supported browsers (it lags the scroll by a frame and forces layout).
+所有者关于 popover 滚动卡顿的说法：“我们应当避免在 js 中手动重新定位层去贴合锚点，并在 spec 中禁止这类策略，因为我们不断看到这种情况发生”。
+
+否决：在受支持的浏览器中把脚本定位作为 CSS 锚点定位的回退（它会比滚动迟一帧，并强制布局）。
 
 ### DEC-10 — A layer never inherits its trigger's press transform
 
-**Reference:** `spec:AST-059/DEC-10`
-**Decider:** `cixzhang`, `2026-11-10`
+**参考：** `spec:AST-059/DEC-10`
 
-A trigger's press feedback scales only the trigger's own visual. A layer the
-trigger opens renders outside that scaled subtree, so a press never scales,
-moves or distorts the layer or its entrance, and the layer anchors to the
-trigger's untransformed box.
+**决定者：** `cixzhang`, `2026-11-10`
 
-The owner: "since we scale the button on press the popover also gets scaled
-from it which makes the animation look weird. We probably need the popover
-menu to be outside of the scale css".
+触发元素的按压反馈只缩放触发元素自身的视觉。由触发元素打开的层渲染在该缩放子树之外，因此按压绝不会缩放、移动或扭曲层或其进入动画，而层锚定到触发元素未经变换的盒。
 
-Rejected: counter-scaling the layer to cancel the press (it lags the press and
-still distorts the entrance).
+所有者：“因为我们在按压时缩放了按钮，popover 也会随之被缩放，这让动画看起来很怪。我们大概需要让 popover 菜单处于缩放 CSS 之外”。
+
+否决：对层做反向缩放以抵消按压（它会比按压滞后，并且仍然扭曲进入动画）。
 
 ## Open questions
 
-None. Every decision above is the owner's.
+无。上述每个决策都由所有者做出。

@@ -36,170 +36,138 @@ system_specs: [spec:AST-009, spec:AST-038]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                       |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | A labelled group of caller-supplied Avatar children, optionally ending in one AvatarGroupOverflow, with a uniform `size` and `shape`.                          |
-| Behavior                | Members overlap by a quarter of the avatar size; interactive members share one tab stop with arrow-key roving and a translated keyboard hint.                  |
-| End-user impact         | Screen-reader users hear a named group; keyboard users Tab into the group once and move between interactive avatars with arrow keys.                           |
-| Builder impact          | None; the record describes shipped behavior.                                                                                                                   |
-| Compatibility/readiness | Released behavior recorded as current; no API, default, or output changes. One implementation gap is listed under Current-state impact.                        |
-| Review checks           | Reject a member whose own size or shape wins inside the group, more than one tab stop over interactive members, or a keyboard hint with no interactive member. |
-| Governing rules         | `architecture:public-component-api/INV5,INV6,INV7,INV8`; `architecture:component-theming-surface/INV2,INV6`; `architecture:internationalization/INV1a`.        |
+| Area                    | Contract                                                                                                                                                 |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public contract         | 一个带标签的组，由调用方提供的 Avatar 子元素组成，可选地以一个 AvatarGroupOverflow 结尾，并具有统一的 `size` 与 `shape`。                                |
+| Behavior                | 成员之间按 avatar 尺寸的四分之一重叠；交互成员共享一个 Tab 停靠点，配合方向键漫游与一段可翻译的键盘提示。                                                |
+| End-user impact         | 屏幕阅读器用户会听到一个具名组；键盘用户 Tab 进入该组一次，然后用方向键在交互 avatar 之间移动。                                                          |
+| Builder impact          | 无；本记录描述的是已发布的行为。                                                                                                                         |
+| Compatibility/readiness | 已发布行为记录为 current；没有 API、默认值或输出变化。实现缺口列在 Current-state impact 下。                                                             |
+| Review checks           | 拒绝在组内让自己的 size 或 shape 胜出的成员、在交互成员上出现多于一个 Tab 停靠点，或没有任何交互成员却出现键盘提示的情况。                               |
+| Governing rules         | `architecture:public-component-api/INV5,INV6,INV7,INV8`；`architecture:component-theming-surface/INV2,INV6`；`architecture:internationalization/INV1a`。 |
 
-This table is a review projection; the body below is authoritative.
+本表是审查用的投影；下文才具有权威性。
 
 ## Intent
 
-AvatarGroup shows several people as one compact, overlapping row. It owns the
-group's name, the uniform size and shape it passes to its members, the overlap
-geometry, and keyboard movement between interactive members.
+AvatarGroup 将若干人显示为一个紧凑、互相重叠的行。它负责该组的名称、传给成员的统一 size 与 shape、重叠几何，以及交互成员之间的键盘移动。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public prop, default, DOM,
-  or styling output changes
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 保留已发布的默认值：`yes`
+- 兼容类别：记录已发布的行为；不涉及公共 prop、默认值、DOM 或样式输出的变化
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方的迁移说明属于使用方文档与发布说明。
 
 ## Current-state impact
 
-- **Stale hint and tab stop (FR5, AR2, AR3).** When a member becomes a link or
-  button, or turns static, through its own state while the group does not
-  render, the group keeps its previous hint and tab stop. New interactive
-  members get no hint and are separate Tab stops until focus enters the group;
-  a group left with no interactive members keeps a stale hint; and when the
-  member holding the tab stop turns static, the remaining links keep
-  `tabindex="-1"`, so Tab skips the group and keyboard users cannot reach them
-  until it renders again.
+- **过时的提示与 Tab 停靠点（FR5、AR2、AR3）。** 当某个成员通过自身状态变成链接或按钮、或转为静态，而组本身并未渲染时，组会保留先前的提示与 Tab 停靠点。新的交互成员得不到提示，并且在焦点进入该组之前各自成为独立的 Tab 停靠点；一个最终没有任何交互成员的组会保留过时的提示；而当持有 Tab 停靠点的成员转为静态时，其余链接仍保留 `tabindex="-1"`，于是 Tab 会跳过该组，键盘用户无法到达它们，直到组再次渲染。
 
 ## Ownership boundary
 
-**Owns**
+**负责**
 
-- The group root, its role and name, and its `avatar-group` target.
-- Size, shape, overlap, and numeric size supplied to members through context.
-- The start padding that keeps the first overlapped member inside the group.
-- Roving focus over members carrying the avatar item marker, and the keyboard
-  hint.
+- 组的根元素、其 role 与名称，以及它的 `avatar-group` target。
+- 通过 context 提供给成员的 size、shape、重叠量与数值尺寸。
+- 使第一个重叠成员留在组内的起始内边距。
+- 在带有 avatar item 标记的成员之间进行的漫游焦点，以及键盘提示。
 
-**Does not own / non-goals**
+**不负责 / 非目标**
 
-- Which avatars are visible and the hidden count — owned by the product
-  callsite, which slices its list.
-- Each member's rendering, name, tooltip, and in-group ring — owned by
-  `component:Avatar`.
-- The "+N" indicator — owned by `component:AvatarGroupOverflow`.
+- 哪些 avatar 可见以及隐藏数量——由产品调用点负责，它会对自己的列表做切片。
+- 每个成员的渲染、名称、tooltip 与组内环——由 `component:Avatar` 负责。
+- “+N” 指示器——由 `component:AvatarGroupOverflow` 负责。
 
 ## Public concepts
 
-| Concept  | Closed values or states         | Meaning                                             | Availability by variant/orientation/state | Default  | Owner                   | Stability | Invalid-value behavior           |
-| -------- | ------------------------------- | --------------------------------------------------- | ----------------------------------------- | -------- | ----------------------- | --------- | -------------------------------- |
-| Size     | Any `component:Avatar` size     | Applied to every member and the overflow indicator. | All groups                                | `md`     | `component:AvatarGroup` | Stable    | TypeScript rejects other values. |
-| Shape    | `circle`, `rounded`, `square`   | Applied to every member and the overflow indicator. | All groups                                | `circle` | `component:AvatarGroup` | Stable    | TypeScript rejects other values. |
-| Keyboard | static group; interactive group | Whether any member carries the avatar item marker.  | Read at each of the group's own renders   | static   | `component:AvatarGroup` | Stable    | —                                |
+| Concept  | Closed values or states       | Meaning                               | Availability by variant/orientation/state | Default  | Owner                   | Stability | Invalid-value behavior  |
+| -------- | ----------------------------- | ------------------------------------- | ----------------------------------------- | -------- | ----------------------- | --------- | ----------------------- |
+| Size     | 任意 `component:Avatar` size  | 应用于每个成员与溢出指示器。          | 所有组                                    | `md`     | `component:AvatarGroup` | 稳定      | TypeScript 拒绝其他值。 |
+| Shape    | `circle`、`rounded`、`square` | 应用于每个成员与溢出指示器。          | 所有组                                    | `circle` | `component:AvatarGroup` | 稳定      | TypeScript 拒绝其他值。 |
+| Keyboard | 静态组；交互组                | 是否有任何成员带有 avatar item 标记。 | 在组的每次自身渲染时读取                  | 静态     | `component:AvatarGroup` | 稳定      | —                       |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Basis                    |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| FR1 | The root is an inline-flex, vertically centered `div` with `role="group"`, named by the caller's `aria-label` or `aria-labelledby`, else the translated "Avatars". It carries the `avatar-group` target reflecting `size` and `shape`, and renders children in order.                                                                                                                                                                                                                                                             | Current source and tests |
-| FR2 | The group supplies its `size`, `shape`, numeric size, and an overlap of a quarter of the numeric size, rounded, to every Avatar and AvatarGroupOverflow below it in the same layer (`spec:AST-038` FR7, FR8; a member in a hover card, popover, or other layer keeps its own size and shape, though a marked member there stays in the FR4 roving set); a member's own size and shape never win, including when the group uses its defaults.                                                                                      | Current source and tests |
-| FR3 | Every member takes the negative overlap as its inline-start margin, including the first; the group pads its inline start by the same amount so the first member stays inside it, and an empty group has no start padding. The overlap holds when members are wrapped in a HoverCard or Tooltip.                                                                                                                                                                                                                                   | Current source and tests |
-| FR4 | Elements carrying `data-avatar-item` — link and button avatars and a clickable overflow indicator — form one horizontal roving set with a single tab stop: arrow keys move between them following the rendered direction and wrap at the ends, and Home and End jump to the first and last. Other focusable content in a member, such as a button in a status slot, is not in the set.                                                                                                                                            | Current source and tests |
-| FR5 | The hint and tab stop follow whether any member carries the item marker as read at the group's own last render: while one does, a visually hidden translated hint ("Use arrow keys to move between avatars") renders inside the group and is appended to `aria-describedby` after any caller value; a purely static group has no tab stop and no hint. Implementation gap: a member that gains or loses the marker through its own state, without the group rendering, leaves the hint and tab stop stale (Current-state impact). | Current source and tests |
-| FR6 | `ref` reaches the root. Supported DOM, ARIA, data, and event props reach the root; the component's role, name, description, and `data-testid` apply after them; caller `onKeyDown` and `onFocus` run before the roving handlers, and one that calls `preventDefault()` skips the roving handler for that event (`architecture:public-component-api` INV7); `xstyle`, `className`, and `style` merge in that order after component styles.                                                                                         | Current source and tests |
+| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                            | Basis          |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------- |
+| FR1 | 根元素是一个 inline-flex、垂直居中的 `div`，带有 `role="group"`，名称取自调用方的 `aria-label` 或 `aria-labelledby`，否则使用翻译后的“Avatars”。它带有反映 `size` 与 `shape` 的 `avatar-group` target，并按顺序渲染子元素。                                                                                                                                                          | 当前源码与测试 |
+| FR2 | 组把自身的 `size`、`shape`、数值尺寸，以及取该数值尺寸四分之一并取整的重叠量，提供给同一层中位于其下的每个 Avatar 与 AvatarGroupOverflow（`spec:AST-038` FR7、FR8；位于 hover card、popover 或其他层中的成员保留自己的 size 与 shape，但那里带标记的成员仍属于 FR4 的漫游集合）；成员自身的 size 与 shape 永远不会胜出，包括组使用其默认值时。                                       | 当前源码与测试 |
+| FR3 | 每个成员都把重叠量的负值作为其 inline-start 外边距，第一个成员也不例外；组以相同数值为其 inline start 增加内边距，使第一个成员留在其内部，而空组没有起始内边距。当成员被 HoverCard 或 Tooltip 包裹时，重叠依然成立。                                                                                                                                                                 | 当前源码与测试 |
+| FR4 | 带有 `data-avatar-item` 的元素——链接型与按钮型 avatar，以及可点击的溢出指示器——构成一个具有单一 Tab 停靠点的水平漫游集合：方向键按渲染方向在它们之间移动并在两端回绕，Home 与 End 跳转到第一个和最后一个。成员中的其他可聚焦内容（例如状态槽中的按钮）不在该集合内。                                                                                                                 | 当前源码与测试 |
+| FR5 | 提示与 Tab 停靠点取决于在组自身最后一次渲染时读取到的“是否有任何成员带有 item 标记”：只要有成员带有，组内就会渲染一个视觉隐藏的翻译提示（“Use arrow keys to move between avatars”），并追加到 `aria-describedby` 中调用方值之后；纯静态组没有 Tab 停靠点，也没有提示。实现缺口：成员通过自身状态获得或失去标记而组未渲染时，提示与 Tab 停靠点会保持过时（见 Current-state impact）。 | 当前源码与测试 |
+| FR6 | `ref` 指向根元素。受支持的 DOM、ARIA、data 与事件 prop 会透传到根元素；组件的 role、名称、描述与 `data-testid` 在其之后应用；调用方的 `onKeyDown` 与 `onFocus` 在漫游处理器之前运行，其中调用 `preventDefault()` 的处理器会跳过该事件的漫游处理器（`architecture:public-component-api` INV7）；`xstyle`、`className` 与 `style` 按该顺序在组件样式之后合并。                         | 当前源码与测试 |
 
 ### Allowed variation
 
-- **AV1 — Theme paint.** A theme may restyle `avatar-group` per `size` and
-  `shape` without changing membership, overlap ownership, or focus behavior.
-- **AV2 — Membership.** The number and kind of members vary per callsite.
+- **AV1 — 主题绘制。** 主题可以按 `size` 与 `shape` 重新设定 `avatar-group` 的样式，而不改变成员资格、重叠归属或焦点行为。
+- **AV2 — 成员资格。** 成员的数量与种类随调用点而变化。
 
 ### Representative states
 
-| State                | Required invariant                                                         | Allowed variation |
-| -------------------- | -------------------------------------------------------------------------- | ----------------- |
-| Static group         | Named group; no tab stop; no hint.                                         | Members.          |
-| Interactive group    | One member has `tabIndex={0}`, the rest `-1`; arrows rove; hint described. | Members.          |
-| With overflow button | The overflow indicator is the last roving item.                            | Count.            |
-| Empty group          | Renders with no start padding.                                             | —                 |
-| Right-to-left        | Overlap and arrow movement follow the rendered direction.                  | —                 |
+| State      | Required invariant                                               | Allowed variation |
+| ---------- | ---------------------------------------------------------------- | ----------------- |
+| 静态组     | 有名称的组；没有 Tab 停靠点；没有提示。                          | 成员。            |
+| 交互组     | 一个成员为 `tabIndex={0}`，其余为 `-1`；方向键漫游；提示被描述。 | 成员。            |
+| 带溢出按钮 | 溢出指示器是最后一个漫游项。                                     | 数量。            |
+| 空组       | 渲染时没有起始内边距。                                           | —                 |
+| 从右到左   | 重叠与方向键移动都遵循渲染方向。                                 | —                 |
 
 ### Transformation and precedence order
 
-- **ORD1 — Member size and shape.** Group value → member's own prop (ignored
-  inside a group).
-- **ORD2 — Description.** Caller `aria-describedby` → keyboard hint id.
-- **ORD3 — Key and focus handling.** Caller `onKeyDown` or `onFocus` → roving
-  handler; a caller handler that calls `preventDefault()` skips the roving
-  handler for that event.
+- **ORD1 — 成员的 size 与 shape。** 组的值 → 成员自身的 prop（在组内被忽略）。
+- **ORD2 — 描述。** 调用方的 `aria-describedby` → 键盘提示 id。
+- **ORD3 — 按键与焦点处理。** 调用方的 `onKeyDown` 或 `onFocus` → 漫游处理器；调用方处理器若调用 `preventDefault()`，会跳过该事件的漫游处理器。
 
 ### Performance and resources
 
-- **PR1 — Member detection.** Detecting interactive members adds no observer or
-  listener; the group re-reads its members after each of its own renders, and a change in
-  whether any member is interactive re-renders the group before paint.
+- **PR1 — 成员检测。** 检测交互成员不会新增观察者或监听器；组会在每次自身渲染后重新读取其成员，而“是否有任何成员可交互”的变化会在绘制前重新渲染该组。
 
 ## Accessibility contract
 
-- **AR1 — Named group.** The root is `role="group"` with a translated default
-  name the caller can replace.
-- **AR2 — One tab stop.** Interactive members share a single tab stop and are
-  reached with arrow keys, Home, and End, in visual order in both directions,
-  as read at the group's own last render (FR5 gap for member-local changes).
-- **AR3 — Keyboard hint.** The hint describes the group only while roving
-  applies, as read at the group's own last render (FR5 gap for member-local
-  changes).
-- **AR4 — Static members.** Static avatars are not roving items and have no tab
-  stop inside a group; `component:Avatar` records the effect on their tooltips.
+- **AR1 — 有名称的组。** 根元素为 `role="group"`，带有一个调用方可替换的、已翻译的默认名称。
+- **AR2 — 单一 Tab 停靠点。** 交互成员共享单一 Tab 停靠点，并可用方向键、Home 与 End 到达，两个方向都按视觉顺序，以组自身最后一次渲染时读取的状态为准（成员本地变化存在 FR5 缺口）。
+- **AR3 — 键盘提示。** 提示仅在漫游适用时描述该组，以组自身最后一次渲染时读取的状态为准（成员本地变化存在 FR5 缺口）。
+- **AR4 — 静态成员。** 静态 avatar 不是漫游项，在组内没有 Tab 停靠点；`component:Avatar` 记录了对其 tooltip 的影响。
 
 ## Design relationships
 
-| Anatomy or state   | Design requirement                              | Representation authority | Hierarchy role | Component contract |
-| ------------------ | ----------------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Avatar children    | Uniformly sized members overlapping in one row. | Current source and docs  | Prominent      | FR1–FR3            |
-| Overflow indicator | An optional "+N" member at the end of the row.  | Current source and docs  | Supporting     | FR2, FR4           |
+| Anatomy or state | Design requirement           | Representation authority | Hierarchy role | Component contract |
+| ---------------- | ---------------------------- | ------------------------ | -------------- | ------------------ |
+| Avatar 子元素    | 尺寸统一的成员在一行内重叠。 | 当前源码与文档           | 突出           | FR1–FR3            |
+| 溢出指示器       | 位于行末的可选 “+N” 成员。   | 当前源码与文档           | 辅助           | FR2、FR4           |
 
-Theming: the root is the `avatar-group` target. Members keep their own targets;
-the overflow indicator's `avatar-group-overflow` target belongs to
-`component:AvatarGroupOverflow`. The consumer anatomy names no root part, so no
-anatomy-theming block is declared.
+主题化：根元素是 `avatar-group` target。成员保留各自的 target；溢出指示器的 `avatar-group-overflow` target 属于 `component:AvatarGroupOverflow`。使用方结构未命名任何根部部件，因此不声明 anatomy-theming 块。
 
 ## Family and system relationships
 
-- `component:Avatar` reads the group context and applies the ring, overlap, and
-  item marker on its own root.
-- `component:AvatarGroupOverflow` reads the same context and joins the roving
-  set when clickable.
-- `architecture:internationalization` owns the catalog behind the group name
-  and hint.
+- `component:Avatar` 读取组 context，并在自己的根元素上应用环、重叠与 item 标记。
+- `component:AvatarGroupOverflow` 读取同一 context，并在可点击时加入漫游集合。
+- `architecture:internationalization` 拥有组名称与提示背后的目录。
 
 ## Verification map
 
-| Contract       | Verification                                                                                                                                     | Representative states                                             | Mutation or failure expectation                                                                                                                                                                                                                 | Audit section                |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| FR1, AR1       | `AvatarGroup.test.tsx` render, label, size-reflection, test-id, and empty-group tests                                                            | Default and custom `aria-label`; sizes; empty                     | A missing `group` role, default or custom name, `data-size` reflection, or child fails. Gap: no test asserts the inline-flex centering, `data-shape`, child order, a caller `aria-labelledby`, or a caller `role` being replaced.               | `audit:AvatarGroup/a11y`     |
-| FR2, ORD1      | `AvatarGroup.test.tsx` size-cascade and overlap suites; `Avatar.test.tsx` group shape tests; `AvatarGroupOverflow.test.tsx` size and shape tests | Group size and shape, defaults, outside a group; `md` overlap     | A member's own size or shape winning inside the group, or a wrong `md` overlap value, fails. Gap: no test asserts the overlap value for sizes other than `md`, or that a member in another layer keeps its own size and shape.                  | `audit:AvatarGroup/behavior` |
-| FR3            | `AvatarGroup.test.tsx` overlap suite                                                                                                             | Plain and wrapped members, overflow indicator, empty group        | A missing member margin, a missing start padding, or start padding on an empty group fails.                                                                                                                                                     | `audit:AvatarGroup/layout`   |
-| FR3 (layout)   | `AvatarGroup.stories.tsx` sizes; `AvatarGroupOverflow.stories.tsx` AllShapes                                                                     | Sizes and shapes, LTR and RTL                                     | Gap: no automated check; a clipped first member or an unmirrored overlap is visible only in the rendered fixtures.                                                                                                                              | `audit:AvatarGroup/layout`   |
-| FR4, AR2, AR4  | `AvatarGroup.test.tsx` roving-focus suite                                                                                                        | Interactive avatars, overflow button, status button, static group | More than one tab stop, lost ArrowRight/ArrowLeft movement, a missing overflow item, a status button in the set, or a tab stop on a static group fails. Gap: wrapping, Home and End, and right-to-left arrow direction have no automated check. | `audit:AvatarGroup/a11y`     |
-| FR5, AR3, ORD2 | `AvatarGroup.test.tsx` hint tests                                                                                                                | Interactive and static groups                                     | A missing hint on an interactive group, or a hint on a static one, fails. Gap: no test covers the hint's order after a caller `aria-describedby` or a member changing interactivity through its own state.                                      | `audit:AvatarGroup/a11y`     |
-| FR6, ORD3      | `AvatarGroup.test.tsx` test-id test                                                                                                              | Caller `data-testid`                                              | A lost test id fails. Gap: no test covers the ref, DOM passthrough, attribute order, caller handler order and cancellation, or the styling-input merge.                                                                                         | `audit:AvatarGroup/api`      |
-| PR1            | Source review                                                                                                                                    | Interactive and static groups                                     | Gap: no automated check fails if member detection adds an observer or listener.                                                                                                                                                                 | `audit:AvatarGroup/behavior` |
-| AR1, AR3       | Accessibility-tree evidence (`spec:AST-009` FR3)                                                                                                 | Static and interactive groups                                     | Gap: no accessibility-tree check proves the group role, name, or description; the unit tests query the DOM.                                                                                                                                     | `audit:AvatarGroup/a11y`     |
+| Contract       | Verification                                                                                                                           | Representative states                       | Mutation or failure expectation                                                                                                                                                               | Audit section                |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| FR1、AR1       | `AvatarGroup.test.tsx` 的渲染、标签、size 反映、test-id 与空组测试                                                                     | 默认与自定义 `aria-label`；各尺寸；空组     | 缺少 `group` role、默认或自定义名称、`data-size` 反映或子元素时失败。缺口：没有测试断言 inline-flex 居中、`data-shape`、子元素顺序、调用方的 `aria-labelledby`，或调用方的 `role` 被替换。    | `audit:AvatarGroup/a11y`     |
+| FR2、ORD1      | `AvatarGroup.test.tsx` 的 size 级联与重叠套件；`Avatar.test.tsx` 的组 shape 测试；`AvatarGroupOverflow.test.tsx` 的 size 与 shape 测试 | 组的 size 与 shape、默认值、组外；`md` 重叠 | 成员自身的 size 或 shape 在组内胜出，或 `md` 重叠值错误时失败。缺口：没有测试断言 `md` 之外尺寸的重叠值，也没有断言另一层中的成员保留自己的 size 与 shape。                                   | `audit:AvatarGroup/behavior` |
+| FR3            | `AvatarGroup.test.tsx` 的重叠套件                                                                                                      | 普通成员、被包裹的成员、溢出指示器、空组    | 缺少成员外边距、缺少起始内边距，或空组上出现起始内边距时失败。                                                                                                                                | `audit:AvatarGroup/layout`   |
+| FR3（layout）  | `AvatarGroup.stories.tsx` 的各尺寸；`AvatarGroupOverflow.stories.tsx` 的 AllShapes                                                     | 各尺寸与 shape、LTR 与 RTL                  | 缺口：没有自动化检查；第一个成员被裁切或重叠未镜像，只能在渲染出的测试夹具中看到。                                                                                                            | `audit:AvatarGroup/layout`   |
+| FR4、AR2、AR4  | `AvatarGroup.test.tsx` 的漫游焦点套件                                                                                                  | 交互 avatar、溢出按钮、状态按钮、静态组     | 出现多于一个 Tab 停靠点、丢失 ArrowRight/ArrowLeft 移动、缺少溢出项、状态按钮进入集合，或静态组上出现 Tab 停靠点，都会失败。缺口：回绕、Home 与 End、以及从右到左的方向键方向没有自动化检查。 | `audit:AvatarGroup/a11y`     |
+| FR5、AR3、ORD2 | `AvatarGroup.test.tsx` 的提示测试                                                                                                      | 交互组与静态组                              | 交互组缺少提示，或静态组出现提示时失败。缺口：没有测试覆盖提示在调用方 `aria-describedby` 之后的顺序，或成员通过自身状态改变交互性。                                                          | `audit:AvatarGroup/a11y`     |
+| FR6、ORD3      | `AvatarGroup.test.tsx` 的 test-id 测试                                                                                                 | 调用方的 `data-testid`                      | 丢失 test id 时失败。缺口：没有测试覆盖 ref、DOM 透传、属性顺序、调用方处理器的顺序与取消，或样式输入的合并。                                                                                 | `audit:AvatarGroup/api`      |
+| PR1            | 源码审查                                                                                                                               | 交互组与静态组                              | 缺口：如果成员检测新增了观察者或监听器，没有自动化检查会失败。                                                                                                                                | `audit:AvatarGroup/behavior` |
+| AR1、AR3       | 无障碍树证据（`spec:AST-009` FR3）                                                                                                     | 静态组与交互组                              | 缺口：没有无障碍树检查证明组的 role、名称或描述；单元测试查询的是 DOM。                                                                                                                       | `audit:AvatarGroup/a11y`     |
 
 ## Decision log
 
-None recorded. The record describes shipped behavior.
+未记录。本记录描述已发布的行为。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不重复使用方的 prop 表/示例、当前审查结果、实现步骤或 family/系统规则；它链接到它们的拥有者。

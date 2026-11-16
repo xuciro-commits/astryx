@@ -38,173 +38,165 @@ system_specs: [spec:AST-009, spec:AST-029]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                                                                                              |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `ChatToolCalls` with required `calls` (each with `name`, optional `status`, `target`, `node`, `duration`, `additions`, `deletions`, `stats`, `errorMessage`, `resultDetail`, `data`, and `key`), optional `label`, `isExpanded`, `defaultIsExpanded`, `onExpandedChange`, and root div props and ref. |
-| Behavior                | No calls render nothing; one call renders directly; multiple calls expose a disclosure whose collapsed surface shows the latest call and whose expanded surface shows every call.                                                                                                                     |
-| End-user impact         | Readers see what tools an assistant ran and whether each is pending, running, done, or failed; a group of calls collapses to its latest call and keeps hidden rows out of keyboard and screen-reader navigation.                                                                                      |
-| Builder impact          | None.                                                                                                                                                                                                                                                                                                 |
-| Compatibility/readiness | Records shipped behavior; no public change. One implementation gap, listed under Current-state impact; two owner questions stay open.                                                                                                                                                                 |
-| Review checks           | Reject ignored labels, focusable descendants inside a collapsed group, lost keyboard activation, unreadable supporting text, dropped root inputs, or changed call ordering/defaults.                                                                                                                  |
-| Governing rules         | `architecture:public-component-api/INV5–INV6, INV8–INV9`; `architecture:interaction-modality`; `spec:AST-009/FR7`; WCAG 2.2 SC 1.4.3 and 2.4.7.                                                                                                                                                       |
+| Area          | Contract                                                                                                                                                                                                                                                                                |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共契约      | `ChatToolCalls`，具有必需的 `calls`（每项含 `name`、可选的 `status`、`target`、`node`、`duration`、`additions`、`deletions`、`stats`、`errorMessage`、`resultDetail`、`data` 与 `key`），可选的 `label`、`isExpanded`、`defaultIsExpanded`、`onExpandedChange`，以及根 div 属性与 ref。 |
+| 行为          | 无调用时不渲染任何内容；单次调用直接渲染；多次调用暴露一个展开控件，其折叠表面显示最新调用，其展开表面显示每一次调用。                                                                                                                                                                  |
+| 最终用户影响  | 读者看到助手运行了哪些工具，以及每个工具处于待处理、运行中、已完成还是已失败状态；一组调用会折叠为其最新调用，并使隐藏行不进入键盘与屏幕阅读器导航。                                                                                                                                    |
+| 构建者影响    | 无。                                                                                                                                                                                                                                                                                    |
+| 兼容性/就绪度 | 记录已发布行为；无公共变更。一个实现缺口，列在“当前状态影响”下；两个所有者问题仍未解决。                                                                                                                                                                                                |
+| 审查检查      | 拒绝被忽略的标签、折叠组内可聚焦的后代元素、丢失的键盘激活、不可读的辅助文本、被丢弃的根输入，或调用顺序/默认值发生变化。                                                                                                                                                               |
+| 治理规则      | `architecture:public-component-api/INV5–INV6, INV8–INV9`；`architecture:interaction-modality`；`spec:AST-009/FR7`；WCAG 2.2 SC 1.4.3 与 2.4.7。                                                                                                                                         |
 
-This table is a review projection; the body below is authoritative.
+此表是审查投影；下文为权威内容。
 
 ## Intent
 
-ChatToolCalls presents tool or function invocations inside an assistant message,
-including execution status, optional metadata, and inspectable result details.
+ChatToolCalls 在助手消息内呈现工具或函数调用，包括执行状态、可选元数据以及可检查的结果详情。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`; omitted status means complete and groups
-  start collapsed unless `defaultIsExpanded` is true
-- Compatibility class: records shipped behavior; no public change
-- Controlled/uncontrolled behavior: `isExpanded` remains authoritative when supplied; otherwise local state starts from `defaultIsExpanded ?? false`.
-- Migration decision: none
+- 保留已发布默认值：`yes`；省略 status 表示 complete，且组以折叠状态开始，除非 `defaultIsExpanded` 为 true
+- 兼容性类别：记录已发布行为；无公共变更
+- 受控/非受控行为：提供 `isExpanded` 时它保持权威；否则本地状态从 `defaultIsExpanded ?? false` 开始。
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明应放在使用方文档与发布说明中。
 
 ## Current-state impact
 
-- **Signed statistics can miss text contrast.** The success and error
-  foreground tokens used for signed `+N` and `-N` statistics do not reach
-  4.5:1 on every shipped light and dark surface; WCAG 2.2 SC 1.4.3 requires
-  that contrast for text (FR5, OQ2).
+- **带符号的统计数字可能达不到文本对比度。** 用于带符号 `+N` 和 `-N` 统计的成功与错误前景色令牌在每一种已发布的浅色和深色表面上都达不到 4.5:1；WCAG 2.2 SC 1.4.3 要求文本满足该对比度（FR5、OQ2）。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- Projection of ordered call data into single-call or grouped presentation.
-- Group and per-call disclosures, including keyboard operation and focus treatment.
-- Status, metadata, duration, statistics, and result-detail placement.
-- The root div, `chat-tool-calls` target, supported BaseProps composition, and ref.
+- 将有序调用数据投影为单次调用或分组呈现。
+- 组级与每次调用的展开控件，包括键盘操作与焦点处理。
+- 状态、元数据、时长、统计数字与结果详情的放置位置。
+- 根 div、`chat-tool-calls` 目标、受支持的 BaseProps 组合，以及 ref。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Tool execution, streaming transport, result parsing, or error recovery.
-- Semantics and interaction inside caller-provided `stats` or `resultDetail` content.
-- Badge, Icon, Spinner, or CodeBlock internals.
-- Product policy for which tool calls may be shown.
+- 工具执行、流式传输、结果解析或错误恢复。
+- 调用方提供的 `stats` 或 `resultDetail` 内容内部的语义与交互。
+- Badge、Icon、Spinner 或 CodeBlock 的内部实现。
+- 关于哪些工具调用可以展示的产品策略。
 
 ## Public concepts
 
-| Concept       | Closed values or states                               | Meaning                                                      | Availability        | Default   | Owner                               | Stability | Invalid-value behavior               |
-| ------------- | ----------------------------------------------------- | ------------------------------------------------------------ | ------------------- | --------- | ----------------------------------- | --------- | ------------------------------------ |
-| Call list     | empty; single; multiple                               | Selects absent, direct-row, or grouped presentation.         | Every render        | required  | `component:ChatToolCalls`           | Stable    | Empty renders nothing.               |
-| Status        | pending; running; complete; error                     | Selects the visible and accessible execution state.          | Every call          | complete  | `component:ChatToolCalls`           | Stable    | Type-invalid values reject.          |
-| Group label   | omitted; supplied string                              | Names an expanded group; omission uses the translated count. | Multiple calls      | omitted   | caller and component                | Stable    | Supplied strings render verbatim.    |
-| Group state   | controlled; uncontrolled collapsed; uncontrolled open | Controls whether grouped rows are exposed.                   | Multiple calls      | collapsed | caller or component                 | Stable    | Conflicting control is avoided.      |
-| Result detail | omitted; caller React node                            | Adds an independently operable per-call disclosure.          | Any call            | omitted   | caller and component                | Stable    | Omitted content adds no control.     |
-| Root surface  | ref; supported DOM/data/ARIA/class/style/xstyle       | Extends the root without replacing its owned target.         | Non-empty call list | omitted   | `architecture:public-component-api` | Stable    | Unsupported inputs stay unsupported. |
+| Concept  | Closed values or states                        | Meaning                                  | Availability | Default  | Owner                               | Stability | Invalid-value behavior       |
+| -------- | ---------------------------------------------- | ---------------------------------------- | ------------ | -------- | ----------------------------------- | --------- | ---------------------------- |
+| 调用列表 | empty; single; multiple                        | 选择不呈现、直接成行或分组呈现。         | 每次渲染     | required | `component:ChatToolCalls`           | Stable    | 空列表不渲染任何内容。       |
+| 状态     | pending; running; complete; error              | 选择可见且可访问的执行状态。             | 每次调用     | complete | `component:ChatToolCalls`           | Stable    | 类型非法的值会被拒绝。       |
+| 组标签   | 省略；提供的字符串                             | 为展开的组命名；省略时使用已翻译的计数。 | 多次调用     | 省略     | 调用方与组件                        | Stable    | 提供的字符串按原样渲染。     |
+| 组状态   | 受控；非受控且折叠；非受控且展开               | 控制分组行是否暴露。                     | 多次调用     | 折叠     | 调用方或组件                        | Stable    | 避免相互冲突的控制。         |
+| 结果详情 | 省略；调用方 React 节点                        | 添加一个可独立操作的每次调用展开控件。   | 任意调用     | 省略     | 调用方与组件                        | Stable    | 省略内容不添加任何控件。     |
+| 根表面   | ref；受支持的 DOM/data/ARIA/class/style/xstyle | 扩展根而不替换其拥有的目标。             | 非空调用列表 | 省略     | `architecture:public-component-api` | Stable    | 不受支持的输入保持不受支持。 |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                        | Basis                                                  |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| FR1 | An empty call list MUST render no root; one call MUST render directly; multiple calls MUST render one group disclosure and preserve caller order in its full list.                                                                                                               | Current source, tests, and docs                        |
-| FR2 | A supplied `label` MUST replace the translated count on the expanded group surface; omission MUST retain the translated count fallback.                                                                                                                                          | Current source, tests, and docs                        |
-| FR3 | A collapsed group MUST keep its descendant call disclosures out of keyboard and accessibility navigation; expansion MUST restore them.                                                                                                                                           | Current source and tests                               |
-| FR4 | Every component-owned disclosure MUST activate with Enter, Space, and pointer input, expose expansion state, and draw the shared keyboard focus ring.                                                                                                                            | `architecture:interaction-modality`; WCAG 2.2 SC 2.4.7 |
-| FR5 | Neutral supporting labels, targets, durations, and custom statistics MUST use the readable secondary foreground; signed addition and deletion counts use the success and error text colors. Implementation gap: those colors can miss text contrast (Current-state impact; OQ2). | WCAG 2.2 SC 1.4.3 and current token architecture       |
-| FR6 | Supported root ref, DOM/data/ARIA, className, style, and xstyle inputs MUST reach or compose on the root while the public target remains intact.                                                                                                                                 | `architecture:public-component-api/INV5–INV6, INV8`    |
+| ID  | Invariant                                                                                                                                                                             | Basis                                                  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| FR1 | 空的调用列表 MUST 不渲染根；单次调用 MUST 直接渲染；多次调用 MUST 渲染一个组展开控件，并在其完整列表中保留调用方顺序。                                                                | 当前源码、测试与文档                                   |
+| FR2 | 提供的 `label` MUST 在展开的组表面上替换已翻译的计数；省略时 MUST 保留已翻译的计数回退。                                                                                              | 当前源码、测试与文档                                   |
+| FR3 | 折叠的组 MUST 使其后代调用展开控件不进入键盘与无障碍导航；展开 MUST 恢复它们。                                                                                                        | 当前源码与测试                                         |
+| FR4 | 每个组件拥有的展开控件 MUST 能用 Enter、空格与指针输入激活，暴露展开状态，并绘制共享的键盘焦点环。                                                                                    | `architecture:interaction-modality`；WCAG 2.2 SC 2.4.7 |
+| FR5 | 中性的辅助标签、目标、时长与自定义统计数字 MUST 使用可读的次级前景色；带符号的新增与删除计数使用成功与错误文本颜色。实现缺口：这些颜色可能达不到文本对比度要求（当前状态影响；OQ2）。 | WCAG 2.2 SC 1.4.3 与当前令牌架构                       |
+| FR6 | 受支持的根 ref、DOM/data/ARIA、className、style 与 xstyle 输入 MUST 到达根或在其上组合，同时公共目标保持完好。                                                                        | `architecture:public-component-api/INV5–INV6, INV8`    |
 
 ### Allowed variation
 
-- **AV1 — Call content.** Tool names, targets, node names, durations, statistics, error messages, and result details remain caller supplied.
-- **AV2 — Group control.** Callers may control expansion or supply only its initial uncontrolled value.
-- **AV3 — Styling.** Supported root styling inputs may extend the component without replacing its public target.
+- **AV1 — 调用内容。** 工具名称、目标、节点名称、时长、统计数字、错误消息与结果详情仍由调用方提供。
+- **AV2 — 组控制。** 调用方可以控制展开，或仅提供其初始非受控值。
+- **AV3 — 样式。** 受支持的根样式输入可以扩展组件，而无需替换其公共目标。
 
 ### Representative states
 
-| State                | Required invariant                                                                                      | Allowed variation                                                                   |
-| -------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Empty                | No root is rendered.                                                                                    | Empty array identity may vary.                                                      |
-| Single               | One row appears without group chrome.                                                                   | Metadata and result detail may be absent.                                           |
-| Multiple, collapsed  | Latest call and count appear; full rows are inert.                                                      | Call count and latest status may vary.                                              |
-| Multiple, expanded   | Every call appears in source order; supplied label or translated count names the group.                 | Label text and row metadata may vary.                                               |
-| Detail closed/open   | The row exposes its state and conditionally mounts the caller-owned detail.                             | Any caller React node.                                                              |
-| Statuses             | All statuses expose translated accessible text; complete and error also retain distinct semantic marks. | Theme may change semantic artwork; pending and running share a spinner pending OQ1. |
-| Narrow / RTL context | Rows truncate without horizontal overflow and follow logical inline direction.                          | Content length, theme, and direction.                                               |
+| State             | Required invariant                                                         | Allowed variation                                                                |
+| ----------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| 空                | 不渲染任何根。                                                             | 空数组的标识可以不同。                                                           |
+| 单次              | 出现一行，不带组外壳。                                                     | 元数据与结果详情可以缺失。                                                       |
+| 多次，折叠        | 出现最新调用与计数；完整行不可交互。                                       | 调用数量与最新状态可以不同。                                                     |
+| 多次，展开        | 每次调用按源码顺序出现；提供的标签或已翻译计数为组命名。                   | 标签文本与行元数据可以不同。                                                     |
+| 详情关闭/打开     | 该行暴露其状态，并按条件挂载调用方拥有的详情。                             | 任意调用方 React 节点。                                                          |
+| 状态              | 所有状态都暴露已翻译的可访问文本；complete 与 error 还保留不同的语义标记。 | 主题可以改变语义图形；pending 与 running 共享同一个细微的 spinner，待 OQ1 决定。 |
+| 窄幅 / RTL 上下文 | 行在截断时不产生水平溢出，并遵循逻辑行内方向。                             | 内容长度、主题与方向。                                                           |
 
 ### Transformation and precedence order
 
-- **ORD1 — Choose presentation.** Empty, single, and grouped branches are selected from list length.
-- **ORD2 — Resolve state.** Controlled expansion wins; otherwise local state starts from the initial default.
-- **ORD3 — Resolve label.** A supplied group label wins; otherwise use the translated count.
-- **ORD4 — Compose rows.** Preserve call order, render status and metadata, then add caller-owned detail disclosure where present.
-- **ORD5 — Compose root.** Apply the component target and styles, then combine supported consumer inputs.
+- **ORD1 — 选择呈现方式。** 空、单次与分组分支由列表长度选择。
+- **ORD2 — 解析状态。** 受控展开优先；否则本地状态从初始默认值开始。
+- **ORD3 — 解析标签。** 提供的组标签优先；否则使用已翻译的计数。
+- **ORD4 — 组合行。** 保留调用顺序，渲染状态与元数据，然后在存在时添加调用方拥有的详情展开控件。
+- **ORD5 — 组合根。** 应用组件目标与样式，然后合并受支持的使用方输入。
 
 ### Performance and resources
 
-- **PR1 — Local state only.** The component owns disclosure state and no Effect, listener, observer, timer, or external resource.
-- **PR2 — Linear projection.** Group rendering traverses the supplied call list once and does not mutate caller data.
+- **PR1 — 仅本地状态。** 该组件拥有展开控件状态，且没有 Effect、监听器、观察器、定时器或外部资源。
+- **PR2 — 线性投影。** 组渲染只遍历提供的调用列表一次，且不改变调用方数据。
 
 ## Accessibility contract
 
-- **AR1 — Disclosure operation.** Group and detail disclosures expose `aria-expanded`, operate with pointer, Enter, and Space, and use the shared visible focus ring.
-- **AR2 — Collapsed ownership.** Collapsed group content is inert; hidden detail content is unmounted.
-- **AR3 — Status meaning.** Every status exposes translated visually hidden text. Complete and error also use distinct semantic marks; pending and running share the same subtle spinner (OQ1). Error messages are exposed to assistive technology and, on call rows, echoed in the status icon's hover tooltip.
-- **AR4 — Static evidence.** Focus appearance, keyboard behavior, inertness, and DOM relationships use unit and Storybook play-function evidence under `spec:AST-009/FR7`; this record makes no announcement claim.
+- **AR1 — 展开控件的操作。** 组与详情展开控件暴露 `aria-expanded`，可用指针、Enter 与空格操作，并使用共享的可见焦点环。
+- **AR2 — 折叠后的归属。** 折叠的组内容不可交互；隐藏的详情内容被卸载。
+- **AR3 — 状态的语义。** 每个状态都暴露已翻译的视觉隐藏文本。complete 与 error 还使用不同的语义标记；pending 与 running 共享同一个细微的 spinner（OQ1）。错误消息暴露给辅助技术，并且在调用行中会回显在状态图标的悬停提示中。
+- **AR4 — 静态证据。** 焦点外观、键盘行为、不可交互性与 DOM 关系使用 `spec:AST-009/FR7` 下的单元测试与 Storybook play-function 证据；本记录不做任何播报声明。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                                                             | Representation authority          | Hierarchy role | Component contract |
-| ---------------- | ---------------------------------------------------------------------------------------------- | --------------------------------- | -------------- | ------------------ |
-| Call row         | Compact inline status and metadata remain legible.                                             | Current source and WCAG contrast  | supporting     | FR5, AR3           |
-| Disclosure       | Keyboard focus remains visible without changing layout.                                        | Current interaction architecture  | supporting     | FR4, AR1           |
-| Status           | Translated hidden text preserves accessible meaning; complete and error retain semantic marks. | Current source and objective a11y | supporting     | FR5, AR3           |
+| Anatomy or state | Design requirement                                               | Representation authority | Hierarchy role | Component contract |
+| ---------------- | ---------------------------------------------------------------- | ------------------------ | -------------- | ------------------ |
+| 调用行           | 紧凑的行内状态与元数据保持可读。                                 | 当前源码与 WCAG 对比度   | supporting     | FR5, AR3           |
+| 展开控件         | 键盘焦点保持可见，且不改变布局。                                 | 当前交互架构             | supporting     | FR4, AR1           |
+| 状态             | 已翻译的隐藏文本保留可访问含义；complete 与 error 保留语义标记。 | 当前源码与客观无障碍     | supporting     | FR5, AR3           |
 
-No component-local design decision is recorded.
+未记录组件本地的设计决策。
 
 ### Theme ownership
 
-The existing `chat-tool-calls` target remains on the root. Badge, Icon, and Spinner
-own their nested targets and paint. No anatomy-theming map is recorded yet; the
-block is optional during migration, so the map is deferred.
+现有的 `chat-tool-calls` 目标仍位于根上。Badge、Icon 与 Spinner 拥有其嵌套目标与绘制。尚未记录任何解剖结构主题映射；该块在迁移期间是可选的，因此该映射被推迟。
 
 ## Family and system relationships
 
-- `architecture:public-component-api` owns released exports, accepted inputs, styling composition, and refs.
-- `architecture:component-theming-surface` owns the target and delegated anatomy contract.
-- `architecture:interaction-modality` owns shared keyboard focus treatment.
-- `architecture:component-test-sufficiency` owns bounded, mutation-sensitive evidence.
-- `spec:AST-009` assigns these static semantics, keyboard, focus, and contrast claims to lower evidence layers rather than real AT.
-- `spec:AST-029` owns the audit evidence inventory this record's verification
-  map follows.
+- `architecture:public-component-api` 拥有已发布的导出、可接受的输入、样式组合与 ref。
+- `architecture:component-theming-surface` 拥有目标与委派的解剖结构契约。
+- `architecture:interaction-modality` 拥有共享的键盘焦点处理。
+- `architecture:component-test-sufficiency` 拥有有界的、对变异敏感的证据。
+- `spec:AST-009` 将这些静态语义、键盘、焦点与对比度声明分配给较低的证据层级，而不是真实的辅助技术。
+- `spec:AST-029` 拥有本记录的验证映射所遵循的审计证据清单。
 
 ## Verification map
 
-| Contract     | Verification                                                                                                                                   | Representative states                      | Mutation or failure expectation                                            | Audit section                       |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------- | ----------------------------------- |
-| FR1          | `ChatToolCalls.test.tsx` empty, single, collapsed default, toggle, and "includes the latest status in a collapsed group accessible name" tests | empty; single; grouped                     | A rendered empty root, group chrome on one call, or a wrong surface fails. | `audit:ChatToolCalls/behavior`      |
-| FR2          | `ChatToolCalls.test.tsx` "renders the public custom group label when expanded"                                                                 | supplied label                             | An ignored label fails.                                                    | `audit:ChatToolCalls/behavior`      |
-| FR3, AR2     | `ChatToolCalls.test.tsx` "removes collapsed call rows from keyboard and accessibility navigation"                                              | collapsed; expanded                        | An operable collapsed row fails.                                           | `audit:ChatToolCalls/accessibility` |
-| FR4, AR1     | `ChatToolCalls.test.tsx` focus-ring, disclosure-semantics, and `aria-controls` tests                                                           | group header; detail row                   | A missing ring, expansion state, or controls reference fails.              | `audit:ChatToolCalls/accessibility` |
-| AR3          | `ChatToolCalls.test.tsx` status-mark, status-name, and error-message tests                                                                     | each status; error with and without detail | A missing status text, mark, or error text fails.                          | `audit:ChatToolCalls/accessibility` |
-| FR6          | `ChatToolCalls.test.tsx` "forwards the root ref and supported DOM props"                                                                       | single root                                | A dropped ref or prop fails.                                               | `audit:ChatToolCalls/public-api`    |
-| FR4, AR4     | `ChatToolCalls.stories.tsx` `FocusedGroupedDetail` and `Narrow` play functions                                                                 | focused grouped detail; 320 CSS px         | A thinner or detached focus ring, or horizontal overflow, fails.           | `audit:ChatToolCalls/accessibility` |
-| RTL relation | `apps/storybook/rtl-audit/verified-not-applicable.json`                                                                                        | all stories                                | —                                                                          | `audit:ChatToolCalls/i18n-rtl`      |
+| Contract     | Verification                                                                                                                     | Representative states            | Mutation or failure expectation                      | Audit section                       |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ---------------------------------------------------- | ----------------------------------- |
+| FR1          | `ChatToolCalls.test.tsx` 的空、单次、默认折叠、切换，以及 “includes the latest status in a collapsed group accessible name” 测试 | 空；单次；分组                   | 渲染空的根、单次调用带组外壳，或表面错误，都会失败。 | `audit:ChatToolCalls/behavior`      |
+| FR2          | `ChatToolCalls.test.tsx` 的 “renders the public custom group label when expanded”                                                | 提供的标签                       | 被忽略的标签会失败。                                 | `audit:ChatToolCalls/behavior`      |
+| FR3, AR2     | `ChatToolCalls.test.tsx` 的 “removes collapsed call rows from keyboard and accessibility navigation”                             | 折叠；展开                       | 折叠行可操作会失败。                                 | `audit:ChatToolCalls/accessibility` |
+| FR4, AR1     | `ChatToolCalls.test.tsx` 的焦点环、展开控件语义与 `aria-controls` 测试                                                           | 组头部；详情行                   | 缺少焦点环、展开状态或 controls 引用会失败。         | `audit:ChatToolCalls/accessibility` |
+| AR3          | `ChatToolCalls.test.tsx` 的状态标记、状态名称与错误消息测试                                                                      | 每种状态；带详情与不带详情的错误 | 缺少状态文本、标记或错误文本会失败。                 | `audit:ChatToolCalls/accessibility` |
+| FR6          | `ChatToolCalls.test.tsx` 的 “forwards the root ref and supported DOM props”                                                      | 单个根                           | 被丢弃的 ref 或属性会失败。                          | `audit:ChatToolCalls/public-api`    |
+| FR4, AR4     | `ChatToolCalls.stories.tsx` 的 `FocusedGroupedDetail` 与 `Narrow` play 函数                                                      | 聚焦的分组详情；320 CSS px       | 焦点环变细或脱离，或出现水平溢出，都会失败。         | `audit:ChatToolCalls/accessibility` |
+| RTL relation | `apps/storybook/rtl-audit/verified-not-applicable.json`                                                                          | 所有 story                       | —                                                    | `audit:ChatToolCalls/i18n-rtl`      |
 
-Read from source, with no focused test yet:
+从源码读取，尚无聚焦的测试：
 
-- FR1: caller order in the expanded list.
-- FR2: the translated-count fallback when `label` is omitted.
-- FR4: Enter and Space activation.
-- FR5: the secondary foreground on supporting text.
-- FR6: `xstyle` composition.
-- PR1–PR2: no Effect or external resource, and no mutation of caller data.
+- FR1：展开列表中的调用方顺序。
+- FR2：省略 `label` 时已翻译计数的回退。
+- FR4：Enter 与空格激活。
+- FR5：辅助文本上的次级前景色。
+- FR6：`xstyle` 组合。
+- PR1–PR2：没有 Effect 或外部资源，且不改变调用方数据。
 
 ## Decision log
 
-No component-local decision is recorded.
+未记录组件本地的决策。
 
 ## Open questions
 
-- **OQ1 — Pending/running visual distinction.** Pending and running render the same subtle spinner and differ only in translated accessible text. Which approved visible treatment should distinguish them without inventing component-local status policy?
-- **OQ2 — Semantic statistics contrast.** The released success/error foreground tokens for signed `+N`/`-N` statistics do not reach 4.5:1 in every shipped light/dark surface. Which system-level semantic text token should replace them while preserving addition/deletion meaning? The five affected axe baselines remain until that owner decision lands.
+- **OQ1 — pending/running 的视觉区分。** pending 与 running 渲染相同的细微 spinner，仅在已翻译的可访问文本上不同。应采用哪种已批准的可见处理来区分它们，同时又不发明组件本地的状态策略？
+- **OQ2 — 语义统计数字的对比度。** 用于带符号 `+N`/`-N` 统计的已发布成功/错误前景色令牌在每一种已发布的浅色/深色表面上都达不到 4.5:1。应使用哪个系统级语义文本令牌替换它们，同时保留新增/删除的含义？在该所有者决策落地之前，五个受影响的 axe 基线保持不变。
 
 ## Content boundary
 
-This file does not duplicate consumer examples, tool execution policy, or delegated component contracts.
+本文件不重复使用方示例、工具执行策略或委派的组件契约。

@@ -51,140 +51,110 @@ system_specs: [spec:AST-005, spec:AST-009, spec:AST-085]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                                                                                                                                                          |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | A Card with a required `label` and either `onClick` (action) or `href` (navigation), plus `isDisabled` and Card's padding, variant, elevation, and size inputs. The card is built on `useClickableContainer`, which returns `onPointerDown`, which a container spreads so a touch press that starts on a nested interactive element shows no pressed state (FR5). |
-| Behavior                | A visually hidden native button or link owns the card's action; the whole card surface activates it, while nested controls and selected text keep their own outcomes.                                                                                                                                                                                             |
-| End-user impact         | People can activate a card from anywhere on it, by pointer or keyboard, and a disabled card stays reachable and announced while doing nothing.                                                                                                                                                                                                                    |
-| Builder impact          | A theme's exit duration and easing set the touch press release (FR5); no API changes.                                                                                                                                                                                                                                                                             |
-| Compatibility/readiness | No API changes; the touch press release changes (FR5, `spec:AST-094` FR5). Two implementation gaps are listed under Current-state impact.                                                                                                                                                                                                                         |
-| Review checks           | Reject a live destination while disabled, duplicate activation, activation from a nested control or selected text, a destination that skips the shared decision, or lost focus paint.                                                                                                                                                                             |
-| Governing rules         | `family:navigation-destinations/FR1,FR3–FR5`; `architecture:interaction-modality/INV2–INV5`; `architecture:public-component-api/INV5–INV8`; `spec:AST-085` FR1, FR2, FR5, FR6; `component:ClickableCard/FR5` (the touch press release); `spec:AST-094/FR5` (the press release's exit tokens).                                                                     |
+| 领域          | 契约                                                                                                                                                                                                                                                                        |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共契约      | 一张 Card，带必填的 `label` 以及 `onClick`（操作）或 `href`（导航）之一，另加 `isDisabled` 与 Card 的内边距、变体、高度层级和尺寸输入。卡片构建在 `useClickableContainer` 之上，它返回 `onPointerDown`，容器会展开它，使落在嵌套交互元素上的触摸按压不显示按压状态（FR5）。 |
+| 行为          | 一个视觉隐藏的原生按钮或链接拥有卡片的操作；整个卡片表面都能激活它，而嵌套控件与选中的文本保留各自的结果。                                                                                                                                                                  |
+| 最终用户影响  | 人们可以从卡片上的任何位置，用指针或键盘激活卡片，而禁用的卡片保持可达并被朗读，同时不执行任何操作。                                                                                                                                                                        |
+| 构建者影响    | 主题的退出时长与缓动设定触摸按压的释放（FR5）；无 API 变更。                                                                                                                                                                                                                |
+| 兼容性/就绪度 | 无 API 变更；触摸按压的释放发生变化（FR5，`spec:AST-094` FR5）。在 Current-state impact 下列出两处实现缺口。                                                                                                                                                                |
+| 审查检查      | 拒绝在禁用时仍可用的目标、重复激活、从嵌套控件或选中文本发起的激活、跳过共享决策的目标，或丢失的焦点绘制。                                                                                                                                                                  |
+| 治理规则      | `family:navigation-destinations/FR1,FR3–FR5`；`architecture:interaction-modality/INV2–INV5`；`architecture:public-component-api/INV5–INV8`；`spec:AST-085` FR1、FR2、FR5、FR6；`component:ClickableCard/FR5`（触摸按压的释放）；`spec:AST-094/FR5`（按压释放的退出令牌）。  |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；下文才是权威。
 
 ## Intent
 
-ClickableCard turns a Card surface into one action or navigation target
-without taking activation away from the interactive content inside it.
+ClickableCard 把 Card 表面变成一个操作目标或导航目标，同时不剥夺卡片内部交互内容自身的激活能力。
 
 ## Compatibility and migration
 
-- Released default preserved: `no` for the touch press release: it fades on
-  the theme's exit duration and easing, as FR5 and `spec:AST-094` FR5. A
-  mouse press keeps the card's desktop press styling.
-- Compatibility class: nonbreaking behavior change; no public prop, default,
-  DOM, or target changes
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 已发布的默认值保持不变：触摸按压的释放为 `no`：它按主题的退出时长与缓动淡出，如 FR5 与 `spec:AST-094` FR5 所述。鼠标按压保留卡片的桌面端按压样式。
+- 兼容性类别：非破坏性行为变更；没有公共 prop、默认值、DOM 或 target 变更
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方的迁移说明归入使用方文档与发布说明。
 
 ## Current-state impact
 
-- **Two focus indicators on nested controls (AR3).** The card draws its focus
-  outline while any descendant has keyboard focus, so focusing a nested
-  control shows the card outline and the control's own, where
-  `architecture:interaction-modality` INV3 allows one indicator per focus move.
-- **Disabled state not reflected on the target (FR4).** The `clickable-card`
-  target reflects `variant` but not the disabled state, so a theme cannot
-  style it there, where `architecture:component-theming-surface` INV6 keeps
-  state on the owning target.
+- **嵌套控件上出现两个焦点指示（AR3）。** 只要任何后代持有键盘焦点，卡片就绘制自己的焦点轮廓，因此聚焦嵌套控件时会同时显示卡片的轮廓与该控件自身的轮廓，而 `architecture:interaction-modality` INV3 只允许每次焦点移动出现一个指示。
+- **禁用状态未反映在目标上（FR4）。** `clickable-card` 目标反映 `variant`，但不反映禁用状态，因此主题无法在那里为它设置样式，而 `architecture:component-theming-surface` INV6 要求状态留在拥有它的目标上。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The hidden native button or link that carries the card's action, and its
-  name.
-- Card-surface activation, and its suppression for nested interactive
-  descendants and selected text.
-- Enabled, disabled, hover, pressed, and delegated focus paint on the card.
-- The `clickable-card` target on the painted root.
+- 承载卡片操作的隐藏原生按钮或链接，以及它的名称。
+- 卡片表面激活，以及对嵌套交互后代与选中文本的抑制。
+- 卡片上的启用、禁用、悬停、按压与委托焦点绘制。
+- 绘制根上的 `clickable-card` 目标。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Selection or toggling — owned by `component:SelectableCard`.
-- Semantics, paint, or activation of caller content.
-- Destination acceptance — owned by `family:navigation-destinations`.
-- Card padding, variant paint, radius, elevation, and sizing — owned by
-  `component:Card`.
+- 选择或切换——由 `component:SelectableCard` 拥有。
+- 调用方内容的语义、绘制或激活。
+- 目标接受——由 `family:navigation-destinations` 拥有。
+- Card 的内边距、变体绘制、圆角、高度层级与尺寸——由 `component:Card` 拥有。
 
 ## Public concepts
 
-| Concept          | Closed values or states                                | Meaning                                                      | Availability by variant/orientation/state | Default | Owner                            | Stability | Invalid-value behavior                   |
-| ---------------- | ------------------------------------------------------ | ------------------------------------------------------------ | ----------------------------------------- | ------- | -------------------------------- | --------- | ---------------------------------------- |
-| Activation mode  | action (`onClick`); navigation (`href`); neither (OQ1) | Which hidden native control owns the card's action.          | Every variant                             | neither | `component:ClickableCard`        | Stable    | `href` wins when both are given.         |
-| Disabled         | enabled; disabled                                      | Disabled cards stay focusable and announced but run nothing. | Both modes                                | enabled | `component:ClickableCard`        | Stable    | —                                        |
-| Nested ownership | card surface; nested interactive descendant; selection | Only a surface press activates the card.                     | Enabled cards                             | surface | `component:ClickableCard`        | Stable    | —                                        |
-| Destination      | accepted; blocked                                      | Every navigation sink uses the shared destination decision.  | Navigation mode                           | none    | `family:navigation-destinations` | Stable    | A blocked destination does not navigate. |
+| 概念     | 封闭取值或状态                                     | 含义                                             | 按变体/方向/状态可用性 | 默认值   | 拥有者                           | 稳定性 | 无效值行为                   |
+| -------- | -------------------------------------------------- | ------------------------------------------------ | ---------------------- | -------- | -------------------------------- | ------ | ---------------------------- |
+| 激活模式 | 操作（`onClick`）；导航（`href`）；两者皆无（OQ1） | 哪个隐藏原生控件承载卡片的操作。                 | 所有变体               | 两者皆无 | `component:ClickableCard`        | 稳定   | 同时给出两者时 `href` 胜出。 |
+| 禁用     | 已启用；已禁用                                     | 禁用的卡片仍可聚焦并可被朗读，但不执行任何操作。 | 两种模式               | 已启用   | `component:ClickableCard`        | 稳定   | —                            |
+| 嵌套归属 | 卡片表面；嵌套交互后代；选择                       | 只有表面按压才会激活卡片。                       | 已启用的卡片           | 表面     | `component:ClickableCard`        | 稳定   | —                            |
+| 目标     | 已接受；已阻断                                     | 每个导航汇点都使用共享的目标决策。               | 导航模式               | 无       | `family:navigation-destinations` | 稳定   | 被阻断的目标不导航。         |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Basis                                                                   |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| FR1 | The root is Card's `div`. With `href`, a visually hidden native link holds the destination and `target`; otherwise a visually hidden `button type="button"` calls `onClick`. `label` names that control, and the hidden control is the card's tab stop.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Current source and tests                                                |
-| FR2 | A primary-button press on the card surface calls `onClick` once with the card as `currentTarget`, then performs an accepted navigation unless the callback cancels it. A middle press on the surface of a card given `href` opens an accepted destination in a new tab without calling `onClick`. A press inside a nested interactive descendant, inside an open Tooltip or HoverCard surface (`component:Tooltip` FR11), or one that ends a text selection, does not activate the card. Activating the hidden button of an action card calls `onClick` once; activating the hidden link navigates without calling `onClick`.                                                                                                                                    | Current source and tests; `architecture:public-component-api` INV7      |
-| FR3 | Plain, new-tab, modified, middle-click, and surface-delegated navigation use the shared destination decision; a blocked destination does not navigate.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `family:navigation-destinations` FR1, FR3–FR5                           |
-| FR4 | `isDisabled` keeps the hidden control focusable with `aria-disabled="true"`; Enter, Space, and clicks on it do nothing. A disabled link keeps its link role and name but has no `href` or `target`. The control stays focusable and announced (`spec:AST-085` FR1, FR2, FR5); the card's own click and mouseup handling and the caller's `onMouseUp` are removed, other caller event props still reach the root, and the surface shows no hover or pressed paint (`spec:AST-085` FR6), and renders at half opacity. The disabled state is reflected on the owning target (`architecture:component-theming-surface` INV6). Implementation gap: the `clickable-card` target reflects no disabled state (Current-state impact).                                     | Current source and tests                                                |
-| FR5 | While enabled, the root paints the shared hover overlay under a hover-capable pointer and the pressed overlay for mouse and touch presses that would activate the card; a touch press that starts on a nested interactive element shows no pressed paint, since it does not activate the card (the counterpart of FR2's activation rule), while a mouse press there keeps the `:active` paint, and a bordered card's border responds to hover. A touch press shows at once. Under the touch presentation, its release fades on the theme's exit motion tokens (`--duration-exit`, `--ease-exit`), per `spec:AST-094` FR5; a mouse press keeps the card's desktop press styling. Keyboard focus on the hidden control shows the shared focus outline on the root. | Current source, stories, and `architecture:interaction-modality`        |
-| FR6 | The root carries the `clickable-card` target reflecting `variant` beside Card's target. `ref` reaches the root; supported DOM, ARIA, data, and event props reach it; a caller `onMouseUp` runs after the card's own; `xstyle`, `className`, and `style` compose after the component styles.                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Current source and tests; `architecture:public-component-api` INV5–INV8 |
+| ID  | 不变式                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | 依据                                                          |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| FR1 | 根是 Card 的 `div`。给出 `href` 时，一个视觉隐藏的原生链接承载目标与 `target`；否则由视觉隐藏的 `button type="button"` 调用 `onClick`。`label` 为该控件命名，隐藏控件是卡片的 Tab 停靠点。                                                                                                                                                                                                                                                                                                                                                     | 当前源码与测试                                                |
+| FR2 | 在卡片表面上以主键按压会以卡片作为 `currentTarget` 调用一次 `onClick`，随后执行一次已接受的导航，除非回调取消它。在给出 `href` 的卡片表面上以中键按压，会在新标签页打开一个已接受的目标，且不调用 `onClick`。在嵌套交互后代内部、在打开的 Tooltip 或 HoverCard 表面（`component:Tooltip` FR11）内部按压，或结束文本选择的按压，都不会激活卡片。激活操作卡片的隐藏按钮会调用一次 `onClick`；激活隐藏链接会导航，且不调用 `onClick`。                                                                                                            | 当前源码与测试；`architecture:public-component-api` INV7      |
+| FR3 | 普通、新标签页、带修饰键、中键点击与表面委托的导航都使用共享的目标决策；被阻断的目标不导航。                                                                                                                                                                                                                                                                                                                                                                                                                                                   | `family:navigation-destinations` FR1, FR3–FR5                 |
+| FR4 | `isDisabled` 让隐藏控件保持可聚焦并带 `aria-disabled="true"`；Enter、空格以及对它的点击都不做任何事。禁用的链接保留其链接角色与名称，但没有 `href` 或 `target`。控件保持可聚焦并被朗读（`spec:AST-085` FR1、FR2、FR5）；卡片自身的点击与 mouseup 处理以及调用方的 `onMouseUp` 被移除，其他调用方事件 prop 仍到达根，表面不显示悬停或按压绘制（`spec:AST-085` FR6），并以半透明渲染。禁用状态反映在拥有它的目标上（`architecture:component-theming-surface` INV6）。实现缺口：`clickable-card` 目标不反映任何禁用状态（Current-state impact）。 | 当前源码与测试                                                |
+| FR5 | 启用期间，根在支持悬停的指针下绘制共享的悬停覆盖层，并对会激活卡片的鼠标与触摸按压绘制按压覆盖层；落在嵌套交互元素上的触摸按压不显示按压绘制，因为它不会激活卡片（这是 FR2 激活规则的对应面），而那里的鼠标按压保留 `:active` 绘制，带边框的卡片的边框会响应悬停。触摸按压立即显示。在触摸呈现下，其释放在主题的退出动效令牌（`--duration-exit`、`--ease-exit`）上淡出，依据 `spec:AST-094` FR5；鼠标按压保留卡片的桌面端按压样式。隐藏控件上的键盘焦点会在根上显示共享的焦点轮廓。                                                            | 当前源码、故事与 `architecture:interaction-modality`          |
+| FR6 | 根携带 `clickable-card` 目标，在 Card 的目标旁反映 `variant`。`ref` 到达根；受支持的 DOM、ARIA、data 与事件 prop 到达它；调用方的 `onMouseUp` 在卡片自身的之后运行；`xstyle`、`className` 与 `style` 在组件样式之后组合。                                                                                                                                                                                                                                                                                                                      | 当前源码与测试；`architecture:public-component-api` INV5–INV8 |
 
 ### Allowed variation
 
-- **AV1 — Caller content.** Caller content keeps its own semantics, theming,
-  and interaction inside the card.
-- **AV2 — Router integration.** An accepted destination may use the native
-  link or the active link provider.
-- **AV3 — Card appearance.** Card variants, padding, elevation, and sizing vary
-  without changing activation ownership.
+- **AV1 — 调用方内容。** 调用方内容在卡片内部保留自己的语义、主题与交互。
+- **AV2 — 路由集成。** 已接受的目标可以使用原生链接或当前激活的链接提供者。
+- **AV3 — 卡片外观。** Card 的变体、内边距、高度层级与尺寸可以变化，而不改变激活归属。
 
 ### Representative states
 
-| State               | Required invariant                                                            | Allowed variation          |
-| ------------------- | ----------------------------------------------------------------------------- | -------------------------- |
-| Enabled action      | Hidden button operable by keyboard and by the surface; `onClick` runs once.   | Content and appearance.    |
-| Enabled navigation  | Hidden link keeps its destination; surface presses use the shared decision.   | Native or provider router. |
-| Disabled action     | Hidden button focusable with `aria-disabled`; nothing runs.                   | —                          |
-| Disabled navigation | Link role and name kept; no `href` or `target`; focusable; nothing navigates. | —                          |
-| Nested control      | The descendant handles its own event; the card does not activate.             | Any interactive child.     |
+| 状态       | 必需的不变式                                                  | 允许的变化         |
+| ---------- | ------------------------------------------------------------- | ------------------ |
+| 已启用操作 | 隐藏按钮可由键盘与表面操作；`onClick` 运行一次。              | 内容与外观。       |
+| 已启用导航 | 隐藏链接保留其目标；表面按压使用共享决策。                    | 原生或提供者路由。 |
+| 已禁用操作 | 隐藏按钮可聚焦并带 `aria-disabled`；不执行任何操作。          | —                  |
+| 已禁用导航 | 保留链接角色与名称；没有 `href` 或 `target`；可聚焦；不导航。 | —                  |
+| 嵌套控件   | 后代处理自己的事件；卡片不激活。                              | 任何交互子元素。   |
 
 ### Transformation and precedence order
 
-- **ORD1 — Event ownership.** Disabled removes the card's own click and
-  mouseup handling; then text selection and nested interactive ownership
-  suppress card activation; otherwise, for a primary-button press, `onClick`
-  runs before any accepted destination and may cancel it, and a middle press
-  opens an accepted `href` without calling `onClick`.
-- **ORD2 — Navigation.** Decide the destination before choosing native,
-  router, same-tab, new-tab, modified, middle-click, or delegated activation.
+- **ORD1 — 事件归属。** 禁用会移除卡片自身的点击与 mouseup 处理；随后文本选择与嵌套交互归属会抑制卡片激活；否则，对主键按压而言，`onClick` 在任何已接受的目标之前运行并可取消它，而中键按压会在不调用 `onClick` 的情况下打开已接受的 `href`。
+- **ORD2 — 导航。** 先决定目标，再选择原生、路由、同标签页、新标签页、带修饰键、中键点击或委托激活。
 
 ### Performance and resources
 
-- **PR1 — Shared resources only.** ClickableCard installs the shared press
-  controller on mount and marks its root as a press surface only while
-  enabled; it adds no timer, observer, request, portal, or layout measurement
-  of its own.
+- **PR1 — 仅共享资源。** ClickableCard 在挂载时安装共享的按压控制器，并仅在启用期间把它的根标记为按压表面；它不添加自己的计时器、观察器、请求、portal 或布局测量。
 
 ## Accessibility contract
 
-- **AR1 — Native semantic owner.** The hidden button or link exposes its
-  native role and the `label`; the visible root adds no role of its own.
-- **AR2 — Disabled stays perceivable.** A disabled card's control stays in the
-  tab order, announces `aria-disabled`, and is inert (FR4).
-- **AR3 — One focus indicator per focus move.** Focus on the hidden control is
-  shown once, on the card root (`architecture:interaction-modality` INV3).
-  Implementation gap: the root also outlines while a nested control has focus,
-  so that control shows two indicators (Current-state impact).
-- **AR4 — Modality parity.** Keyboard, pointer, and touch users each have an
-  operable path; hover is never the only one.
+- **AR1 — 原生语义归属。** 隐藏的按钮或链接暴露其原生角色与 `label`；可见的根不添加自己的角色。
+- **AR2 — 禁用仍可感知。** 禁用卡片的控件保留在 Tab 顺序中，朗读 `aria-disabled`，并且是惰性的（FR4）。
+- **AR3 — 每次焦点移动一个焦点指示。** 隐藏控件上的焦点只显示一次，且显示在卡片根上（`architecture:interaction-modality` INV3）。实现缺口：当嵌套控件持有焦点时，根也会绘制轮廓，因此该控件显示两个指示（Current-state impact）。
+- **AR4 — 模态对等。** 键盘、指针与触摸用户各有可操作的路径；悬停从不是唯一路径。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                                   | Representation authority | Hierarchy role                   | Component contract |
-| ---------------- | -------------------------------------------------------------------- | ------------------------ | -------------------------------- | ------------------ |
-| Container        | The Card surface with enabled interaction paint and delegated focus. | Current source and docs  | Context-dependent action surface | FR4–FR6, AR3, AR4  |
-| Content          | Caller hierarchy and interaction, unchanged.                         | Caller-owned content     | Context-dependent                | FR2, AV1           |
+| 结构或状态 | 设计要求                               | 呈现权威         | 层级角色             | 组件契约          |
+| ---------- | -------------------------------------- | ---------------- | -------------------- | ----------------- |
+| 容器       | 带启用交互绘制与委托焦点的 Card 表面。 | 当前源码与文档   | 依情境而定的操作表面 | FR4–FR6, AR3, AR4 |
+| 内容       | 调用方的层级与交互，保持不变。         | 调用方拥有的内容 | 依情境而定           | FR2, AV1          |
 
 ### Theming anatomy
 
@@ -203,42 +173,33 @@ Consumer migration instructions belong in consumer docs and release notes.
 
 ## Family and system relationships
 
-- `family:navigation-destinations` owns destination acceptance and parity
-  across navigation sinks; FR3 applies it.
-- `architecture:interaction-modality` owns modality and focus-indicator rules;
-  FR5 and AR3 apply them and AR3 records the gap.
-- `architecture:component-theming-surface` sets the rules the `clickable-card`
-  target follows; FR4 records the disabled-state gap.
-- `architecture:public-component-api` owns ref, passthrough, cancellation, and
-  styling-input rules; FR2 and FR6 apply them.
-- `spec:AST-085` owns disabled-control behavior; FR4 and AR2 apply it.
+- `family:navigation-destinations` 拥有目标接受以及各导航汇点之间的对等；FR3 应用它。
+- `architecture:interaction-modality` 拥有模态与焦点指示规则；FR5 与 AR3 应用它们，AR3 记录该缺口。
+- `architecture:component-theming-surface` 设定 `clickable-card` 目标遵循的规则；FR4 记录禁用状态缺口。
+- `architecture:public-component-api` 拥有 ref、透传、取消与样式输入规则；FR2 与 FR6 应用它们。
+- `spec:AST-085` 拥有禁用控件的行为；FR4 与 AR2 应用它。
 
 ## Verification map
 
-| Contract            | Verification                                                                                                                                                                  | Representative states                                                | Mutation or failure expectation                                                                                                                                                                                                                                                                                                                                                                                                                 | Audit section                       |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| FR1, AR1            | `ClickableCard.test.tsx` hidden-control, label, and target tests; `Button.a11y.test.tsx` and `Button.a11y.chromium.spec.ts` ClickableCard states                              | Action and navigation; `clickable-card` and `clickable-card-as-link` | A missing hidden button or link, a lost `aria-label` or `target`, an unexposed button role or name at the accessibility tree, or a link card losing its computed `link` role fails. Gap: the link card's name at the accessibility tree, and that the root adds no role, have no check.                                                                                                                                                         | `audit:ClickableCard/accessibility` |
-| FR2, ORD1           | `ClickableCard.test.tsx` surface, hidden-control, keyboard, nested-control, and selection tests                                                                               | Surface; hidden control; Enter; nested button and input; selection   | A missing or duplicate `onClick`, a wrong `currentTarget`, or activation from a nested control or selection fails. Gap: no test cancels navigation from `onClick`. No test covers activating the hidden link of a card given both `href` and `onClick`. No ClickableCard test covers a middle press on a card given `href`.                                                                                                                     | `audit:ClickableCard/behavior`      |
-| FR3, ORD2           | `useClickableContainer.test.tsx`; `ClickableCard.test.tsx` link tests                                                                                                         | Plain, modified, middle, target, accepted, blocked                   | A blocked destination reaching a sink, or a lost activation method, fails in the shared hook tests.                                                                                                                                                                                                                                                                                                                                             | `audit:ClickableCard/navigation`    |
-| FR4, AR2            | `ClickableCard.test.tsx` disabled and touch-press tests; `Button.a11y.chromium.spec.ts` `clickable-card-disabled` state                                                       | Disabled action and navigation                                       | A disabled control leaving the tab order, a live `href` or `target`, a callback that runs, a touch-press marker while disabled, or a disabled action card whose unavailable state or inertness (click, Enter, Space) fails at the accessibility tree fails. Gap: the disabled link card has no accessibility-tree check (`spec:AST-085` FR5), and disabled hover and mouse-press paint (`spec:AST-085` FR6) and the half opacity have no check. | `audit:ClickableCard/accessibility` |
-| FR5, AR3, AR4       | `ClickableCard.test.tsx` touch-press tests; `CardPress.a11y.chromium.spec.ts` on `core-clickablecard--with-on-click`; stable visual baseline `core-clickablecard--navigation` | Rest; desktop hover and mouse press; touch press                     | A hover that does not paint over rest, a mouse press that does not paint over hover, a touch press that does not match the desktop press or fade, or a changed rest appearance fails or comes back changed. Gap: the border hover and the focus outline have no automated check.                                                                                                                                                                | `audit:ClickableCard/design`        |
-| FR6                 | `ClickableCard.test.tsx` elevation tests; `themingTargets.test.ts`                                                                                                            | Elevations; target inventory                                         | A lost elevation class or target fails. Gap: no test covers the ref, DOM passthrough, `onMouseUp` order, or the styling-input merge.                                                                                                                                                                                                                                                                                                            | `audit:ClickableCard/api`           |
-| PR1                 | Source review                                                                                                                                                                 | Enabled and disabled                                                 | Gap: no automated check fails if ClickableCard adds its own timer, observer, or measurement.                                                                                                                                                                                                                                                                                                                                                    | `audit:ClickableCard/behavior`      |
-| Theming anatomy map | `scripts/check-knowledge.mjs`                                                                                                                                                 | Consumer anatomy and current target                                  | Missing, extra, or stale mappings fail repository validation.                                                                                                                                                                                                                                                                                                                                                                                   | `audit:ClickableCard/theming`       |
+| 契约             | 验证                                                                                                                                                                      | 代表性状态                                               | 变更或失败预期                                                                                                                                                                                                                                                                                                  | 审查章节                            |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| FR1, AR1         | `ClickableCard.test.tsx` 的隐藏控件、label 与 target 测试；`Button.a11y.test.tsx` 与 `Button.a11y.chromium.spec.ts` 的 ClickableCard 状态                                 | 操作与导航；`clickable-card` 与 `clickable-card-as-link` | 缺少隐藏按钮或链接、丢失 `aria-label` 或 `target`、在可访问性树上未暴露按钮角色或名称，或链接卡片丢失其计算出的 `link` 角色，均失败。缺口：链接卡片在可访问性树上的名称，以及根不添加任何角色，都没有检查。                                                                                                     | `audit:ClickableCard/accessibility` |
+| FR2, ORD1        | `ClickableCard.test.tsx` 的表面、隐藏控件、键盘、嵌套控件与选择测试                                                                                                       | 表面；隐藏控件；Enter；嵌套按钮与输入；选择              | 缺少或重复的 `onClick`、错误的 `currentTarget`，或从嵌套控件或选择发起激活，均失败。缺口：没有测试从 `onClick` 取消导航。没有测试覆盖激活同时给出 `href` 与 `onClick` 的卡片的隐藏链接。没有 ClickableCard 测试覆盖给出 `href` 的卡片上的中键按压。                                                             | `audit:ClickableCard/behavior`      |
+| FR3, ORD2        | `useClickableContainer.test.tsx`；`ClickableCard.test.tsx` 的链接测试                                                                                                     | 普通、带修饰键、中键、target、已接受、已阻断             | 被阻断的目标到达汇点，或丢失激活方式，在共享钩子测试中失败。                                                                                                                                                                                                                                                    | `audit:ClickableCard/navigation`    |
+| FR4, AR2         | `ClickableCard.test.tsx` 的禁用与触摸按压测试；`Button.a11y.chromium.spec.ts` 的 `clickable-card-disabled` 状态                                                           | 禁用操作与导航                                           | 禁用控件离开 Tab 顺序、仍可用的 `href` 或 `target`、仍然运行的回调、禁用时的触摸按压标记，或禁用操作卡片在可访问性树上其不可用状态或惰性（点击、Enter、空格）检查失败，均失败。缺口：禁用的链接卡片没有可访问性树检查（`spec:AST-085` FR5），禁用悬停与鼠标按压绘制（`spec:AST-085` FR6）以及半透明都没有检查。 | `audit:ClickableCard/accessibility` |
+| FR5, AR3, AR4    | `ClickableCard.test.tsx` 的触摸按压测试；`CardPress.a11y.chromium.spec.ts` 对 `core-clickablecard--with-on-click` 的测试；稳定的视觉基线 `core-clickablecard--navigation` | 静止；桌面端悬停与鼠标按压；触摸按压                     | 未在静止之上绘制的悬停、未在悬停之上绘制的鼠标按压、与桌面端按压或淡出不符的触摸按压，或改变的静止外观，均失败或返回已变更的基线。缺口：边框悬停与焦点轮廓没有自动化检查。                                                                                                                                      | `audit:ClickableCard/design`        |
+| FR6              | `ClickableCard.test.tsx` 的高度层级测试；`themingTargets.test.ts`                                                                                                         | 高度层级；目标清单                                       | 丢失高度层级类或目标，均失败。缺口：没有测试覆盖 ref、DOM 透传、`onMouseUp` 顺序或样式输入合并。                                                                                                                                                                                                                | `audit:ClickableCard/api`           |
+| PR1              | 源码审查                                                                                                                                                                  | 已启用与已禁用                                           | 缺口：如果 ClickableCard 添加自己的计时器、观察器或测量，没有自动化检查会失败。                                                                                                                                                                                                                                 | `audit:ClickableCard/behavior`      |
+| Theming 结构映射 | `scripts/check-knowledge.mjs`                                                                                                                                             | 使用方结构与当前目标                                     | 缺失、多余或过时的映射会使仓库校验失败。                                                                                                                                                                                                                                                                        | `audit:ClickableCard/theming`       |
 
 ## Decision log
 
-None recorded.
+无记录。
 
 ## Open questions
 
-- **OQ1 — Should rendering ClickableCard without `href` or `onClick` remain a
-  supported focusable no-op, or should the public contract reject or inert
-  that composition?** (`human-api`) The released types and render admit it
-  today.
+- **OQ1 — 在不给出 `href` 或 `onClick` 的情况下渲染 ClickableCard，应继续保持为受支持的可聚焦空操作，还是公共契约应拒绝或使该组合惰性？**（`human-api`）已发布的类型与渲染目前允许它。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, shared destination rules, or Card styling. It
-links to their owners.
+本文件不复制使用方的 prop 表/示例、当前审查结果、实现步骤、共享目标规则或 Card 样式。它链接到它们的拥有者。

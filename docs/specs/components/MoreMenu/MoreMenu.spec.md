@@ -41,144 +41,106 @@ system_specs: [spec:AST-020]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                                            |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `MoreMenu` with `items`, `label` (default "More options"), `variant` (`ghost`), `size` (surrounding size context, else `md`), `icon`, `isDisabled`, `placement`, `alignment`, `presentation`, `isMenuOpen`, and `onOpenChange`; target `more-menu`. |
-| Behavior                | An icon-only overflow Button with a tooltip that opens a DropdownMenu of `items`; MoreMenu forwards open state, placement, alignment, and presentation to DropdownMenu and adds no menu runtime of its own.                                         |
-| End-user impact         | Users find secondary actions behind one named "More options" button; keyboard users open it as an APG menu button.                                                                                                                                  |
-| Builder impact          | None.                                                                                                                                                                                                                                               |
-| Compatibility/readiness | Records shipped behavior; no public change. Two implementation gaps (see Current-state impact).                                                                                                                                                     |
-| Review checks           | Reject moving `more-menu` onto the trigger, a parallel menu runtime, or a trigger that loses its name, `aria-haspopup`, `aria-expanded`, or `aria-controls`.                                                                                        |
-| Governing rules         | `spec:AST-020` (pattern bindings); `architecture:component-theming-surface`; `architecture:layer-runtime`; `family:overlay-dismissal`.                                                                                                              |
+| 领域            | 契约                                                                                                                                                                                                                                      |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共契约        | `MoreMenu`，接受 `items`、`label`（默认 “More options”）、`variant`（`ghost`）、`size`（周边尺寸上下文，否则 `md`）、`icon`、`isDisabled`、`placement`、`alignment`、`presentation`、`isMenuOpen` 和 `onOpenChange`；目标为 `more-menu`。 |
+| 行为            | 一个仅显示图标的溢出 Button，带有 tooltip，可打开由 `items` 组成的 DropdownMenu；MoreMenu 将打开状态、placement、alignment 和 presentation 转发给 DropdownMenu，自身不添加任何菜单运行时。                                                |
+| 终端用户影响    | 用户在一个名为 “More options” 的按钮背后找到次要操作；键盘用户将其作为 APG 菜单按钮打开。                                                                                                                                                 |
+| 构建者影响      | 无。                                                                                                                                                                                                                                      |
+| 兼容性/就绪状态 | 记录已发布的行为；无公共变更。存在两处实现缺口（见 Current-state impact）。                                                                                                                                                               |
+| 审查检查        | 拒绝将 `more-menu` 移到触发器上、拒绝并行的菜单运行时，或拒绝丢失 name、`aria-haspopup`、`aria-expanded` 或 `aria-controls` 的触发器。                                                                                                    |
+| 管辖规则        | `spec:AST-020`（模式绑定）；`architecture:component-theming-surface`；`architecture:layer-runtime`；`family:overlay-dismissal`。                                                                                                          |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；下文正文具有权威性。
 
 ## Intent
 
-MoreMenu provides a visible icon-only overflow trigger and delegates its action
-presentation to DropdownMenu. It owns the trigger's defaults, the `more-menu`
-target on the composed panel, and what it forwards to DropdownMenu. Consumer
-usage lives in `MoreMenu.doc.mjs`.
+MoreMenu 提供一个可见的、仅显示图标的溢出触发器，并将其操作呈现委托给 DropdownMenu。它拥有触发器的默认值、组合面板上的 `more-menu` 目标，以及转发给 DropdownMenu 的内容。使用方用法见 `MoreMenu.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; runtime, DOM, styling,
-  targets, and public API remain unchanged
-- Controlled/uncontrolled behavior: `isMenuOpen` and `onOpenChange` pass to
-  DropdownMenu unchanged
-- Migration decision: none
+- 已发布的默认行为保持不变：`yes`
+- 兼容性类别：记录已发布行为；运行时、DOM、样式、目标与公共 API 均保持不变
+- 受控/非受控行为：`isMenuOpen` 和 `onOpenChange` 原样传递给 DropdownMenu
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Current-state impact
 
-- **The bottom-sheet trigger drops the ref.** With `presentation="bottom-sheet"`,
-  or `presentation="adaptive"` on a compact touch screen, DropdownMenu replaces the `ref` MoreMenu passes to the trigger, so a caller's
-  ref stays empty. `architecture:public-component-api` INV8 has the ref reach
-  the element the contract promises.
-- **The arrow-key opening rows are advisory.** The shared menu-button binding
-  runs AR1's ArrowDown and ArrowUp opening rows as advisory, so a keyboard open
-  that misses the first or last row does not fail either binding lane.
-  `spec:AST-020` FR9 makes an adopted expectation required.
+- **bottom-sheet 触发器会丢失 ref。** 当 `presentation="bottom-sheet"`，或在紧凑触屏上使用 `presentation="adaptive"` 时，DropdownMenu 会替换 MoreMenu 传给触发器的 `ref`，因此调用方提供的 ref 保持为空。`architecture:public-component-api` INV8 要求 ref 到达契约所承诺的元素。
+- **方向键打开行是建议性的。** 共享的 menu-button 绑定将 AR1 的 ArrowDown 与 ArrowUp 打开行作为建议项执行，因此键盘打开时若未落在第一行或最后一行，不会使任一绑定通道失败。`spec:AST-020` FR9 要求被采用的预期必须是强制性的。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The overflow-menu composition and its visible icon-only trigger defaults.
-- The Menu surface's current `more-menu` target, which is a second class on the
-  composed DropdownMenu panel.
+- 溢出菜单的组合，及其可见的仅显示图标触发器的默认值。
+- Menu 表面当前的 `more-menu` 目标，它是组合后的 DropdownMenu 面板上的第二个类名。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Trigger-button presentation — delegated to `component:Button`.
-- Default semantic trigger artwork resolution — delegated to the Icon registry;
-  the current artwork renders directly inside Button and does not carry Icon's
-  `icon` target. Arbitrary caller-rendered trigger content remains caller-owned.
-- Menu-panel lifecycle and presentation switching — owned by DropdownMenu and
-  uncontracted here.
-- Anchored action rows, sections, dividers, selectable indicators, and nested
-  flyouts — owned by DropdownMenu and uncontracted here.
-- BottomSheet action rows and lists — delegated through DropdownMenu to
-  `component:List`; the touch frame remains owned by `component:BottomSheet`.
-- Shared layer lifecycle or dismissal policy.
+- 触发器按钮的呈现 —— 委托给 `component:Button`。
+- 默认语义触发器图形的解析 —— 委托给 Icon 注册表；当前图形直接在 Button 内部渲染，不带 Icon 的 `icon` 目标。任意由调用方渲染的触发器内容仍归调用方所有。
+- 菜单面板生命周期与呈现切换 —— 由 DropdownMenu 拥有，本文不做契约。
+- 锚定的操作行、分区、分隔线、可选指示项和嵌套浮出 —— 由 DropdownMenu 拥有，本文不做契约。
+- BottomSheet 操作行与列表 —— 通过 DropdownMenu 委托给 `component:List`；触摸框架仍由 `component:BottomSheet` 拥有。
+- 共享层生命周期或关闭策略。
 
 ## Public concepts
 
-No component-local concept. Action data and presentation values are
-DropdownMenu's; consumer props are documented in `MoreMenu.doc.mjs`.
+无组件本地概念。操作数据与呈现取值属于 DropdownMenu；使用方 props 记录在 `MoreMenu.doc.mjs` 中。
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                    | Basis                           |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| FR1 | Every render contains one icon-only Trigger button. The anchored presentation also renders one DropdownMenu-owned Menu surface; the bottom-sheet presentation renders its Menu surface only while the sheet is open. Anchored presentation uses Pointer action rows; BottomSheet presentation uses Touch action rows. The default trigger icon is the active registry's `moreHorizontal` artwork; `icon` replaces it with any React content. | Current source, docs, and tests |
-| FR2 | The `more-menu` target is applied to the composed DropdownMenu panel as an additional class, before any caller `className`. It is not applied to the Trigger button.                                                                                                                                                                                                                                                                         | Current source, docs, and tests |
-| FR3 | Button owns the Trigger button and the Icon registry owns default semantic trigger artwork resolution. DropdownMenu owns Pointer action rows, including how the keyboard reaches a disabled row (DropdownMenu FR17); List owns Touch action rows rendered through DropdownMenu's BottomSheet path.                                                                                                                                           | Current source and owner docs   |
-| FR4 | MoreMenu forwards open state, placement, alignment, presentation, `xstyle`, `style`, and `data-testid` to DropdownMenu without adding a parallel menu runtime, and shows no chevron. Its default position matches DropdownMenu's. Host `data-*` attributes reach the trigger button, not the menu; the button's name, `id`, and disclosure attributes stay component-owned.                                                                  | Current source and tests        |
-| FR5 | The trigger is named by `label` (else the translated `@astryx.moreMenu.label`, "More options"), shows that name as its tooltip, uses `variant` (default `ghost`) and `size` (default from the surrounding size context, else `md`), forwards `ref` to the trigger in the anchored presentation, and honors `isDisabled`: a disabled trigger opens from no key or press.                                                                      | Current source and tests        |
+| ID  | 不变式                                                                                                                                                                                                                                                                                                           | 依据                 |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| FR1 | 每次渲染都包含一个仅显示图标的 Trigger 按钮。锚定呈现还会渲染一个由 DropdownMenu 拥有的 Menu 表面；bottom-sheet 呈现仅在面板打开期间渲染其 Menu 表面。锚定呈现使用 Pointer 操作行；BottomSheet 呈现使用 Touch 操作行。默认触发器图标是活动注册表中的 `moreHorizontal` 图形；`icon` 可将其替换为任意 React 内容。 | 当前源码、文档与测试 |
+| FR2 | `more-menu` 目标作为附加类名应用于组合后的 DropdownMenu 面板，并出现在任何调用方 `className` 之前。它不会应用于 Trigger 按钮。                                                                                                                                                                                   | 当前源码、文档与测试 |
+| FR3 | Button 拥有 Trigger 按钮，Icon 注册表拥有默认语义触发器图形的解析。DropdownMenu 拥有 Pointer 操作行，包括键盘如何到达被禁用的行（DropdownMenu FR17）；List 拥有通过 DropdownMenu 的 BottomSheet 路径渲染的 Touch 操作行。                                                                                        | 当前源码与所有者文档 |
+| FR4 | MoreMenu 将打开状态、placement、alignment、presentation、`xstyle`、`style` 和 `data-testid` 转发给 DropdownMenu，不添加并行菜单运行时，也不显示 chevron。其默认位置与 DropdownMenu 一致。宿主 `data-*` 属性到达触发按钮，而非菜单；按钮的 name、`id` 和披露属性仍由组件拥有。                                    | 当前源码与测试       |
+| FR5 | 触发器的名称由 `label` 提供（否则使用翻译后的 `@astryx.moreMenu.label`，即 “More options”），该名称显示为其 tooltip，使用 `variant`（默认 `ghost`）与 `size`（默认取自周边尺寸上下文，否则 `md`），在锚定呈现中将 `ref` 转发给触发器，并遵循 `isDisabled`：被禁用的触发器不会因任何按键或按压而打开。            | 当前源码与测试       |
 
 ### Allowed variation
 
-- **AV1 — Trigger icon.** The default semantic three-dot icon may be replaced by
-  an icon component or arbitrary React content without moving the MoreMenu target
-  onto the trigger.
-- **AV2 — Presentation.** DropdownMenu may resolve the current anchored or
-  BottomSheet presentation while MoreMenu keeps the same trigger and Menu-surface
-  ownership.
-- **AV3 — Interior.** Action rows, sections, dividers, icons, selectable
-  indicators, and nested actions may vary according to DropdownMenu's current
-  data contract.
+- **AV1 — 触发器图标。** 默认的语义三点图标可以被图标组件或任意 React 内容替换，而不会把 MoreMenu 目标移到触发器上。
+- **AV2 — 呈现。** DropdownMenu 可以决定当前采用锚定还是 BottomSheet 呈现，而 MoreMenu 保持相同的触发器与 Menu 表面所有权。
+- **AV3 — 内部。** 操作行、分区、分隔线、图标、可选指示项和嵌套操作可以根据 DropdownMenu 当前的数据契约而变化。
 
 ### Representative states
 
-| State                  | Required invariant                                                                        | Allowed variation                                    |
-| ---------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| Default overflow menu  | Trigger button uses the default Icon-resolved glyph and Menu surface carries `more-menu`. | Button size, variant, placement, and alignment vary. |
-| Arbitrary icon content | Trigger button remains Button-owned while caller content bypasses Icon ownership.         | Caller owns the rendered content.                    |
-| Pointer presentation   | DropdownMenu owns the anchored Menu interior and Pointer action rows.                     | Rows, sections, dividers, and nested flyouts vary.   |
-| Touch presentation     | DropdownMenu owns the BottomSheet-backed Menu interior; List owns Touch action rows.      | Touch rows and drill-in depth vary.                  |
+| 状态         | 必需的不变式                                                               | 允许的变化                                          |
+| ------------ | -------------------------------------------------------------------------- | --------------------------------------------------- |
+| 默认溢出菜单 | 触发按钮使用由 Icon 解析的默认字形，Menu 表面带有 `more-menu`。            | 按钮的 size、variant、placement 与 alignment 可变。 |
+| 任意图标内容 | 触发按钮仍归 Button 所有，而调用方内容绕过 Icon 所有权。                   | 调用方拥有所渲染的内容。                            |
+| Pointer 呈现 | DropdownMenu 拥有锚定的 Menu 内部与 Pointer 操作行。                       | 行、分区、分隔线与嵌套浮出可变。                    |
+| Touch 呈现   | DropdownMenu 拥有由 BottomSheet 支撑的 Menu 内部；List 拥有 Touch 操作行。 | Touch 行与下钻深度可变。                            |
 
 ### Transformation and precedence order
 
-- **ORD1 — Trigger icon.** `icon`, then the registry's `moreHorizontal`.
-- **ORD2 — Size.** `size`, then the surrounding size context, then `md`.
+- **ORD1 — 触发器图标。** `icon`，然后是注册表中的 `moreHorizontal`。
+- **ORD2 — 尺寸。** `size`，然后是周边尺寸上下文，然后是 `md`。
 
 ### Performance and resources
 
-- No resource rule; MoreMenu adds no listener or measurement of its own.
+- 无资源规则；MoreMenu 自身不添加任何监听器或测量。
 
 ## Accessibility contract
 
-- **AR1 — The anchored trigger is a Menu Button.** In the anchored pointer
-  presentation MoreMenu's icon-only trigger meets the APG Menu Button pattern's
-  required parts: `button` role, its label as the name, `aria-haspopup="menu"`,
-  `aria-expanded`, `aria-controls`, and Enter or Space opening with focus on the
-  first enabled row. ArrowDown opening on the first and ArrowUp on the last
-  enabled row go beyond the pattern's required set and are a named exception
-  (`spec:AST-020` FR15), kept because they ship. A pointer open focuses the menu container, and the first
-  ArrowDown then moves to the first row. In the bottom-sheet presentation the
-  trigger opens a dialog and says `aria-haspopup="dialog"`, outside this
-  pattern.
+- **AR1 — 锚定触发器是 Menu Button。** 在锚定的指针呈现中，MoreMenu 的仅显示图标触发器满足 APG Menu Button 模式的必需部分：`button` 角色、以自身 label 作为名称、`aria-haspopup="menu"`、`aria-expanded`、`aria-controls`，以及按 Enter 或 Space 打开并将焦点置于第一个启用的行。ArrowDown 在第一个启用行打开、ArrowUp 在最后一个启用行打开超出了该模式的必需集合，属于具名例外（`spec:AST-020` FR15），因已发布而保留。指针打开会使菜单容器获得焦点，随后第一次 ArrowDown 移动到第一行。在 bottom-sheet 呈现中，触发器打开对话框并声明 `aria-haspopup="dialog"`，不在本模式范围内。
 
 ## Design relationships
 
-| Anatomy or state                | Design requirement                                                               | Representation authority       | Hierarchy role    | Component contract |
-| ------------------------------- | -------------------------------------------------------------------------------- | ------------------------------ | ----------------- | ------------------ |
-| Trigger button                  | Provides the visible and discoverable entry point for secondary actions.         | `component:Button`             | Supporting        | FR1, FR3           |
-| Icon-resolved trigger icon      | Draws semantic three-dot artwork from the active Icon registry.                  | Icon registry                  | Supporting        | FR1, FR3           |
-| Caller-rendered trigger content | Presents arbitrary caller content supplied through the icon override.            | Caller-supplied content        | Context-dependent | FR1, FR3           |
-| Menu surface                    | Adds MoreMenu's target to the composed DropdownMenu panel, not the trigger.      | Current source and public docs | Prominent         | FR1, FR2           |
-| Pointer action row              | Presents an action or nested flyout trigger in the anchored presentation.        | DropdownMenu                   | Prominent         | FR1, FR3, FR4      |
-| Touch action row                | Presents an action or drill-in entry through ListItem in the touch presentation. | `component:List`               | Prominent         | FR1, FR3, FR4      |
+| 解剖或状态               | 设计要求                                                           | 表征权威           | 层级角色     | 组件契约      |
+| ------------------------ | ------------------------------------------------------------------ | ------------------ | ------------ | ------------- |
+| 触发按钮                 | 为次要操作提供可见、可发现的入口点。                               | `component:Button` | 支撑性       | FR1, FR3      |
+| 由 Icon 解析的触发器图标 | 从活动的 Icon 注册表绘制语义三点图形。                             | Icon 注册表        | 支撑性       | FR1, FR3      |
+| 由调用方渲染的触发器内容 | 呈现通过 icon 覆盖传入的任意调用方内容。                           | 调用方提供的内容   | 视上下文而定 | FR1, FR3      |
+| Menu 表面                | 将 MoreMenu 的目标添加到组合后的 DropdownMenu 面板，而不是触发器。 | 当前源码与公共文档 | 突出         | FR1, FR2      |
+| Pointer 操作行           | 在锚定呈现中呈现操作或嵌套浮出触发器。                             | DropdownMenu       | 突出         | FR1, FR3, FR4 |
+| Touch 操作行             | 在触摸呈现中通过 ListItem 呈现操作或下钻入口。                     | `component:List`   | 突出         | FR1, FR3, FR4 |
 
-The Menu surface is the DropdownMenu panel itself. It carries both
-`astryx-more-menu` and DropdownMenu's own panel target; the local class is not a
-wrapper and does not retarget the trigger. DropdownMenu remains the owner of the
-presentation runtime and anchored interior. Its touch path delegates action rows
-to List rather than extending the pointer-row target into the BottomSheet
-presentation.
+Menu 表面就是 DropdownMenu 面板本身。它同时带有 `astryx-more-menu` 和 DropdownMenu 自己的面板目标；本地类名不是包装器，也不会重定向触发器。DropdownMenu 仍然是呈现运行时与锚定内部的所有者。其触摸路径将操作行委托给 List，而不是把 pointer-row 目标扩展到 BottomSheet 呈现中。
 
 ### Theming anatomy
 
@@ -214,57 +176,41 @@ presentation.
 
 ## Family and system relationships
 
-- `architecture:component-theming-surface` owns anatomy qualification, the local
-  Menu-surface target, and composition delegation rules.
-- `architecture:icon-resolution-and-component-slots` owns active-theme icon
-  resolution. MoreMenu's default artwork uses that registry but currently
-  bypasses Icon's painted `icon` target.
-- `architecture:interaction-modality` owns the shared pointer, touch, keyboard,
-  and adaptive-presentation boundaries inherited through DropdownMenu.
-- `architecture:layer-runtime` owns the current DropdownMenu Popover host, native
-  light-dismiss reconciliation, and BottomSheet host distinction. MoreMenu adds
-  no parallel layer runtime.
-- `family:overlay-dismissal` owns shared Escape and platform-close ordering and
-  records MoreMenu as a shared owner through its composed DropdownMenu root;
-  BottomSheet presentation retains BottomSheet's recorded local-only adoption
-  gap.
+- `architecture:component-theming-surface` 拥有解剖资格判定、本地 Menu 表面目标，以及组合委托规则。
+- `architecture:icon-resolution-and-component-slots` 拥有活动主题的图标解析。MoreMenu 的默认图形使用该注册表，但目前绕过了 Icon 绘制的 `icon` 目标。
+- `architecture:interaction-modality` 拥有通过 DropdownMenu 继承的共享指针、触摸、键盘与自适应呈现边界。
+- `architecture:layer-runtime` 拥有当前 DropdownMenu Popover 宿主、原生 light-dismiss 协调，以及 BottomSheet 宿主区分。MoreMenu 不添加并行的层运行时。
+- `family:overlay-dismissal` 拥有共享的 Escape 与平台关闭顺序，并通过其组合的 DropdownMenu 根将 MoreMenu 记录为共享所有者；BottomSheet 呈现保留 BottomSheet 已记录的仅本地采用缺口。
 
 ## Verification map
 
-| Contract            | Verification                                                                                                                                                                                                                                                                                  | Representative states                                                           | Mutation or failure expectation                                                                                                                           | Audit section                  |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| FR1, FR4            | `MoreMenu.test.tsx` render, pointer, bottom-sheet, and placement suites, and its "passes data-* attributes to the trigger button, not the menu" and "passes data-* attributes to the bottom-sheet trigger, not the sheet" cases                                                               | Default, custom icon, pointer, touch                                            | Replacing the composition or changing forwarded behavior fails existing render/interaction tests.                                                         | `audit:MoreMenu/anatomy`       |
-| FR2                 | MoreMenu target test, source inspection, and theming target inventories                                                                                                                                                                                                                       | Closed trigger and composed menu panel                                          | Moving `more-menu` onto the trigger or removing it from the panel fails target evidence.                                                                  | `audit:MoreMenu/theming`       |
-| FR3                 | MoreMenu, DropdownMenu, Button, Icon, and List source/owner tests                                                                                                                                                                                                                             | Trigger, icon branches, pointer rows, touch rows                                | A composed part loses its owner target or is documented as a new MoreMenu-owned descendant.                                                               | `audit:MoreMenu/theming`       |
-| FR5                 | `MoreMenu.test.tsx` label, custom-label, ref, disabled-keys, and closed-while-disabled tests                                                                                                                                                                                                  | Default and custom label; disabled                                              | A lost name, or a disabled trigger that opens, fails.                                                                                                     | `audit:MoreMenu/behavior`      |
-| AR1                 | `MoreMenu.test.tsx` label, popup, and pointer-focus tests; the menu-button pattern binding `MenuButton.a11y.test.tsx` and `MenuButton.a11y.chromium.spec.ts`, which render MoreMenu states; `DropdownMenu.test.tsx` ArrowDown and ArrowUp trigger-key tests on the shared Button trigger path | Default and custom-icon triggers; closed/open; Enter, Space, ArrowDown, ArrowUp | The trigger loses its label, `aria-haspopup="menu"`, `aria-expanded` or `aria-controls`, or an Enter or Space open does not land on the first enabled row | `audit:MoreMenu/accessibility` |
-| Layer relationships | `MoreMenu.test.tsx`, `DropdownMenu.test.tsx`, and current layer/dismissal records                                                                                                                                                                                                             | Light dismiss, Escape, pointer, touch                                           | Documentation gives MoreMenu a parallel runtime or misstates the current dismissal owner.                                                                 | `audit:MoreMenu/behavior`      |
-| Theming anatomy map | `scripts/check-knowledge.mjs`                                                                                                                                                                                                                                                                 | Canonical anatomy and current target                                            | Missing, extra, prefixed, stale, or unclassified mappings fail repository validation.                                                                     | `audit:MoreMenu/theming`       |
-| RTL relation        | RTL audit curated D4 target (`apps/storybook/rtl-audit/targets.json`) on `MoreMenu / Default` (menu opened)                                                                                                                                                                                   | The open menu against its trigger; LTR and RTL                                  | A menu that does not move to the mirrored side of its trigger in RTL fails D4.                                                                            | `audit:MoreMenu/i18n-rtl`      |
+| 契约         | 验证                                                                                                                                                                                                                                               | 代表性状态                                                          | 变异或失败预期                                                                                                               | 审计章节                       |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| FR1, FR4     | `MoreMenu.test.tsx` 的渲染、指针、bottom-sheet 与放置套件，以及其 “passes data-* attributes to the trigger button, not the menu” 和 “passes data-* attributes to the bottom-sheet trigger, not the sheet” 用例                                     | 默认、自定义图标、指针、触摸                                        | 替换组合或更改转发行为会使现有的渲染/交互测试失败。                                                                          | `audit:MoreMenu/anatomy`       |
+| FR2          | MoreMenu 目标测试、源码检查与主题目标清单                                                                                                                                                                                                          | 关闭状态的触发器与组合后的菜单面板                                  | 将 `more-menu` 移到触发器上或从面板中移除，会使目标证据失败。                                                                | `audit:MoreMenu/theming`       |
+| FR3          | MoreMenu、DropdownMenu、Button、Icon 与 List 的源码/所有者测试                                                                                                                                                                                     | 触发器、图标分支、Pointer 行、Touch 行                              | 某个组合部件丢失其所有者目标，或被记录为 MoreMenu 拥有的新后代。                                                             | `audit:MoreMenu/theming`       |
+| FR5          | `MoreMenu.test.tsx` 的 label、自定义 label、ref、禁用键以及禁用期间关闭的测试                                                                                                                                                                      | 默认与自定义 label；禁用                                            | 丢失名称，或禁用的触发器仍能打开，均判定失败。                                                                               | `audit:MoreMenu/behavior`      |
+| AR1          | `MoreMenu.test.tsx` 的 label、popup 与指针焦点测试；渲染 MoreMenu 状态的 menu-button 模式绑定 `MenuButton.a11y.test.tsx` 与 `MenuButton.a11y.chromium.spec.ts`；共享 Button 触发器路径上的 `DropdownMenu.test.tsx` ArrowDown 与 ArrowUp 触发键测试 | 默认与自定义图标触发器；关闭/打开；Enter、Space、ArrowDown、ArrowUp | 触发器丢失 label、`aria-haspopup="menu"`、`aria-expanded` 或 `aria-controls`，或按 Enter 或 Space 打开后未落在第一个启用的行 | `audit:MoreMenu/accessibility` |
+| 层关系       | `MoreMenu.test.tsx`、`DropdownMenu.test.tsx` 与当前层/关闭记录                                                                                                                                                                                     | light dismiss、Escape、指针、触摸                                   | 文档为 MoreMenu 赋予并行运行时，或错误陈述当前的关闭所有者。                                                                 | `audit:MoreMenu/behavior`      |
+| 主题解剖映射 | `scripts/check-knowledge.mjs`                                                                                                                                                                                                                      | 规范解剖与当前目标                                                  | 缺失、多余、带前缀、过时或未分类的映射会使仓库校验失败。                                                                     | `audit:MoreMenu/theming`       |
+| RTL 关系     | RTL 审计精选的 D4 目标（`apps/storybook/rtl-audit/targets.json`），作用于 `MoreMenu / Default`（菜单已打开）                                                                                                                                       | 打开菜单相对其触发器；LTR 与 RTL                                    | 在 RTL 中菜单未移到触发器镜像侧，则 D4 失败。                                                                                | `audit:MoreMenu/i18n-rtl`      |
 
-Read from source, with no focused test yet:
+从源码读取，尚无聚焦测试：
 
-- FR1: the registry's `moreHorizontal` as the default trigger icon.
-- FR2: `more-menu` coming before a caller `className`, and its absence from the
-  Trigger button.
-- FR4: forwarding `isMenuOpen`, `onOpenChange`, `xstyle`, and `style`, and the
-  absence of a chevron.
-- FR5: the tooltip, the `ghost` default, the size from the surrounding size
-  context, the `md` default, and the ref reaching the trigger button.
-- AR1: `aria-haspopup="dialog"` in the bottom-sheet presentation.
+- FR1：注册表中的 `moreHorizontal` 作为默认触发器图标。
+- FR2：`more-menu` 出现在调用方 `className` 之前，以及它不在 Trigger 按钮上。
+- FR4：转发 `isMenuOpen`、`onOpenChange`、`xstyle` 与 `style`，以及不显示 chevron。
+- FR5：tooltip、`ghost` 默认值、取自周边尺寸上下文的尺寸、`md` 默认值，以及 ref 到达触发按钮。
+- AR1：bottom-sheet 呈现中的 `aria-haspopup="dialog"`。
 
 ## Decision log
 
-No component-local decision is recorded.
+未记录组件本地决策。
 
 ## Open questions
 
-- **OQ1 — Should the default trigger artwork render through Icon's public
-  target?** (`human-api`) The current registry lookup preserves semantic artwork
-  replacement but leaves the painted glyph outside the `icon` target.
+- **OQ1 — 默认触发器图形是否应通过 Icon 的公共目标渲染？**（`human-api`）当前的注册表查找保留了语义图形替换，但使绘制的字形处于 `icon` 目标之外。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables, DropdownMenu item examples,
-icon-resolution rules, implementation steps, or shared modality, layer,
-dismissal, and theming rules. It links to their owners.
+本文件不重复使用方 prop 表、DropdownMenu 条目示例、图标解析规则、实现步骤，也不重复共享的模态、层、关闭与主题规则。它链接到其所有者。

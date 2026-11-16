@@ -20,197 +20,91 @@ affects_consumer_docs: [Typeahead, Tokenizer, BaseTypeahead]
 
 ## Intent
 
-A person typing into a typeahead sees matches for what they typed right away,
-from results the page already holds, and sees results from the server join the
-same list for the same query when they arrive. Each keystroke changes the
-list at most once; server results only add rows below the ones already shown,
-so nothing moves under the person's pointer or highlight, and a screen-reader
-user hears the result count once per query, not once per arrival.
+使用者在 typeahead 中输入时，会立刻看到与其输入匹配的结果，这些结果来自页面已有的数据；服务器结果到达时，也会加入同一查询的同一列表。每次按键最多只改变列表一次；服务器结果只在已显示的行下方添加行，因此在使用者指针或高亮所在的位置不会有任何东西移动，屏幕阅读器使用者也只在每次查询时听到一次结果数量，而不是每次结果到达时都听到一次。
 
-A search source answers one query with one or more lists. Each list is the
-source's complete answer at that moment; the source owns how its local and
-remote results merge, dedupe, and order. The typeahead shows the latest list
-for the current query and owns stale-query rejection, highlight, loading
-feedback, and announcements.
+一个搜索源用一份或多份列表回答一次查询。每份列表都是该源在那一刻的完整答复；本地结果与远程结果如何合并、去重和排序，由该源自行负责。typeahead 只显示当前查询的最新列表，并负责拒绝过期查询、高亮、加载反馈和播报。
 
 ## Non-goals
 
-- How a source finds local matches, caches earlier queries, merges, dedupes, or
-  orders results, within the append-only rule for later lists (FR2). The
-  source owns all of it (DEC-1).
-- `bootstrap()`. It answers with one list.
-- When a source sends its remote request. A source that shows local results
-  first and wants the remote request delayed delays it itself.
-- Components that call `search(query)` without a context: `CommandPalette`
-  and `ChatComposerInput` trigger menus. They show the settled list (FR10).
-  `PowerSearch` value editors render Typeahead and Tokenizer and get this
-  behavior through them.
-- Escape while a query is pending. `component:BaseTypeahead` FR3 owns it; a
-  partial list follows the same rule as a settled one.
-- Equivalent internal implementations remain valid when they satisfy this
-  contract.
+- 源如何查找本地匹配项、缓存先前的查询、合并、去重或排序结果，在后继列表的仅追加规则（FR2）之内。这一切都由该源负责（DEC-1）。
+- `bootstrap()`。它以一份列表作答。
+- 源何时发送其远程请求。先显示本地结果并希望延迟远程请求的源会自行延迟。
+- 不带 context 调用 `search(query)` 的组件：`CommandPalette` 和 `ChatComposerInput` 触发菜单。它们显示已稳定的列表（FR10）。`PowerSearch` 值编辑器渲染 Typeahead 和 Tokenizer，并通过它们获得此行为。
+- 查询待处理期间按 Escape。它由 `component:BaseTypeahead` FR3 负责；部分列表遵循与已稳定列表相同的规则。
+- 满足本契约的等效内部实现仍然有效。
 
 ## Requirements
 
-- **FR1 — Every list is the source's complete answer.** `search(query,
-context)` receives an optional `SearchContext` whose `update(items)` replaces
-  the results shown for that query. Each list a source gives, through `update` or
-  as its return value, is complete, ordered, and free of duplicate `id`s for
-  that query at that moment. The typeahead shows each non-empty list as given,
-  capped at its result cap; an empty `update` leaves the shown rows in place
-  (FR5). It never merges, reorders, or dedupes lists. Tokenizer removes
-  committed values from every list, partial or final, as `component:Tokenizer`
-  FR13 requires. Its create row follows the rows and, for a searched query,
-  appears only once the query settles, so it never offers a value a pending
-  server result is about to show.
-- **FR2 — One reflow per keystroke; later lists only append.** The first list
-  shown for a query may replace the rows shown before it. Every later non-empty
-  list for the same query, including the final one, keeps the rows already
-  shown, by `id`, first and in the order the typeahead displays them, and every
-  new row displays after them. The typeahead displays ungrouped rows first and
-  then each group in order of first appearance, so a new row can join only the
-  last displayed group or start a group after it. A later list never removes,
-  reorders, or displays a new row above a shown row, even for a result that
-  would rank higher. A row whose `id` returns with fresher data stays in its
-  place. When a later list breaks this rule, the typeahead shows it as given and
-  warns in development that the source moved, removed, or inserted above shown
-  rows.
-- **FR3 — The return value settles the query.** The array a source returns, or
-  the value its promise resolves to, is the final list for the query. It
-  replaces any earlier list under FR2, ends the query's busy state, and is the
-  last list shown for it. An `update` call after the query settles has no
-  effect.
-- **FR4 — Only the current query is shown.** A list for a query that is no
-  longer current is dropped, whether it comes from `update` or from the return
-  value. A query stops being current when the person types a newer query,
-  selects a result, clears the field, or when the source is replaced or the
-  typeahead unmounts.
-- **FR5 — A pending query shows its partial lists.** While a query is pending,
-  a non-empty `update` shows its rows and opens the popup. An empty `update`
-  leaves the shown rows in place. The control stays busy, with its loading
-  indicator, until the query settles. The empty-result row appears only when the
-  query settles with an empty final list. After the popup is dismissed while the
-  query is pending, a partial list leaves the popup closed and the control not
-  busy; the next open shows the query's latest list (`component:BaseTypeahead`
-  FR3).
-- **FR6 — The highlight and scroll position stay put.** The first list shown for
-  a new query highlights its first row. When a later list for the same query
-  arrives, the highlighted item stays highlighted and the list keeps its scroll
-  position. A later list never moves the popup to the other side of the field
-  or moves its shown rows on screen: a popup above the field keeps its height,
-  and a popup below the field grows only within the room below it. Rows beyond
-  that are reached by scrolling the list. When a list that breaks FR2 moves the
-  highlighted item, the
-  highlight follows the item; when it drops the item, the first row is
-  highlighted. Enter selects the highlighted item.
-- **FR7 — An option keeps its identity while its item stays.** While an item
-  remains in the lists of one query, its option element and its id stay the
-  same. The active descendant keeps referencing the same option, so assistive
-  technology does not re-read the highlighted row when rows are added after
-  it.
-- **FR8 — One result announcement per query.** The typeahead announces the
-  result count once per query, when the query settles. When the popup is
-  dismissed before the query settles, the count is announced once, at the next
-  open that shows that query's list (`component:BaseTypeahead` FR3). A partial
-  list announces nothing. Busy start is announced once per query as `spec:AST-086` FR6 and
-  FR8 require.
-- **FR9 — A failed remote answer keeps what was shown.** When a source's promise
-  rejects after a non-empty `update` for the current query, the last non-empty
-  list stays, the query settles, and its count is announced. When it rejects
-  with no non-empty `update` for the current query, the query settles with an
-  empty list and shows the empty-result row. A rejection that follows the
-  typeahead's own `cancel()` when its popup closes is not a failed answer:
-  nothing is announced, and the query settles with the last non-empty list for
-  the current query; with none, it keeps no rows, and the next keystroke
-  searches again.
-- **FR10 — A single answer is still a complete answer.** A source that never
-  calls `update` is shown one list per query, when the query settles. A caller
-  that does not pass a context calls `search(query)` and shows only the settled
-  list, which FR1 makes complete.
+- **FR1 — 每份列表都是该源的完整答复。** `search(query, context)` 接收一个可选的 `SearchContext`，其 `update(items)` 会替换为该查询显示的结果。源通过 `update` 或以返回值形式给出的每份列表，都是该查询在该时刻的完整、有序且 `id` 不重复的列表。typeahead 按原样显示每份非空列表，并受其结果上限约束；空的 `update` 会让已显示的行保持原位（FR5）。它绝不合并、重排或去重列表。Tokenizer 会从每份列表（无论是部分列表还是最终列表）中移除已提交的值，正如 `component:Tokenizer` FR13 所要求的。它的创建行位于这些行之后，且对于已搜索的查询，只有在查询稳定后才出现，因此它绝不会提供一个待处理的服务器结果即将显示的值。
+- **FR2 — 每次按键只重排一次；后续列表只追加。** 为某个查询显示的第一份列表可以替换在此之前显示的行。同一查询的每份后续非空列表（包括最终列表）都会按 `id` 保留已显示的行，并保持 typeahead 显示它们的顺序，排在前面，且每个新行都显示在它们之后。typeahead 先显示未分组的行，然后按首次出现的顺序显示每个分组，因此新行只能加入最后显示的分组，或在其后开始一个新分组。后续列表绝不移除、重排，或在已显示的行之上显示新行，即使某个结果的排名更高也是如此。`id` 再次出现且数据更新的行会留在原位。当后续列表违反此规则时，typeahead 仍按原样显示它，并在开发环境中警告该源移动、移除或在已显示的行之上插入了行。
+- **FR3 — 返回值使查询稳定。** 源返回的数组，或其 promise 解析出的值，是该查询的最终列表。它按 FR2 替换任何较早的列表，结束该查询的忙碌状态，并且是该查询最后显示的列表。查询稳定之后调用 `update` 不再有任何效果。
+- **FR4 — 只显示当前查询。** 针对已不再是当前查询的列表会被丢弃，无论它来自 `update` 还是来自返回值。当使用者输入更新的查询、选择一个结果、清空输入框，或当源被替换、typeahead 卸载时，查询就不再是当前查询。
+- **FR5 — 待处理的查询会显示其部分列表。** 当查询处于待处理状态时，非空的 `update` 会显示其行并打开弹层。空的 `update` 会让已显示的行保持原位。控件会保持忙碌状态并显示其加载指示器，直到查询稳定。空结果行只有在查询以空的最终列表稳定时才出现。若在查询待处理期间弹层被关闭，之后的部分列表会让弹层保持关闭、控件不再忙碌；下一次打开时会显示该查询的最新列表（`component:BaseTypeahead` FR3）。
+- **FR6 — 高亮和滚动位置保持不动。** 为新查询显示的第一份列表会高亮其第一行。当同一查询的后续列表到达时，高亮的项保持高亮，列表保持其滚动位置。后续列表绝不会把弹层移到输入框的另一侧，也不会在屏幕上移动其已显示的行：位于输入框上方的弹层保持其高度，位于输入框下方的弹层只在其下方空间内增长。超出的行通过滚动列表来访问。当违反 FR2 的列表移动了高亮的项时，高亮会跟随该项；当它丢弃该项时，第一行会被高亮。Enter 会选择高亮的项。
+- **FR7 — 只要项还在，选项就保持其身份。** 只要某个项仍留在一次查询的列表中，它的选项元素及其 id 就保持不变。活动后代会持续引用同一个选项，因此当其后添加行时，辅助技术不会重新朗读高亮的行。
+- **FR8 — 每次查询只播报一次结果。** typeahead 在查询稳定时，针对每次查询播报一次结果数量。若弹层在查询稳定之前被关闭，则该数量会在下一次打开并显示该查询列表时播报一次（`component:BaseTypeahead` FR3）。部分列表不播报任何内容。忙碌状态的开始，按 `spec:AST-086` FR6 和 FR8 的要求，针对每次查询播报一次。
+- **FR9 — 远程答复失败时保留已显示的内容。** 当源的 promise 在当前查询已有非空 `update` 之后被拒绝时，最后一份非空列表会保留，查询稳定，并播报其数量。当它在当前查询没有任何非空 `update` 的情况下被拒绝时，查询以空列表稳定，并显示空结果行。在弹层关闭时 typeahead 自身调用 `cancel()` 之后发生的拒绝不算失败的答复：不播报任何内容，查询以当前查询的最后一份非空列表稳定；若没有这样的列表，则不保留任何行，下一次按键会重新搜索。
+- **FR10 — 单一答复仍是完整的答复。** 从不调用 `update` 的源在每次查询时只显示一份列表，且是在查询稳定时。不传入 context 的调用方调用 `search(query)`，并且只显示已稳定的列表，而 FR1 使该列表保持完整。
 
 ### Platform support
 
-- Supported feature/engine floor: the package's supported browsers. The
-  contract uses no platform feature beyond those `search()` already uses.
-- Unsupported behavior: none.
-- Browser evidence: DOM and accessibility-tree checks of rows, highlight, the
-  active descendant, busy state, and the announcement channel across a partial
-  list and its settled list.
+- 支持的特性/引擎下限：该包所支持的浏览器。本契约不使用超出 `search()` 已使用范围之外的任何平台特性。
+- 不支持的行为：无。
+- 浏览器证据：针对行、高亮、活动后代、忙碌状态和播报通道，在一份部分列表及其稳定列表上进行 DOM 与无障碍树检查。
 
 ## Current-state impact
 
-- `SearchSource.search` gains an optional second parameter, a context with
-  `update(items)`. `createStaticSource` and every existing source keep working
-  unchanged.
-- `component:BaseTypeahead`: FR3 and PR1 cover partial lists through FR4 here;
-  AR4 announces once per query through FR8 here; option ids follow item
-  identity within a query (FR7); a development warning reports a later list
-  that breaks FR2.
-- `component:Tokenizer`: FR13 applies to every partial and final list; the
-  create row waits for a searched query to settle (FR1). Typeahead and Tokenizer inherit this through
-  BaseTypeahead and add no props.
-- `family:input-fields`: busy feedback is unchanged; a pending query stays busy
-  while partial lists show.
-- Consumer docs: the `SearchSource` reference and the Typeahead docs describe
-  `update`, and that a source showing local results first pairs with
-  `debounceMs={0}` and delays its own remote request.
+- `SearchSource.search` 新增一个可选的第二个参数，即带有 `update(items)` 的 context。`createStaticSource` 以及所有现有源都能保持不变地继续工作。
+- `component:BaseTypeahead`：FR3 与 PR1 通过此处的 FR4 覆盖部分列表；AR4 通过此处的 FR8 在每次查询时播报一次；选项 id 在一次查询内遵循项的身份（FR7）；开发警告会报告违反 FR2 的后续列表。
+- `component:Tokenizer`：FR13 适用于每份部分列表和最终列表；创建行会等待已搜索的查询稳定（FR1）。Typeahead 与 Tokenizer 通过 BaseTypeahead 继承此行为，且不新增 props。
+- `family:input-fields`：忙碌反馈保持不变；待处理的查询在显示部分列表期间保持忙碌。
+- 使用方文档：`SearchSource` 参考与 Typeahead 文档描述 `update`，并说明先显示本地结果的源会配合 `debounceMs={0}` 并自行延迟其远程请求。
 
 ## Verification
 
-| Contract | Verification                                                           | Representative states                                                                                                                                                                                                              | Mutation or failure expectation                                                                                                                                           |
-| -------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1, FR3 | BaseTypeahead source-contract tests                                    | synchronous update then promise, several updates, cap smaller than list                                                                                                                                                            | rows that merge lists, reorder a list, exceed the cap, or change after settle fail                                                                                        |
-| FR2      | append-only tests with a deferred source, plus the development warning | local list then server list, fresher data under a shown id, grouped results with rows appended to the last group or a new group, a later list that reorders, removes, inserts above, or adds to an earlier group                   | a shown row moving, a fresher row changing place, or a breaking list without a warning fails                                                                              |
-| FR4      | stale-query tests with a deferred source                               | newer query, selection, clear, source replacement, unmount                                                                                                                                                                         | a list for a superseded query appearing fails                                                                                                                             |
-| FR5      | pending-state tests                                                    | first partial list, empty partial list, settled empty list                                                                                                                                                                         | busy ending early, an empty row while pending, or rows cleared by an empty update fail                                                                                    |
-| FR6, FR7 | keyboard tests plus real-browser layout and accessibility tree         | highlight on first row, highlight moved by arrows, a scrolled list receiving appended rows, a popup above the field receiving appended rows, a popup below the field whose appended rows exceed the room below                     | the highlight, scroll position, side of the field, or a shown row's screen position moving, or the active descendant id changing for the same item, fails                 |
-| FR8      | announcement-channel tests                                             | partial then settled, settled only                                                                                                                                                                                                 | a second count announcement for one query, or none at settle, fails                                                                                                       |
-| FR9      | rejection tests                                                        | reject after a non-empty update, reject after only empty updates while the previous query's rows show, reject without update, reject after the popup closes and cancels, with and without a non-empty update for the current query | shown rows cleared after a non-empty update, the previous query's rows settling as this query's, a missing announcement, or an announcement after the popup closed, fails |
-| FR10     | existing Typeahead, Tokenizer, CommandPalette suites                   | single-answer sources, context-free callers                                                                                                                                                                                        | any behavior change for a source that never calls `update` fails                                                                                                          |
+| 契约     | 验证                                                 | 代表性状态                                                                                                                                   | 变更或失败预期                                                                                       |
+| -------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| FR1, FR3 | BaseTypeahead 源契约测试                             | 同步 update 后接 promise、多次 update、上限小于列表长度                                                                                      | 合并列表、重排列表、超出上限，或在稳定后改变的行，即失败                                             |
+| FR2      | 针对延迟源的仅追加测试，外加开发警告                 | 本地列表后接服务器列表、已显示 id 下数据更新的行、分组结果将行追加到最后一个分组或新分组、后续列表重排、移除、在上方插入，或添加到较早的分组 | 已显示的行移动、数据更新的行改变位置，或违反规则的列表没有警告，即失败                               |
+| FR4      | 针对延迟源的过期查询测试                             | 更新的查询、选择、清空、源替换、卸载                                                                                                         | 为已被取代的查询显示列表即失败                                                                       |
+| FR5      | 待处理状态测试                                       | 第一份部分列表、空的部分列表、已稳定的空列表                                                                                                 | 忙碌状态提前结束、待处理期间出现空行，或空 update 清空行，即失败                                     |
+| FR6, FR7 | 键盘测试加真实浏览器布局与无障碍树                   | 第一行高亮、高亮被方向键移动、已滚动的列表接收到追加行、输入框上方的弹层接收到追加行、输入框下方的弹层其追加行超出下方空间                   | 高亮、滚动位置、输入框一侧，或已显示行的屏幕位置发生移动，或同一项的活动后代 id 改变，即失败         |
+| FR8      | 播报通道测试                                         | 先部分后稳定、仅稳定                                                                                                                         | 针对一次查询出现第二次数量播报，或在稳定时没有播报，即失败                                           |
+| FR9      | 拒绝测试                                             | 非空 update 后拒绝、仅空 update 后拒绝而上一查询的行仍显示、无 update 时拒绝、弹层关闭并取消后拒绝，以及当前查询有和没有非空 update 两种情况 | 非空 update 后已显示的行被清空、上一查询的行被当作本查询稳定、缺少播报，或弹层关闭后仍有播报，即失败 |
+| FR10     | 现有的 Typeahead、Tokenizer、CommandPalette 测试套件 | 单一答复的源、不传 context 的调用方                                                                                                          | 对从不调用 `update` 的源发生任何行为变化，即失败                                                     |
 
 ## Decision log
 
 ### DEC-1 — The search source merges its own results
 
 **Reference:** `spec:AST-092/DEC-1`
+
 **Decider:** cixzhang, 2026-10-22
 
-"I think merging server results should be the work of the search source." The
-source knows which results are local, which are remote, how they dedupe, and
-in what order a person should see them, so each list it gives is its whole
-answer. The typeahead stays a renderer of the current query's latest list.
+“我认为合并服务器结果应该是搜索源的工作。”源知道哪些结果是本地的、哪些是远程的、它们如何去重，以及使用者应以何种顺序看到它们，因此它给出的每份列表就是它的完整答复。typeahead 始终只是当前查询最新列表的渲染器。
 
-Rejected: the typeahead merging a separate local answer and remote answer,
-which would make one merge and ordering rule part of every typeahead.
+已否决：由 typeahead 合并一份独立的本地答复和远程答复，这会使单一的合并与排序规则成为每个 typeahead 的一部分。
 
 ### DEC-2 — Partial lists arrive through `update`; the return value stays final
 
 **Reference:** `spec:AST-092/DEC-2`
+
 **Decider:** cixzhang, 2026-10-22
 
-The return value of `search()` keeps its meaning, the final list, and the
-optional context adds partial lists. Every caller that awaits an array keeps
-getting one, a source can show local matches synchronously before it returns,
-and settling is the end of the returned promise.
+`search()` 的返回值保持其含义，即最终列表，而可选的 context 添加部分列表。每个等待数组的调用方仍会得到数组，源可以在返回之前同步显示本地匹配项，而稳定就是所返回 promise 的结束。
 
-Rejected: `search()` returning an async iterable, which breaks every caller
-that awaits an array and cannot deliver its first list synchronously.
+已否决：`search()` 返回异步可迭代对象，这会破坏每个等待数组的调用方，且无法同步交付其第一份列表。
 
 ### DEC-3 — Server results only append
 
 **Reference:** `spec:AST-092/DEC-3`
+
 **Decider:** cixzhang, 2026-10-22
 
-"Server results should never cause a reflow of items that already appear in
-the typeahead." "When server results return we should only append. Only one
-reflow per keystroke is allowed." A person aims the pointer or the highlight at
-a row they can see; a row that moves after they aimed at it makes them pick the
-wrong person. So each keystroke changes the list at most once, and every later
-list for that query keeps the shown rows in place and adds below them (FR2).
+“服务器结果绝不应导致 typeahead 中已出现的项发生重排。”“当服务器结果返回时，我们只应追加。每次按键只允许一次重排。”使用者会把指针或高亮对准他们能看见的行；在他们对准之后行发生移动，会让他们选错人。因此每次按键最多只改变列表一次，该查询的每份后续列表都会让已显示的行保持原位，并在其下方添加（FR2）。
 
-Rejected: placing a higher-ranked server result above shown rows, which moves
-the row a person was about to pick.
+已否决：把排名更高的服务器结果放在已显示的行之上，这会移动使用者即将选取的那一行。
 
 ## Open questions
 
-None.
+无。

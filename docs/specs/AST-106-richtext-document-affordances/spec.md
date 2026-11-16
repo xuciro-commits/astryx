@@ -22,198 +22,117 @@ affects_consumer_docs: [RichTextEditor, RichTextView]
 
 ## Intent
 
-A person writing in `RichTextEditor` can do the document work they expect of a
-writing surface: size a table's columns, mention someone or insert a block from
-a menu they type, change a link where it sits, show a link as a card, add an
-image, write a formula, fold a long section away, format a selection or format
-on a phone, and move a block. A product turns each of these on by passing its
-plugin to the existing `plugins` prop. With none turned on, `RichTextEditor` is
-the form field that `spec:AST-061/DEC-7` describes. Content an affordance adds
-reads the same in `RichTextView`, and in core `Markdown` wherever Markdown can
-express it.
+在 `RichTextEditor` 中写作的人可以完成他们对写作界面的预期文档工作：调整表格列的宽度、通过自己键入的菜单提及某人或插入区块、在原地修改链接、把链接显示为卡片、添加图片、编写公式、折叠较长的章节、格式化选定内容或在手机上设置格式，以及移动区块。产品通过把对应插件传给既有的 `plugins` prop 来开启其中每一项。当全部未开启时，`RichTextEditor` 就是 `spec:AST-061/DEC-7` 所描述的表单字段。功能项添加的内容在 `RichTextView` 中读取结果相同，在核心 `Markdown` 中只要 Markdown 能表达也同样相同。
 
 ## Non-goals
 
-- Collaboration, persistence, and document hosting. They stay with the product
-  (`spec:AST-061/DEC-7`).
-- The services behind an affordance: who a mention can name, what a typed menu
-  searches, where an image's bytes are kept, and how a formula is drawn.
-- Each affordance plugin's exact options, events, and visuals. A decision in
-  this record or the owning component spec settles them before the affordance
-  ships.
-- The Markdown dialect and its conversion, which `spec:AST-062` owns.
-- Equivalent internal implementations remain valid when they satisfy this
-  contract.
+- 协作、持久化与文档托管。它们仍由产品负责（`spec:AST-061/DEC-7`）。
+- 功能项背后的服务：提及可以指名谁、键入菜单搜索什么、图片的字节存放在哪里，以及公式如何绘制。
+- 每个功能项插件的具体选项、事件与视觉表现。本记录或所属组件规格中的决策会在该功能项发布前确定它们。
+- Markdown 方言及其转换，由 `spec:AST-062` 拥有。
+- 满足本契约的等价内部实现仍然有效。
 
 ## Requirements
 
-- **FR1 — Off by default.** An affordance is off until the caller passes its
-  plugin.
-  With every affordance off, `RichTextEditor` and `RichTextView` behave, store,
-  and render as `spec:AST-061` and `spec:AST-062` describe.
-- **FR2 — The value stays editor state.** Content an affordance adds is part of
-  the serialized Lexical editor state the caller already stores
-  (`spec:AST-061/DEC-7`). It holds references that the product resolves when the
-  content is drawn, such as who a mention names or where an image is kept, and
-  never a copy of data the product looks up, such as a person's name or an
-  image's bytes (DEC-2).
-- **FR3 — Reader state stays out of the value.** State that belongs to one
-  reader, such as the sections they folded or the menu items they picked
-  recently, is kept for that reader only. It never enters the editor value, its
-  Markdown export, or another reader's view.
-- **FR4 — Each affordance states its Markdown form.** For each affordance that
-  adds content, `editorStateJSONToMarkdown` writes the closest Markdown form, and
-  the table below states what that form drops. A document that uses no
-  affordance exports exactly as `spec:AST-062` describes.
-- **FR5 — Reading shows what editing showed.** `RichTextView` draws an
-  affordance's content as the read-only editor draws it, and core `Markdown`
-  draws that content's Markdown form under `spec:AST-061/FR1`.
-- **FR6 — Editing chrome never reflows the document.** A menu, popover, handle,
-  or bar an affordance shows while editing overlays the document or holds space
-  that read mode also reserves, so `spec:AST-061/FR9` and `spec:AST-061/FR10`
-  hold with the affordance on.
-- **FR7 — Keyboard and assistive technology.** Every action an affordance
-  offers by pointer also has a keyboard path, and its state is exposed to
-  assistive technology. A typed menu keeps focus in the editor and follows the
-  WAI-ARIA combobox pattern, resizing a table column has a keyboard equivalent,
-  and a fold control is a button that exposes `aria-expanded`.
-- **FR8 — The product supplies the services.** Search, people lookup, uploads,
-  and formula drawing come from the caller as functions or renderers in the
-  affordance plugin's options. RichText owns the editing interaction and its
-  accessibility, and makes no network request of its own.
-- **FR9 — One on-screen keyboard model.** An affordance that responds to a
-  phone's on-screen keyboard measures and avoids it as `spec:AST-099`
-  describes.
-- **FR10 — Every affordance is a plugin.** Each affordance in the table below
-  ships as a Lexical plugin, with any Lexical nodes it adds, that the caller
-  passes through the existing `plugins` and `nodes` props of `RichTextEditor`
-  and `RichTextView` (`spec:AST-061/DEC-8`). Neither component gains a prop for
-  any affordance (DEC-1).
+- **FR1 — 默认关闭。** 功能项在调用方传入其插件之前处于关闭状态。当全部功能项关闭时，`RichTextEditor` 与 `RichTextView` 的行为、存储与渲染均如 `spec:AST-061` 和 `spec:AST-062` 所述。
+- **FR2 — 值保持为编辑器状态。** 功能项添加的内容是调用方已经存储的序列化 Lexical 编辑器状态的一部分（`spec:AST-061/DEC-7`）。它保存的是产品在绘制内容时解析的引用，例如提及指向谁或图片存放在哪里，而绝不是产品查询所得数据的副本，例如某个人的姓名或图片的字节（DEC-2）。
+- **FR3 — 读者状态不进入值。** 属于单个读者的状态，例如其折叠的章节或最近选择的菜单项，只对该读者保留。它绝不进入编辑器值、其 Markdown 导出或另一位读者的视图。
+- **FR4 — 每个功能项说明其 Markdown 形式。** 对于每个添加内容的功能项，`editorStateJSONToMarkdown` 写出最接近的 Markdown 形式，下表说明该形式丢弃了什么。不使用任何功能项的文档完全按 `spec:AST-062` 所述导出。
+- **FR5 — 阅读与编辑显示一致。** `RichTextView` 按只读编辑器绘制功能项内容的方式绘制该内容，核心 `Markdown` 按 `spec:AST-061/FR1` 绘制该内容的 Markdown 形式。
+- **FR6 — 编辑装饰不会重排文档。** 功能项在编辑时显示的菜单、浮层、手柄或工具栏覆盖在文档之上，或占用阅读模式同样预留的空间，因此 `spec:AST-061/FR9` 与 `spec:AST-061/FR10` 在该功能项开启时仍然成立。
+- **FR7 — 键盘与辅助技术。** 功能项提供的每一种指针操作也有键盘路径，其状态暴露给辅助技术。键入菜单将焦点保持在编辑器中并遵循 WAI-ARIA combobox 模式，调整表格列宽有对应的键盘操作，折叠控件是一个暴露 `aria-expanded` 的按钮。
+- **FR8 — 产品提供服务。** 搜索、人员查询、上传与公式绘制由调用方以函数或渲染器的形式提供，位于功能项插件的选项中。RichText 拥有编辑交互及其无障碍性，自身不发起任何网络请求。
+- **FR9 — 统一的屏幕键盘模型。** 响应手机屏幕键盘的功能项按 `spec:AST-099` 所述测量并避让该键盘。
+- **FR10 — 每个功能项都是插件。** 下表中的每个功能项都作为 Lexical 插件发布，连同它添加的任何 Lexical 节点，由调用方通过 `RichTextEditor` 与 `RichTextView` 既有的 `plugins` 与 `nodes` prop 传入（`spec:AST-061/DEC-8`）。两个组件都不为任何功能项新增 prop（DEC-1）。
 
-The admitted affordances:
+已纳入的功能项：
 
-| Affordance           | What a person does                                                                           | What the value keeps                  | Markdown form                        |
-| -------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------ |
-| Table sizing         | Drags a column or row border, or uses the table's size commands from the keyboard            | Column widths and row minimum heights | The table, without its sizes (DEC-3) |
-| Typed menus          | Types `@`, `/`, or `:` and picks a person, a block, or an emoji from caller sources          | What the pick inserts                 | The inserted content's own form      |
-| Link popover         | Opens, edits, or removes the link at the caret; Cmd/Ctrl-click opens it (DEC-4)              | Links                                 | Links                                |
-| Images               | Pastes, drops, or picks an image that the caller uploads, and moves it in the text           | Source, alternative text, and size    | `![alt](src)`, without its size      |
-| Math                 | Types inline or display formulas                                                             | Formula source                        | Core `Markdown`'s opt-in math syntax |
-| Collapsible headings | Folds the section under a heading while reading or editing                                   | Nothing (FR3)                         | None                                 |
-| Phone keyboard bar   | Formats from a bar docked above the on-screen keyboard                                       | Nothing                               | None                                 |
-| Link card            | Shows a link as a card with the product's preview, and edits or removes it as a link (DEC-1) | The URL                               | The plain link                       |
-| Selection format bar | Formats selected text from a bar beside the selection (DEC-1)                                | Nothing                               | No new Markdown form                 |
-| Block move           | Moves a block by dragging its handle or by a keyboard command (DEC-1)                        | The new block order                   | The reordered content                |
+| 功能项     | 人的操作                                                               | 值保留的内容         | Markdown 形式                  |
+| ---------- | ---------------------------------------------------------------------- | -------------------- | ------------------------------ |
+| 表格尺寸   | 拖动列或行的边框，或从键盘使用表格的尺寸命令                           | 列宽与行最小高度     | 表格，不含其尺寸（DEC-3）      |
+| 键入菜单   | 键入 `@`、`/` 或 `:`，并从调用方来源中选择一个人、一个区块或一个 emoji | 所选项插入的内容     | 插入内容自身的形式             |
+| 链接浮层   | 打开、编辑或移除光标处的链接；Cmd/Ctrl 单击打开它（DEC-4）             | 链接                 | 链接                           |
+| 图片       | 粘贴、拖放或选择由调用方上传的图片，并在文本中移动它                   | 来源、替代文本与尺寸 | `![alt](src)`，不含其尺寸      |
+| 数学公式   | 键入行内或独立显示的公式                                               | 公式源码             | 核心 `Markdown` 的可选数学语法 |
+| 可折叠标题 | 在阅读或编辑时折叠标题下的章节                                         | 无（FR3）            | 无                             |
+| 手机键盘栏 | 从停靠在屏幕键盘上方的栏中设置格式                                     | 无                   | 无                             |
+| 链接卡片   | 将链接显示为带产品预览的卡片，并作为链接编辑或移除它（DEC-1）          | URL                  | 纯链接                         |
+| 选区格式栏 | 从选区旁的栏中格式化选中的文本（DEC-1）                                | 无                   | 没有新的 Markdown 形式         |
+| 区块移动   | 通过拖动其手柄或通过键盘命令移动区块（DEC-1）                          | 新的区块顺序         | 重排后的内容                   |
 
-Link cards, the selection format bar, and block moves also hold these:
+链接卡片、选区格式栏与区块移动还要求以下内容：
 
-- **Link card.** The product supplies the preview for a URL (FR8), and the value
-  never keeps it (DEC-2). `RichTextView` shows the card when the product
-  supplies the preview, and the plain link otherwise (FR5). The card is reached
-  and acted on by keyboard as a link is, and its preview text is exposed to
-  assistive technology (FR7).
-- **Selection format bar.** Every control on the bar is reachable by keyboard
-  from the selection and named for assistive technology (FR7). It adds no
-  content, so `RichTextView` shows nothing for it.
-- **Block move.** A keyboard command enters `spec:AST-103` reorder mode for the
-  block holding the caret (its FR4a `start`), so reorder mode is the one path
-  without a drag, and each move is announced to assistive technology (FR7). The
-  handle, keyboard command, announcement, and drop rules are those of a
-  `spec:AST-103` reorderable collection. `RichTextView` shows the blocks in
-  their moved order (FR5).
+- **链接卡片。** 产品为某个 URL 提供预览（FR8），而值绝不保存它（DEC-2）。当产品提供预览时，`RichTextView` 显示卡片，否则显示纯链接（FR5）。卡片可以像链接一样通过键盘到达并操作，其预览文本暴露给辅助技术（FR7）。
+- **选区格式栏。** 栏上的每个控件都可以从选区通过键盘到达，并提供辅助技术可读的名称（FR7）。它不添加内容，因此 `RichTextView` 对它不显示任何内容。
+- **区块移动。** 键盘命令为持有光标的区块进入 `spec:AST-103` 的重排模式（其 FR4a 的 `start`），因此重排模式是唯一无需拖动的路径，每次移动都会向辅助技术播报（FR7）。手柄、键盘命令、播报与放置规则均遵循 `spec:AST-103` 可重排集合的规则。`RichTextView` 按移动后的顺序显示区块（FR5）。
 
 ### Platform support
 
-- Supported feature/engine floor: the repository's browser support matrix.
-- Unsupported behavior: where a browser lacks what an affordance needs, the
-  affordance is absent and the editor keeps working without it.
-- Browser evidence: real-browser keyboard and pointer runs of each affordance,
-  and the `spec:AST-061` reading and editing geometry with each affordance on,
-  at phone and desktop widths.
+- 支持的特性/引擎下限：仓库的浏览器支持矩阵。
+- 不支持的行为：当某个浏览器缺少功能项所需的能力时，该功能项不出现，编辑器在没有它的情况下继续正常工作。
+- 浏览器证据：每个功能项在真实浏览器中的键盘与指针运行，以及在手机和桌面宽度下、每个功能项开启时的 `spec:AST-061` 阅读与编辑几何。
 
 ## Current-state impact
 
-- `spec:AST-061/DEC-7` names this record as the owner of RichText's opt-in
-  document affordances.
-- Existing behavior is unchanged while every affordance is off (FR1).
-- The `RichTextEditor` and `RichTextView` consumer docs gain each affordance
-  plugin's usage when it ships; their props tables do not change (FR10).
+- `spec:AST-061/DEC-7` 指定本记录为 RichText 可选文档功能项的所有者。
+- 在全部功能项关闭时，既有行为不变（FR1）。
+- 每个功能项插件发布时，`RichTextEditor` 与 `RichTextView` 的使用方文档会补充其用法；它们的 props 表不变（FR10）。
 
 ## Verification
 
-| Contract   | Verification                                                                                                                   | Representative states                                                                                      | Mutation or failure expectation                                                          |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| FR1        | The `spec:AST-061` parity fixture and `spec:AST-062` corpus, all off                                                           | Default editor and view                                                                                    | An affordance that is on by default fails                                                |
-| FR2, FR3   | Serialized-state tests per affordance                                                                                          | A mention, an image, a folded section                                                                      | A stored name, image bytes, or fold state fails                                          |
-| FR4        | Export tests per affordance                                                                                                    | Each row of the affordance table                                                                           | An export that drops more than the table states fails                                    |
-| FR5        | Parity fixture rows per affordance                                                                                             | Light and dark, left-to-right and right-to-left                                                            | A view that draws the content differently fails                                          |
-| FR6        | Reading and editing geometry with the affordance's chrome open                                                                 | Phone and desktop widths                                                                                   | A reflowed block fails                                                                   |
-| FR7        | Keyboard-only runs and accessibility-tree assertions                                                                           | An open menu, a resize, a fold                                                                             | An action reachable only by pointer fails                                                |
-| FR8        | Tests with caller services replaced by fakes                                                                                   | Slow, failing, and empty sources                                                                           | A network request made by RichText fails                                                 |
-| FR9        | The `spec:AST-099` verification states with the keyboard bar shown                                                             | On-screen keyboards opening, resizing, and closing                                                         | A second keyboard measurement fails                                                      |
-| DEC-1 rows | Per added affordance: export tests, view parity rows, and keyboard-only runs with accessibility-tree assertions                | A link card with and without a preview, a format bar on a selection, a block moved by keyboard and by drag | A stored preview, a bar control unreachable by keyboard, or a drag-only block move fails |
-| FR10       | The exhaustive props-list tests of both components, and each affordance's tests mounting it through `plugins` and `nodes` only | Every affordance on, one at a time and together                                                            | A new component prop for an affordance fails                                             |
+| 契约       | 验证                                                                                | 代表性状态                                                           | 变异或失败预期                                                       |
+| ---------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| FR1        | `spec:AST-061` 一致性测试夹具与 `spec:AST-062` 语料，全部关闭                       | 默认编辑器与视图                                                     | 默认开启的功能项判定为失败                                           |
+| FR2, FR3   | 每个功能项的序列化状态测试                                                          | 一处提及、一张图片、一个折叠的章节                                   | 存储姓名、图片字节或折叠状态的实现判定为失败                         |
+| FR4        | 每个功能项的导出测试                                                                | 功能项表格的每一行                                                   | 丢弃内容超过表格所述范围的导出判定为失败                             |
+| FR5        | 每个功能项的一致性测试夹具行                                                        | 浅色与深色、从左到右与从右到左                                       | 以不同方式绘制该内容的视图判定为失败                                 |
+| FR6        | 功能项装饰打开时的阅读与编辑几何                                                    | 手机与桌面宽度                                                       | 发生重排的区块判定为失败                                             |
+| FR7        | 仅键盘运行与无障碍树断言                                                            | 打开的菜单、一次尺寸调整、一次折叠                                   | 只能通过指针到达的操作判定为失败                                     |
+| FR8        | 调用方服务替换为伪造实现的测试                                                      | 缓慢、失败与空的来源                                                 | RichText 自身发起的网络请求判定为失败                                |
+| FR9        | 显示键盘栏时的 `spec:AST-099` 验证状态                                              | 屏幕键盘打开、调整尺寸与关闭                                         | 出现第二次键盘测量的实现判定为失败                                   |
+| DEC-1 各行 | 对每个新增功能项：导出测试、视图一致性行，以及带无障碍树断言的仅键盘运行            | 带预览与不带预览的链接卡片、选区上的格式栏、通过键盘和拖动移动的区块 | 存储预览、栏控件无法通过键盘到达，或只能拖动移动区块的实现判定为失败 |
+| FR10       | 两个组件的穷举 props 列表测试，以及每个功能项仅通过 `plugins` 与 `nodes` 挂载的测试 | 每个功能项开启，逐个开启与全部同时开启                               | 为功能项新增组件 prop 的实现判定为失败                               |
 
 ## Decision log
 
 ### DEC-1 — Every document affordance is a plugin
 
-**Reference:** `spec:AST-106/DEC-1`
-**Decider:** `cixzhang`, `2026-11-11`
+**参考：** `spec:AST-106/DEC-1`
 
-The owner chose: "Adopt AST-106, every feature as a plugin". Writers expect
-these affordances from a writing surface, and a product that needs one
-otherwise builds its own editor and re-earns the parity and accessibility
-RichText already provides. Each affordance's editing interaction is generic
-while its data and services stay with the product, so each belongs with
-RichText. Each one ships as a plugin through the existing `plugins` and `nodes`
-props, so RichText's public surface stays Lexical's and stays small
-(`spec:AST-061/DEC-8`), and a product takes only the affordances it passes. The
-question the owner answered also named link cards, a selection format bar, and
-block moves, so the same choice admits them as plugin affordances beside the
-others.
+**决策者：** `cixzhang`，`2026-11-11`
 
-Rejected: a separate document-editor package, because two editors would each
-owe the parity contract. Rejected: one prop per affordance, which grows the
-props table by about seven entries. Rejected: one grouped configuration prop,
-which adds a nested shape beside `plugins` for the same job.
+所有者选择：“采纳 AST-106，每个功能都作为插件”。写作者期待写作界面具备这些功能项，而需要其中某项的产品否则就要自行构建编辑器，并重新赢得 RichText 已经提供的一致性保障与无障碍性。每个功能项的编辑交互是通用的，而其数据与服务仍由产品负责，因此每一项都属于 RichText。每一项都通过既有的 `plugins` 与 `nodes` prop 作为插件发布，因此 RichText 的公共接口保持为 Lexical 的接口并保持精简（`spec:AST-061/DEC-8`），产品只取用自己传入的功能项。所有者回答的问题还列出了链接卡片、选区格式栏与区块移动，因此同一项选择也把它们作为插件功能项与其他功能项一并纳入。
+
+已否决：单独的文档编辑器包，因为两个编辑器都将各自承担一致性契约。已否决：每个功能项一个 prop，这会让 props 表增加约七个条目。已否决：一个分组配置 prop，它为同一件事在 `plugins` 旁增加了一个嵌套结构。
 
 ### DEC-2 — The value holds references, not looked-up data
 
-**Reference:** `spec:AST-106/DEC-2`
-**Decider:** `ernestt`, `2026-10-26`
+**参考：** `spec:AST-106/DEC-2`
 
-A mention keeps who it names and an image keeps where it is kept; the product
-resolves them each time they are drawn. Every reader sees current data, and a
-document never carries data its reader may not see.
+**决策者：** `ernestt`，`2026-10-26`
 
-Rejected: a stored display snapshot, because it goes stale and can expose data
-to a reader who may not see its source.
+提及保存它指名的对象，图片保存它的存放位置；产品在每次绘制时解析它们。每位读者看到的是当前数据，文档绝不携带其读者可能无权查看的数据。
+
+已否决：存储显示快照，因为它会过时，并可能把数据暴露给无权查看其来源的读者。
 
 ### DEC-3 — Table sizes live in the value, and Markdown drops them
 
-**Reference:** `spec:AST-106/DEC-3`
-**Decider:** `ernestt`, `2026-10-26`
+**参考：** `spec:AST-106/DEC-3`
 
-The widths and heights a writer sets are part of the document they made, so the
-editor value keeps them and the editor and `RichTextView` draw them. A Markdown
-table cannot hold sizes, so the export writes the table without them, and core
-`Markdown` lays it out as it lays out any table. A table with no sizes set lays
-out as `spec:AST-061/FR4` describes on every surface.
+**决策者：** `ernestt`，`2026-10-26`
+
+写作者设置的宽度与高度是其制作的文档的一部分，因此编辑器值保存它们，编辑器与 `RichTextView` 绘制它们。Markdown 表格无法保存尺寸，因此导出写出不含尺寸的表格，核心 `Markdown` 对它的布局与对任何表格的布局相同。未设置尺寸的表格在每个界面上都按 `spec:AST-061/FR4` 所述布局。
 
 ### DEC-4 — The caret opens the link popover
 
-**Reference:** `spec:AST-106/DEC-4`
-**Decider:** `cixzhang`, `2026-11-11`
+**参考：** `spec:AST-106/DEC-4`
 
-The link popover opens when the caret is in a link, whether a click placed it
-or the keyboard moved it there. Cmd/Ctrl-click opens the link in a new tab.
-Hovering a link opens nothing, so no popup appears while the pointer crosses
-text during writing.
+**决策者：** `cixzhang`，`2026-11-11`
 
-Rejected: opening on hover as well as the caret. Rejected: Cmd/Ctrl-click only
-placing the caret.
+当光标位于链接中时，链接浮层打开，无论光标是由单击放置还是由键盘移动到此。Cmd/Ctrl 单击会在新标签页中打开链接。悬停在链接上不会打开任何内容，因此在书写过程中指针掠过文本时不会出现弹窗。
+
+已否决：除光标之外也可在悬停时打开。已否决：Cmd/Ctrl 单击仅放置光标。
 
 ## Open questions
 
-- None.
+- 无。

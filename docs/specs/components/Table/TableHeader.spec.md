@@ -29,120 +29,108 @@ system_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                     |
-| ----------------------- | -------------------------------------------------------------------------------------------- |
-| Public contract         | `children`, root `BaseProps`, and a `ref`.                                                   |
-| Behavior                | Renders the table's header section as a native `thead` carrying the `table-header` target.   |
-| End-user impact         | Assistive technology reads the header section as part of the table's structure.              |
-| Builder impact          | None; the record describes shipped behavior.                                                 |
-| Compatibility/readiness | Released behavior recorded as current; no API, default, or output changes.                   |
-| Review checks           | Reject a non-`thead` element, a lost target, or caller props or `ref` that miss the element. |
-| Governing rules         | `architecture:public-component-api` INV5–INV8; `architecture:component-theming-surface`.     |
+| Area                    | Contract                                                                                  |
+| ----------------------- | ----------------------------------------------------------------------------------------- |
+| Public contract         | `children`、根 `BaseProps` 以及一个 `ref`。                                               |
+| Behavior                | 将表格的表头区渲染为原生 `thead`，并携带 `table-header` 目标。                            |
+| End-user impact         | 辅助技术将表头区作为表格结构的一部分来读取。                                              |
+| Builder impact          | 无；本记录描述已发布行为。                                                                |
+| Compatibility/readiness | 已发布行为记录为 current；没有 API、默认值或输出变更。                                    |
+| Review checks           | 拒绝非 `thead` 元素、丢失的目标，或未落到该元素上的调用方 props 或 `ref`。                |
+| Governing rules         | `architecture:public-component-api` INV5–INV8；`architecture:component-theming-surface`。 |
 
-This table is a review projection; the body below is authoritative.
+本表是审查视角的投影；下方正文具有权威性。
 
 ## Intent
 
-TableHeader is the header section a caller composes inside a children-mode Table. It
-owns the native `thead` element; the caller owns the rows inside it.
+TableHeader 是调用方在 children 模式 Table 内组合而成的表头区。它拥有原生 `thead` 元素；其中的行由调用方拥有。
 
-Consumer syntax and examples belong in `TableHeader.doc.mjs`.
+使用方语法与示例属于 `TableHeader.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public prop, default, DOM,
-  target, or styling output changes.
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 已保留的发布默认值：`yes`
+- 兼容性类别：记录已发布行为；没有公共 prop、默认值、DOM、目标或样式输出的变更。
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The `thead` element, which carries the `table-header` target that `component:Table`
-  owns and maps.
+- `thead` 元素，它携带由 `component:Table` 拥有并映射的 `table-header` 目标。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Rows — owned by `component:TableRow`; cells — owned by `component:TableCell`
-  and `component:TableHeaderCell`; and the caller's content.
-- Table appearance, data mode, and plugins — owned by `component:Table`.
+- 行——由 `component:TableRow` 拥有；单元格——由 `component:TableCell` 和 `component:TableHeaderCell` 拥有；以及调用方的内容。
+- 表格外观、数据模式与插件——由 `component:Table` 拥有。
 
 ## Public concepts
 
-| Concept | Closed values or states | Meaning                         | Availability by variant/orientation/state | Default | Owner  | Stability | Invalid-value behavior |
-| ------- | ----------------------- | ------------------------------- | ----------------------------------------- | ------- | ------ | --------- | ---------------------- |
-| Content | ReactNode (rows)        | The rows of the header section. | Children-mode Table                       | none    | caller | Stable    | —                      |
+| Concept | Closed values or states | Meaning      | Availability by variant/orientation/state | Default | Owner  | Stability | Invalid-value behavior |
+| ------- | ----------------------- | ------------ | ----------------------------------------- | ------- | ------ | --------- | ---------------------- |
+| 内容    | ReactNode (rows)        | 表头区的行。 | children 模式的 Table                     | 无      | 调用方 | 稳定      | —                      |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                          | Basis                                                                   |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| FR1 | TableHeader renders one `thead` carrying the `table-header` target and holding its children, and adds no styles of its own.                                        | Current source and tests                                                |
-| FR2 | `ref` reaches the `thead`; supported DOM, data, ARIA, and event props reach it after the component's attributes; `xstyle`, `className`, and `style` compose on it. | Current source and tests; `architecture:public-component-api` INV5–INV8 |
+| ID  | Invariant                                                                                                                       | Basis                                                         |
+| --- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| FR1 | TableHeader 渲染一个 `thead`，它携带 `table-header` 目标并容纳其 children，且不添加自身样式。                                   | 当前源码与测试                                                |
+| FR2 | `ref` 抵达 `thead`；受支持的 DOM、data、ARIA 与事件 props 在组件的属性之后抵达它；`xstyle`、`className` 与 `style` 在其上组合。 | 当前源码与测试；`architecture:public-component-api` INV5–INV8 |
 
 ### Allowed variation
 
-- **AV1 — Rows.** Any rows may fill the header section.
+- **AV1 — 行。** 任何行都可以填充表头区。
 
 ### Representative states
 
-| State      | Required invariant                 | Allowed variation |
-| ---------- | ---------------------------------- | ----------------- |
-| In a Table | A `thead` in the table's children. | Rows.             |
+| State         | Required invariant               | Allowed variation |
+| ------------- | -------------------------------- | ----------------- |
+| 位于 Table 中 | 表格 children 中的一个 `thead`。 | 行。              |
 
 ### Transformation and precedence order
 
-- **ORD1 — Root composition.** Target and caller styling compose, then caller
-  props apply.
+- **ORD1 — 根组合。** 目标样式与调用方样式先组合，然后应用调用方 props。
 
 ### Performance and resources
 
-- **PR1 — No resources.** TableHeader holds no state and adds no listener or
-  observer.
+- **PR1 — 无资源。** TableHeader 不持有状态，也不添加监听器或观察器。
 
 ## Accessibility contract
 
-- **AR1 — Native section semantics.** The `thead` keeps its native table
-  section role; TableHeader adds no role of its own.
+- **AR1 — 原生区段语义。** `thead` 保留其原生表格区段角色；TableHeader 不添加自身角色。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement          | Representation authority | Hierarchy role | Component contract |
-| ---------------- | --------------------------- | ------------------------ | -------------- | ------------------ |
-| Header section   | The table's header section. | Current source and docs  | Supporting     | FR1                |
+| Anatomy or state | Design requirement | Representation authority | Hierarchy role | Component contract |
+| ---------------- | ------------------ | ------------------------ | -------------- | ------------------ |
+| 表头区           | 表格的表头区。     | 当前源码与文档           | 支撑           | FR1                |
 
-Theming: the `thead` carries the `table-header` target, which `Table.doc.mjs`
-maps as the Header section part of `component:Table`. `TableHeader.doc.mjs` declares no
-anatomy of its own, so no anatomy-theming block is declared here.
+主题化：`thead` 携带 `table-header` 目标，`Table.doc.mjs` 将其映射为 `component:Table` 的 Header section 部分。`TableHeader.doc.mjs` 未声明自身解剖结构，因此这里不声明 anatomy-theming 块。
 
 ## Family and system relationships
 
-- `component:Table` owns appearance, data mode, plugins, and the target
-  mapping.
-- `architecture:public-component-api` owns caller-input routing; FR2 applies
-  it.
+- `component:Table` 拥有外观、数据模式、插件以及目标映射。
+- `architecture:public-component-api` 拥有调用方输入的路由；FR2 应用它。
 
 ## Verification map
 
-| Contract  | Verification                                                           | Representative states | Mutation or failure expectation                                                                                                                                                                                    | Audit section                |
-| --------- | ---------------------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------- |
-| FR1, AR1  | `Table.test.tsx` children-mode section tests; `themingTargets.test.ts` | Children mode         | A missing `thead` in the table's children fails. Gap: no test asserts the `table-header` class or that TableHeader adds no role or styles. `themingTargets.test.ts` catches only a renamed or undocumented target. | `audit:TableHeader/anatomy`  |
-| FR2, ORD1 | `Table.test.tsx` section rest-forwarding test                          | `data-testid`, `id`   | A dropped `data-testid` or `id` fails. Gap: no test covers `ref`, event props, `className`, `style`, or `xstyle`.                                                                                                  | `audit:TableHeader/api`      |
-| PR1       | Source review                                                          | Every state           | Gap: no automated check fails if TableHeader adds state or a listener.                                                                                                                                             | `audit:TableHeader/behavior` |
+| Contract  | Verification                                                        | Representative states | Mutation or failure expectation                                                                                                                                                       | Audit section                |
+| --------- | ------------------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| FR1, AR1  | `Table.test.tsx` 的 children 模式区段测试；`themingTargets.test.ts` | children 模式         | 表格 children 中缺少 `thead` 会导致失败。缺口：没有测试断言 `table-header` 类，也没有测试断言 TableHeader 不添加角色或样式。`themingTargets.test.ts` 仅能捕获被重命名或未记录的目标。 | `audit:TableHeader/anatomy`  |
+| FR2, ORD1 | `Table.test.tsx` 的区段剩余属性转发测试                             | `data-testid`, `id`   | 丢失的 `data-testid` 或 `id` 会导致失败。缺口：没有测试覆盖 `ref`、事件 props、`className`、`style` 或 `xstyle`。                                                                     | `audit:TableHeader/api`      |
+| PR1       | 源码审查                                                            | 每种状态              | 缺口：如果 TableHeader 添加状态或监听器，没有自动化检查会失败。                                                                                                                       | `audit:TableHeader/behavior` |
 
 ## Decision log
 
-None recorded. The record describes shipped behavior.
+未记录。本记录描述已发布行为。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or Table rules. It links to their owners.
+本文件不重复使用方 prop 表/示例、当前审计结果、实现步骤或 Table 规则。它链接到它们的拥有者。

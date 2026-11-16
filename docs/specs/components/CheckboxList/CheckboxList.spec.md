@@ -54,161 +54,125 @@ system_specs: [spec:AST-011, spec:AST-021, spec:AST-038, spec:AST-085]
 
 | Area                    | Contract                                                                                                                                                                                                                                                                                                                                                                        |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `CheckboxList` is a labeled `role="group"` of `CheckboxListItem` rows. A `value` array selects controlled collection mode (`onChange`, `changeAction`); without it, its items are standalone. The group owns naming, description, disabled, disabled-reason, read-only, pending values, and status. Each option's behavior is `component:CheckboxListItem`.                     |
-| Behavior                | The group names and describes its options, tracks every value whose `changeAction` is pending so each saving option stays busy while the others stay interactive, and applies disabled, read-only, and status to every option.                                                                                                                                                  |
-| End-user impact         | People can identify the group, operate every option by pointer, touch, and keyboard, learn why a group is unavailable, and see which options are still saving.                                                                                                                                                                                                                  |
-| Builder impact          | Builders choose collection mode by passing `value`, and then supply stable item `value`s. The rendering of a status without a message stays an open question here (OQ3); per-option open questions are in `component:CheckboxListItem`.                                                                                                                                         |
-| Compatibility/readiness | Adds `isOptional` (FR16) and `isRequired` (FR17), each default `false`. Each checkbox gains `aria-invalid` under an error status; no other API, default, or DOM change.                                                                                                                                                                                                         |
-| Review checks           | Reject a pending value that loses its busy state or re-toggle guard when another option is toggled, dropped group naming or description ids, a toggle while the group is disabled or read-only, or new target or state API introduced without an owner decision. Per-option checks are in `component:CheckboxListItem`.                                                         |
+| Public contract         | `CheckboxList` 是一个带标签的 `role="group"`，由 `CheckboxListItem` 行组成。一个 `value` 数组会选择受控集合模式（`onChange`、`changeAction`）；没有它时，其条目各自独立。组拥有命名、描述、禁用、禁用原因、只读、待处理值和状态。每个选项的行为属于 `component:CheckboxListItem`。                                                                                              |
+| Behavior                | 该组为其选项命名并给出描述，跟踪每个 `changeAction` 处于待处理状态的值，使每个正在保存的选项保持忙碌而其他选项仍可交互，并把禁用、只读和状态应用到每个选项。                                                                                                                                                                                                                    |
+| End-user impact         | 人们可以识别该组，通过指针、触摸和键盘操作每个选项，了解某个组为何不可用，并看到哪些选项仍在保存。                                                                                                                                                                                                                                                                              |
+| Builder impact          | 构建者通过传入 `value` 选择集合模式，然后提供稳定的条目 `value`。渲染不带消息的状态在此仍是一个开放问题（OQ3）；每个选项的开放问题见 `component:CheckboxListItem`。                                                                                                                                                                                                             |
+| Compatibility/readiness | 新增 `isOptional`（FR16）与 `isRequired`（FR17），两者默认均为 `false`。在错误状态下，每个复选框获得 `aria-invalid`；没有其他 API、默认值或 DOM 变化。                                                                                                                                                                                                                          |
+| Review checks           | 否决以下情况：某个待处理值在另一个选项被切换时失去其忙碌状态或重新切换防护，组命名或描述 id 被丢弃，在组禁用或只读时发生切换，或引入没有所有者决策的新目标或状态 API。每个选项的检查见 `component:CheckboxListItem`。                                                                                                                                                           |
 | Governing rules         | `architecture:public-component-api/INV1–INV9`; `architecture:component-theming-surface/INV3–INV6`; `architecture:interaction-modality/INV1–INV5`; `architecture:component-test-sufficiency/INV1–INV7`; `architecture:knowledge-contracts/INV2`; `spec:AST-021/FR8–FR10`; `spec:AST-038/FR7`; `spec:AST-085/FR1, FR7`; `family:input-fields/FR10`; WCAG 2.2 1.3.1, 2.1.1, 4.1.2. |
 
-This table is a review projection; the body below is authoritative.
+此表是审查投影；下面的正文具有权威性。
 
 ## Intent
 
-Present a small, labeled set of independent checkbox options whose checked,
-available, read-only, busy, and status states stay aligned across pointer,
-touch, keyboard, and assistive technology.
+呈现一组小的、带标签的独立复选框选项，其选中、可用、只读、忙碌和状态在指针、触摸、键盘和辅助技术之间保持一致。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: additive `isOptional` (FR16) and `isRequired` (FR17),
-  each default `false`; no other public prop, default, or export change; each checkbox gains `aria-invalid`
-  under an error status
-- Controlled/uncontrolled behavior: collection mode is controlled by `value`;
-  standalone items follow `component:CheckboxListItem`; no uncontrolled mode
-  exists
-- Migration decision: none
+- 已发布的默认值保持不变：`yes`
+- 兼容性类别：新增 `isOptional`（FR16）与 `isRequired`（FR17），各自默认 `false`；没有其他公共 prop、默认值或导出变化；在错误状态下每个复选框获得 `aria-invalid`
+- 受控/非受控行为：集合模式由 `value` 控制；独立条目遵循 `component:CheckboxListItem`；不存在非受控模式
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明应放在使用方文档和发布说明中。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The labeled checkbox group, its `checkbox-list` target, the group's
-  description, status, and disabled-reason relationships, and where its
-  base, `container*`, and `control*` props land.
-- Collection state shared with CheckboxListItem: checked membership, change
-  ordering, optimistic pending values, and group-level availability.
-- The composed option anatomy and its target dispositions (Theming anatomy
-  below).
+- 带标签的复选框组、其 `checkbox-list` 目标、组的描述、状态与禁用原因关系，以及其基础、`container*` 与 `control*` props 的落点。
+- 与 CheckboxListItem 共享的集合状态：选中成员关系、变更排序、乐观待处理值，以及组级可用性。
+- 组合出的选项解剖结构及其目标归属（见下文“Theming anatomy”）。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Each option's behavior — its checkbox, naming and description, standalone
-  mode, row-surface delegation and `onClick` routing, item disabled and loading
-  states, density sizing, and checked-row fill — owned by
-  `component:CheckboxListItem`.
-- List and option-row presentation — owned by `component:List`; its
-  `list-item` target reaches only the row root.
-- The checkbox control, its indicator, focus ring, and pressed overlay — owned
-  by `component:CheckboxInput` and CheckboxIndicator.
-- Group-label and validation-message presentation — owned by Field under `family:input-fields` (shared owner section)
-  and `component:FieldStatus`.
-- Loading-indicator presentation — owned by `component:Spinner`; tooltip
-  behavior — owned by `useTooltip`.
-- New targets or reflected states for the row, descriptions, or caller content.
+- 每个选项的行为——其复选框、命名与描述、独立模式、行表面委托与 `onClick` 路由、条目禁用与加载状态、密度尺寸，以及选中行填充——由 `component:CheckboxListItem` 拥有。
+- 列表与选项行的呈现——由 `component:List` 拥有；其 `list-item` 目标只到达行根。
+- 复选框控件、其指示器、聚焦环与按压覆盖层——由 `component:CheckboxInput` 与 CheckboxIndicator 拥有。
+- 组标签与校验消息的呈现——由 `family:input-fields`（共享所有者部分）下的 Field 与 `component:FieldStatus` 拥有。
+- 加载指示器的呈现——由 `component:Spinner` 拥有；提示框行为——由 `useTooltip` 拥有。
+- 为行、描述或调用方内容引入的新目标或反射状态。
 
 ## Public concepts
 
-| Concept          | Closed values or states                                     | Meaning                                                                                                                       | Availability by variant/orientation/state | Default                   | Owner                  | Stability                              | Invalid-value behavior                                       |
-| ---------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | ------------------------- | ---------------------- | -------------------------------------- | ------------------------------------------------------------ |
-| group naming     | `label`, `isLabelHidden`, `description`                     | Names and describes the `role="group"`; a hidden label still names it.                                                        | All states.                               | label required; visible   | caller and Field       | stable                                 | rejected by the public type                                  |
-| optionality      | `isOptional`, `isRequired`                                  | Shows Field's optional or required indicator after the group label; `isRequired` also needs one checked box (FR17).           | All states.                               | false                     | caller and Field       | stable                                 | boolean only                                                 |
-| collection value | `value` array present or absent                             | Present: the group owns checked membership and change handling for its items. Absent: its items are standalone.               | All states.                               | absent                    | caller and component   | stable                                 | an item without `value` in collection mode throws (item FR4) |
-| change path      | `onChange`, `changeAction`, both, neither                   | Reports the next value array; `changeAction` runs after `onChange` in a transition with an optimistic value.                  | Collection mode.                          | neither                   | caller and component   | shipped; handlerless meaning unsettled | no handler means no component-owned mutation                 |
-| availability     | enabled, `isDisabled`, `isDisabled` with `disabledMessage`  | Blocks toggling on every item, which stays focusable through `aria-disabled`; a reason adds a group tooltip.                  | Reason applies only with `isDisabled`.    | enabled                   | component              | stable                                 | a reason without `isDisabled` renders nothing                |
-| read-only        | `isReadOnly`                                                | Makes every item read-only.                                                                                                   | Group-wide.                               | false                     | component              | stable                                 | boolean only                                                 |
-| pending values   | the values whose `changeAction` is pending                  | Each pending value's item renders busy; toggling another item does not clear it; concurrent values settle together.           | Collection mode with `changeAction`.      | none                      | component              | stable                                 | transition state only                                        |
-| status           | `warning`, `error`, `success`, optional message             | A message renders a detached FieldStatus after the list and describes the group; an error makes each checkbox `aria-invalid`. | All states.                               | none                      | caller and FieldStatus | shipped                                | a status without a message renders nothing                   |
-| row layout       | `density` compact/balanced/spacious; `hasDividers`; `width` | Density reaches the List and its rows; dividers separate rows; width sizes the label, list, and status together.              | All states.                               | balanced; none; intrinsic | component and List     | stable                                 | rejected by the public types                                 |
-| pass-through     | CheckboxList rest, `ref`, `container*`, `control*`          | Base props and `ref` reach the `role="group"`; `container*` the Field box; `control*` the group element.                      | All states.                               | none                      | component              | stable                                 | root `xstyle`, `className`, `style` are not accepted         |
+| Concept          | Closed values or states                                     | Meaning                                                                                        | Availability by variant/orientation/state | Default                   | Owner                | Stability                    | Invalid-value behavior                          |
+| ---------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------- | ------------------------- | -------------------- | ---------------------------- | ----------------------------------------------- |
+| group naming     | `label`、`isLabelHidden`、`description`                     | 为 `role="group"` 命名并给出描述；隐藏标签仍为其命名。                                         | 所有状态。                                | label 必填；可见          | 调用方与 Field       | 稳定                         | 由公共类型拒绝                                  |
+| optionality      | `isOptional`、`isRequired`                                  | 在组标签之后显示 Field 的可选或必填指示；`isRequired` 还要求勾选一个框（FR17）。               | 所有状态。                                | false                     | 调用方与 Field       | 稳定                         | 仅布尔值                                        |
+| collection value | 存在或不存在 `value` 数组                                   | 存在：组为其条目拥有选中成员关系与变更处理。不存在：其条目各自独立。                           | 所有状态。                                | 不存在                    | 调用方与组件         | 稳定                         | 集合模式下缺少 `value` 的条目会抛错（item FR4） |
+| change path      | `onChange`、`changeAction`、两者、皆无                      | 报告下一个值数组；`changeAction` 在带乐观值的 transition 中于 `onChange` 之后运行。            | 集合模式。                                | 皆无                      | 调用方与组件         | 已发布；无处理器时的含义未定 | 无处理器意味着没有组件拥有的变更                |
+| availability     | enabled、`isDisabled`、带 `disabledMessage` 的 `isDisabled` | 阻止每个条目切换，条目仍可通过 `aria-disabled` 获得焦点；原因会添加组提示框。                  | 原因仅在 `isDisabled` 时适用。            | enabled                   | 组件                 | 稳定                         | 没有 `isDisabled` 的原因不渲染任何内容          |
+| read-only        | `isReadOnly`                                                | 使每个条目只读。                                                                               | 组级。                                    | false                     | 组件                 | 稳定                         | 仅布尔值                                        |
+| pending values   | 其 `changeAction` 处于待处理状态的值                        | 每个待处理值的条目渲染为忙碌；切换另一个条目不会清除它；并发的值一起结算。                     | 带 `changeAction` 的集合模式。            | 无                        | 组件                 | 稳定                         | 仅 transition 状态                              |
+| status           | `warning`、`error`、`success`，可选消息                     | 消息在列表之后渲染一个分离的 FieldStatus 并描述该组；错误会让每个复选框 `aria-invalid`。       | 所有状态。                                | 无                        | 调用方与 FieldStatus | 已发布                       | 没有消息的状态不渲染任何内容                    |
+| row layout       | `density` compact/balanced/spacious；`hasDividers`；`width` | 密度到达 List 及其行；分隔线分隔行；宽度同时决定标签、列表和状态的尺寸。                       | 所有状态。                                | balanced；none；intrinsic | 组件与 List          | 稳定                         | 由公共类型拒绝                                  |
+| pass-through     | CheckboxList 其余 props、`ref`、`container*`、`control*`    | 基础 props 和 `ref` 到达 `role="group"`；`container*` 到达 Field 盒子；`control*` 到达组元素。 | 所有状态。                                | 无                        | 组件                 | 稳定                         | 根 `xstyle`、`className`、`style` 不被接受      |
 
-Item props (`label`, `aria-label`, `description`, `endContent`, `isChecked`,
-`onCheck`, item `isDisabled`, `isLoading`, and item pass-through) are concepts
-of `component:CheckboxListItem`.
+条目 props（`label`、`aria-label`、`description`、`endContent`、`isChecked`、`onCheck`、条目 `isDisabled`、`isLoading` 以及条目透传）是 `component:CheckboxListItem` 的概念。
 
 ## Behavioral and layout contract
 
-| ID   | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Basis                                                                                                                                            |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| FR1  | The render MUST place CheckboxListItem children inside a List within a `role="group"` named by the group label through `aria-labelledby`; its `aria-describedby` MUST list any caller description, then the description, status message, and disabled-reason tooltip that are present, in that order.                                                                                                                                                                                                                                                                                                                | shipped source; focused tests; WCAG 1.3.1 and 4.1.2                                                                                              |
-| FR2  | The CheckboxList root MUST carry the current `checkbox-list` target.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | shipped source and public docs                                                                                                                   |
-| FR4  | A status message MUST render through a detached FieldStatus after the list.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | shipped source, focused tests, and the Chromium accessibility suite                                                                              |
-| FR6  | With a `value` array, the group MUST provide membership to its items, call `onChange` with the next array an item proposes (`component:CheckboxListItem` FR4), and then run `changeAction` with the same array in a transition with an optimistic value.                                                                                                                                                                                                                                                                                                                                                             | shipped source and focused tests                                                                                                                 |
-| FR7  | The group MUST track every value whose `changeAction` is pending and expose it to its items, each of which renders busy (`component:CheckboxListItem` FR7); toggling another item MUST NOT clear an earlier pending value. Concurrent pending values settle together, after which every busy state clears.                                                                                                                                                                                                                                                                                                           | shipped public `changeAction` promise; focused regression test; the Chromium accessibility suite                                                 |
-| FR9  | Group `isDisabled` MUST make every checkbox focusable-disabled through `aria-disabled` (`component:CheckboxInput` FR4) and refuse toggling, and MUST set `aria-disabled="true"` on the `role="group"` element, as `component:ButtonGroup` FR1 does. With `disabledMessage`, the reason tooltip opens on group hover and keyboard focus, and the reason MUST describe each focusable checkbox (`spec:AST-085` FR5, FR7). Implementation gap: the reason describes only the `role="group"`, so a focused checkbox is not described by it.                                                                              | `spec:AST-085` FR1, FR7; shipped source, focused tests, and shared checkbox binding                                                              |
-| FR10 | Group `isReadOnly` MUST make every item in the group read-only (`component:CheckboxListItem` FR8 and FR10).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | shipped source; shared checkbox binding; `spec:AST-011` read-only vocabulary                                                                     |
-| FR13 | `density` MUST reach the List and its rows (the checkbox size follows `component:CheckboxListItem` FR11); `hasDividers` MUST separate rows without a divider after the last row; `width` MUST size the label, list, and status together.                                                                                                                                                                                                                                                                                                                                                                             | shipped source, docs, and the Chromium accessibility suite                                                                                       |
-| FR14 | An error `status` with a message renders it (FR4), and an error `status` makes every checkbox `aria-invalid="true"`, so a screen reader announces the invalid state as each checkbox takes focus. Implementation gap: a status without a message renders nothing; its meaning is OQ3.                                                                                                                                                                                                                                                                                                                                | shipped source; `spec:AST-002/FR15`                                                                                                              |
-| FR15 | Base props, including ARIA and `ref`, MUST reach the `role="group"`; a caller `aria-labelledby` joins the group label and a caller `aria-describedby` comes first. `container*` MUST reach the Field box where one renders (in a `horizontal-labels` FormLayout none renders, and `container*` has no effect and warns), and `control*` the group element; root `xstyle`, `className`, and `style` are not accepted.                                                                                                                                                                                                 | `family:input-fields` FR10; `CheckboxList.fr10.test.tsx`                                                                                         |
-| FR16 | `isOptional` MUST reach the group's Field as `isOptional`, so the group label shows the optional indicator unless the nearest `FormLayout` defaults fields to optional (`component:FormLayout` FR5). An empty selection is an answer, so a checkbox group takes no required state from a form default (`component:FormLayout` FR5's exception): with or without `isOptional`, its checkboxes carry no `aria-required` from it, and the form default puts no native `required` on them.                                                                                                                               | CheckboxInput and RadioList parity; WAI-ARIA 1.2 `group` has no `aria-required`, and `aria-required` on each checkbox would require every option |
-| FR17 | `isRequired` marks the group required. Its name shows the input fields' required marker by the same rules every input field follows (`family:input-fields`), so where a form's default already marks fields required, no marker shows, as for any field. While no checkbox is checked, the first checkbox that is neither disabled nor read-only carries native `required`, so the browser blocks submit and focuses it with its own message; once any box is checked, no box carries `required`. An empty group is missing; the app's `status` stays the visible error text, and Astryx adds no message of its own. | Owner decision; `family:input-fields`; HTML constraint validation                                                                                |
+| ID   | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                | Basis                                                                                                                            |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| FR1  | 渲染 MUST 将 CheckboxListItem 子节点放在 List 内，该 List 位于由组标签通过 `aria-labelledby` 命名的 `role="group"` 内；其 `aria-describedby` MUST 按该顺序列出调用方描述（若有），然后是存在的描述、状态消息和禁用原因提示框。                                                                                                                                                                                           | 已发布源码；聚焦测试；WCAG 1.3.1 与 4.1.2                                                                                        |
+| FR2  | CheckboxList 根 MUST 携带当前的 `checkbox-list` 目标。                                                                                                                                                                                                                                                                                                                                                                   | 已发布源码与公共文档                                                                                                             |
+| FR4  | 状态消息 MUST 通过列表之后的分离 FieldStatus 渲染。                                                                                                                                                                                                                                                                                                                                                                      | 已发布源码、聚焦测试以及 Chromium 无障碍套件                                                                                     |
+| FR6  | 带有 `value` 数组时，组 MUST 向其条目提供成员关系，用条目提议的下一个数组调用 `onChange`（`component:CheckboxListItem` FR4），然后在带乐观值的 transition 中用同一数组运行 `changeAction`。                                                                                                                                                                                                                              | 已发布源码与聚焦测试                                                                                                             |
+| FR7  | 组 MUST 跟踪每个 `changeAction` 处于待处理状态的值并将其暴露给条目，每个条目渲染为忙碌（`component:CheckboxListItem` FR7）；切换另一个条目 MUST NOT 清除较早的待处理值。并发的待处理值一起结算，之后所有忙碌状态清除。                                                                                                                                                                                                   | 已发布的公共 `changeAction` promise；聚焦回归测试；Chromium 无障碍套件                                                           |
+| FR9  | 组 `isDisabled` MUST 通过 `aria-disabled` 让每个复选框成为可聚焦禁用（`component:CheckboxInput` FR4）并拒绝切换，且 MUST 在 `role="group"` 元素上设置 `aria-disabled="true"`，如同 `component:ButtonGroup` FR1 所做。使用 `disabledMessage` 时，原因提示框在组悬停和键盘聚焦时打开，且原因 MUST 描述每个可聚焦复选框（`spec:AST-085` FR5、FR7）。实现缺口：原因只描述 `role="group"`，因此获得焦点的复选框不会被它描述。 | `spec:AST-085` FR1、FR7；已发布源码、聚焦测试以及共享复选框绑定                                                                  |
+| FR10 | 组 `isReadOnly` MUST 使组内每个条目只读（`component:CheckboxListItem` FR8 与 FR10）。                                                                                                                                                                                                                                                                                                                                    | 已发布源码；共享复选框绑定；`spec:AST-011` 只读词汇                                                                              |
+| FR13 | `density` MUST 到达 List 及其行（复选框尺寸遵循 `component:CheckboxListItem` FR11）；`hasDividers` MUST 分隔行且最后一行之后没有分隔线；`width` MUST 同时决定标签、列表和状态的尺寸。                                                                                                                                                                                                                                    | 已发布源码、文档以及 Chromium 无障碍套件                                                                                         |
+| FR14 | 带消息的错误 `status` 会将其渲染（FR4），且错误 `status` 会使每个复选框 `aria-invalid="true"`，因此当每个复选框获得焦点时屏幕阅读器会宣告无效状态。实现缺口：没有消息的状态不渲染任何内容；其含义是 OQ3。                                                                                                                                                                                                                | 已发布源码；`spec:AST-002/FR15`                                                                                                  |
+| FR15 | 基础 props（包括 ARIA 与 `ref`）MUST 到达 `role="group"`；调用方 `aria-labelledby` 与组标签合并，调用方 `aria-describedby` 排在最前。`container*` MUST 到达渲染出的 Field 盒子（在 `horizontal-labels` FormLayout 中不会渲染，此时 `container*` 无效并发出警告），`control*` 到达组元素；根 `xstyle`、`className` 和 `style` 不被接受。                                                                                  | `family:input-fields` FR10；`CheckboxList.fr10.test.tsx`                                                                         |
+| FR16 | `isOptional` MUST 以 `isOptional` 到达组的 Field，因此组标签会显示可选指示，除非最近的 `FormLayout` 将字段默认为可选（`component:FormLayout` FR5）。空选择就是一个答案，因此复选框组不从表单默认值取得必填状态（`component:FormLayout` FR5 的例外）：无论是否带 `isOptional`，其复选框都不因此携带 `aria-required`，表单默认值也不会给它们原生 `required`。                                                              | CheckboxInput 与 RadioList 一致性；WAI-ARIA 1.2 的 `group` 没有 `aria-required`，而每个复选框上的 `aria-required` 会要求每个选项 |
+| FR17 | `isRequired` 将组标记为必填。其名称按每个输入字段都遵循的相同规则显示输入字段的必填标记（`family:input-fields`），因此当表单默认已把字段标记为必填时，不显示标记，如同任何字段。当没有复选框被勾选时，第一个既未禁用也未只读的复选框携带原生 `required`，因此浏览器会阻止提交并用自身的消息聚焦它；一旦任何框被勾选，就没有框携带 `required`。空组即缺失；应用的 `status` 仍是可见错误文本，Astryx 不添加自己的消息。    | 所有者决策；`family:input-fields`；HTML 约束校验                                                                                 |
 
-Per-option requirements are owned by `component:CheckboxListItem`
-(`architecture:knowledge-contracts/INV2`).
+按选项的要求由 `component:CheckboxListItem` 拥有（`architecture:knowledge-contracts/INV2`）。
 
 ### Allowed variation
 
-- **AV1 — Group content.** The label, description, status message, and width
-  may vary within their public types.
-- **AV2 — Theme paint.** The `checkbox-list` target and the composed group
-  targets may change admitted visual properties without changing semantics or
-  state precedence.
+- **AV1 — 组内容。** 标签、描述、状态消息和宽度可在其公共类型范围内变化。
+- **AV2 — 主题绘制。** `checkbox-list` 目标与组合出的组目标可以在不改变语义或状态优先级的前提下更改被允许的视觉属性。
 
-Option variation is `component:CheckboxListItem` AV1–AV3.
+选项变化见 `component:CheckboxListItem` AV1–AV3。
 
 ### Representative states
 
-| State                      | Required invariant                                                                        | Allowed variation                  |
-| -------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------- |
-| Default collection         | Named group, options list, and rows render; membership reaches every item                 | Option content and selected values |
-| Pending values             | Each pending value keeps its item busy until every pending value settles                  | Which options are pending          |
-| Group disabled with reason | Checkboxes stay focusable and inoperable; the reason is reachable by hover, focus, and AT | Reason text                        |
-| Group read-only            | Every item is read-only                                                                   | Which values are checked           |
-| Group status with message  | Detached FieldStatus follows the group and describes it                                   | Error, warning, or success status  |
+| State          | Required invariant                                         | Allowed variation    |
+| -------------- | ---------------------------------------------------------- | -------------------- |
+| 默认集合       | 命名组、选项列表和行都会渲染；成员关系到达每个条目         | 选项内容与选中值     |
+| 待处理值       | 每个待处理值使其条目保持忙碌，直到所有待处理值结算         | 哪些选项处于待处理   |
+| 带原因的组禁用 | 复选框保持可聚焦且不可操作；原因可通过悬停、聚焦和 AT 到达 | 原因文本             |
+| 组只读         | 每个条目都是只读                                           | 哪些值被勾选         |
+| 带消息的组状态 | 分离的 FieldStatus 跟在组之后并描述它                      | 错误、警告或成功状态 |
 
 ### Transformation and precedence order
 
-- **ORD1 — Checked state.** Collection `value` → optimistic pending value → the
-  membership each item reads (`component:CheckboxListItem` ORD1).
-- **ORD2 — Toggle.** An item's proposed next array (`component:CheckboxListItem`
-  ORD2) → `onChange` → `changeAction` in a transition that adds the toggled value
-  to the pending set.
-- **ORD3 — Availability.** Group disabled wins and keeps every checkbox
-  focusable; a group reason adds the tooltip, not operability; group read-only
-  applies to mutation only.
+- **ORD1 — 选中状态。** 集合 `value` → 乐观待处理值 → 每个条目读取的成员关系（`component:CheckboxListItem` ORD1）。
+- **ORD2 — 切换。** 条目提议的下一个数组（`component:CheckboxListItem` ORD2）→ `onChange` → 在把被切换值加入待处理集合的 transition 中运行 `changeAction`。
+- **ORD3 — 可用性。** 组禁用优先，并让每个复选框保持可聚焦；组原因添加提示框，而非可操作性；组只读仅适用于变更。
 
 ### Performance and resources
 
-- **PR1 — Bounded resources.** The component owns no observer or global
-  listener of its own. Tooltip listeners are scoped to the group element and
-  its lifetime. A required group (FR17) registers its options with Core's
-  shared mutation observer for its lifetime, so a reorder updates which box
-  carries `required`.
+- **PR1 — 有界资源。** 组件自身不拥有任何观察器或全局监听器。提示框监听器的作用域限于组元素及其生命周期。必填组（FR17）在其生命周期内将选项注册到 Core 的共享变更观察器，因此重排会更新哪个框携带 `required`。
 
-Current measurements belong in the audit record; this subsection owns only
-durable constraints and their verification target.
+当前的测量数据属于审计记录；本小节只拥有持久约束及其验证目标。
 
 ## Accessibility contract
 
-- **AR1 — Group identity.** The group name and its description, status, and
-  disabled-reason relationships MUST remain programmatically determinable.
-- **AR2, AR3, AR5 — Option semantics, keyboard parity, and busy perception** are
-  owned by `component:CheckboxListItem` AR1, AR2, and AR4.
-- **AR4 — Disabled reasons.** A group reason MUST stay discoverable by keyboard
-  focus and assistive technology while toggling stays blocked.
+- **AR1 — 组标识。** 组名称及其描述、状态和禁用原因关系 MUST 保持可由程序确定。
+- **AR2, AR3, AR5 — 选项语义、键盘一致性以及忙碌感知** 由 `component:CheckboxListItem` AR1、AR2 和 AR4 拥有。
+- **AR4 — 禁用原因。** 在切换保持被阻止的同时，组原因 MUST 仍可通过键盘聚焦和辅助技术发现。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                                           | Representation authority        | Hierarchy role | Component contract                    |
-| ---------------- | ---------------------------------------------------------------------------- | ------------------------------- | -------------- | ------------------------------------- |
-| Group            | Contains the current checkbox-group composition.                             | Current source and public docs  | Supporting     | FR1, FR2                              |
-| Options list     | Presents the List-owned list and row roots.                                  | Current source                  | Supporting     | FR1, FR13                             |
-| Option rows      | Present each option's checkbox, content, busy spinner, and checked-row fill. | `component:CheckboxListItem`    | Prominent      | `component:CheckboxListItem` FR1–FR13 |
-| Status message   | Presents the group's current status.                                         | Current shared-component source | Supporting     | FR4                                   |
+| Anatomy or state | Design requirement                                   | Representation authority     | Hierarchy role | Component contract                    |
+| ---------------- | ---------------------------------------------------- | ---------------------------- | -------------- | ------------------------------------- |
+| 组               | 包含当前的复选框组组合。                             | 当前源码与公共文档           | 支撑           | FR1, FR2                              |
+| 选项列表         | 呈现 List 拥有的列表和行根。                         | 当前源码                     | 支撑           | FR1, FR13                             |
+| 选项行           | 呈现每个选项的复选框、内容、忙碌指示器和选中行填充。 | `component:CheckboxListItem` | 主要           | `component:CheckboxListItem` FR1–FR13 |
+| 状态消息         | 呈现组的当前状态。                                   | 当前共享组件源码             | 支撑           | FR4                                   |
 
 ### Theming anatomy
 
@@ -264,79 +228,52 @@ durable constraints and their verification target.
 }
 ```
 
-`Description` remains stable consumer anatomy, but no current public target
-reaches it. Item, not Text, renders option labels and descriptions in separate
-untargeted spans, so neither delegates to Text nor inherits the row-root
-`list-item` target; future exposure remains unsettled. Rich label content and end
-content are caller-provided, and end content intentionally stays outside
-CheckboxList's public theming ownership. The `Option row` delegation reaches the
-row surface and, on a checked, enabled, editable row, its `selected` state
-(`component:CheckboxListItem` FR15).
+`Description` 仍是稳定的使用方解剖结构，但当前没有公共目标到达它。Item（而非 Text）在单独的未设目标 span 中渲染选项标签和描述，因此两者都不委托给 Text，也不继承行根 `list-item` 目标；未来的暴露仍未确定。富标签内容和结尾内容由调用方提供，结尾内容有意留在 CheckboxList 的公共主题所有权之外。`Option row` 委托到达行表面，并在选中、启用、可编辑的行上到达其 `selected` 状态（`component:CheckboxListItem` FR15）。
 
 ## Family and system relationships
 
-- `architecture:public-component-api` owns export reachability, pass-through
-  preservation, styling composition, refs, and released-change rules.
-- `architecture:component-theming-surface` owns anatomy qualification, factual
-  `none` dispositions, composition-preserving target ownership, and state
-  reflection.
-- `architecture:interaction-modality` owns focus visibility and the boundary
-  between the focused checkbox and the element that paints its ring.
-- `architecture:knowledge-contracts/INV2` keeps each per-option fact in
-  `component:CheckboxListItem` rather than copying it here.
-- `spec:AST-021` owns the reusable checkbox accessibility binding for
-  CheckboxListItem and its exact known-failure lifecycle.
-- `spec:AST-011` records `isReadOnly` as the name for visible, focusable,
-  non-editable values.
-- `spec:AST-038/FR7` stops CheckboxList context at a layer boundary; an item
-  inside a layer needs its own provider.
-- `component:CheckboxListItem` owns the per-option contract this group
-  composes.
-- List, CheckboxInput, Field, FieldStatus, Spinner, and Tooltip retain their
-  existing public target and behavior contracts when composed by CheckboxList.
+- `architecture:public-component-api` 拥有导出可达性、透传保持、样式组合、refs 以及已发布变更规则。
+- `architecture:component-theming-surface` 拥有解剖结构资格认定、事实性 `none` 处置、保留组合的目标所有权，以及状态反射。
+- `architecture:interaction-modality` 拥有聚焦可见性，以及获得焦点的复选框与绘制其聚焦环的元素之间的边界。
+- `architecture:knowledge-contracts/INV2` 将每个按选项的事实保留在 `component:CheckboxListItem` 中，而不是复制到这里。
+- `spec:AST-021` 拥有供 CheckboxListItem 使用的可复用复选框无障碍绑定及其确切的已知失败生命周期。
+- `spec:AST-011` 将 `isReadOnly` 记录为可见、可聚焦、不可编辑值的名称。
+- `spec:AST-038/FR7` 在层边界处终止 CheckboxList 上下文；层内的条目需要自己的 provider。
+- `component:CheckboxListItem` 拥有该组所组合的按选项契约。
+- List、CheckboxInput、Field、FieldStatus、Spinner 和 Tooltip 在被 CheckboxList 组合时保留其现有的公共目标和行为契约。
 
 ## Verification map
 
-| Contract            | Verification                                                                                                                                                                              | Representative states                                                                                                                                                              | Mutation or failure expectation                                                                                                                                                                  | Audit section                      |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- |
-| FR1, AR1            | `CheckboxList.test.tsx` group-role, group-description, and disabledMessage cases                                                                                                          | Named group; description plus status; disabled reason                                                                                                                              | A missing group name, or a description and status out of order, fails. Evidence gap: no test asserts the caller description first or the disabled reason last.                                   | `audit:CheckboxList/accessibility` |
-| FR2, FR15           | `CheckboxList.test.tsx` ref and container case; `CheckboxList.fr10.test.tsx`                                                                                                              | Standalone; `horizontal-labels` FormLayout                                                                                                                                         | A ref off the group, `container*` off the Field box, or a base prop off the group fails.                                                                                                         | `audit:CheckboxList/api`           |
-| FR4, FR14           | `CheckboxList.test.tsx` error-status cases, including every checkbox's `aria-invalid`; `CheckboxListErrorStatus.a11y.chromium.spec.ts`                                                    | Error with message                                                                                                                                                                 | A missing status message fails. Evidence gap: no test asserts the empty render without a message.                                                                                                | `audit:CheckboxList/accessibility` |
-| FR6, FR7            | `CheckboxList.test.tsx` add, remove, and pending cases; `CheckboxList.a11y.chromium.spec.ts` `pending-single`, `pending-concurrent`, and `pending-settled` cases                          | Add; remove; one and two pending values; settled                                                                                                                                   | A wrong array, a cleared earlier pending value, or a busy state that outlives settlement fails.                                                                                                  | `audit:CheckboxList/behavior`      |
-| FR9, FR10, AR4      | `CheckboxList.test.tsx` group-disabled (including the group's `aria-disabled`), disabledMessage, and read-only cases; `ListGroupDisabled.a11y.chromium.spec.ts`; shared checkbox bindings | Group disabled; with reason; read-only item                                                                                                                                        | A lost tab stop, a toggle while disabled, or a read-only toggle fails. Evidence gap: no test asserts that a focused checkbox is not described by the reason.                                     | `audit:CheckboxList/accessibility` |
-| FR13                | `CheckboxList.test.tsx` density cases; `CheckboxList.a11y.chromium.spec.ts` density, divider, 320-pixel, and RTL cases                                                                    | Compact, balanced, spacious; dividers; narrow; RTL                                                                                                                                 | A density, divider, overflow, or direction sensor fails. Evidence gap: no test asserts `width` sizing the label, list, and status together.                                                      | `audit:CheckboxList/layout`        |
-| FR16                | `CheckboxList.test.tsx` optional-indicator and FormLayout-default cases                                                                                                                   | `isOptional`; unmarked and optional groups under a required default; optional default; toggled with focus                                                                          | Dropping `isOptional` from the Field, showing it under an optional default, a group checkbox with `aria-required` under a required default, or remounting rows when `isOptional` changes, fails. | `audit:CheckboxList/accessibility` |
-| FR17                | `CheckboxList.required.test.tsx`                                                                                                                                                          | Marker; required-default form; no box checked; one checked; last box unchecked; disabled first box; disabled group; read-only group; standalone items; keyed reorder; item removed | A missing marker, a marker under a required default, a submit with no box checked, a blocked submit with one checked, or `required` on more than one box, fails.                                 | `audit:CheckboxList/accessibility` |
-| ORD1–ORD3, PR1      | ORD1 and ORD2 are covered by the FR6 and FR7 rows, ORD3 by the FR9 and FR10 rows. Evidence gap: no test asserts the absence of observers or global listeners                              | —                                                                                                                                                                                  | —                                                                                                                                                                                                | `audit:CheckboxList/behavior`      |
-| Local target source | `themingTargets.test.ts`; `CheckboxList.test.tsx` ref and container case                                                                                                                  | `checkbox-list`                                                                                                                                                                    | A rendered class absent from the documented targets, or a missing `astryx-checkbox-list` on the Field root, fails.                                                                               | `audit:CheckboxList/theming`       |
-| Theming anatomy map | `scripts/check-knowledge.mjs`                                                                                                                                                             | Canonical anatomy and current local target                                                                                                                                         | Canonical-key drift, invalid dispositions or target spelling, or an unclaimed current local target fails validation.                                                                             | `audit:CheckboxList/theming`       |
+| Contract         | Verification                                                                                                                                               | Representative states                                                                                                     | Mutation or failure expectation                                                                                                    | Audit section                      |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| FR1, AR1         | `CheckboxList.test.tsx` 的组角色、组描述和 disabledMessage 用例                                                                                            | 命名组；描述加状态；禁用原因                                                                                              | 缺少组名，或描述与状态顺序错误，即失败。证据缺口：没有测试断言调用方描述在前或禁用原因在后。                                       | `audit:CheckboxList/accessibility` |
+| FR2, FR15        | `CheckboxList.test.tsx` 的 ref 与 container 用例；`CheckboxList.fr10.test.tsx`                                                                             | 独立；`horizontal-labels` FormLayout                                                                                      | ref 不在组上、`container*` 不在 Field 盒子上，或基础 prop 不在组上，即失败。                                                       | `audit:CheckboxList/api`           |
+| FR4, FR14        | `CheckboxList.test.tsx` 的错误状态用例，包括每个复选框的 `aria-invalid`；`CheckboxListErrorStatus.a11y.chromium.spec.ts`                                   | 带消息的错误                                                                                                              | 缺少状态消息即失败。证据缺口：没有测试断言无消息时的空渲染。                                                                       | `audit:CheckboxList/accessibility` |
+| FR6, FR7         | `CheckboxList.test.tsx` 的添加、移除和待处理用例；`CheckboxList.a11y.chromium.spec.ts` 的 `pending-single`、`pending-concurrent` 和 `pending-settled` 用例 | 添加；移除；一个和两个待处理值；已结算                                                                                    | 数组错误、较早的待处理值被清除，或忙碌状态超过结算，即失败。                                                                       | `audit:CheckboxList/behavior`      |
+| FR9, FR10, AR4   | `CheckboxList.test.tsx` 的组禁用（包括组的 `aria-disabled`）、disabledMessage 和只读用例；`ListGroupDisabled.a11y.chromium.spec.ts`；共享复选框绑定        | 组禁用；带原因；只读条目                                                                                                  | 丢失 tab 停靠点、禁用时切换，或只读时切换，即失败。证据缺口：没有测试断言获得焦点的复选框不被原因描述。                            | `audit:CheckboxList/accessibility` |
+| FR13             | `CheckboxList.test.tsx` 的密度用例；`CheckboxList.a11y.chromium.spec.ts` 的密度、分隔线、320 像素和 RTL 用例                                               | 紧凑、平衡、宽敞；分隔线；窄屏；RTL                                                                                       | 密度、分隔线、溢出或方向传感器失败。证据缺口：没有测试断言 `width` 同时决定标签、列表和状态的尺寸。                                | `audit:CheckboxList/layout`        |
+| FR16             | `CheckboxList.test.tsx` 的可选指示和 FormLayout 默认用例                                                                                                   | `isOptional`；必填默认下的未标记组和可选组；可选默认；带焦点切换                                                          | 从 Field 丢弃 `isOptional`、在可选默认下显示它、必填默认下组复选框带有 `aria-required`，或 `isOptional` 变化时重新挂载行，即失败。 | `audit:CheckboxList/accessibility` |
+| FR17             | `CheckboxList.required.test.tsx`                                                                                                                           | 标记；必填默认表单；无框勾选；一个勾选；最后一个框未勾选；第一个框禁用；组禁用；组只读；独立条目；带 key 的重排；条目移除 | 缺少标记、必填默认下出现标记、无框勾选时提交、一个勾选时阻止提交，或 `required` 出现在多于一个框上，即失败。                       | `audit:CheckboxList/accessibility` |
+| ORD1–ORD3, PR1   | ORD1 和 ORD2 由 FR6 与 FR7 行覆盖，ORD3 由 FR9 与 FR10 行覆盖。证据缺口：没有测试断言不存在观察器或全局监听器                                              | —                                                                                                                         | —                                                                                                                                  | `audit:CheckboxList/behavior`      |
+| 本地目标来源     | `themingTargets.test.ts`；`CheckboxList.test.tsx` 的 ref 与 container 用例                                                                                 | `checkbox-list`                                                                                                           | 渲染出的类不在文档化目标中，或 Field 根上缺少 `astryx-checkbox-list`，即失败。                                                     | `audit:CheckboxList/theming`       |
+| 主题解剖结构映射 | `scripts/check-knowledge.mjs`                                                                                                                              | 规范解剖结构与当前本地目标                                                                                                | 规范键漂移、无效处置或目标拼写，或未声明的当前本地目标，即验证失败。                                                               | `audit:CheckboxList/theming`       |
 
-Per-option verification is owned by `component:CheckboxListItem`'s
-verification map. No current repository check resolves `delegatesTo`
-owner and target pairs; the pairs above match the current Field, List,
-CheckboxInput, Spinner, and FieldStatus targets.
+按选项的验证由 `component:CheckboxListItem` 的验证映射拥有。当前仓库中没有检查会解析 `delegatesTo` 的所有者与目标对；上面的对匹配当前的 Field、List、CheckboxInput、Spinner 和 FieldStatus 目标。
 
 ## Current-state impact
 
-- **Group reason (FR9).** A group `disabledMessage` describes only the
-  `role="group"`, so a focused disabled checkbox is not described by it,
-  against `spec:AST-085` FR5 and FR7.
-- **Status without a message (FR14).** A status without a message renders
-  nothing; its meaning is OQ3.
-- **Required announcement (FR17).** `role="group"` cannot carry `aria-required`, and browsers expose an unchecked `required` checkbox as invalid rather than required, so while the group is empty its first checkbox alone reports that state; a required `RadioList` keeps each radio's invalid state on its status instead (`component:RadioList` FR6).
+- **组原因（FR9）。** 组 `disabledMessage` 只描述 `role="group"`，因此获得焦点的禁用复选框不会被它描述，这违背 `spec:AST-085` FR5 和 FR7。
+- **不带消息的状态（FR14）。** 没有消息的状态不渲染任何内容；其含义是 OQ3。
+- **必填宣告（FR17）。** `role="group"` 无法携带 `aria-required`，而浏览器会把未勾选的 `required` 复选框暴露为无效而非必填，因此在组为空时只有其第一个复选框报告该状态；必填的 `RadioList` 则把每个单选项的无效状态保留在其状态上（`component:RadioList` FR6）。
 
 ## Decision log
 
-No component-local decision. CheckboxList applies `spec:AST-021`,
-`spec:AST-085`, and `family:input-fields` FR10.
+没有组件本地决策。CheckboxList 应用 `spec:AST-021`、`spec:AST-085` 和 `family:input-fields` FR10。
 
 ## Open questions
 
-- **OQ3 — What should a status without a message render?** (`human-api`)
-  Per-option questions live in `component:CheckboxListItem`.
+- **OQ3 — 不带消息的状态应当渲染什么？**（`human-api`）按选项的问题位于 `component:CheckboxListItem`。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, the per-option contract, or shared-component
-contracts. It links to their owners.
+本文件不重复使用方 prop 表/示例、当前审计结果、实现步骤、按选项契约或共享组件契约。它链接到它们的拥有者。

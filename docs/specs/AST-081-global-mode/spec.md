@@ -20,1155 +20,413 @@ affects_consumer_docs: [cli]
 
 <!-- Describe the system, not the project: present tense, what it does. No
 proposals, history, pull requests, or research in the record; see
+
 docs/contributing/spec-writing.md and report its rubric results in the pull
+
 request. -->
 
 ## Intent
 
-A person or an agent installs Astryx once on a computer, as the CLI package
-itself, and runs it in any folder. Inside a project, every answer is the one
-the release matching the project's Core gives, whichever copy of the CLI
-started the run, because a template, a component doc, or an agent instruction
-from another release writes code the project's Core rejects, with no error to
-say so. Outside a project, the release installed for the computer answers, the
-way a new project on it would, so an agent with no project files can learn
-Core, its components, and the docs, and a notice says when a newer release is
-out.
+一个人在电脑上安装一次 Astryx，装的就是 CLI 包本身，然后在任意文件夹里运行它。在项目内，每个答案都由与项目 Core 相匹配的那个发布版本给出，无论这次运行是从哪一份 CLI 副本启动的，因为来自另一个发布版本的模板、组件文档或 agent 指令会写出该项目 Core 拒绝的代码，并且没有任何错误提示这一点。在项目之外，由为这台电脑安装的发布版本作答，就像在这台电脑上新建一个项目时那样，因此没有项目文件的 agent 也能了解 Core、它的组件和文档，并且有通知说明何时出现了更新的版本。
 
-This record owns which release answers a run (FR1, FR2), what every command does
-outside a project (FR3, FR4), how a run names the release that answered and
-picks the one command name every printed command starts with (FR5), how a copy
-installed for the computer learns of newer releases (FR6), where any run may
-write (FR7), what each release carries for use outside a project and how the
-computer-level agent text stays installed (FR8), how every copy of the CLI hands
-a project's run to the release that answers there (FR9), when a run reminds its
-caller to update (FR10), who answers when global and project copies meet
-(FR11), which integrations installed for the computer apply, and where
-(FR12), and the repository plugin skill (FR13).
+本记录规定：由哪个发布版本为一次运行作答（FR1、FR2），每条命令在项目之外做什么（FR3、FR4），一次运行如何标明为其作答的发布版本、以及如何选定打印出的每条命令都以之开头的那个命令名（FR5），为电脑安装的副本如何得知更新的版本（FR6），任何运行可以写入哪些位置（FR7），每个发布版本为项目之外的使用携带什么、电脑级 agent 文本如何保持安装状态（FR8），CLI 的每份副本如何把项目的运行交给在该处作答的发布版本（FR9），一次运行何时提醒其调用方更新（FR10），全局副本与项目副本相遇时由谁作答（FR11），为电脑安装的哪些集成适用、在何处适用（FR12），以及仓库插件 skill（FR13）。
 
 ## Non-goals
 
-- Which project an upgrade works on, which Core it migrates to, and what it
-  reports when the CLI is older than that Core: `spec:AST-040` FR9–FR13.
-- Which files hold a project's agent docs, and where `init` writes them and
-  refuses to: `architecture:cli-surface` INV31.
-- The official package list and how discover reads it: `spec:AST-051` FR11.
-- How a host's package sets are matched to a project's pins, which
-  integrations they serve, and how a run records the packages it resolved:
-  `architecture:cli-surface` INV30.
-- Classifying a change to released behavior that this record requires:
-  `spec:AST-017`, and `architecture:cli-surface` INV10a for a refusal that
-  corrects a write outside its confined root.
-- What a project starter contains, and the template kind that ships it.
-- Equivalent internal implementations remain valid when they satisfy this
-  contract.
+- 升级作用于哪个项目、迁移到哪个 Core，以及当 CLI 比该 Core 旧时它报告什么：`spec:AST-040` FR9–FR13。
+- 哪些文件存放项目的 agent 文档，以及 `init` 把它们写到何处、何处拒绝写入：`architecture:cli-surface` INV31。
+- 官方包列表以及 discover 如何读取它：`spec:AST-051` FR11。
+- 宿主的包集合如何与项目固定的版本相匹配、它们服务于哪些集成，以及一次运行如何记录它解析出的包：`architecture:cli-surface` INV30。
+- 对本记录所要求的已发布行为变更进行分类：`spec:AST-017`；对纠正超出其受限根目录的写入的拒绝，见 `architecture:cli-surface` INV10a。
+- 项目起始模板包含什么，以及提供它的模板种类。
+- 等价的内部实现只要满足本契约，就仍然有效。
 
 ## Requirements
 
-In this record, a **door** is a way to start the CLI: the `@astryxdesign/cli`
-package itself, installed in a project and run through its package manager (the
-project's own CLI), installed for the computer, such as with
-`npm i -g @astryxdesign/cli`, or run once through a package runner, such as
-`npx @astryxdesign/cli`; and a programmatic host through
-`@astryxdesign/cli/host`. A **copy** is the `@astryxdesign/cli` a door starts:
-the one it installed or fetched, the one a host carries, or a release in the
-per-user cache that global mode installed (FR2, FR3, FR6). The **global copy**
-is the CLI package installed for the computer: one in npm's global folder (a
-`node_modules` whose owner holds no package.json), or in a global folder that a
-package manager's own settings name (Bun's `BUN_INSTALL` or `globalDir`, Yarn's
-`global-folder`, pnpm's `PNPM_HOME` or `global-dir`, and each one's default),
-read the way that package manager reads them. A package kept in pnpm's store
-(`<store>/v<N>/links`) is global only when such a pnpm global folder links to
-it. A folder's layout alone never makes a copy global, and when the CLI cannot
-tell, the copy is not global, so it runs no update check and writes no agent
-text.
+在本记录中，**door** 是一种启动 CLI 的方式：`@astryxdesign/cli` 包本身，安装在项目中并通过其包管理器运行（项目自带的 CLI），为电脑安装，例如用 `npm i -g @astryxdesign/cli`，或通过包运行器运行一次，例如 `npx @astryxdesign/cli`；还包括通过 `@astryxdesign/cli/host` 接入的程序化宿主。**copy** 是 door 启动的那份 `@astryxdesign/cli`：它安装或获取的那一份、宿主携带的那一份，或全局模式安装到每用户缓存中的某个发布版本（FR2、FR3、FR6）。**global copy** 是为电脑安装的 CLI 包：位于 npm 的全局文件夹中的一个（即一个其所属方没有 package.json 的 `node_modules`），或位于某个包管理器自身设置指定的全局文件夹中（Bun 的 `BUN_INSTALL` 或 `globalDir`、Yarn 的 `global-folder`、pnpm 的 `PNPM_HOME` 或 `global-dir`，以及各自的默认值），按该包管理器读取它们的方式来读取。保存在 pnpm 存储（`<store>/v<N>/links`）中的包，只有当这样的 pnpm 全局文件夹链接到它时才是全局的。仅凭一个文件夹的布局绝不能使某份副本成为全局副本；当 CLI 无法判断时，该副本不是全局副本，因此它不运行更新检查，也不写入 agent 文本。
 
-A folder's **project** is found the way the CLI finds the Core and the CLI it
-reads there: the `@astryxdesign/core` installed in the folder or one of the four
-folders above it, or a workspace's own Core package; the `@astryxdesign/cli`
-installed in the folder or one of the five folders above it, resolved by the
-package manager's Plug'n'Play runtime, or a workspace's own CLI package (the
-folder itself, or `packages/cli` in it or one of the five folders above it); and
-otherwise the nearest `package.json` at or above the folder that declares either
-package, searched up to the first folder that holds version-control metadata and
-never in the home folder unless the run starts there. A folder deeper than that
-nearby look finds the project's Core and its own CLI the same way from that
-`package.json`'s folder, as a package runner resolves the project's command from
-any depth. A folder is
-**outside a project** when none of these exist. A folder inside another
-project, such as a repository cloned into it or a nested app, therefore
-answers with the enclosing project's release. The project that an upgrade
-works on is `spec:AST-040` FR9's.
+一个文件夹的**项目**的查找方式，与 CLI 查找它在其中读取的 Core 和 CLI 的方式相同：该文件夹或其上方四个文件夹之一中安装的 `@astryxdesign/core`，或工作区自带的 Core 包；该文件夹或其上方五个文件夹之一中安装的 `@astryxdesign/cli`，通过包管理器的 Plug'n'Play 运行时解析，或工作区自带的 CLI 包（该文件夹本身，或它其中的、或它上方五个文件夹之一的 `packages/cli`）；否则，取该文件夹处或其上方最近的、声明了这两个包之一的 `package.json`，向上搜索到第一个包含版本控制元数据的文件夹为止，并且绝不在主文件夹中搜索，除非运行就从那里开始。比这次就近查找更深层的文件夹，会从该 `package.json` 所在的文件夹开始，以同样的方式找到项目的 Core 和它自己的 CLI，正如包运行器从任意深度解析项目的命令那样。当这些都不存在时，该文件夹就处于**项目之外**。因此，位于另一个项目内部的文件夹（例如克隆到其中的仓库或嵌套的应用）会以外部项目的发布版本作答。升级所作用的项目是 `spec:AST-040` FR9 所定义的那个项目。
 
-- **FR1 — One CLI behind thin doors.** All behavior lives in
-  `@astryxdesign/cli`. A door that runs that package directly, the project's own
-  CLI or a copy installed for the computer or fetched by a package runner, runs
-  the CLI itself. A programmatic host carries the `@astryxdesign/core` release
-  equal to the CLI release it runs, chooses that release (FR2, FR3, FR6), and
-  starts it through the host entry `@astryxdesign/cli/host`, a supported
-  programmatic API whose reference doc states each input, its default, the
-  result, and the errors (`spec:AST-017` FR14). A door MUST NOT pass anything to
-  the CLI through an environment variable, an option, or a configuration key,
-  and MUST NOT add a command, an option, or any other behavior.
-  - The host entry's inputs are explicit: the arguments; the working folder;
-    the command name the door's callers type (FR5); the package sets the door
-    may serve, in its order of preference, and the integrations it approves for
-    use outside a project, resolved by name from the package set that serves
-    the run, in addition to what FR12 finds there (`architecture:cli-surface`
-    INV30); the discover sources the door adds; and, when the door found the
-    project's own CLI and did not run it, the reason (FR2), as text the host
-    defines; this record sets no list of reasons.
-  - Discover calls a door's sources after every integration's source and before
-    the official list (`spec:AST-051` FR6 and FR11), and names each as the
-    door's, never as an integration's.
-  - A door makes one call per process. A call takes over the process's working
-    folder, arguments, standard streams, and exit, so a second call in the same
-    process MUST fail before running anything; calls in separate processes
-    share nothing (`spec:AST-017` FR18).
-  - Given the same release, Core, folder, arguments, and inputs, a command
-    MUST give the same exit status, output, and file changes through every
-    door, apart from the command names FR5 sets and the standard-error lines
-    FR5, FR6, and FR9 define.
-- **FR2 — In a project, the project's own CLI answers; without one, the copy
-  that started the run.** In a folder that belongs to a project, one release
-  answers every command, reads included, and every template, doc, component
-  doc, hint, and agent text comes from that release.
-  - When the project installs `@astryxdesign/cli`, that CLI answers, whatever
-    its version, as it did before global mode (DEC-10). A run that starts in
-    another copy MUST hand the run to it (FR9) before loading anything the
-    project provides: its `astryx.config`, its integrations, or its Core.
-    `doctor` warns when that CLI and the project's Core are different releases
-    and names the command that brings them to one release; from a folder
-    inside the project whose `package.json` is not the project's
-    (`spec:AST-040` FR9), it says to run from the project's folder instead.
-  - When the project installs no CLI, as a project with only Core or a fresh
-    clone with nothing installed, the copy that started the run answers, as
-    it did before global mode (DEC-10), reading the project's Core as it
-    always has. In text mode, after a successful command, at most once a day
-    per project and under the same switches as FR10's notices, one line on
-    standard error says so when that copy is not the project's Core release:
-    `astryx: this project has no Astryx CLI installed; answered by CLI <version> while its Core is <core>. To match, run: <command>`,
-    where the command adds `@astryxdesign/cli` at the Core's version with the
-    project's package manager. For this advice, the project is the one
-    `spec:AST-040` FR9 defines: from a folder inside it whose `package.json`
-    is not the project's, the line, `doctor` and the setup reminder say to run
-    from that project's folder instead of naming a command, and a folder that
-    belongs to no such project gets no project advice, as outside a project. A machine-readable result carries
-    `meta.answeredBy.copy` `starting`. `doctor` warns in the same case and
-    names the same command, and the setup reminder of a project that has not
-    run `init` names it first, then `astryx init`.
-  - The release equal to the project's Core (the matched release) is the
-    version of the Core the folder reads, else the Core version the project's
-    lockfile records, else the newest published release that the Core range
-    the project declares allows; a project that records no Core is matched by
-    the CLI it locks or declares, in the same order.
-  - When the project's own CLI is installed but cannot start, the matched
-    release answers: the copy that started the run when it is that release,
-    otherwise the release in the per-user cache, installed there through the
-    package manager the first time a project needs it; a hosted run takes it
-    only from a package set that qualifies under `architecture:cli-surface`
-    INV30 and installs nothing, so with no such set the release cannot be
-    obtained. The package manager is
-    started without a shell, and a declared Core range is read only when it is a
-    plain version range, so nothing a project declares reaches a shell. While a
-    release installs, or while the run waits for another run installing it, a
-    text-mode run prints one line on standard error saying so; a
-    machine-readable run prints none. An install that a live run is still making
-    is waited for, a lock its run left when it stopped is taken over, and a
-    cached release whose files are damaged is installed again. An install that
-    has not finished within a generous bound is a release that cannot be
-    obtained (below), never a stopped process. No install outlives the run that
-    started it: it ends when that run ends, however the run ends, and its record
-    of npm's process is removed then, since that number can later name another
-    process. A run that takes over a stopped run's lock ends the install that
-    lock records only when the process is surely it: its arguments are exactly
-    npm, or node running npm's entry file, installing `@astryxdesign/cli` at the
-    lock's release, it started after the lock was taken, and the lock is younger
-    than any install may take. npm's process title, which the system may report
-    as one argument, is read as its arguments. Otherwise it takes the lock over
-    and leaves the process alone.
-  - `astryx upgrade` follows the same rule: the project's own CLI runs its
-    codemods, and `spec:AST-040` FR13 defines what it reports when it is older
-    than the installed Core; in a project with no CLI of its own, the copy that
-    started the run runs its own codemods, as before global mode.
-  - When a door finds the project's own CLI and declines to run it, it passes
-    the reason (FR1). The release equal to that CLI's version then answers in
-    its place when the door can run it; otherwise the copy that started the
-    run answers, announced as for a release that cannot be obtained, and the
-    warning names the reason the project's CLI was declined.
-  - When the release this requirement names is not installed and cannot be
-    obtained (it cannot be fetched, the registry does not have it, no
-    published release fits the declared range, or the cache cannot be
-    written), the run MUST be answered by the copy that started it, as before
-    global mode. It MUST be announced: in text mode one line on standard error,
-    `astryx: could not get Astryx <release> to match this project's Core (<reason>); answering with CLI <version> instead`,
-    and in a machine-readable result `meta.answeredBy.copy` is `fallback`.
-    No other release answers, and nothing falls back while the matched
-    release can be obtained. A failed install is recorded in the per-user
-    cache, by release, and no copy using that cache starts it again for 2
-    minutes after a first failure, or 10 minutes after a second failure in a
-    row; a successful install forgets it. So an offline run prints at most one
-    line saying it installs, and the warning says when it was last tried.
-    `ERR_VERSIONS_UNAVAILABLE` is for a run nothing can answer, such as a
-    command that needs Core outside a project that cannot install it (FR3).
-- **FR3 — Outside a project, the running release answers as a new project
-  would.** Outside a project, every copy answers itself, the global copy
-  included (FR6, FR9). The answering release MUST answer as it would in a new
-  project that installs only that release of Core, the computer-level
-  integrations (FR12), and any integration a programmatic host approves (FR1).
-  Outside a project, or in a project with nothing
-  installed (FR2's copy that started the run, such as in a fresh clone), every
-  command that needs Core answers from the carried Core: the
-  `@astryxdesign/core` release equal to the answering CLI, beside it, carried by
-  its door (FR1), or kept in the per-user cache, where a copy that carries none
-  installs it the first time a command needs it. The global copy also installs
-  its own release's Core there in the background, on any run while none is
-  beside it or cached (FR6), so commands that read Core work offline after one
-  online run. A project's installed Core is always read in its place, from any
-  depth. When the carried Core cannot be installed, those commands fail with
-  `ERR_VERSIONS_UNAVAILABLE` before any write, and in a project the message says
-  the project has no Core installed and to install its dependencies; the
-  exception is an open `search`, which answers from the domains that need no
-  Core and says what it skipped and why: `meta.partial` in a machine-readable
-  result, and one line on standard error in text mode. `doctor`, `swizzle`, and
-  `upgrade` judge or change a project and MUST NOT read the carried Core.
-  Output outside a project MUST NOT give advice that works only inside one, such
-  as a step that sets up, configures, or refreshes a project the folder does not
-  have.
-- **FR4 — Every command declares what it does outside a project.** Every
-  command and subcommand MUST declare one of three values in its command doc,
-  and `astryx manifest` MUST publish that value as the command's
-  `outsideProject`:
-  - `same`: it gives the answer it gives in a new project (FR3).
-  - `refuse`: it writes nothing and fails before doing any work, naming what it
-    needs, an app project or an integration package.
-  - `own`: it does something else outside a project, which its command doc
-    states and a test of its own covers.
+- **FR1 — 薄 door 之后只有一个 CLI。** 所有行为都位于 `@astryxdesign/cli` 中。直接运行该包的 door——项目自带的 CLI，或为电脑安装的、或由包运行器获取的副本——运行的就是 CLI 本身。程序化宿主携带与其所运行 CLI 发布版本相等的 `@astryxdesign/core` 发布版本，选定该发布版本（FR2、FR3、FR6），并通过宿主入口 `@astryxdesign/cli/host` 启动它，这是一个受支持的程序化 API，其参考文档说明了每个输入、其默认值、结果以及错误（`spec:AST-017` FR14）。door 不得通过环境变量、选项或配置键向 CLI 传递任何内容，也不得新增命令、选项或任何其他行为。
+  - 宿主入口的输入是明确的：参数；工作文件夹；door 的调用方键入的命令名（FR5）；door 可提供的包集合（按其偏好顺序），以及它为项目之外的使用所批准的集成（按名称从服务于本次运行的包集合中解析，并附加在 FR12 于该处找到的内容之上，见 `architecture:cli-surface` INV30）；door 添加的 discover 来源；以及，当 door 找到了项目自带的 CLI 却没有运行它时，原因（FR2），作为由宿主定义的文本；本记录不规定原因列表。
+  - Discover 在每个集成的来源之后、官方列表之前（`spec:AST-051` FR6 和 FR11）调用 door 的来源，并把每个来源标为 door 的，绝不标为某个集成的。
+  - door 在每个进程中只发起一次调用。一次调用会接管进程的工作文件夹、参数、标准流和退出，因此同一进程中的第二次调用必须在运行任何内容之前失败；不同进程中的调用互不共享（`spec:AST-017` FR18）。
+  - 给定相同的发布版本、Core、文件夹、参数和输入，同一条命令经由每个 door 都必须给出相同的退出状态、输出和文件变更，但 FR5 设定的命令名以及 FR5、FR6 和 FR9 定义的标准错误行除外。
+- **FR2 — 在项目中由项目自带的 CLI 作答；没有它时，由启动本次运行的副本作答。** 在属于某个项目的文件夹中，由一个发布版本为每条命令作答，读取类命令也包括在内，并且每个模板、文档、组件文档、提示和 agent 文本都来自该发布版本。
+  - 当项目安装了 `@astryxdesign/cli` 时，由该 CLI 作答，无论其版本为何，与全局模式之前一样（DEC-10）。在另一份副本中开始的运行，必须在加载项目提供的任何内容（它的 `astryx.config`、它的集成或它的 Core）之前，把运行交给它（FR9）。当该 CLI 与项目的 Core 属于不同发布版本时，`doctor` 会警告，并给出使二者归于同一发布版本的命令；当从项目内部某个 `package.json` 不属于该项目的文件夹中运行时（`spec:AST-040` FR9），它改为提示从项目的文件夹运行。
+  - 当项目没有安装 CLI 时——例如只有 Core 的项目，或什么都没装的全新克隆——由启动本次运行的副本作答，与全局模式之前一样（DEC-10），并一如既往地读取项目的 Core。在文本模式下，命令成功之后，每个项目每天最多一次，且在 FR10 的通知所用的相同开关之下，标准错误上的一行会说明：当该副本不是项目 Core 的发布版本时，`astryx: this project has no Astryx CLI installed; answered by CLI <version> while its Core is <core>. To match, run: <command>`，其中该命令会用项目的包管理器按 Core 的版本添加 `@astryxdesign/cli`。就这一提示而言，项目是 `spec:AST-040` FR9 所定义的那个：当从项目内部某个 `package.json` 不属于该项目的文件夹中运行时，该行、`doctor` 和安装设置提醒都改为提示从该项目的文件夹运行，而不是给出命令；不属于这类项目的文件夹得不到项目级提示，与在项目之外一样。机器可读的结果携带 `meta.answeredBy.copy` 为 `starting`。`doctor` 在同样情况下给出警告并给出同一条命令，尚未运行 `init` 的项目的安装设置提醒先给出该命令，再给出 `astryx init`。
+  - 与项目 Core 相等的发布版本（匹配版本）是：该文件夹读取到的 Core 的版本；否则是项目的 lockfile 记录的 Core 版本；否则是项目声明的 Core 范围所允许的最新已发布版本；不记录 Core 的项目，则按它锁定或声明的 CLI 以同样的顺序进行匹配。
+  - 当项目自带的 CLI 已安装但无法启动时，由匹配版本作答：如果启动本次运行的副本正是该版本，就由它作答；否则由每用户缓存中的该发布版本作答，首次有项目需要它时通过包管理器安装到那里；托管运行只从符合 `architecture:cli-surface` INV30 的包集合中获取它，并且不安装任何东西，因此没有这样的包集合时就无法获得该发布版本。启动包管理器时不带 shell，声明的 Core 范围只有在是普通版本范围时才被读取，因此项目声明的任何内容都不会到达 shell。当某个发布版本正在安装时，或当本次运行在等待另一次正在安装它的运行时，文本模式的运行会在标准错误上打印一行说明这一点；机器可读的运行不打印任何内容。仍在进行的运行所发起的安装会被等待，运行停止时留下的锁会被接管，文件已损坏的缓存发布版本会被重新安装。在宽松的时限内仍未完成的安装，视为无法获得的发布版本（见下文），而不是已停止的进程。任何安装都不会比启动它的运行活得更久：无论该运行如何结束，安装都随之结束，npm 进程的记录也在那时移除，因为该进程号之后可能指向另一个进程。接管已停止运行的锁的运行，只有当那个进程确定就是它时才结束该锁所记录的安装：其参数恰好是 npm，或是 node 运行 npm 的入口文件，在锁的发布版本上安装 `@astryxdesign/cli`，它是在锁被取得之后启动的，并且该锁的年龄不超过任何安装可能需要的时长。npm 的进程标题（系统可能将其报告为一个参数）按其参数读取。否则，它接管该锁，并不去动那个进程。
+  - `astryx upgrade` 遵循同一规则：由项目自带的 CLI 运行它的 codemod，当它比已安装的 Core 旧时，由 `spec:AST-040` FR13 定义它报告什么；在没有自带 CLI 的项目中，由启动本次运行的副本运行它自己的 codemod，与全局模式之前一样。
+  - 当 door 找到项目自带的 CLI 却拒绝运行它时，它传递原因（FR1）。此时，如果 door 能运行该 CLI 版本对应的发布版本，就由它代为作答；否则由启动本次运行的副本作答，并按无法获得的发布版本的方式加以声明，且警告中说明拒绝项目 CLI 的原因。
+  - 当本条要求所指的发布版本未安装且无法获得时（无法获取、registry 中没有、没有符合所声明范围的已发布版本，或缓存无法写入），本次运行必须由启动它的副本作答，与全局模式之前一样。必须加以声明：在文本模式下，标准错误上的一行，`astryx: could not get Astryx <release> to match this project's Core (<reason>); answering with CLI <version> instead`，并且在机器可读的结果中 `meta.answeredBy.copy` 为 `fallback`。不由任何其他发布版本作答，只要匹配的发布版本可以获得，就不会回退。失败的安装会按发布版本记录在每用户缓存中，使用该缓存的任何副本在首次失败后 2 分钟内、或连续第二次失败后 10 分钟内都不会再次启动它；成功的安装会忘记该记录。因此，离线运行最多打印一行说明它正在安装，而警告会说明上次尝试的时间。`ERR_VERSIONS_UNAVAILABLE` 用于没有任何东西能为其作答的运行，例如在项目之外需要 Core、却无法安装它的命令（FR3）。
+- **FR3 — 在项目之外，由运行中的发布版本按新项目的方式作答。** 在项目之外，每份副本都由自己作答，全局副本也包括在内（FR6、FR9）。作答的发布版本必须按这样一个新项目中的方式作答：该项目只安装该 Core 发布版本、电脑级集成（FR12），以及程序化宿主所批准的任何集成（FR1）。在项目之外，或在什么都没安装的项目中（FR2 中启动本次运行的副本，例如全新克隆），每条需要 Core 的命令都从所携带的 Core 作答：与作答 CLI 相等的 `@astryxdesign/core` 发布版本，位于其旁边、由其 door 携带（FR1），或保存在每用户缓存中——不携带 Core 的副本会在命令首次需要它时安装。全局副本还会在后台把自身发布版本的 Core 安装到那里，在任何一次运行中，只要其旁边和缓存中都没有 Core 就进行（FR6），因此读取 Core 的命令在一次在线运行之后即可离线工作。项目已安装的 Core 始终在其位置上被读取，无论深度如何。当所携带的 Core 无法安装时，这些命令在发生任何写入之前以 `ERR_VERSIONS_UNAVAILABLE` 失败，并且在项目中，消息说明项目没有安装 Core，并要求安装其依赖；例外是处于打开状态的 `search`，它从不需要 Core 的领域作答，并说明它跳过了什么以及为什么：机器可读结果中的 `meta.partial`，以及文本模式下标准错误上的一行。`doctor`、`swizzle` 和 `upgrade` 评判或更改项目，绝不得读取所携带的 Core。项目之外的输出绝不得给出只在项目内有效的建议，例如为一个该文件夹并不拥有的项目做设置、配置或刷新的步骤。
+- **FR4 — 每条命令都声明它在项目之外做什么。** 每条命令和子命令必须在其命令文档中声明三个值之一，并且 `astryx manifest` 必须把该值作为该命令的 `outsideProject` 发布：
+  - `same`：它给出与新项目中相同的答案（FR3）。
+  - `refuse`：它不写入任何内容，并在做任何工作之前失败，说明它需要什么：应用项目或集成包。
+  - `own`：它在项目之外做别的事情，这一点由其命令文档说明，并由它自己的测试覆盖。
 
-  A command that only groups subcommands declares nothing. A refusal fails with
-  `ERR_PROJECT_REQUIRED`, except that a command whose released versions refuse
-  outside a project with another error code keeps that code until a declared
-  minor changes it; that change, and any other change to what a released command
-  does outside a project, is classified under `spec:AST-017`. `doctor` is `own`:
-  outside a project it checks the computer, reporting the Node version, the
-  release that answered and the newest release it knows of, and whether the
-  computer-level agent text (FR8) is present and current; when that text names
-  `astryx` and no `astryx` command is on the search path, apart from a package
-  runner's own copy, it says so and names the install step the text records,
-  or npm's when it records none;
-  and it never fails a check because the folder has no project. `swizzle` is
-  `refuse`, even with a carried Core.
+只对子命令进行分组的命令不声明任何值。拒绝以 `ERR_PROJECT_REQUIRED` 失败，但如果某条命令的已发布版本在项目之外以另一个错误码拒绝，则保留该错误码，直到某个已声明的 minor 版本改变它；这一变更，以及对已发布命令在项目之外行为的任何其他变更，都按 `spec:AST-017` 分类。`doctor` 属于 `own`：在项目之外，它检查电脑，报告 Node 版本、作答的发布版本及其所知的最新发布版本，以及电脑级 agent 文本（FR8）是否存在且为当前版本；当该文本指名 `astryx` 而搜索路径上没有 `astryx` 命令时（包运行器自带的副本除外），它说明这一点并给出该文本记录的安装步骤，文本未记录时则给出 npm 的步骤；并且它绝不会因为文件夹没有项目而让检查失败。`swizzle` 属于 `refuse`，即使携带了 Core 也是如此。
 
-- **FR5 — Every answer names who answered, and one picker names every printed
-  command.**
-  - Every successful machine-readable result MUST carry `meta.answeredBy`:
-    `cli`, the answering CLI's version; `core`, the version of the Core the run
-    pairs with (the project's installed Core, or the carried Core when the
-    project has none or the folder is outside a project), or `null` when there
-    is none; and `copy`, which is `project` for the project's own CLI,
-    `starting` for the copy that started the run in a project with no CLI of
-    its own, `matched` for the release FR2 matches to the project's Core when
-    the project's own CLI cannot start, `carried` outside a project, and
-    `fallback` when the matched release could not be obtained and the copy that
-    started the run answered instead (FR2). A release that
-    predates this field answers without it, and no door adds it.
-  - In text mode, when `copy` is `matched` or `carried`, the run MUST print one
-    line on standard error naming the CLI and Core versions and which copy
-    answered; a `fallback` run prints FR2's warning line instead, and a
-    `starting` run prints none, only FR2's daily hint. A
-    run started in the project's own CLI prints no such line, and a run another
-    copy hands to it prints the one line FR9 defines.
-  - Every command the CLI prints or writes for its caller to run MUST start
-    with the command name that one picker chooses for the folder the command
-    runs in. The picker takes the first of these that applies:
-    1. the command that the integrations the run loads declare for running the
-       CLI, such as `acme astryx` for a company's own command-line tool;
-    2. the name passed by the door that started the run (FR1);
-    3. the package manager's name: the project's run prefix when the project's
-       own CLI answers, `astryx` when the global copy or a release it keeps
-       answers outside a project, and otherwise the package runner with the
-       CLI package pinned to the answering version, such as
-       `npx @astryxdesign/cli@0.7.2`.
-  - The computer-level agent text (FR8) belongs to no folder and names no
-    release, so its commands start with the name of the door that wrote it,
-    and otherwise with `astryx`, the command of the global copy, which answers
-    outside a project itself and hands a project's run to that project's
-    release (FR9). No integration's `cliCommand` applies
-    to it.
-  - The picked name takes the place of the command's leading `astryx` and, run
-    from that folder, MUST reach the same choice of release (FR2, FR3, FR9). A
-    printed command MUST NOT run, through a package runner, the CLI package
-    without a version or a package other than the CLI.
-  - An integration MAY declare in its manifest, as `cliCommand`, the command
-    that runs the CLI for its users: a non-blank single line of at most 120
-    characters, with no surrounding spaces and no Astryx agent-docs marker text
-    (`ASTRYX:START`, `ASTRYX:END`), that starts the CLI through a door following
-    FR1 and FR2. With no declaration, the picker goes on to the door's name.
-    Integrations that declare the same command agree. When the integrations the
-    run loads declare different commands, the picker takes the package manager's
-    name, even when a door started the run, and `doctor` warns, naming each
-    integration and the command it declares. A declaration of any other form
-    counts as absent, never withdraws the integration's other contributions, and
-    `doctor` warns about it; `doctor integration validate` and
-    `integration check` report it as a note (`invalid_cli_command`) beside
-    their issues, marked `next`: it fails nothing until the next minor release
-    (`architecture:cli-surface` INV35).
-  - The picker names every command the CLI prints or writes: hints and next
-    steps, errors and their suggestions, `doctor` fixes, help, docs moves
-    (`spec:AST-047`), recommended commands (`spec:AST-048`), the project's
-    agent-docs block, the computer-level agent text (FR8), and the setup
-    reminder wherever it is printed. No surface spells a command name of its
-    own.
-  - Astryx's own docs, guides and agent text, and an integration's agent-doc
-    lines, write every CLI command bare, beginning `astryx`, or as a
-    `{@command …}` token. An integration's docs write each as a
-    `{@command …}` token; a bare one there is a `plain_command` note
-    (`architecture:cli-surface` DEC-12). The CLI puts the picked name in
-    place of the leading `astryx` when it prints or writes that text. A doc writes a
-    package-manager step as a `{@pm …}` token, or as
-    `{@pm-only <manager> "<reason>" …}` for a step only that package manager can do, and `{@@…}`
-    shows a token as written. The CLI renders each token as it compiles the
-    doc: `{@command …}` as the bare command, and `{@pm …}` in the package
-    manager of the project it runs in; a host that shows docs to readers of
-    every package manager, such as the docsite, picks one. A step that
-    installs a door, or starts one by its own name, is not a CLI command and
-    stays as written.
-  - Machine-readable output, error envelopes included, carries every command
-    bare, beginning `astryx`, and never a picked name or an unrendered
-    token.
-  - A command that finishes work with another release names that release
-    (`spec:AST-040` FR13).
-- **FR6 — The global copy tells its user about newer releases and installs
-  none; projects are never touched.** Outside a project, the global copy
-  answers with its own installed release. No door installs a newer release for
-  the computer, switches to one, or changes the package manager's installation
-  of the global copy; its user upgrades it with the package manager, which
-  FR10's notice names.
-  - The global copy checks the release the package registry tags `latest` for
-    `@astryxdesign/cli`, and the Node range that release declares, at most
-    once in any 24 hours, never sooner than 24 hours after its first run, and
-    only during a run. The check runs in the background, at most one at a
-    time; no command waits for it, fails because of it, or changes its output
-    or exit status because of it. It records what it found, and when, in the
-    per-user state file (FR7), and installs nothing.
-  - On a run while it carries no Core beside it and none is cached for its
-    release, the global copy installs that Core into the per-user cache from a
-    detached step it starts as the run ends, as FR3 needs: never when `CI` is
-    set as below, never blocking or changing a command or holding anything the
-    command's caller waits on, and a failure is silent and waits out FR2's
-    backoff before a later run's step tries again. It never runs on Windows,
-    where a detached process inherits the caller's open pipes; there a command
-    that reads Core installs it the first time it needs it. This installs the
-    global copy's own release's Core only, never a newer release.
-  - No check runs when the environment variable `CI` is set to a value other
-    than empty, `0`, or `false`, or when `NO_UPDATE_NOTIFIER` is set to any
-    value. Astryx defines neither: `CI` is the platform convention continuous
-    integration services set, and `NO_UPDATE_NOTIFIER` the one command-line
-    tools share to silence update notices; each is read only for that shared
-    meaning (`spec:AST-017` FR14).
-  - A release requested by version, such as `npx @astryxdesign/cli@<version>`,
-    runs exactly that release outside a project, with no check; inside a
-    project, FR2 and FR9 decide which release answers. A copy a package runner
-    fetches runs no check.
-  - Updates have no other control; the package manager's registry, proxy, and
-    offline settings apply to the check.
-  - No door updates a project or installs into one. A project's release that is
-    behind the newest gets FR10's notice, and `doctor` reports it; neither
-    installs anything.
-- **FR7 — Writes stay inside named places.** Every file the CLI or a door
-  writes MUST land in one of these places; a write anywhere else MUST be
-  refused before anything is written (`ERR_PATH_TRAVERSAL`,
-  `architecture:cli-surface` INV10):
-  - the operation root: the folder the command runs in, or a folder above it
-    when the record that owns the command's writes says so, such as the project
-    root of an upgrade (`spec:AST-040` FR9), the project that holds the theme
-    module (`spec:AST-050` FR2), and the folder where `init` writes agent docs
-    (`architecture:cli-surface` INV31);
-  - the per-user cache directory of the platform (a cache or configuration
-    folder that an environment setting points at counts only when it is an
-    absolute path), for saved discover answers (`spec:AST-051` FR8), for the
-    releases global mode installs into a project's run (FR2, FR3), and for
-    what `search`, `build`, `component`, `template`, `theme`, `discover`,
-    `docs` and `doctor` keep in `astryx/catalogs` (search's catalogs, each
-    integration's contribution-check results, template discovery's records,
-    the component list (with each integration's component replacements),
-    integrations' theme records, the docs not-found hint's
-    name summaries of folder trees, and doctor's file-only docs checks and
-    theme-wiring scan, which doctor keeps only while the folder exists), a
-    folder only the user can
-    reach (made `0700` by the first run that keeps a gather: `search` or
-    `build`, or another of those commands where an integration can load,
-    never `doctor`; that run keeps its gathers at once; used only while it is
-    a real folder the user owns and others cannot open, never where the
-    system has no user ids), each
-    kept value used only while every input its gather read is unchanged; a
-    run under Yarn Plug'n'Play's loader, such as `yarn astryx`, keeps and
-    uses no catalog; `doctor` lists that folder and its size in an info row,
-    which also names the size limit it shares with the transpile cache below
-    and in such a run says that it keeps none;
-  - the same per-user cache directory, for the code jiti transpiles from the
-    files the CLI loads through it (an integration's manifest, TypeScript doc
-    topics and codemods, a TypeScript config, a built theme artifact, and the
-    theme sources `theme build` loads), in `astryx/jiti`: made `0700` on first
-    use and used at once, only while it is a real folder the user owns and
-    others cannot open, and kept within the same size limit as the catalogs
-    by removing its least recently used copies once it has grown, never one
-    written in the last day or read in the last day where the file system
-    records reads; otherwise nothing is
-    cached on disk; where the system has no user ids jiti keeps its own
-    default, and a set `JITI_FS_CACHE` is left to jiti;
-  - the platform's temporary directory, for scratch work such as building or
-    verifying a package, and for Node's compile cache of the CLI's own modules
-    in `node-compile-cache-<uid>`: made `0700` by a machine's first run and
-    written from that run, used only while it is a real folder the user owns
-    and others cannot open, never where the system has no user ids, and off
-    when `NODE_DISABLE_COMPILE_CACHE` is set;
-  - the per-user configuration directory of the platform, for the documented
-    settings of the computer-level agent text and the per-user state file,
-    `astryx/state.json`, which holds what the update check found and when
-    each notice last printed (FR6, FR8, FR10);
-  - the computer-level agent text (FR8), its links, and its copy, written by
-    `astryx init --user` and by the global copy keeping that text installed,
-    in the background, as FR8 states; no other command writes them, and no
-    package install script does.
+- **FR5 — 每个答案都标明由谁作答，且由一个选择器为打印出的每条命令命名。**
+  - 每个成功的机器可读结果必须携带 `meta.answeredBy`：`cli`，作答 CLI 的版本；`core`，本次运行所配对的 Core 版本（项目已安装的 Core；项目没有 Core 或文件夹处于项目之外时为所携带的 Core），没有时为 `null`；以及 `copy`，其值为 `project`（项目自带的 CLI）、`starting`（在自身没有 CLI 的项目中启动本次运行的副本）、`matched`（项目自带的 CLI 无法启动时 FR2 匹配到项目 Core 的发布版本）、`carried`（项目之外），以及 `fallback`（匹配的发布版本无法获得、改由启动本次运行的副本作答时，见 FR2）。早于该字段的发布版本作答时不带它，也没有任何 door 会添加它。
+  - 在文本模式下，当 `copy` 为 `matched` 或 `carried` 时，本次运行必须在标准错误上打印一行，说明 CLI 和 Core 的版本以及由哪份副本作答；`fallback` 的运行改为打印 FR2 的警告行，`starting` 的运行不打印该行，只打印 FR2 的每日提示。在项目自带的 CLI 中开始的运行不打印这类行，由另一份副本移交给它的运行打印 FR9 定义的那一行。
+  - CLI 打印或写出供调用方运行的每条命令，都必须以同一个选择器为该命令所运行的文件夹选定的命令名开头。该选择器取下列各项中第一个适用的：
+    1. 本次运行所加载的集成为运行 CLI 而声明的命令，例如某家公司自有命令行工具的 `acme astryx`；
+    2. 启动本次运行的 door 所传入的名称（FR1）；
+    3. 包管理器的名称：当项目自带的 CLI 作答时，用项目的运行前缀；当全局副本或它保存的某个发布版本在项目之外作答时，用 `astryx`；否则用包运行器并以作答版本固定 CLI 包，例如 `npx @astryxdesign/cli@0.7.2`。
+  - 电脑级 agent 文本（FR8）不属于任何文件夹，也不指名任何发布版本，因此其中的命令以写出它的 door 的名称开头；否则以 `astryx` 开头，即全局副本的命令，它自身在项目之外作答，并把项目的运行移交给该项目的发布版本（FR9）。任何集成的 `cliCommand` 都不适用于它。
+  - 选定的名称取代命令开头的 `astryx`，并且从该文件夹运行时，必须得到相同的发布版本选择（FR2、FR3、FR9）。打印出的命令不得通过包运行器运行不带版本的 CLI 包，也不得运行 CLI 之外的包。
+  - 集成可以在其 manifest 中以 `cliCommand` 声明为其用户运行 CLI 的命令：一行非空、最多 120 个字符的文本，前后没有空格，也不含 Astryx agent 文档标记文本（`ASTRYX:START`、`ASTRYX:END`），并且通过遵循 FR1 和 FR2 的 door 启动 CLI。没有声明时，选择器继续采用 door 的名称。声明相同命令的集成是一致的。当本次运行所加载的集成声明了不同命令时，选择器采用包管理器的名称，即使运行是由某个 door 启动的也是如此，并且 `doctor` 会警告，逐一指出每个集成及它所声明的命令。任何其他形式的声明都视为缺失，绝不移除该集成的其他贡献，并且 `doctor` 会对其警告；`doctor integration validate` 和 `integration check` 把它作为一条注记（`invalid_cli_command`）报告在其问题旁边，并标记为 `next`：在下一个 minor 版本之前它不会使任何检查失败（`architecture:cli-surface` INV35）。
+  - 该选择器为 CLI 打印或写出的每条命令命名：提示与后续步骤、错误及其建议、`doctor` 的修复、帮助、文档移动（`spec:AST-047`）、推荐命令（`spec:AST-048`）、项目的 agent 文档块、电脑级 agent 文本（FR8），以及出现在任何位置的安装设置提醒。没有任何界面自行拼写命令名。
+  - Astryx 自有的文档、指南和 agent 文本，以及集成的 agent 文档行，编写每条 CLI 命令时都写成裸露形式（以 `astryx` 开头），或写成 `{@command …}` 标记。集成的文档把每条都写成 `{@command …}` 标记；那里出现的裸露形式是一条 `plain_command` 注记（`architecture:cli-surface` DEC-12）。CLI 在打印或写出该文本时，用选定的名称取代开头的 `astryx`。文档把包管理器步骤写成 `{@pm …}` 标记，或对只有该包管理器能完成的步骤写成 `{@pm-only <manager> "<reason>" …}`，而 `{@@…}` 按原样显示标记。CLI 在编译文档时渲染每个标记：`{@command …}` 渲染为裸露的命令，`{@pm …}` 渲染为其所运行项目的包管理器；向使用各种包管理器的读者展示文档的宿主（例如 docsite）会选定一种。安装某个 door 的步骤，或以自身名称启动某个 door 的步骤，不是 CLI 命令，保持原样。
+  - 机器可读的输出（包括错误信封）中的每条命令都是裸露形式，以 `astryx` 开头，绝不使用选定的名称或未渲染的标记。
+  - 用另一个发布版本完成工作的命令会指名该发布版本（`spec:AST-040` FR13）。
+- **FR6 — 全局副本向其用户告知更新的版本，但不安装任何东西；项目绝不会被触碰。** 在项目之外，全局副本用自身已安装的发布版本作答。任何 door 都不为电脑安装更新的发布版本、不切换到更新的发布版本，也不更改包管理器对全局副本的安装；其用户用包管理器升级它，FR10 的通知会指明该包管理器。
+  - 全局副本检查包 registry 为 `@astryxdesign/cli` 标记为 `latest` 的发布版本，以及该发布版本声明的 Node 范围；任意 24 小时内最多一次，绝不在其首次运行后 24 小时内进行，且只在运行期间进行。该检查在后台运行，同一时间最多一个；没有命令会等待它、因它而失败，或因它而改变输出或退出状态。它把发现的内容及时间记录在每用户状态文件（FR7）中，并不安装任何东西。
+  - 在某次运行中，如果它旁边没有 Core，且其发布版本也没有缓存 Core，全局副本会在运行结束时所启动的分离步骤中，把该 Core 安装到每用户缓存，正如 FR3 所需：在下方所述 `CI` 已设置时绝不进行，绝不阻塞或改变命令，也不持有命令调用方等待的任何东西，失败时保持静默，并在之后的运行步骤重试之前等过 FR2 的退避时间。它在 Windows 上绝不运行，因为在 Windows 上分离的进程会继承调用方打开的管道；在那里，读取 Core 的命令会在首次需要时安装它。这只会安装全局副本自身发布版本的 Core，绝不安装更新的发布版本。
+  - 当环境变量 `CI` 被设为空、`0` 或 `false` 以外的值时，或当 `NO_UPDATE_NOTIFIER` 被设为任意值时，不运行任何检查。Astryx 并未定义这两者：`CI` 是持续集成服务所设置的平台约定，`NO_UPDATE_NOTIFIER` 是命令行工具共用的、用于静默更新通知的变量；两者都只按这一共同含义读取（`spec:AST-017` FR14）。
+  - 按版本请求的发布版本，例如 `npx @astryxdesign/cli@<version>`，在项目之外运行的正是该发布版本，且不进行检查；在项目内，由 FR2 和 FR9 决定哪个发布版本作答。包运行器获取的副本不运行检查。
+  - 更新没有其他控制方式；包管理器的 registry、代理和离线设置对该检查生效。
+  - 任何 door 都不更新项目，也不向项目中安装。落后于最新版本的项目发布版本会得到 FR10 的通知，`doctor` 也会报告它；两者都不安装任何东西。
+- **FR7 — 写入只发生在已指名的位置内。** CLI 或 door 写入的每个文件都必须落在下列位置之一；在其他任何位置的写入都必须在写入任何内容之前被拒绝（`ERR_PATH_TRAVERSAL`、`architecture:cli-surface` INV10）：
+  - 操作根：命令所运行的文件夹，或（当拥有该命令写入的记录如此规定时）它上方的某个文件夹，例如升级的项目根（`spec:AST-040` FR9）、持有主题模块的项目（`spec:AST-050` FR2），以及 `init` 写入 agent 文档的文件夹（`architecture:cli-surface` INV31）；
+  - 平台的每用户缓存目录（环境设置指向的缓存或配置文件夹，只有在它是绝对路径时才计入），用于保存的 discover 答案（`spec:AST-051` FR8），用于全局模式安装到项目运行中的发布版本（FR2、FR3），以及用于 `search`、`build`、`component`、`template`、`theme`、`discover`、`docs` 和 `doctor` 保存在 `astryx/catalogs` 中的内容（search 的目录、每个集成的贡献检查结果、模板发现的记录、组件列表（以及每个集成的组件替换）、集成的主题记录、docs 未找到提示中文件夹树的名称摘要，以及 doctor 只针对文件的文档检查和主题接线扫描——doctor 只在文件夹存在时保留后者）；这是一个只有用户才能访问的文件夹（由首次保留收集内容的运行设为 `0700`：`search` 或 `build`，或那些命令中集成可以加载的另一个，绝不是 `doctor`；该次运行会立即保留其收集内容；只有在它是用户拥有、他人无法打开的真实文件夹时才使用，在系统没有用户 ID 的地方绝不使用），每个保留的值只在其收集时读取的每个输入都未改变时才使用；在 Yarn Plug'n'Play 加载器下运行的运行（例如 `yarn astryx`）不保留也不使用任何目录；`doctor` 在信息行中列出该文件夹及其大小，该行还给出它与下方转译缓存共享的大小上限，并在此类运行中说明它不保留任何内容；
+  - 同一个每用户缓存目录，用于 jiti 从 CLI 通过它加载的文件转译出的代码（集成的 manifest、TypeScript 文档主题和 codemod、TypeScript 配置、构建好的主题产物，以及 `theme build` 加载的主题源），位于 `astryx/jiti`：首次使用时设为 `0700` 并立即使用，只有在它是用户拥有、他人无法打开的真实文件夹时才使用，并且在增长后通过移除最近最少使用的副本，与目录保持同一大小上限，绝不移除最后一天写入或（在文件系统记录读取的情况下）最后一天读取的副本；否则不在磁盘上缓存任何内容；在系统没有用户 ID 的地方，jiti 保留其自身的默认值，而设置过的 `JITI_FS_CACHE` 交由 jiti 处理；
+  - 平台的临时目录，用于诸如构建或验证包的临时工作，以及 Node 对 CLI 自身模块的编译缓存（位于 `node-compile-cache-<uid>`）：由一台机器的首次运行设为 `0700` 并从该次运行开始写入，只有在它是用户拥有、他人无法打开的真实文件夹时才使用，在系统没有用户 ID 的地方绝不使用，在设置 `NODE_DISABLE_COMPILE_CACHE` 时关闭；
+  - 平台的每用户配置目录，用于电脑级 agent 文本的已记录设置，以及每用户状态文件 `astryx/state.json`，后者保存更新检查发现的内容以及每条通知上次打印的时间（FR6、FR8、FR10）；
+  - 电脑级 agent 文本（FR8）、它的链接及其副本，由 `astryx init --user` 和保持该文本安装的全局副本在后台写入，如 FR8 所述；没有其他命令写入它们，也没有任何包安装脚本写入。
 
-  No run writes a project's agent docs into the home folder or a settings folder
-  in it (`architecture:cli-surface` INV31); the computer-level agent text above
-  is not a project's agent docs, and INV31 says so. When a door fetches a
-  release through the package manager, the package manager's own files follow
-  its own settings. `architecture:cli-surface` INV10a classifies a refusal that
-  corrects a write a released version made outside these places.
+任何运行都不把项目的 agent 文档写进主文件夹或其中的设置文件夹（`architecture:cli-surface` INV31）；上述电脑级 agent 文本不是项目的 agent 文档，INV31 也这样说明。当 door 通过包管理器获取某个发布版本时，包管理器自身的文件遵循它自己的设置。`architecture:cli-surface` INV10a 对纠正已发布版本在这些位置之外所做写入的拒绝进行分类。
 
-- **FR8 — Everything global ships inside the release.** The agent text, the
-  official package list (`spec:AST-051` FR11), and the project starters ship
-  inside each CLI release. Each is generated from the repository when the
-  release is built and is never fetched at run time or edited by hand, and a
-  check MUST fail when a committed copy no longer matches the repository.
-  - Every agent text a release prints or writes names only the command name FR5
-    picks for its surface. The computer-level text is its own short text: it
-    tells an agent that Astryx is on the computer, when it is relevant, and to
-    start with `astryx search`; it names no version, no release-specific
-    command or prop, and only entry points every release keeps (`search`,
-    `docs`, `component`, and the like), so an older copy never misleads.
-    It also gives the build route the project agent docs give, through their
-    shared workflow wording: work in a project folder, new or existing, adding
-    `@astryxdesign/core` and `@astryxdesign/cli`, or, where the project already
-    installs Core, the CLI at that Core's version; run `astryx init` there; then
-    start from a template, check, and deliver the built project.
-    When it names `astryx`, it ends with
-    ``If `astryx` is not found, run `<install step>` first.``, where the
-    step installs the CLI for the computer with the package manager and folder
-    of the global copy that wrote it, without a version; any other copy keeps
-    the step the file records, or names npm's when it records none.
-  - The computer-level text is one file, `.agents/skills/astryx/SKILL.md` in
-    the home folder, which most agent tools read. The computer-level agent
-    files table below names each other folder it reaches: a folder link to its
-    folder with a relative target, a junction on Windows, or a managed copy
-    where a link cannot be made or the tool skips links. A refresh rewrites the
-    one file; the links follow it. It is installed with the global copy: on the
-    global copy's first run, and on the first run after the global copy's
-    installed release changes, as when its user upgrades it, the global copy
-    writes or refreshes it in the background, so no command waits for it or
-    prints anything about it, and a package's install scripts never write it.
-  - `astryx init --user` writes or refreshes it in the foreground, in any
-    folder (FR9). `astryx init --user --remove-agents` removes the file, every
-    link the CLI made, and every managed copy, and records that the
-    computer-level text is not wanted. The global copy honors that choice, and
-    writes nothing, until `astryx init --user` runs again.
-  - The settings file is `astryx/settings.json` in the per-user configuration
-    directory (FR7): `computerAgentText.install`, `true` or `false`, and
-    `computerAgentText.links`, the links the CLI made, so removal removes
-    exactly those. A missing file means install. No environment variable or
-    option changes it.
-  - The file and each managed copy record, inside their managed markers, a hash
-    of their text. A file whose text no longer matches its recorded hash, or
-    that records none, was edited by a person and is never overwritten or
-    removed; a file without the markers is never changed; no write follows a
-    link in a file's place; and nothing the CLI did not create at a table
-    folder is replaced. `init --user` names each such path as kept and why, and
-    `doctor` reports it, and any link whose skill folder is missing.
-  - Every project starter a release ships scaffolds, installs, and builds with
-    that release, and a check MUST prove it for every starter before the
-    release ships. A scaffold pins every Astryx package to the release that
-    made it and declares the CLI, so the project's own copy answers from then
-    on (FR2).
+- **FR8 — 一切全局内容都随发布版本一起提供。** agent 文本、官方包列表（`spec:AST-051` FR11）和项目起始模板都随每个 CLI 发布版本一起提供。每一项都在构建发布版本时从仓库生成，绝不在运行期获取，也不可手工编辑；当已提交的副本不再与仓库匹配时，检查必须失败。
+  - 发布版本打印或写出的每份 agent 文本都只使用 FR5 为其界面选定的命令名。电脑级文本是它自己的简短文本：它告诉 agent Astryx 就在这台电脑上（在相关的时候），并提示从 `astryx search` 开始；它不指名任何版本、任何特定于发布版本的命令或 prop，只用每个发布版本都保留的入口点（`search`、`docs`、`component` 等），因此较旧的副本绝不会误导。它还通过共享的工作流措辞给出项目 agent 文档所给出的构建路径：在项目文件夹（新建或已存在）中工作，添加 `@astryxdesign/core` 和 `@astryxdesign/cli`，或在项目已安装 Core 的情况下，添加该 Core 版本对应的 CLI；在那里运行 `astryx init`；然后从模板开始、检查，并交付构建好的项目。当它指名 `astryx` 时，以 ``If `astryx` is not found, run `<install step>` first.`` 结尾，其中该步骤用写出它的那份全局副本所属的包管理器和文件夹，为电脑安装不带版本的 CLI；任何其他副本保留该文件记录的步骤，文件未记录时则指名 npm 的步骤。
+  - 电脑级文本是一个文件，即主文件夹中的 `.agents/skills/astryx/SKILL.md`，大多数 agent 工具都读取它。下方的电脑级 agent 文件表列明它到达的其他每个文件夹：以相对目标指向其文件夹的文件夹链接、Windows 上的 junction，或在无法建立链接、或该工具跳过链接的情况下使用的受管副本。一次刷新会重写这一个文件；链接随之更新。它随全局副本一起安装：在全局副本的首次运行中，以及在全局副本已安装的发布版本发生变化之后的首次运行中（例如其用户升级它之后），全局副本会在后台写入或刷新它，因此没有命令会等待它，也没有命令会打印任何关于它的内容，包的安装脚本也绝不写入它。
+  - `astryx init --user` 在前台、在任意文件夹中写入或刷新它（FR9）。`astryx init --user --remove-agents` 移除该文件、CLI 建立的每个链接以及每个受管副本，并记录不需要电脑级文本。全局副本尊重该选择，不写入任何内容，直到再次运行 `astryx init --user`。
+  - 设置文件是每用户配置目录（FR7）中的 `astryx/settings.json`：`computerAgentText.install` 为 `true` 或 `false`，以及 `computerAgentText.links`，即 CLI 建立的链接，因此移除时会恰好移除这些链接。文件缺失表示要安装。没有环境变量或选项会改变它。
+  - 该文件和每个受管副本在其受管标记之内记录其文本的哈希。文本不再与所记录哈希匹配、或未记录哈希的文件，是被人工编辑过的，绝不覆盖也不移除；没有标记的文件绝不改动；绝不在文件位置沿链接写入；CLI 未在表格所列文件夹中创建的任何内容都不会被替换。`init --user` 逐一指出此类路径为已保留并说明原因，`doctor` 会报告它，以及任何其 skill 文件夹缺失的链接。
+  - 发布版本携带的每个项目起始模板都用该发布版本脚手架、安装并构建，并且检查必须在发布版本发布之前为每个起始模板证明这一点。脚手架把每个 Astryx 包固定到生成它的发布版本，并声明 CLI，因此从此以后由项目自带的副本作答（FR2）。
 
-- **FR9 — Every copy hands a project's run to the release that answers there.**
-  Every copy of the CLI, whether installed in the project, installed for the
-  computer, fetched by a package runner, or carried by a programmatic host, that
-  starts a run in a folder belonging to a project MUST hand the run to the
-  release FR2 names when it is not that release itself: to the project's own CLI
-  when the project installs one, whatever its version, and to the matched
-  release when that CLI cannot start. A project with no CLI of its own is
-  answered by the copy that started the run, with no hand-off. This holds
-  whatever release the copy is and whatever version the command line asked for.
-  Outside a project, every copy answers itself (FR3).
-  - A copy hands the run off before it loads anything the project provides
-    (FR2). It does not hand off when it is itself the release FR2 names, or
-    when the door that started it declined the project's CLI (FR2).
-  - A command that acts on the computer rather than the folder it runs in,
-    `astryx init --user` (FR8) and `astryx docs global` with its pages, the
-    docs of global mode itself, is never handed to a project's release: it is
-    answered as outside a project wherever it runs, so those docs read the same
-    inside a project whose release predates them, and its standard-error line
-    says it answered for the computer.
-  - `astryx --help` carries one line, and the manifest (FR4) a `globalMode`
-    field with `docs` and `summary`, that say what a run may do beyond its
-    command, the hand-off, the daily check (FR6), and the agent skill (FR8),
-    and point to `astryx docs global` (`spec:AST-017` FR14).
-  - A run is handed off at most once. The copy a run is handed to makes the
-    same choice and finds itself, so a run never returns to a copy it has
-    left.
-  - The copy the run is handed to receives what it would receive if started
-    directly in that folder: the same arguments, working folder, and standard
-    input, output, and error, with nothing added to its environment, options,
-    or configuration (FR1). The run ends with that copy's exit status, or the
-    signal that ended it. A termination or hangup signal sent to the copy that
-    started the run reaches the copy it handed the run to. A SIGINT that
-    reaches only the starting copy is forwarded if the handed-off CLI is still
-    running 5 seconds later, so an interrupt the whole process group got (a
-    terminal's Ctrl-C) reaches a CLI that stops within that time exactly once.
-    On Windows the starting copy forwards no interrupt.
-  - When the project's own CLI cannot be started, the matched release answers
-    (FR2). When the matched release cannot be obtained, the copy that started
-    the run answers, announced (FR2).
-  - In text mode, a run handed to the project's own CLI prints exactly one
-    line on standard error, naming the version of the project's CLI that
-    answered and the version of the copy the run started in. A run handed to
-    any other release prints exactly one line too: the FR5 line, which the
-    release that answers prints, or, for a release that predates it, the copy
-    that handed the run over. A machine-readable run prints no such line; its
-    `meta.answeredBy` names the release that answered (FR5) when that release
-    carries the field.
+- **FR9 — 每份副本都把项目的运行移交给在该处作答的发布版本。** CLI 的每份副本——无论是安装在项目中、为电脑安装、由包运行器获取，还是由程序化宿主携带——只要在属于某个项目的文件夹中开始一次运行，当它不是 FR2 所指名的发布版本时，就必须把该运行移交给该发布版本：项目安装了自带 CLI 时移交给该 CLI（无论其版本为何），该 CLI 无法启动时移交给匹配版本。自身没有 CLI 的项目由启动本次运行的副本作答，不做移交。无论该副本是哪个发布版本、命令行请求的是哪个版本，这一条都成立。在项目之外，每份副本都由自己作答（FR3）。
+  - 副本在加载项目提供的任何内容之前就移交运行（FR2）。当它本身就是 FR2 所指名的发布版本时，或当启动它的 door 拒绝了项目的 CLI 时（FR2），它不移交。
+  - 作用于电脑而非其所运行文件夹的命令——`astryx init --user`（FR8）以及 `astryx docs global` 及其页面，即全局模式自身的文档——绝不移交给项目的发布版本：无论在哪里运行，它都按项目之外的情况作答，因此这些文档在其发布版本早于它们的项目中读取结果也相同，其标准错误行说明它是为电脑作答的。
+  - `astryx --help` 含有一行内容，manifest（FR4）含有一个带 `docs` 和 `summary` 的 `globalMode` 字段，说明一次运行在其命令之外还可能做什么：移交、每日检查（FR6）和 agent skill（FR8），并指向 `astryx docs global`（`spec:AST-017` FR14）。
+  - 一次运行最多移交一次。接收移交的副本会做同样的判断并发现自己就是目标，因此运行绝不会返回到它已离开的副本。
+  - 接收运行的副本得到的，与直接在该文件夹中启动时相同：相同的参数、工作文件夹，以及标准输入、输出和错误，其环境、选项或配置中不添加任何内容（FR1）。运行以该副本的退出状态结束，或以结束它的信号结束。发送给启动运行的副本的终止或挂断信号，会到达它移交运行的那个副本。仅到达启动副本的 SIGINT，如果被移交的 CLI 在 5 秒后仍在运行，就会被转发，因此整个进程组收到的中断（终端的 Ctrl-C）会恰好一次到达在该时间内停止的 CLI。在 Windows 上，启动副本不转发中断。
+  - 当项目自带的 CLI 无法启动时，由匹配版本作答（FR2）。当匹配版本无法获得时，由启动本次运行的副本作答，并加以声明（FR2）。
+  - 在文本模式下，移交给项目自带 CLI 的运行会在标准错误上恰好打印一行，说明作答的项目 CLI 版本以及本次运行起始副本的版本。移交给任何其他发布版本的运行也只打印恰好一行：FR5 的那一行，由作答的发布版本打印；对于早于它的发布版本，则由移交运行的副本打印。机器可读的运行不打印这类行；当其发布版本带有该字段时，其 `meta.answeredBy` 指名作答的发布版本（FR5）。
 
-- **FR10 — A finished command tells its caller about a newer release.** After
-  a command finishes with exit status 0, in text mode, the copy that started
-  the run prints each notice below that applies on standard error, each at most
-  once in any 24 hours. Each notice is two lines, the first naming what is
-  newer and the second the exact command that upgrades it:
-  `A new release of Astryx is available: <current> → <newest>` and
-  `To upgrade, run: <command>`. When the newest release declares a Node range
-  the computer's Node does not satisfy, the second line reads
-  `To upgrade, install Node <range> (this computer runs Node <version>), then run: <command>`.
-  - Outside a project, when the global copy answered and is older than the
-    newest release the check found (FR6): the command is that of the package
-    manager whose global install holds the global copy, read from where it
-    lives: `npm i -g @astryxdesign/cli@latest`,
-    `pnpm add -g @astryxdesign/cli@latest`,
-    `yarn global add @astryxdesign/cli@latest`,
-    `bun add -g @astryxdesign/cli@latest`, or
-    `volta install @astryxdesign/cli@latest`, and npm's when none is recognized.
-    A copy npm installed under a prefix that is not one of npm's defaults
-    (Node's own prefix, `/usr/local`, `/usr`, or `%APPDATA%\npm` on Windows) is
-    upgraded into that prefix:
-    `npm i -g --prefix <prefix> @astryxdesign/cli@latest`, with `~` for the home
-    folder. A global folder a package manager's settings move, such as Bun's
-    `BUN_INSTALL` or Yarn's `global-folder`, counts as global (the global copy,
-    above), and its plain command reinstalls there, since the package manager
-    reads the same settings.
-  - Inside a project, when the release that answers it is older than the newest
-    release the check found: the command installs `@astryxdesign/core` and
-    `@astryxdesign/cli`, so a project that installed only Core gets its own CLI
-    too, at the newest release with the project's own package manager, then runs
-    `astryx upgrade --from <current> --apply` with the command name FR5 picks
-    for that release, as `<install command>, then <upgrade command>`. For this
-    notice, the project is the one `spec:AST-040` FR9 defines, as in FR2's
-    hint: both commands run in that project's folder, with that project's
-    release as `<current>`.
-  - In any folder, when the first `astryx` command on the search path is an
-    Astryx CLI release that predates the hand-off, so it answers every run
-    started through it with its own release: the first line reads
-    `The astryx command on this computer runs CLI <version>, which answers every folder itself.`
-    and the command upgrades it with the package manager that installed it.
-    This notice needs no check.
-  - No notice prints in a machine-readable run, after a command that fails,
-    or when `CI` or `NO_UPDATE_NOTIFIER` turns the check off (FR6). A notice
-    prints whether or not standard error is a terminal. Prerelease and canary
-    versions are never reported as behind. No notice changes a command's
-    output or exit status.
-  - The time each notice last printed is kept in the per-user state file
-    (FR7), for the global copy, per project, and for the old command; a time
-    that cannot be recorded keeps the notice from printing, and a run handed
-    to a release that also prints notices prints no second one.
-  - `doctor` reports each: outside a project, the global copy's release beside
-    the newest with the same command; in a project, the project's release
-    beside the newest with the same commands; and, in every folder, an
-    `astryx` command that predates the hand-off.
-- **FR11 — Global and project copies meet by these rules.** Every case below
-  follows FR2, FR3, FR6, FR9, FR10, and FR12; the table names who answers, what
-  the run prints on standard error in text mode, and the test that proves the
-  row. A contributor adding a door, an install layout, or a platform adds a row
-  and its test. A copy the CLI cannot change, such as a release that predates
-  the hand-off, is reported, never worked around. The cases that depend on an
-  operating system's own file system run in the test suite for their path rules
-  and, on that system, only in the cross-platform smoke workflow, which a
-  maintainer starts by hand.
-  - `doctor` lists every `astryx` command found on the search path, in order,
-    and warns when the first one is not the Astryx CLI or is a release that
-    predates the hand-off, naming the command that replaces it.
-  - A run that installs a release holds a lock in the per-user cache that
-    names its holder and computer, and renews it every 10 seconds while the
-    package manager works. A lock whose holder on this computer no longer
-    runs is taken over at once; a lock from another computer is taken over
-    once a waiting run has seen it go unrenewed for 60 seconds.
-  - Paths are compared without regard to letter case on platforms whose file
-    systems ignore it, and a project is found from the physical folder, so a
-    link to a project folder answers as the folder does.
+- **FR10 — 已完成的命令向其调用方告知更新的版本。** 在命令以退出状态 0 结束之后，在文本模式下，启动本次运行的副本会在标准错误上打印下列每条适用的通知，每条在任意 24 小时内最多一次。每条通知为两行，第一行指明什么更新了，第二行给出升级它的确切命令：`A new release of Astryx is available: <current> → <newest>` 和 `To upgrade, run: <command>`。当最新的发布版本声明了本机 Node 不满足的 Node 范围时，第二行读作 `To upgrade, install Node <range> (this computer runs Node <version>), then run: <command>`。
+  - 在项目之外，当作答的是全局副本且它比检查发现的最新发布版本旧时（FR6）：该命令属于其全局安装持有该全局副本的包管理器，按其所在位置读取：`npm i -g @astryxdesign/cli@latest`、`pnpm add -g @astryxdesign/cli@latest`、`yarn global add @astryxdesign/cli@latest`、`bun add -g @astryxdesign/cli@latest` 或 `volta install @astryxdesign/cli@latest`；都无法识别时用 npm 的。npm 安装在非 npm 默认前缀（Node 自身的前缀、`/usr/local`、`/usr`，或 Windows 上的 `%APPDATA%\npm`）之下的副本，会被升级到该前缀：`npm i -g --prefix <prefix> @astryxdesign/cli@latest`，主文件夹用 `~` 表示。被包管理器设置移动的全局文件夹（例如 Bun 的 `BUN_INSTALL` 或 Yarn 的 `global-folder`）算作全局（即上文中的全局副本），其普通命令会重新安装到那里，因为包管理器读取相同的设置。
+  - 在项目内，当为其作答的发布版本比检查发现的最新发布版本旧时：该命令安装 `@astryxdesign/core` 和 `@astryxdesign/cli`，因此只安装了 Core 的项目也会获得自己的 CLI——用项目自带的包管理器安装最新发布版本——然后以 FR5 为该发布版本选定的命令名运行 `astryx upgrade --from <current> --apply`，形式为 `<install command>, then <upgrade command>`。就本通知而言，项目是 `spec:AST-040` FR9 所定义的那个，如同 FR2 的提示：两条命令都在该项目的文件夹中运行，并以该项目的发布版本作为 `<current>`。
+  - 在任何文件夹中，当搜索路径上的第一个 `astryx` 命令是早于移交机制的 Astryx CLI 发布版本，因此它用自身的发布版本为通过它启动的每次运行作答时：第一行读作 `The astryx command on this computer runs CLI <version>, which answers every folder itself.`，而该命令用安装它的包管理器升级它。本通知不需要检查。
+  - 机器可读的运行中、失败的命令之后，或当 `CI` 或 `NO_UPDATE_NOTIFIER` 关闭检查时（FR6），不打印任何通知。无论标准错误是否为终端，通知都会打印。预发布版本和 canary 版本绝不会被报告为落后。任何通知都不会改变命令的输出或退出状态。
+  - 每条通知上次打印的时间保存在每用户状态文件（FR7）中，分别针对全局副本、每个项目以及那个旧命令；无法记录的时间会阻止该通知打印，而移交给也会打印通知的发布版本的运行不会打印第二条。
+  - `doctor` 报告上述每一种情况：在项目之外，把全局副本的发布版本与最新版本并列并给出同一命令；在项目中，把项目的发布版本与最新版本并列并给出同样的命令；以及在每个文件夹中，指出早于移交机制的 `astryx` 命令。
+- **FR11 — 全局副本与项目副本按以下规则相遇。** 下列每种情况都遵循 FR2、FR3、FR6、FR9、FR10 和 FR12；表格指明由谁作答、文本模式下本次运行在标准错误上打印什么，以及证明该行的测试。添加 door、安装布局或平台的贡献者会添加一行及其测试。CLI 无法更改的副本（例如早于移交机制的发布版本）只会被报告，绝不会被绕过。依赖操作系统自身文件系统的情况，在测试套件中按其路径规则运行；在该系统上，则只在由维护者手动启动的跨平台冒烟工作流中运行。
+  - `doctor` 按顺序列出搜索路径上找到的每个 `astryx` 命令，并在第一个不是 Astryx CLI、或是早于移交机制的发布版本时警告，指出取代它的命令。
+  - 安装某个发布版本的运行会在每用户缓存中持有一个锁，锁中指名其持有者和电脑，并在包管理器工作期间每 10 秒续期一次。持有者在这台电脑上已不再运行的锁会被立即接管；来自另一台电脑的锁，在某个等待中的运行看到它连续 60 秒未续期之后被接管。
+  - 在文件系统忽略字母大小写的平台上，路径比较不区分大小写；项目从物理文件夹开始查找，因此指向项目文件夹的链接会与那个文件夹一样作答。
 
-- **FR12 — Integrations installed for the computer apply outside projects, and
-  only there.** A **computer-level integration** is an integration package, one
-  that ships exactly one root `astryx.integration.*` manifest, installed in the
-  same install root as the CLI installed for the computer: the folder whose
-  `node_modules` holds that CLI package, such as a package manager's global
-  folder beside a global copy, or the package set a tool installs together and
-  runs the CLI from, such as a door's runtime holding the CLI, Core, and an
-  integration. When that root has a `package.json`, the packages it declares are
-  read; otherwise every package directly in its `node_modules`, scoped ones
-  included. A package manager that installs each global package in a folder of
-  its own, as pnpm 11 and later do, has every such folder read, provided one of
-  them installs that CLI. The CLI and Core packages are never integrations of
-  it. A package runner's temporary install and the per-user release cache are
-  not install roots. A door needs no host entry input for them (FR1).
-  - Outside a project, the copy that answers loads the computer-level
-    integrations installed beside it as a project loads its own: their
-    components, templates, docs, themes, codemods, discover sources, and
-    `cliCommand` (FR5) apply, with the same validation and the same provider
-    identity rules. One whose declared peer range for `@astryxdesign/core` or
-    `@astryxdesign/cli` excludes the answering release is skipped.
-  - Inside a project, only the project's own integrations load: configured,
-    installed, or being authored there. A computer-level integration adds no
-    component, template, doc, theme, codemod, discover source, or command name
-    there, because a printed import or command would name a package the project
-    does not install. The only use of them inside a project is a listing:
-    `discover` and `doctor` load the manifest of each one the project does not
-    install, and nothing it contributes, to list it as available. `discover`
-    lists each computer-level integration the project does not install, whose
-    peer range admits the release that answers there and whose manifest loads,
-    among the packages the project could add, with source
-    `installed for this computer` and the project's install command. Those are
-    the integrations beside the copy that answers when it was installed outside
-    the project, otherwise beside the first `astryx` on the search path that is
-    installed for the computer. The command name a door passes still applies
-    (FR5).
-  - When a project installs the same integration, by package name, the
-    project's copy is the only one that loads, inside the project and in any
-    folder whose project it is. Outside a project, a folder that loads an
-    integration itself, such as that integration's own source, uses its own
-    copy.
-  - `doctor` outside a project lists each computer-level integration it uses and
-    each the folder loads its own copy of, and warns about each it skips or
-    cannot load, naming why; inside a project, it lists the ones `discover`
-    lists as available, with the project's install command.
-
-- **FR13 — The repository may ship one plugin skill, shared by the Claude
-  Code and Codex plugins.** The repository MAY ship one plugin skill, shared
-  by the Claude Code and Codex plugins, separate from the computer-level file
-  (FR8). `renderComputerAgentText` generates the skill. A `--check` run MUST
-  fail when the committed file differs from the generated skill.
+- **FR12 — 为电脑安装的集成在项目之外适用，且只在项目之外适用。** **电脑级集成**是一个集成包，即恰好附带一个根 `astryx.integration.*` manifest 的包，安装在为电脑安装的 CLI 所在的同一个安装根中：即其 `node_modules` 持有该 CLI 包的文件夹，例如全局副本旁边的包管理器全局文件夹，或某个工具一起安装并从中运行 CLI 的包集合，例如包含 CLI、Core 和某个集成的 door 运行时。当该根有 `package.json` 时，读取它所声明的包；否则读取其 `node_modules` 中直接存在的每个包，包括带作用域的包。像 pnpm 11 及更高版本那样把每个全局包安装在各自文件夹中的包管理器，其每个这样的文件夹都会被读取，前提是其中之一安装了该 CLI。CLI 和 Core 包绝不是它的集成。包运行器的临时安装和每用户发布版本缓存不是安装根。door 不需要为它们提供宿主入口输入（FR1）。
+  - 在项目之外，作答的副本会加载安装在其旁边的电脑级集成，如同项目加载自己的集成：它们的组件、模板、文档、主题、codemod、discover 来源和 `cliCommand`（FR5）都会生效，并采用相同的校验和相同的提供方身份规则。声明的 `@astryxdesign/core` 或 `@astryxdesign/cli` peer 范围排除了作答发布版本的集成会被跳过。
+  - 在项目内，只加载项目自己的集成：在那里配置、安装或正在编写的集成。电脑级集成在那里不添加任何组件、模板、文档、主题、codemod、discover 来源或命令名，因为打印出的 import 或命令会指名项目并未安装的包。它们在项目内唯一的用途是列表：`discover` 和 `doctor` 加载项目未安装的每个集成的 manifest（而不加载它贡献的任何内容），以便把它列为可用。`discover` 把项目未安装、其 peer 范围允许在该处作答的发布版本、且其 manifest 可加载的每个电脑级集成，列入项目可以添加的包之中，来源为 `installed for this computer`，并给出项目的安装命令。这些集成是作答副本旁边的集成（当该副本是在项目之外安装的），否则是搜索路径上第一个为电脑安装的 `astryx` 旁边的集成。door 传入的命令名仍然适用（FR5）。
+  - 当项目按包名安装了同一个集成时，只有项目的那份副本会被加载，在项目内以及任何以其为项目的文件夹中都是如此。在项目之外，自身加载某个集成的文件夹（例如该集成自身的源码）使用它自己的副本。
+  - 在项目之外，`doctor` 列出它使用的每个电脑级集成，以及该文件夹加载自己副本的每个集成，并对它跳过的或无法加载的每个集成发出警告，说明原因；在项目内，它列出 `discover` 列为可用的那些集成，并给出项目的安装命令。
+- **FR13 — 仓库可以随附一个插件 skill，由 Claude Code 与 Codex 插件共用。** 仓库 MAY 随附一个插件 skill，由 Claude Code 与 Codex 插件共用，与计算机级文件相互独立（FR8）。`renderComputerAgentText` 生成该 skill。当提交的文件与生成的 skill 不同时，`--check` 运行 MUST 失败。
 
 ### Computer-level agent files
 
-| Folder in the home folder                                                 | Reached by | When                                                  | Agent tool               |
-| ------------------------------------------------------------------------- | ---------- | ----------------------------------------------------- | ------------------------ |
-| `.agents/skills/astryx`                                                   | the file   | always                                                | most agent tools         |
-| `.claude/skills/astryx`                                                   | link       | always                                                | Claude Code              |
-| `.kiro/skills/astryx`                                                     | link       | when `.kiro` exists                                   | Kiro                     |
-| `.codeium/windsurf/skills/astryx`                                         | link       | when `.codeium/windsurf` exists                       | Windsurf                 |
-| `.letta/skills/astryx`                                                    | link       | when `.letta` exists                                  | Letta                    |
-| `Library/Developer/Xcode/CodingAssistant/ClaudeAgentConfig/skills/astryx` | link       | when `Library/Developer/Xcode/CodingAssistant` exists | Xcode's coding assistant |
-| `.config/agents/skills/astryx`                                            | link       | when `.config/agents/skills` exists                   | Kimi                     |
-| `.continue/skills/astryx`                                                 | copy       | when `.continue` exists                               | Continue                 |
+| Folder in the home folder                                                 | Reached by | When                                                | Agent tool        |
+| ------------------------------------------------------------------------- | ---------- | --------------------------------------------------- | ----------------- |
+| `.agents/skills/astryx`                                                   | 文件       | 始终                                                | 大多数 Agent 工具 |
+| `.claude/skills/astryx`                                                   | 链接       | 始终                                                | Claude Code       |
+| `.kiro/skills/astryx`                                                     | 链接       | 当 `.kiro` 存在时                                   | Kiro              |
+| `.codeium/windsurf/skills/astryx`                                         | 链接       | 当 `.codeium/windsurf` 存在时                       | Windsurf          |
+| `.letta/skills/astryx`                                                    | 链接       | 当 `.letta` 存在时                                  | Letta             |
+| `Library/Developer/Xcode/CodingAssistant/ClaudeAgentConfig/skills/astryx` | 链接       | 当 `Library/Developer/Xcode/CodingAssistant` 存在时 | Xcode 的编码助手  |
+| `.config/agents/skills/astryx`                                            | 链接       | 当 `.config/agents/skills` 存在时                   | Kimi              |
+| `.continue/skills/astryx`                                                 | 复制       | 当 `.continue` 存在时                               | Continue          |
 
-The file is a regular file and a skill whose frontmatter is strict YAML and
-whose `name` is its folder's name. Each link is a link to the folder, never to
-the file, since some tools drop a linked skill file, and its target is
-relative, so it survives a moved or synced home folder. A tool that reads the
-shared folder and its own lists the skill once. Continue's scanner skips links,
-so it gets the one managed copy. The CLI never writes a folder another tool
-manages, such as Codex's or Muse's own skill stores, never edits an agent
-tool's configuration, and writes no always-on instructions file. A tool that
-reads no skill folder, such as Aider, gets nothing; a person who uses an agent
-with another skills folder links it to `.agents/skills/astryx` themselves.
+该文件是一个普通文件，也是一个 skill，其 frontmatter 是严格 YAML，且 `name` 为其文件夹名。每个链接都指向文件夹，绝不指向文件，因为有些工具会丢弃被链接的 skill 文件；其目标是相对路径，因此主目录被移动或同步后仍然有效。同时读取共享文件夹和自身文件夹的工具只会列出该 skill 一次。Continue 的扫描器会跳过链接，因此它得到的是那一份受管副本。CLI 绝不写入由另一个工具管理的文件夹，例如 Codex 或 Muse 自己的 skill 存储；绝不编辑 Agent 工具的配置；也不写入任何常驻指令文件。不读取任何 skill 文件夹的工具（例如 Aider）什么也得不到；使用其他 skills 文件夹的 Agent 的人，需自行将其链接到 `.agents/skills/astryx`。
 
 ### Who answers when global and project copies meet
 
-| Case                                                                                                                         | Who answers                                                                                                                  | What prints (text mode)                                                                                                                                                                                                                                         | Test                                                                                                  |
-| ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| G1 Global copy newer than the project's own CLI, which matches its Core                                                      | The project's own CLI                                                                                                        | `answered by this project's CLI <p>, handed over from CLI <g>`                                                                                                                                                                                                  | `global-local.test.mjs › G1`                                                                          |
-| G2 Global copy older than the project's own CLI                                                                              | The project's own CLI                                                                                                        | The same hand-off line                                                                                                                                                                                                                                          | `› G2`                                                                                                |
-| G3 The project's CLI differs from its Core                                                                                   | The project's own CLI (DEC-10)                                                                                               | The hand-off line; `doctor` warns and names the align command                                                                                                                                                                                                   | `› G3`                                                                                                |
-| G4 Core only, no CLI                                                                                                         | The copy that started the run                                                                                                | FR2's daily hint when it is not the Core's release; `copy` is `starting`; nothing installed                                                                                                                                                                     | `› G4`                                                                                                |
-| G5 Fresh clone: lockfile, nothing installed                                                                                  | The copy that started the run                                                                                                | FR2's daily hint naming the Core the lockfile records; nothing written                                                                                                                                                                                          | `› G5`                                                                                                |
-| G6 Lockfile and installed Core disagree, in a project whose own CLI cannot start                                             | The release equal to the installed Core                                                                                      | The matched line                                                                                                                                                                                                                                                | `› G6`                                                                                                |
-| G7 Workspace member with its own Core under a root CLI                                                                       | The root CLI, as for any member (DEC-10)                                                                                     | The hand-off line                                                                                                                                                                                                                                               | `› G7`                                                                                                |
-| G8 Folder inside another project, such as a nested app or a cloned repository                                                | The enclosing project's release (the released read reach; answering for the folder itself waits for a minor)                 | As for the enclosing project; from a folder whose `package.json` is not that project's (`spec:AST-040` FR9), advice says to run from the project's folder. A folder FR9 does not reach, such as a cloned repository with its own `.git`, gets no project advice | `› G8`                                                                                                |
-| G9 Outside a project                                                                                                         | Every copy answers itself, the global copy included                                                                          | `answered by CLI <v> with Core <v>, outside a project`                                                                                                                                                                                                          | `› G9`                                                                                                |
-| G10 A version typed on a package runner                                                                                      | Outside a project: exactly that release; in a project: the project's release                                                 | The outside or hand-off line                                                                                                                                                                                                                                    | `› G10`                                                                                               |
-| G11 A global copy that predates the hand-off, in a project                                                                   | That old copy, which this record cannot change                                                                               | Nothing from that copy; FR10's reminder from any newer copy, and `doctor`, name `npm i -g @astryxdesign/cli@latest`                                                                                                                                             | `› G11`                                                                                               |
-| G12 Two global installs, such as npm and pnpm                                                                                | The first on the search path, which answers itself                                                                           | As for that case; `doctor` lists both                                                                                                                                                                                                                           | `› G12`                                                                                               |
-| G13 An `astryx` earlier on the search path that is not the Astryx CLI                                                        | That other program                                                                                                           | `init --user` and `doctor` warn                                                                                                                                                                                                                                 | `› G13`                                                                                               |
-| G14 A Node version manager switches Node, so each Node has its own global copy                                               | That Node's own global copy                                                                                                  | As for that case                                                                                                                                                                                                                                                | `› G14`                                                                                               |
-| G15 A project whose package manager is pinned through a package manager shim                                                 | As for that project                                                                                                          | As for that project; releases install in the cache folder, never the project                                                                                                                                                                                    | `› G15`                                                                                               |
-| G16 Global copy installed with administrator rights, run by a person                                                         | As for that case; nothing is written to the install folder                                                                   | As for that case                                                                                                                                                                                                                                                | `› G16`                                                                                               |
-| G17 The per-user cache cannot be written                                                                                     | Outside a project and in a project with only Core: the global copy; in a project whose own CLI cannot start: the global copy | For the last, FR2's warning line naming the cache folder; `copy` is `fallback`                                                                                                                                                                                  | `› G17`                                                                                               |
-| G18 Home unset, or cache and configuration folders set by environment                                                        | Unchanged; an absolute folder setting is used, a relative one is ignored                                                     | As for that case                                                                                                                                                                                                                                                | `› G18`                                                                                               |
-| G19 Continuous integration (`CI` set) with a fresh home each run                                                             | As for that case; no update check                                                                                            | No notice                                                                                                                                                                                                                                                       | `› G19`                                                                                               |
-| G20 A container whose home folder is read-only                                                                               | As for G17; the computer-level text is not written                                                                           | As for G17                                                                                                                                                                                                                                                      | `› G20`                                                                                               |
-| G21 A cache shared by several people or computers                                                                            | One install per release at a time; another computer's lock is taken over once it goes unrenewed for 60 seconds               | As for that case                                                                                                                                                                                                                                                | `› G21`                                                                                               |
-| G22 The project's release is older than the newest                                                                           | The project's release                                                                                                        | FR10's project notice after the command, once a day per project                                                                                                                                                                                                 | `› G22`                                                                                               |
-| G23 The newest release needs a newer Node                                                                                    | The global copy                                                                                                              | FR10's notice, naming the Node first; `doctor` the same                                                                                                                                                                                                         | `› G23`                                                                                               |
-| G24 A link to a project folder                                                                                               | As for the folder it links to                                                                                                | As for that folder                                                                                                                                                                                                                                              | `› G24`                                                                                               |
-| G25 A file system that ignores letter case                                                                                   | As for the folder, whatever case was typed                                                                                   | As for that folder                                                                                                                                                                                                                                              | `› G25` (path rules); the file system itself: the cross-platform smoke workflow only (macOS, Windows) |
-| G26 Windows paths and installs                                                                                               | The same rules; releases install through `npm.cmd` with the time limit                                                       | As for that case                                                                                                                                                                                                                                                | `› G26` (path rules); Windows itself: the cross-platform smoke workflow only                          |
-| G27 A package script, which puts the project's own commands first                                                            | The project's own CLI, whatever its version                                                                                  | As for that case                                                                                                                                                                                                                                                | `› G27`                                                                                               |
-| G28 A Yarn Plug'n'Play project, whose own CLI Astryx cannot see                                                              | The copy that started the run                                                                                                | FR2's daily hint with Yarn's command                                                                                                                                                                                                                            | `› G28`                                                                                               |
-| G29 A package runner that reuses the global install                                                                          | As the global copy                                                                                                           | As for that case                                                                                                                                                                                                                                                | `› G29`                                                                                               |
-| G30 `astryx init --user` inside a project                                                                                    | The starting copy, for the computer                                                                                          | `answered by CLI <v> with Core <v>, for this computer`                                                                                                                                                                                                          | `› G30`                                                                                               |
-| G31 A cached release a project whose own CLI cannot start needs is damaged or removed                                        | The release, installed again                                                                                                 | As for that case; when it cannot be installed, FR2's warning line and the starting copy                                                                                                                                                                         | `› G31`                                                                                               |
-| G32 A workspace whose own CLI package sits beside its own Core package, such as the Astryx repository                        | The workspace's own CLI                                                                                                      | As for that case                                                                                                                                                                                                                                                | `› G32`                                                                                               |
-| G33 The global copy is older than the newest release                                                                         | The global copy                                                                                                              | FR10's notice after the command, naming the package manager that installed it, once a day                                                                                                                                                                       | `› G33`                                                                                               |
-| G34 `NO_UPDATE_NOTIFIER` or `CI` set                                                                                         | As for that case; no update check                                                                                            | No notice                                                                                                                                                                                                                                                       | `› G34`                                                                                               |
-| G35 Outside a project, with an integration installed beside the global copy                                                  | The global copy, with that integration loaded                                                                                | As for that case                                                                                                                                                                                                                                                | `› G35`                                                                                               |
-| G36 Inside a project that does not install an integration installed for the computer                                         | The project's release, without it                                                                                            | As for that case; `discover` and `doctor` list it as available with the project's install command                                                                                                                                                               | `› G36`                                                                                               |
-| G37 A project that installs the same integration as the computer                                                             | The project's release, with the project's copy only                                                                          | As for that case                                                                                                                                                                                                                                                | `› G37`                                                                                               |
-| G38 An integration installed for the computer whose peer range excludes the answering release                                | The global copy, without it                                                                                                  | As for that case; `doctor` warns                                                                                                                                                                                                                                | `› G38`                                                                                               |
-| G39 A door's package set: the CLI and an integration installed together in one root                                          | That copy, with the integration loaded outside a project                                                                     | As for that case                                                                                                                                                                                                                                                | `› G39`                                                                                               |
-| G40 pnpm global folders: one shared folder, or a folder per package                                                          | The global copy, with the integrations in every such folder loaded outside a project                                         | As for that case                                                                                                                                                                                                                                                | `› G40`                                                                                               |
-| G41 Outside a project, in an integration's own source folder                                                                 | That copy, with the folder's own copy of the integration                                                                     | As for that case; `doctor` names the computer's copy as not used, without a warning                                                                                                                                                                             | `› G41`                                                                                               |
-| G42 Inside a project, an integration installed for the computer that the project's release excludes, or that fails to load   | The project's release                                                                                                        | As for that case; neither `discover` nor `doctor` offers it                                                                                                                                                                                                     | `› G42`                                                                                               |
-| G43 Inside a project with only Core that a door's package set answers                                                        | That copy                                                                                                                    | `copy` is `starting`; its integrations are offered as available                                                                                                                                                                                                 | `› G43`                                                                                               |
-| G44 A global copy npm installed under its own prefix, such as `npm i -g --prefix ~/.local`                                   | The global copy                                                                                                              | As for that case; the notice and `doctor` upgrade into that prefix, and integrations installed there apply                                                                                                                                                      | `› G44`                                                                                               |
-| G45 The computer-level agent text on the global copy's first run                                                             | The global copy                                                                                                              | As for that case; one file, Claude Code's folder linked to it, a folder the CLI did not create kept and named by `doctor`, and `--remove-agents` removing the file and the link                                                                                 | `› G45`                                                                                               |
-| G46 `astryx docs global` inside a project whose release predates it                                                          | The starting copy, for the computer                                                                                          | `astryx: answered by CLI <version> with Core <version>, for this computer`                                                                                                                                                                                      | `› G46`                                                                                               |
-| G47 A project whose own CLI is newer than its Core, online or offline                                                        | The project's own CLI; nothing is fetched                                                                                    | The hand-off line; `copy` is `project`                                                                                                                                                                                                                          | `› G47`                                                                                               |
-| G48 Offline, a project whose own CLI cannot start                                                                            | The starting copy                                                                                                            | FR2's warning line, once; `copy` is `fallback`                                                                                                                                                                                                                  | `› G48`                                                                                               |
-| G49 Offline, a release a project whose own CLI cannot start needs failed to install; run again from the same or another copy | The starting copy                                                                                                            | FR2's warning line, saying when the install was last tried; no install starts for 2 minutes, then 10 after a second failure; a success forgets it                                                                                                               | `› G49`                                                                                               |
-| G50 A global copy in a Bun global folder moved with `BUN_INSTALL`; an app in a folder that ends in `install/global`          | The global copy while `BUN_INSTALL` names the folder; the app's own CLI for the app                                          | `bun add -g` reinstalls there; the app is never global                                                                                                                                                                                                          | `› G50`                                                                                               |
-| G51 A global copy in a Yarn 1 global folder named by `global-folder`; an app made with `yarn add` alone                      | The global copy while Yarn's settings name the folder; the app's own CLI for the app                                         | `yarn global add` reinstalls there; the app runs no update check and writes no agent text                                                                                                                                                                       | `› G51`                                                                                               |
-| G52 The global copy with no Core beside it and none cached (not on Windows)                                                  | The global copy                                                                                                              | A detached step installs its Core into the cache after a run (never in CI or on Windows); offline, the failure waits out the backoff                                                                                                                            | `› G52`                                                                                               |
-| G53 pnpm's global virtual store: a project's own CLI kept in the store's `links` folder                                      | The project's own CLI, not a global copy; a copy a pnpm global folder links to is global                                     | The project run starts no update check and writes no agent text                                                                                                                                                                                                 | `› G53`                                                                                               |
-| G54 A folder more than five levels deep in a project with its own CLI                                                        | The project's own CLI                                                                                                        | The hand-off line; no hint                                                                                                                                                                                                                                      | `› G54`                                                                                               |
-| G55 A `--json` run in a fresh clone while the global copy's Core step runs                                                   | The global copy                                                                                                              | Returns at once with clean JSON; the step starts as the run ends                                                                                                                                                                                                | `› G55`                                                                                               |
-| G56 An open `search` outside a project before the release's Core is cached                                                   | The global copy                                                                                                              | Gets the Core as `component` does; when it cannot, `meta.partial` names the skipped domains and the reason, with one standard-error line                                                                                                                        | `› G56`                                                                                               |
-| G57 A folder more than four levels deep in a project with only Core                                                          | The copy that started the run                                                                                                | Reads the project's Core, never the carried one; `meta.answeredBy.core` names it                                                                                                                                                                                | `› G57`                                                                                               |
-| G58 An interrupt sent to the copy that started a handed-off run alone, or to its whole process group                         | The project's own CLI                                                                                                        | Alone: forwarded once after 5 seconds; group: received once, not forwarded to a CLI that stopped in time; the run ends with that CLI's exit status or signal                                                                                                    | `› G58`                                                                                               |
+| Case                                                                                                   | Who answers                                                                         | What prints (text mode)                                                                                                                                                                  | Test                                                                          |
+| ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| G1 全局副本比项目自身的 CLI 更新，而该 CLI 与其 Core 匹配                                              | 项目自身的 CLI                                                                      | `answered by this project's CLI <p>, handed over from CLI <g>`                                                                                                                           | `global-local.test.mjs › G1`                                                  |
+| G2 全局副本比项目自身的 CLI 更旧                                                                       | 项目自身的 CLI                                                                      | 同一条交接行                                                                                                                                                                             | `› G2`                                                                        |
+| G3 项目的 CLI 与其 Core 不一致                                                                         | 项目自身的 CLI（DEC-10）                                                            | 交接行；`doctor` 会警告并指明对齐命令                                                                                                                                                    | `› G3`                                                                        |
+| G4 只有 Core，没有 CLI                                                                                 | 启动本次运行的副本                                                                  | 当它不是 Core 的发布版本时，输出 FR2 的每日提示；`copy` 为 `starting`；不安装任何内容                                                                                                    | `› G4`                                                                        |
+| G5 全新克隆：有 lockfile，未安装任何内容                                                               | 启动本次运行的副本                                                                  | FR2 的每日提示，指明 lockfile 记录的 Core；不写入任何内容                                                                                                                                | `› G5`                                                                        |
+| G6 lockfile 与已安装的 Core 不一致，且项目的自身 CLI 无法启动                                          | 与已安装 Core 相同的那个发布版本                                                    | 匹配到的那一行                                                                                                                                                                           | `› G6`                                                                        |
+| G7 在根 CLI 之下拥有自己 Core 的工作区成员                                                             | 根 CLI，与任何成员相同（DEC-10）                                                    | 交接行                                                                                                                                                                                   | `› G7`                                                                        |
+| G8 位于另一个项目内部的文件夹，例如嵌套应用或克隆下来的仓库                                            | 外层项目的发布版本（已发布的读取覆盖范围；要替该文件夹本身作答还需等到次要版本）    | 与外层项目相同；从 `package.json` 不属于该项目的文件夹中运行时（`spec:AST-040` FR9），建议会提示应从项目文件夹运行。FR9 覆盖不到的文件夹（例如带自己 `.git` 的克隆仓库）不会得到项目建议 | `› G8`                                                                        |
+| G9 在项目之外                                                                                          | 每个副本各自作答，包括全局副本                                                      | `answered by CLI <v> with Core <v>, outside a project`                                                                                                                                   | `› G9`                                                                        |
+| G10 在 package runner 上指定的版本                                                                     | 在项目之外：正是该发布版本；在项目之内：项目的发布版本                              | 项目外行或交接行                                                                                                                                                                         | `› G10`                                                                       |
+| G11 项目中的一个全局副本早于交接机制                                                                   | 那个旧副本，本记录无法改变它                                                        | 该副本不输出任何内容；来自任何更新副本的 FR10 提醒，以及 `doctor`，都会指明 `npm i -g @astryxdesign/cli@latest`                                                                          | `› G11`                                                                       |
+| G12 两个全局安装，例如 npm 与 pnpm                                                                     | 搜索路径上的第一个，由它自己作答                                                    | 与该情形相同；`doctor` 会列出两者                                                                                                                                                        | `› G12`                                                                       |
+| G13 搜索路径上更靠前的 `astryx`，但它不是 Astryx CLI                                                   | 那个其他程序                                                                        | `init --user` 与 `doctor` 会警告                                                                                                                                                         | `› G13`                                                                       |
+| G14 Node 版本管理器切换 Node，因此每个 Node 都有自己的全局副本                                         | 那个 Node 自己的全局副本                                                            | 与该情形相同                                                                                                                                                                             | `› G14`                                                                       |
+| G15 项目的包管理器通过包管理器 shim 固定                                                               | 与那个项目相同                                                                      | 与那个项目相同；发布版本安装在缓存文件夹中，绝不安装到项目里                                                                                                                             | `› G15`                                                                       |
+| G16 以管理员权限安装的全局副本，由人运行                                                               | 与相应情形相同；不向安装文件夹写入任何内容                                          | 与相应情形相同                                                                                                                                                                           | `› G16`                                                                       |
+| G17 无法写入每用户缓存                                                                                 | 在项目之外以及与只有 Core 的项目中：全局副本；在自身 CLI 无法启动的项目中：全局副本 | 对于最后一种，FR2 的警告行会指明缓存文件夹；`copy` 为 `fallback`                                                                                                                         | `› G17`                                                                       |
+| G18 主目录未设置，或缓存与配置文件夹由环境变量设置                                                     | 不变；绝对路径的文件夹设置会被采用，相对路径的会被忽略                              | 与相应情形相同                                                                                                                                                                           | `› G18`                                                                       |
+| G19 持续集成（设置了 `CI`），每次运行都是全新的主目录                                                  | 与相应情形相同；不做更新检查                                                        | 无提示                                                                                                                                                                                   | `› G19`                                                                       |
+| G20 主目录只读的容器                                                                                   | 与 G17 相同；不写入计算机级文本                                                     | 与 G17 相同                                                                                                                                                                              | `› G20`                                                                       |
+| G21 由多人或多台计算机共享的缓存                                                                       | 每个发布版本同一时间只安装一次；另一台计算机的锁在 60 秒未续期后被接管              | 与相应情形相同                                                                                                                                                                           | `› G21`                                                                       |
+| G22 项目的发布版本比最新版本更旧                                                                       | 项目的发布版本                                                                      | 命令执行后输出 FR10 的项目提示，每个项目每天一次                                                                                                                                         | `› G22`                                                                       |
+| G23 最新发布版本需要更新的 Node                                                                        | 全局副本                                                                            | FR10 的提示，先指明 Node；`doctor` 同样如此                                                                                                                                              | `› G23`                                                                       |
+| G24 指向项目文件夹的链接                                                                               | 与它指向的文件夹相同                                                                | 与那个文件夹相同                                                                                                                                                                         | `› G24`                                                                       |
+| G25 忽略字母大小写的文件系统                                                                           | 与那个文件夹相同，无论键入的是哪种大小写                                            | 与那个文件夹相同                                                                                                                                                                         | `› G25`（路径规则）；文件系统本身：仅由跨平台冒烟工作流覆盖（macOS、Windows） |
+| G26 Windows 路径与安装                                                                                 | 相同的规则；发布版本通过 `npm.cmd` 在时限内安装                                     | 与相应情形相同                                                                                                                                                                           | `› G26`（路径规则）；Windows 本身：仅由跨平台冒烟工作流覆盖                   |
+| G27 package 脚本，它会把项目自身的命令排在前面                                                         | 项目自身的 CLI，无论其版本如何                                                      | 与相应情形相同                                                                                                                                                                           | `› G27`                                                                       |
+| G28 Yarn Plug'n'Play 项目，Astryx 看不到它自己的 CLI                                                   | 启动本次运行的副本                                                                  | FR2 的每日提示，给出 Yarn 的命令                                                                                                                                                         | `› G28`                                                                       |
+| G29 复用全局安装的 package runner                                                                      | 与全局副本相同                                                                      | 与相应情形相同                                                                                                                                                                           | `› G29`                                                                       |
+| G30 在项目内执行 `astryx init --user`                                                                  | 起始副本，面向本计算机                                                              | `answered by CLI <v> with Core <v>, for this computer`                                                                                                                                   | `› G30`                                                                       |
+| G31 自身 CLI 无法启动的项目所需的缓存发布版本已损坏或被删除                                            | 该发布版本，重新安装                                                                | 与相应情形相同；无法安装时，输出 FR2 的警告行并由起始副本作答                                                                                                                            | `› G31`                                                                       |
+| G32 自身 CLI 包与其 Core 包并列的工作区，例如 Astryx 仓库                                              | 工作区自身的 CLI                                                                    | 与相应情形相同                                                                                                                                                                           | `› G32`                                                                       |
+| G33 全局副本比最新发布版本更旧                                                                         | 全局副本                                                                            | 命令执行后输出 FR10 的提示，指明安装它的包管理器，每天一次                                                                                                                               | `› G33`                                                                       |
+| G34 设置了 `NO_UPDATE_NOTIFIER` 或 `CI`                                                                | 与相应情形相同；不做更新检查                                                        | 无提示                                                                                                                                                                                   | `› G34`                                                                       |
+| G35 在项目之外，全局副本旁边安装了集成                                                                 | 全局副本，并加载该集成                                                              | 与相应情形相同                                                                                                                                                                           | `› G35`                                                                       |
+| G36 在项目内，而该项目没有安装为计算机安装的集成                                                       | 项目的发布版本，不含该集成                                                          | 与相应情形相同；`discover` 与 `doctor` 会将其列为可用，并给出项目的安装命令                                                                                                              | `› G36`                                                                       |
+| G37 项目安装了与计算机相同的集成                                                                       | 项目的发布版本，只含项目的那一份副本                                                | 与相应情形相同                                                                                                                                                                           | `› G37`                                                                       |
+| G38 为计算机安装的集成，其对等范围排除了作答的发布版本                                                 | 全局副本，不含该集成                                                                | 与相应情形相同；`doctor` 会警告                                                                                                                                                          | `› G38`                                                                       |
+| G39 door 的包集合：CLI 与一个集成一起安装在同一根目录中                                                | 该副本，在项目之外时加载该集成                                                      | 与相应情形相同                                                                                                                                                                           | `› G39`                                                                       |
+| G40 pnpm 全局文件夹：一个共享文件夹，或每个包一个文件夹                                                | 全局副本，在项目之外时加载每一个此类文件夹中的集成                                  | 与相应情形相同                                                                                                                                                                           | `› G40`                                                                       |
+| G41 在项目之外，位于某集成自己的源码文件夹中                                                           | 该副本，使用该文件夹自身的集成副本                                                  | 与相应情形相同；`doctor` 会把计算机的那份副本标注为未使用，但不给出警告                                                                                                                  | `› G41`                                                                       |
+| G42 在项目内，为计算机安装的集成被项目的发布版本排除，或加载失败                                       | 项目的发布版本                                                                      | 与相应情形相同；`discover` 与 `doctor` 都不会提供它                                                                                                                                      | `› G42`                                                                       |
+| G43 在只有 Core 的项目内，由某个 door 的包集合作答                                                     | 该副本                                                                              | `copy` 为 `starting`；其集成会作为可用项提供                                                                                                                                             | `› G43`                                                                       |
+| G44 npm 安装在其自身前缀下的全局副本，例如 `npm i -g --prefix ~/.local`                                | 全局副本                                                                            | 与相应情形相同；提示与 `doctor` 会升级到该前缀，安装在那里的集成也会生效                                                                                                                 | `› G44`                                                                       |
+| G45 全局副本首次运行时写入的计算机级 agent 文本                                                        | 全局副本                                                                            | 与相应情形相同；一个文件，Claude Code 的文件夹链接到它，CLI 未创建的文件夹会被保留并由 `doctor` 指明，`--remove-agents` 会移除该文件与链接                                               | `› G45`                                                                       |
+| G46 在发布版本早于它的项目内执行 `astryx docs global`                                                  | 起始副本，面向本计算机                                                              | `astryx: answered by CLI <version> with Core <version>, for this computer`                                                                                                               | `› G46`                                                                       |
+| G47 自身 CLI 比其 Core 更新的项目，在线或离线                                                          | 项目自身的 CLI；不获取任何内容                                                      | 交接行；`copy` 为 `project`                                                                                                                                                              | `› G47`                                                                       |
+| G48 离线时，自身 CLI 无法启动的项目                                                                    | 起始副本                                                                            | FR2 的警告行，一次；`copy` 为 `fallback`                                                                                                                                                 | `› G48`                                                                       |
+| G49 离线时，自身 CLI 无法启动的项目所需的发布版本安装失败；从同一副本或其他副本再次运行                | 起始副本                                                                            | FR2 的警告行，说明上次尝试安装的时间；2 分钟内不会开始新的安装，第二次失败后延长到 10 分钟；成功后则忘记该记录                                                                           | `› G49`                                                                       |
+| G50 位于随 `BUN_INSTALL` 移动的 Bun 全局文件夹中的全局副本；应用位于以 `install/global` 结尾的文件夹中 | 当 `BUN_INSTALL` 指明该文件夹时为全局副本；应用使用其自身的 CLI                     | `bun add -g` 会在那里重新安装；该应用永远不会被视为全局                                                                                                                                  | `› G50`                                                                       |
+| G51 位于由 `global-folder` 指定的 Yarn 1 全局文件夹中的全局副本；仅用 `yarn add` 创建的应用            | 当 Yarn 的设置指明该文件夹时为全局副本；应用使用其自身的 CLI                        | `yarn global add` 会在那里重新安装；该应用不做更新检查，也不写入 agent 文本                                                                                                              | `› G51`                                                                       |
+| G52 旁边没有 Core、也没有缓存的全局副本（不在 Windows 上）                                             | 全局副本                                                                            | 一次运行后，一个分离的步骤会把它的 Core 安装到缓存中（绝不在 CI 或 Windows 上）；离线时，该失败会按退避策略等待                                                                          | `› G52`                                                                       |
+| G53 pnpm 的全局虚拟存储：项目自身的 CLI 保存在该存储的 `links` 文件夹中                                | 项目自身的 CLI，而不是全局副本；pnpm 全局文件夹所链接的副本属于全局                 | 项目运行不会启动更新检查，也不会写入 agent 文本                                                                                                                                          | `› G53`                                                                       |
+| G54 在拥有自身 CLI 的项目中，位于超过五层深的文件夹                                                    | 项目自身的 CLI                                                                      | 交接行；无提示                                                                                                                                                                           | `› G54`                                                                       |
+| G55 在全新克隆中执行 `--json` 运行，同时全局副本的 Core 步骤正在运行                                   | 全局副本                                                                            | 立即返回干净的 JSON；该步骤在运行结束时启动                                                                                                                                              | `› G55`                                                                       |
+| G56 在发布版本的 Core 被缓存之前，于项目之外进行的开放 `search`                                        | 全局副本                                                                            | 像 `component` 一样获取 Core；无法获取时，`meta.partial` 会指明被跳过的域与原因，并输出一条标准错误行                                                                                    | `› G56`                                                                       |
+| G57 在只有 Core 的项目中，位于超过四层深的文件夹                                                       | 启动本次运行的副本                                                                  | 读取项目的 Core，绝不使用携带的那一份；`meta.answeredBy.core` 指明它                                                                                                                     | `› G57`                                                                       |
+| G58 只向启动已交接运行的副本发送中断，或向其整个进程组发送中断                                         | 项目自身的 CLI                                                                      | 仅该副本：5 秒后转发一次；进程组：只接收一次，不会转发给及时停止的 CLI；运行以该 CLI 的退出状态或信号结束                                                                                | `› G58`                                                                       |
 
 ### Platform support
 
-- Supported feature/engine floor: every operating system, shell, and package
-  manager the CLI supports, including the workspaces and install layouts of
-  npm, pnpm, Yarn (Plug'n'Play included), and Bun, and the package runner each
-  provides.
-- Unsupported behavior: a door that cannot obtain the release FR2 names fails
-  before any write; a global copy that cannot reach the registry answers as
-  always, and prints no notice (FR6). In a Yarn Plug'n'Play project, a
-  copy cannot see the project's own CLI without running the project's
-  loader, which FR2 forbids before the hand-off, so the release equal to the
-  project's Core answers from the per-user cache instead; it is the same
-  release whenever the project's CLI matches its Core.
-- Browser evidence: not applicable; the contract is CLI output, exit status,
-  and file changes.
+- 支持的功能/引擎下限：CLI 支持的每一种操作系统、shell 与包管理器，包括 npm、pnpm、Yarn（含 Plug'n'Play）和 Bun 的工作区与安装布局，以及它们各自提供的 package runner。
+- 不支持的行为：无法获取 FR2 所指发布版本的 door 会在任何写入之前失败；无法访问注册表的全局副本照常作答，并且不输出提示（FR6）。在 Yarn Plug'n'Play 项目中，副本若不运行项目的 loader 就看不到项目自身的 CLI，而 FR2 禁止在交接之前这样做，因此改由与项目 Core 相同的发布版本从每用户缓存中作答；只要项目的 CLI 与其 Core 匹配，那就是同一个发布版本。
+- 浏览器证据：不适用；这里的契约是 CLI 输出、退出状态与文件变更。
 
 ## Current-state impact
 
-- A CLI installed for the computer answers in every folder, inside projects that
-  install their own copy too, and pairs its templates, docs, and agent text with
-  the project's Core. A project whose CLI and Core are on different releases
-  answers with the CLI's templates and docs and the Core's components. A package
-  runner runs a CLI package installed for the computer in place of fetching one,
-  at whatever release it was installed, and that copy never updates. A version
-  requested on a package runner's command line answers inside a project, and in
-  a package with no Astryx inside a project, a package runner fetches the newest
-  CLI instead of running the project's. A project with Core and no CLI, and a
-  fresh clone with nothing installed, answer with whatever CLI started the run,
-  or fail. Outside a project, the commands that need Core fail, hints name the
-  CLI package without a version, refusals use several error codes, nothing names
-  the release that answered, and no check runs a command outside a project.
-  Printed command names come from the package manager alone; many hints, errors,
-  `doctor` fixes, docs, and the setup reminder print a fixed name instead; an
-  integration has no way to name the command its users run; the computer-level
-  agent text is written only when a person runs `astryx init --user`; no run
-  tells anyone that a copy or a project is behind; `doctor` does not list the
-  `astryx` commands on the search path; and an integration installed for the
-  computer applies nowhere. Each of these departs from FR1–FR12.
-- The CLI provides FR2–FR9 through the doors that run the CLI package directly.
-  The parts that need the programmatic host entry arrive with it: FR1's host
-  entry, its inputs, and its one-call rule; FR2's clause for a door that
-  declines the project's CLI; FR3's integrations a host approves; the door name
-  in FR5's picker; and
-  `architecture:cli-surface` INV30. The official list FR8 ships is
-  `spec:AST-051` FR11's. The project starters FR8 ships arrive with the template
-  kind that ships them.
-- Follow-up, next minor release: `invalid_cli_command`, a malformed
-  `cliCommand` (FR5), becomes a validate warning, which
-  `integration check --strict` fails on. This release reports it as a note
-  outside the issues, since `--strict` fails on every warning and a new failure
-  code joins only in a minor (`architecture:cli-surface` INV35).
-- Follow-up, next minor release, breaking: the release equal to the project's
-  Core answers even when the project's own CLI is another release, and answers
-  a project with only Core instead of the copy that started the run (DEC-10).
-- `architecture:cli-surface` records the release-choice stage before dispatch
-  (FR2, FR9), the per-user writes outside a project root in INV10 (FR2, FR7,
-  FR8), the run-level standard-error lines in INV12 (FR2, FR5, FR10), the
-  computer-level integrations beside INV14's autolinking (FR12),
-  `outsideProject` in INV7 (FR4), `ERR_PROJECT_REQUIRED` and
-  `ERR_VERSIONS_UNAVAILABLE` in INV3 (FR2, FR4), `meta.answeredBy` in INV2
-  (FR5), the picker's command name in INV22's hints (FR5), and the
-  computer-level text in INV13's single rendered source (FR8). The host entry's
-  inputs (FR1, FR2) are recorded there with the host entry.
-- No record lists the integration manifest's fields. `cliCommand` (FR5) is an
-  integration-level field, which INV24 allows, and the integration authoring
-  reference documents it beside the other fields: its accepted values, its
-  place in the picker's order, and what happens when integrations disagree
-  (`spec:AST-017` FR14).
-- `architecture:cli-surface` INV30 keeps how a host's package sets are
-  matched, enumerated, and recorded; which release answers a hosted run, the
-  host entry's inputs, and the standard-error lines of a hosted run are FR1,
-  FR2, and FR5's.
-- `spec:AST-047` FR7 and `spec:AST-048`'s platform support take the command
-  name they print from FR5, and `spec:AST-051` FR6 admits a door's sources
-  (FR1).
-- `contributing:cli-conventions` lists the `outsideProject` declaration in its
-  command doc fields and its checklist.
-- Consumer docs (`cli`) describe the doors, which release answers a folder,
-  what commands do outside a project, the per-user release cache, the update
-  check and its notices, and how the computer-level text is installed and
-  turned off.
-- The response fields this record adds are additive (`spec:AST-017` FR13). A
-  new refusal, a moved error code, or a changed exit status outside a project
-  is classified under `spec:AST-017` before it ships.
+- 为计算机安装的 CLI 会在每个文件夹中作答，包括那些自己也安装了副本的项目，并把它的模板、文档与 Agent 文本与项目的 Core 配对。CLI 与 Core 处于不同发布版本的项目，以 CLI 的模板与文档、Core 的组件作答。package runner 会运行一个为计算机安装的 CLI 包，而不是去获取一个，且以它安装时的那个发布版本运行，这个副本永不更新。在 package runner 命令行上指定的版本会在项目内作答；而在项目内一个不含 Astryx 的包中，package runner 会去获取最新的 CLI，而不是运行项目的那个。只有 Core 没有 CLI 的项目，以及什么都没安装的全新克隆，会以启动本次运行的任意 CLI 作答，或者失败。在项目之外，需要 Core 的命令失败，提示给出不带版本的 CLI 包名，拒绝使用多个错误码，没有任何东西指明作答的发布版本，也没有任何检查会在项目之外运行命令。打印出的命令名只来自包管理器；许多提示、错误、`doctor` 修复、文档与设置提醒反而打印一个固定名称；集成无法指明其用户运行的命令；计算机级 Agent 文本只有在人运行 `astryx init --user` 时才写入；没有任何运行告诉任何人某个副本或项目已落后；`doctor` 不列出搜索路径上的 `astryx` 命令；为计算机安装的集成在任何地方都不生效。以上每一项都偏离 FR1–FR12。
+- CLI 通过直接运行 CLI 包的各个 door 提供 FR2–FR9。需要程序化宿主入口的部分随该入口一起到来：FR1 的宿主入口、它的输入与它的一次调用规则；FR2 关于拒绝项目 CLI 的 door 的条款；FR3 中由宿主批准的集成；FR5 的选择器中的 door 名；以及 `architecture:cli-surface` INV30。FR8 随附的官方清单来自 `spec:AST-051` FR11。FR8 随附的项目 starter 随提供它们的模板种类一起到来。
+- 后续工作，下个次要版本：格式错误的 `cliCommand`（FR5）所致的 `invalid_cli_command` 变为 validate 警告，`integration check --strict` 会因它失败。本发布版本将它作为问题之外的备注报告，因为 `--strict` 会因每个警告失败，而新的失败码只在次要版本中加入（`architecture:cli-surface` INV35）。
+- 后续工作，下个次要版本，破坏性变更：由与项目 Core 相同的那个发布版本作答，即使项目自身的 CLI 是另一个发布版本；并以它回答只有 Core 的项目，而不是启动本次运行的副本（DEC-10）。
+- `architecture:cli-surface` 记录了派发之前的发布版本选择阶段（FR2、FR9）、INV10 中项目根之外的每用户写入（FR2、FR7、FR8）、INV12 中的运行级标准错误行（FR2、FR5、FR10）、INV14 的自动链接旁边的计算机级集成（FR12）、INV7 中的 `outsideProject`（FR4）、INV3 中的 `ERR_PROJECT_REQUIRED` 与 `ERR_VERSIONS_UNAVAILABLE`（FR2、FR4）、INV2 中的 `meta.answeredBy`（FR5）、INV22 提示中的选择器命令名（FR5），以及 INV13 单一渲染源中的计算机级文本（FR8）。宿主入口的输入（FR1、FR2）与宿主入口一起记录在那里。
+- 没有记录列出集成清单的字段。`cliCommand`（FR5）是集成级的字段，INV24 允许它，集成编写参考在其余字段旁记录了它：它接受的值、它在选择器顺序中的位置，以及集成彼此不一致时的结果（`spec:AST-017` FR14）。
+- `architecture:cli-surface` INV30 保留宿主的包集合如何被匹配、枚举与记录；由哪个发布版本回答托管运行、宿主入口的输入，以及托管运行的标准错误行，归 FR1、FR2 与 FR5 所有。
+- `spec:AST-047` FR7 与 `spec:AST-048` 的平台支持从 FR5 取得它们打印的命令名，`spec:AST-051` FR6 接纳 door 的来源（FR1）。
+- `contributing:cli-conventions` 在其命令文档字段与检查清单中列出 `outsideProject` 声明。
+- 使用方文档（`cli`）描述各个 door、哪个发布版本回答某个文件夹、命令在项目之外的作用、每用户发布版本缓存、更新检查及其提醒，以及计算机级文本如何安装与关闭。
+- 本记录新增的响应字段是增量式的（`spec:AST-017` FR13）。新的拒绝、被移动的错误码，或项目之外发生变化的退出状态，在发布前会按 `spec:AST-017` 分类。
 
-This specification change alters no runtime behavior or published package and
-needs no Changeset.
+本次规格变更不改变任何运行时行为或已发布的包，也不需要 Changeset。
 
 ## Verification
 
-| Contract | Verification                                                                                                                                                                                                                  | Representative states                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Mutation or failure expectation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1      | Door conformance: every command example, run through each door; host entry tests                                                                                                                                              | a project on the current minor and one on the previous minor; an empty folder; text and JSON; a second call in one process; a door source beside project and integration sources                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | A door's exit status, output, or file changes differ beyond FR5's command names and the FR5 and FR6 lines, a door's input reaches the CLI any way but the host entry, a second call in one process runs, or a door's source is called out of order or named as an integration's                                                                                                                                                                                                                                                    |
-| FR2      | Release check: every page template scaffolded through a door into a project on the previous release, then typechecked; hand-off probes                                                                                        | a project with its own CLI; a project whose CLI and Core differ, both ways; a project with Core only; a workspace member with its own Core under a root CLI; a fresh clone with a lockfile and with only a declared range; an upgrade with a project CLI older than its Core; a declined project CLI, with its release and with it unavailable (the starting copy answers, announced, naming the reason); an unavailable release                                                                                                                                                                                                                                                    | A template fails where the matched release passes, a release other than the one equal to the project's Core answers, project configuration runs in another copy, or another release answers in place of an unavailable one                                                                                                                                                                                                                                                                                                         |
-| FR3      | Empty-folder run of every command example                                                                                                                                                                                     | each command that needs Core; `doctor`, `swizzle`, and `upgrade`; a folder with no `package.json`; a home folder; a copy with no Core                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | A command that needs Core fails beside a carried Core, a project check reads it, or output gives a project step                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| FR4      | Declaration check over every command doc, plus the empty-folder run compared with each declaration                                                                                                                            | `same`, `refuse`, and `own`; a command group; a command without a value; a released refusal code                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | A command lacks a value, a `refuse` writes or uses an unlisted code, or a command's behavior differs from its value                                                                                                                                                                                                                                                                                                                                                                                                                |
-| FR5      | Printed-command check: each command the CLI prints or writes, run from the same folder through the door that printed it; a picker check over every surface that prints a command; a check of shipped text; result-field tests | each door; `project`, `matched`, and `carried`; no declaration, one integration's command, two that agree, two that disagree, and a malformed one; hints, errors, `doctor` fixes, help, docs moves, agent text, and the setup reminder; text and JSON                                                                                                                                                                                                                                                                                                                                                                                                                               | A printed command reaches another door or release, a surface prints a name the picker did not choose, the picker's order changes, a disagreement prints either integration's command or `doctor` stays silent, a malformed declaration withdraws its integration, shipped text writes a CLI command any way but bare or as a `{@command}` token, JSON carries an unrendered token, JSON carries a picked name, `meta.answeredBy` is missing or wrong, or the line prints for the project's own CLI                                 |
-| FR6      | Update check tests                                                                                                                                                                                                            | first run; within and after 24 hours; `CI` set to yes and to `false`; `NO_UPDATE_NOTIFIER` set; an unreachable registry; ten runs at once; a requested version; a package runner's copy; inside a project                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | A check runs in the first day, twice in a day, with `CI` or `NO_UPDATE_NOTIFIER` set, or for a fetched copy; a command waits for it or its output changes; or a check installs or switches a release                                                                                                                                                                                                                                                                                                                               |
-| FR7      | File-system comparison before and after each command in the empty-folder run and in projects                                                                                                                                  | each command that writes; absolute, traversal, and symlinked paths; a home folder                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | A file lands outside the named places, or a refusal writes first                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| FR8      | Release build, drift checks, a starter build in CI, and computer-level text tests                                                                                                                                             | the official list; the agent text for each door; each starter; the global copy's first run and a switch; `--agent` lists; an opt-out; a file a person edited; a file without markers; a link in a file's place; a strict YAML parse of every skill file                                                                                                                                                                                                                                                                                                                                                                                                                             | A committed copy drifts, a global asset is fetched at run time, the computer-level text names a version, a starter fails to scaffold, install, or build, the global copy writes after an opt-out or into an edited file, a command waits for the text, or a skill's frontmatter does not parse                                                                                                                                                                                                                                     |
-| FR9      | Hand-off probes: every command example run through each copy in each folder kind, compared with the release FR2 names run directly in that folder                                                                             | the CLI package installed for the computer on an older and on a newer release than the project's CLI, run directly and run by a package runner in place of a fetch; a package runner's copy, unversioned and with a version requested inside a project, for a read and for `upgrade`; a project with Core but no CLI, through a package runner that fetches the newest release; a package with no Astryx inside a project, which the package runner takes for the project; a project CLI that predates the hand-off and one that hands off itself; a declined project CLI; a project CLI that cannot start; a non-zero exit; piped standard input; outside a project; text and JSON | A release other than the one FR2 names answers in a project, outside the declined case; a project CLI that differs from its Core answers; a requested version answers inside a project; a run is handed off twice or returns to a copy it left; arguments, folder, streams, or exit status differ from a direct run of the project's CLI; outside a project, a release answers that FR3 and FR6 do not name; or the line is missing, prints twice, prints in JSON mode, or prints for a run the project's own CLI answers directly |
-| FR10     | Notice tests                                                                                                                                                                                                                  | the global copy behind, for npm, pnpm, Yarn, Bun, and Volta installs; a newest release that needs a newer Node; a project behind, with and without its own CLI; an old `astryx` first on the search path; two runs in one day and a run the next day; a failed command; JSON mode; `CI`; `NO_UPDATE_NOTIFIER`; standard error not a terminal; a prerelease                                                                                                                                                                                                                                                                                                                          | A notice prints in JSON mode, after a failure, twice in a day, with `CI` or `NO_UPDATE_NOTIFIER` set, or before the command's output; it names another package manager's command; or `doctor` omits it                                                                                                                                                                                                                                                                                                                             |
-| FR11     | One test per row of the global and project table, with packed CLI copies in each install layout                                                                                                                               | every row of the table                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | A row's answer, line, or test differs from the table, or a row has no test                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| FR12     | Computer-level integration tests and table rows G35–G43                                                                                                                                                                       | npm and pnpm global folders; a door's package set; a runner's temporary install; the release cache; outside a project; inside one with and without the same integration; an incompatible peer range; a manifest that fails                                                                                                                                                                                                                                                                                                                                                                                                                                                          | A computer-level integration contributes inside a project, is missing outside one, loads beside the project's copy, loads with an excluded peer range, or `discover` and `doctor` omit it                                                                                                                                                                                                                                                                                                                                          |
-| FR13     | Plugin-skill drift check (`--check`) and `scripts/generate-agent-plugin-skill.test.mjs`                                                                                                                                       | the committed plugin skill matches its rendering; a different rendering; a missing file                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | The committed file differs from the rendering and the check passes, or the skill is edited by hand                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 契约 | 验证                                                                                                                                               | 代表性状态                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 变异或失败预期                                                                                                                                                                                                                                                                                                                                                       |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1  | door 一致性：把每个命令示例分别通过每个 door 运行；宿主入口测试                                                                                    | 一个处于当前次要版本的项目，一个处于上一个次要版本的项目；一个空文件夹；文本与 JSON；同一进程中的第二次调用；与项目来源及集成来源并列的一个 door 来源                                                                                                                                                                                                                                                                                                               | 某个 door 的退出状态、输出或文件变更越出 FR5 的命令名以及 FR5 与 FR6 的行而不同；door 的输入以宿主入口之外的任何方式到达 CLI；同一进程中的第二次调用被执行；或 door 的来源被乱序调用，或被命名为某个集成的来源                                                                                                                                                       |
+| FR2  | 发布版本检查：把每个页面模板通过 door 脚手架到处于上一个发布版本的项目中，再做类型检查；交接探测                                                   | 一个有自身 CLI 的项目；CLI 与 Core 不一致的项目，两个方向都测；只有 Core 的项目；根 CLI 之下拥有自己 Core 的工作区成员；带 lockfile 的全新克隆，以及只有声明范围的全新克隆；项目 CLI 比其 Core 更旧的升级；被拒绝的项目 CLI，分别在其发布版本可用与不可用时（起始副本作答，会宣告，并指明原因）；一个不可用的发布版本                                                                                                                                               | 在匹配的发布版本能通过的地方某个模板失败；作答的发布版本不是与项目 Core 相同的那一个；项目配置在另一个副本中运行；或在某个发布版本不可用时由另一个发布版本代为作答                                                                                                                                                                                                   |
+| FR3  | 在空文件夹中运行每个命令示例                                                                                                                       | 每个需要 Core 的命令；`doctor`、`swizzle` 与 `upgrade`；没有 `package.json` 的文件夹；主目录；没有 Core 的副本                                                                                                                                                                                                                                                                                                                                                      | 需要 Core 的命令在有随附 Core 时失败；项目检查读取它；或输出给出某个项目步骤                                                                                                                                                                                                                                                                                         |
+| FR4  | 对每个命令文档做声明检查，并把空文件夹运行结果与每个声明比较                                                                                       | `same`、`refuse` 与 `own`；一个命令组；没有取值的命令；一个已发布的拒绝码                                                                                                                                                                                                                                                                                                                                                                                           | 某个命令缺少取值；某个 `refuse` 写入或使用未列出的码；或某个命令的行为与其取值不符                                                                                                                                                                                                                                                                                   |
+| FR5  | 打印命令检查：CLI 打印或写入的每个命令，从同一文件夹经由打印它的那个 door 运行；对每个会打印命令的界面做选择器检查；对随附文本做检查；结果字段测试 | 每个 door；`project`、`matched` 与 `carried`；没有声明、一个集成的命令、两个一致、两个不一致，以及一个格式错误的；提示、错误、`doctor` 修复、帮助、文档移动、Agent 文本与设置提醒；文本与 JSON                                                                                                                                                                                                                                                                      | 打印出的命令到达另一个 door 或另一个发布版本；某个界面打印选择器没有选中的名称；选择器的顺序改变；出现不一致时打印了任一集成的命令，或 `doctor` 保持沉默；格式错误的声明撤下其集成；随附文本以裸露形式或以 `{@command}` token 之外的任何方式写入 CLI 命令；JSON 携带未渲染的 token；JSON 携带被选中的名称；`meta.answeredBy` 缺失或错误；或该行为项目自身的 CLI 打印 |
+| FR6  | 更新检查测试                                                                                                                                       | 首次运行；24 小时内与之后；`CI` 设为 yes 与设为 `false`；已设置 `NO_UPDATE_NOTIFIER`；无法访问的注册表；同时十次运行；在 package runner 上指定的版本；package runner 的副本；在项目之内                                                                                                                                                                                                                                                                             | 检查在第一天运行；一天运行两次；在设置了 `CI` 或 `NO_UPDATE_NOTIFIER` 时运行；或为被获取的副本运行；某个命令等待它，或它的输出改变了；或某次检查安装或切换了发布版本                                                                                                                                                                                                 |
+| FR7  | 在空文件夹运行与项目中，对每个命令之前与之后做文件系统比较                                                                                         | 每个会写入的命令；绝对路径、穿越路径与符号链接路径；主目录                                                                                                                                                                                                                                                                                                                                                                                                          | 有文件落在所指位置之外；或某次拒绝先行写入                                                                                                                                                                                                                                                                                                                           |
+| FR8  | 发布版本构建、漂移检查、CI 中的 starter 构建，以及计算机级文本测试                                                                                 | 官方清单；每个 door 的 Agent 文本；每个 starter；全局副本的首次运行与一次切换；`--agent` 清单；一次退出选择；被人编辑过的文件；没有标记的文件；文件位置上的链接；对每个 skill 文件做严格 YAML 解析                                                                                                                                                                                                                                                                  | 提交的副本发生漂移；全局资产在运行时被获取；计算机级文本指名某个版本；某个 starter 脚手架、安装或构建失败；全局副本在退出选择之后写入，或写入被编辑过的文件；某个命令等待该文本；或某个 skill 的 frontmatter 无法解析                                                                                                                                                |
+| FR9  | 交接探测：把每个命令示例分别在每种文件夹中通过每个副本运行，并与在该文件夹中直接运行 FR2 所指发布版本的结果比较                                    | 为计算机安装的 CLI 包，版本比项目的 CLI 更旧与更新，分别直接运行与由 package runner 代替获取而运行；package runner 的副本，不带版本，以及在项目内指定了版本，用于一次读取与用于 `upgrade`；只有 Core 没有 CLI 的项目，经由获取最新发布版本的 package runner；项目内一个不含 Astryx 的包，package runner 会把它当作项目的；早于交接机制的项目 CLI，以及自身执行交接的项目 CLI；被拒绝的项目 CLI；无法启动的项目 CLI；非零退出；管道标准输入；在项目之外；文本与 JSON | 在项目中由 FR2 所指之外的发布版本作答，被拒绝的情形除外；与项目 Core 不一致的项目 CLI 作答；在项目内由被指定的版本作答；一次运行被交接两次，或返回它已离开的副本；参数、文件夹、流或退出状态与直接运行项目的 CLI 不同；在项目之外，由 FR3 与 FR6 未指名的发布版本作答；或该行缺失、打印两次、在 JSON 模式下打印，或为项目自身 CLI 直接作答的运行打印                 |
+| FR10 | 提醒测试                                                                                                                                           | 落后的全局副本，覆盖 npm、pnpm、Yarn、Bun 与 Volta 安装；需要更新 Node 的最新发布版本；落后的项目，带与不带自身 CLI；搜索路径上更靠前的一个旧 `astryx`；一天内两次运行与次日一次运行；一个失败的命令；JSON 模式；`CI`；`NO_UPDATE_NOTIFIER`；标准错误不是终端；一个预发布版本                                                                                                                                                                                       | 提醒在 JSON 模式下打印；在失败之后打印；一天内打印两次；在设置了 `CI` 或 `NO_UPDATE_NOTIFIER` 时打印；或在命令输出之前打印；它指名另一个包管理器的命令；或 `doctor` 遗漏它                                                                                                                                                                                           |
+| FR11 | 全局与项目对照表的每一行各一个测试，并在每种安装布局中放入打包的 CLI 副本                                                                          | 该表的每一行                                                                                                                                                                                                                                                                                                                                                                                                                                                        | 某一行的作答、行或测试与该表不同；或某一行没有测试                                                                                                                                                                                                                                                                                                                   |
+| FR12 | 计算机级集成测试与表行 G35–G43                                                                                                                     | npm 与 pnpm 的全局文件夹；door 的包集合；runner 的临时安装；发布版本缓存；在项目之外；在带与不带同一集成的项目之内；不兼容的 peer 范围；一个失败的清单                                                                                                                                                                                                                                                                                                              | 计算机级集成在项目之内有所贡献；在项目之外缺失；与项目的副本一起加载；在处于被排除的 peer 范围时加载；或 `discover` 与 `doctor` 遗漏它                                                                                                                                                                                                                               |
+| FR13 | 插件 skill 漂移检查（`--check`）与 `scripts/generate-agent-plugin-skill.test.mjs`                                                                  | 提交的插件 skill 与其渲染一致；渲染不同；文件缺失                                                                                                                                                                                                                                                                                                                                                                                                                   | 提交的文件与渲染不同而检查通过；或该 skill 被手工编辑                                                                                                                                                                                                                                                                                                                |
 
 ## Decision log
 
 ### DEC-1 — One release answers each folder
 
 **Reference:** `spec:AST-081/DEC-1`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-Two releases in one run write code that fails without an error: one release's
-templates and component docs use props another release's Core does not have,
-and the same command can import a theme in one release and copy its source in
-another, both exiting 0. So one release answers everything in a project: the
-project's own CLI, or without one the release equal to its Core (DEC-10). When
-that release cannot be obtained, as offline or behind a registry without it,
-the copy that started the run answers, as before global mode, and says so on
-one line and in `meta.answeredBy`. Failing those runs would
-break commands that worked before global mode, and the warning keeps the
-mismatch visible; falling back while the matched release can be obtained would
-bring the silent mix back, so it never happens.
+一次运行中出现两个发布版本，会写出没有报错却失败的代码：一个发布版本的模板与组件文档使用另一个发布版本 Core 所没有的 props，而同一条命令可以在一个发布版本中导入某个主题、在另一个发布版本中复制其源码，两者都以 0 退出。因此在一个项目中由一个发布版本回答一切：项目自身的 CLI，或在没有它时由与项目 Core 相同的那个发布版本作答（DEC-10）。当该发布版本无法获取时，例如离线或位于没有它的注册表之后，由启动本次运行的副本作答，与全局模式之前一样，并用一行以及 `meta.answeredBy` 说明这一点。让这些运行失败会破坏在全局模式之前可用的命令，而这个警告让不一致保持可见；在匹配的发布版本可以获取时回退，会把那种无声的混合带回来，因此它绝不会发生。
 
-Rejected: the newest release answering everywhere, which writes code an older
-project's Core rejects; failing every run whose matched release cannot be
-obtained, which breaks commands that worked before global mode; and falling
-back to any other release, or without saying so.
+已否决：让最新发布版本在所有地方作答，这会写出更旧项目的 Core 所拒绝的代码；让每个匹配的发布版本无法获取的运行都失败，这会破坏在全局模式之前可用的命令；以及回退到任何其他发布版本，或不作说明地回退。
 
 ### DEC-2 — Outside a project, answer as a new project would
 
 **Reference:** `spec:AST-081/DEC-2`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-An agent with no project files still needs Core's components and docs, and a
-new project on the release it runs is what it would create. The carried Core
-serves only commands that do not judge or change a project, so an empty folder
-never passes a project check or receives a component copy whose packages
-nobody installed.
+没有项目文件的 Agent 仍然需要 Core 的组件与文档，而在它所运行的那个发布版本上，一个新项目正是它将会创建的东西。随附的 Core 只服务那些不评判也不改动项目的命令，因此空文件夹绝不会通过项目检查，也不会收到一份没人安装其包的组件副本。
 
-Rejected: refusing every command that needs Core outside a project, which
-leaves an agent without project files unable to learn Core.
+已否决：在项目之外拒绝每一条需要 Core 的命令，这会让没有项目文件的 Agent 无法了解 Core。
 
 ### DEC-3 — Each command declares same, refuse, or own
 
 **Reference:** `spec:AST-081/DEC-3`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-A declaration in each command doc, published in the manifest, tells a door and
-an agent before a run whether a command works outside a project, and lets a
-check prove the behavior matches. One shared refusal code lets an agent branch
-on "open or start a project first" without learning each command's failure.
+每个命令文档中的一项声明，随清单一起发布，在运行之前告诉 door 与 Agent 某条命令是否能在项目之外工作，并让检查能够证明行为与之一致。一个共享的拒绝码让 Agent 能就“先打开或启动一个项目”分支，而不必了解每条命令的失败。
 
-Rejected: a project, global, or both scope, which cannot express a command that
-does a different job outside a project or has modes of each kind.
+已否决：项目、全局或两者兼有的作用域，它无法表达一条在项目之外做另一种工作、或同时具有各类模式的命令。
 
 ### DEC-4 — Who answered is data, and printed commands return through their door
 
 **Reference:** `spec:AST-081/DEC-4`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-An agent comparing two reads needs to know whether one release gave both; a
-field in `meta` tells it without changing an existing field or the envelope. A
-printed command that names another door or an unpinned package starts a
-different release than the one that printed it.
+比较两次读取的 Agent 需要知道是否由同一个发布版本给出两者；`meta` 中的一个字段告诉它这一点，而不改动任何现有字段或外层信封。打印出的命令若指名另一个 door 或未固定版本的包，所启动的发布版本就不同于打印它的那一个。
 
-Rejected: a new top-level envelope field, which changes the envelope every
-consumer reads.
+已否决：新增一个顶层信封字段，那会改变每个使用方都在读的信封。
 
 ### DEC-5 — No door changes a project's versions
 
 **Reference:** `spec:AST-081/DEC-5`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-A project's versions belong to its owner, so no door installs into a project;
-FR10 tells the owner instead, with the exact commands, and `doctor` reports
-what is newer.
+项目的版本属于其所有者，因此任何 door 都不会向项目安装；改为由 FR10 告知所有者，并给出确切的命令，而 `doctor` 报告哪些更新。
 
-Rejected: updating a project, or installing into one, from any door.
+已否决：从任何 door 更新项目，或向项目中安装。
 
 ### DEC-6 — Anything global ships inside the release
 
 **Reference:** `spec:AST-081/DEC-6`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-A list, a starter, or an agent text fetched at run time can disagree with the
-release that reads it, and fails offline. Generated when the release is built,
-it is exactly as current as the CLI that uses it.
+在运行时获取的清单、starter 或 Agent 文本可能与读取它的发布版本不一致，并且在离线时失败。在构建发布版本时生成，它就与使用它的 CLI 一样新。
 
-Rejected: fetching global assets at run time.
+已否决：在运行时获取全局资产。
 
 ### DEC-7 — Doors start the CLI through one entry, and their sources are their own
 
 **Reference:** `spec:AST-081/DEC-7`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-A door's inputs cannot travel by flag or environment variable, and a call takes
-over the process it runs in, so every door uses one documented programmatic
-entry, once per process. A catalog a door serves is the door's source, named as
-the door's and read after the integrations' sources, so a reader can tell which
-catalog listed a package.
+door 的输入无法通过 flag 或环境变量传递，而一次调用会接管它所在的进程，因此每个 door 都使用一个记录在文档中的程序化入口，每个进程一次。某个 door 所服务的 catalog 就是该 door 的来源，以该 door 的名义命名，并在集成的来源之后读取，这样读取者就能分辨是哪个 catalog 列出了某个包。
 
-Rejected: replacing an integration's discover source under that integration's
-name, which reports the door's catalog as the integration's own.
+已否决：以某个集成的名义替换该集成的 discover 来源，那会把 door 的 catalog 报告成集成自己的。
 
 ### DEC-8 — One picker names every printed command, and an integration's command comes first
 
 **Reference:** `spec:AST-081/DEC-8`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-An integration that gives its users a command of its own knows how they reach
-the CLI better than a guess from the package manager, and a door's name covers
-only the runs that start in that door, so the picker tries the integration's
-command, then the door's name, then the package manager's. When integrations
-disagree, neither is right for every user of the project, so the picker uses
-the package manager's name and `doctor` says why. Text written with a bare
-`astryx` that takes the picked name when shown lets one doc serve every door
-and stay correct when the door changes, and JSON keeps the one spelling a
-program can rely on.
+给自己的用户一条自有命令的集成，比从包管理器猜更了解他们如何到达 CLI；而 door 的名称只覆盖从该 door 启动的运行，因此选择器先试集成的命令，再试 door 的名称，最后试包管理器的。当集成彼此不一致时，没有哪一个对项目的每个用户都正确，因此选择器使用包管理器的名称，并由 `doctor` 说明原因。以裸露的 `astryx` 书写、在展示时取得被选中名称的文本，让一份文档能服务每个 door，并在 door 变化时仍然正确；而 JSON 保留程序可以依赖的那一种拼写。
 
-Rejected: settling a disagreement by integration order, which lets load order
-choose the command a project's users are told to run.
+已否决：按集成顺序了结不一致，那会让加载顺序决定告诉项目用户去运行哪条命令。
 
 ### DEC-9 — Every copy hands off, so any install route reaches the project's release
 
 **Reference:** `spec:AST-081/DEC-9`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-The CLI package itself is the common install, for the computer or through a
-package runner, and a copy installed for the computer is also what a package
-runner runs in place of a fetch. If only a separate launcher package handed a
-project's run on, those routes would answer with their own release and bring
-back the mix DEC-1 rejects, so the CLI package itself is the global install and
-needs no launcher. A hand-off built into every copy makes the
-project's pinned release answer wherever a run starts, a typed version
-included, and leaves a run outside a project with the copy its caller chose.
-One standard-error line keeps a hand-off visible without changing
-machine-readable output.
+CLI 包本身就是常见的安装对象，无论是为计算机安装还是通过 package runner 安装；而为计算机安装的副本，也正是 package runner 代替获取时所运行的。如果只有单独的启动器包才把项目的运行交出去，那些路径就会以它们自己的发布版本作答，并把 DEC-1 拒绝的混合带回来，因此 CLI 包本身就是全局安装，不需要启动器。内建于每个副本的交接，让项目的固定发布版本在运行起始的任何地方作答（包括在命令行上指定的版本），并让项目之外的运行留在调用者所选的副本上。一行标准错误让交接保持可见，而不改变机器可读的输出。
 
-Rejected: global mode only through a separate launcher package, which leaves
-the common install routes answering with their own release inside projects and
-gives people two packages to choose between.
+已否决：只通过单独的启动器包实现全局模式，那会让常见的安装路径在项目内以它们自己的发布版本作答，并让人不得不在两个包之间选择。
 
 ### DEC-10 — Until the next minor release, a project is answered as it was before global mode
 
 **Reference:** `spec:AST-081/DEC-10`
+
 **Decider:** `josephfarina`, `2026-10-20`
 
-A project's CLI and Core drift apart after a partial upgrade, and in a
-workspace an app can install an older Core than the root's CLI. The CLI's
-release writes the templates, docs, and agent text, and the Core's release
-supplies the components, so a mismatched pair can write code that does not
-compile. The Core is what the project's code runs against, so the release equal
-to it should answer. But a project that installs its own CLI has always been
-answered by that CLI, and one with only Core by whichever copy the person
-started; having another release answer either changes what an in-range install
-does, which `spec:AST-017` FR12 does not allow under a nonbreaking label. So in
-this release the project's own CLI answers whatever its version, a project with
-no CLI of its own is answered by the copy that started the run with a daily
-hint, `doctor` warns about either mismatch and names the command that aligns
-them, and the matched release answers only a project whose own CLI cannot
-start. The release equal to the Core answering over a differing project CLI,
-and answering a project with only Core, are a breaking change for the next
-minor release.
+项目的 CLI 与 Core 会在一次部分升级之后相互偏移，而在工作区中，某个应用可以安装比根 CLI 更旧的 Core。CLI 的发布版本撰写模板、文档与 Agent 文本，Core 的发布版本提供组件，因此不匹配的一对可能写出无法编译的代码。Core 是项目代码所运行的对象，因此与它相同的那个发布版本应当作答。但安装自身 CLI 的项目一直由该 CLI 作答，而只有 Core 的项目则由那个人启动的那个副本作答；让另一个发布版本来回答其中任一种，会改变范围内安装的行为，而 `spec:AST-017` FR12 不允许在非破坏性标签下这样做。因此在本发布版本中，项目自身的 CLI 无论版本如何都作答；没有自身 CLI 的项目由启动本次运行的副本作答，并附每日提示；`doctor` 对两种不一致都警告，并指明使其对齐的命令；而匹配的发布版本只回答自身 CLI 无法启动的项目。由与 Core 相同的发布版本越过不一致的项目 CLI 作答，以及回答只有 Core 的项目，是下个次要版本的破坏性变更。
 
-Compatibility with released routes: a project's own CLI run directly, as with
-`npx astryx` or a package script, answers as before, and so does a project with
-no CLI of its own. The one route that changes is a copy other than the
-project's own CLI started inside a project that installs its own CLI of another
-release: a global install, `npx @astryxdesign/cli@<version>`, or another package
-runner's fetch. Before global mode it answered with its own release and the
-project's Core; now it hands the run to the project's CLI (FR9), so it answers
-exactly what the project's own command does, and a command newer than the
-project's CLI is not reachable that way inside the project. The released docs
-name the project's own command inside a project and install the new CLI before
-`astryx upgrade`, so no documented route changes, and the JSON shape is the
-same; the commands that act on the computer (FR9) still answer from the copy
-that started the run.
+与已发布路径的兼容性：直接运行项目自身的 CLI，例如 `npx astryx` 或某个 package 脚本，与之前一样作答，没有自身 CLI 的项目也是如此。唯一改变的路径，是在安装了另一个发布版本自身 CLI 的项目内，启动项目自身 CLI 之外的副本：全局安装、`npx @astryxdesign/cli@<version>`，或另一个 package runner 的获取。在全局模式之前，它以自身发布版本与项目的 Core 作答；现在它把运行交接给项目的 CLI（FR9），因此它的作答与项目自身命令的作答完全一致，而在项目内，比项目 CLI 更新的命令无法通过这条路径到达。已发布的文档在项目内指名项目自身的命令，并在 `astryx upgrade` 之前安装新的 CLI，因此没有任何有文档记载的路径改变，JSON 形状也相同；作用于计算机的命令（FR9）仍然由启动本次运行的副本作答。
 
-Rejected for this release: the release equal to the Core answering over the
-project's own CLI, or answering a project with only Core, which changes what an
-existing install answers in a patch release; and leaving a mismatch silent.
+本发布版本中的已否决项：由与 Core 相同的发布版本越过项目自身的 CLI 作答，或回答只有 Core 的项目，那会改变现有安装在补丁版本中的作答；以及让不一致保持沉默。
 
 ### DEC-11 — The global copy answers with its own installed release
 
 **Reference:** `spec:AST-081/DEC-11`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-What answers outside a project is what the person installed, so the version
-they see is the version the package manager reports, and an upgrade is a step
-they take with the tool that installed it (DEC-16). The per-user cache holds
-only the releases a project's run needs.
+在项目之外作答的，就是那个人所安装的东西，因此他们看到的版本就是包管理器报告的版本，而升级是他们用安装它的那个工具所采取的一步（DEC-16）。每用户缓存只保存项目运行所需的发布版本。
 
-Rejected: answering from releases kept in the per-user cache and switching to
-the newest in the background, which changes what answers without the
-person's step; and replacing the installed copy, which writes outside FR7's
-places and can need administrator rights.
+已否决：从保存在每用户缓存中的发布版本作答，并在后台切换到最新的那个，那会在没有那个人参与的情况下改变作答；以及替换已安装的副本，那会写入 FR7 所指位置之外，并且可能需要管理员权限。
 
 ### DEC-12 — The computer-level agent text is one skill file, linked where agents look
 
 **Reference:** `spec:AST-081/DEC-12`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-A skill loads only when an agent uses Astryx, so it costs nothing in the
-sessions that never touch it. One file in the shared skills folder reaches
-most agent tools; linking its folder into each folder a tool reads alone
-reaches the rest with the same bytes, so a refresh is one write and no copy
-drifts. The only copy is for a tool whose scanner skips links.
+skill 只在 Agent 使用 Astryx 时加载，因此在从不涉及它的会话中不付出任何代价。共享 skills 文件夹中的一个文件能到达大多数 Agent 工具；把它的文件夹链接到某个工具单独读取的每个文件夹，就能以相同的字节到达其余的工具，因此刷新只是一次写入，也不会有副本漂移。唯一的副本是给扫描器跳过链接的那个工具用的。
 
-Rejected: a copy of the file per agent tool, which multiplies writes and lets
-copies drift; letting a person pick agents, which adds an option for what
-existence of a tool's folder already says; and one always-on instruction file
-per agent, which loads in every session and reaches fewer agents.
+已否决：每个 Agent 工具各放一份文件副本，那会成倍增加写入并让副本漂移；让人挑选 Agent，那会为一个工具文件夹是否存在已经说明的事情增加选项；以及为每个 Agent 放一个常驻指令文件，那会在每个会话中加载，并到达更少的 Agent。
 
 ### DEC-13 — The global copy installs the computer-level text itself, in the background
 
 **Reference:** `spec:AST-081/DEC-13`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-The text has to be present wherever the CLI is installed for the computer, and
-stay matched to the release that answers. A package's install scripts do not run
-reliably: several package managers block them by default, and any install can
-skip them, so the text would be present on some computers and missing on others
-with nothing to say why. The global copy runs on every computer it is installed
-on, so it writes the text on its first run and on the first run after it is
-upgraded, from a detached background step that no command waits for. Choices
-live in a documented settings file, so a person's opt-out survives every update,
-and the links the CLI made are recorded there, so removal is exact. A hash in
-the markers tells a person's edit from an older rendering, so an edit is never
-lost.
+只要 CLI 是为计算机安装的，该文本就必须存在，并与作答的发布版本保持匹配。包的安装脚本并不总能可靠运行：若干包管理器默认阻止它们，而且任何安装都可能跳过它们，因此该文本会在某些计算机上存在、在另一些上缺失，且没有任何东西说明原因。全局副本在每一台安装了它的计算机上都会运行，因此它在首次运行以及升级后的首次运行时写入该文本，通过一个任何命令都不会等待的分离后台步骤完成。选择记录在有文档记载的设置文件中，因此一个人的退出选择在每次更新后仍然有效；CLI 创建的链接也记录在那里，因此移除是精确的。标记中的一个哈希能把人的编辑与更旧的渲染区分开，因此编辑绝不丢失。
 
-Rejected: a package install script, which several package managers block by
-default; writing in the foreground of every command, which slows commands and
-makes output depend on the computer; and an environment variable or option to
-turn it off, which a person has to repeat everywhere and an agent cannot see.
+已否决：包安装脚本，若干包管理器默认阻止它；在每条命令的前台写入，那会拖慢命令并让输出依赖计算机；以及用环境变量或选项关闭它，那个人必须在所有地方重复，而 Agent 看不到。
 
 ### DEC-14 — Notices name the upgrade, at most once a day, even without a terminal
 
 **Reference:** `spec:AST-081/DEC-14`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-A copy or a project that falls behind writes code against a release nobody
-chose, and nothing else tells its owner. A notice that names both versions
-and the exact command turns that into one step. It prints after the command,
-so the command's own output comes first; at most once a day per notice, so a
-person or an agent running many commands sees it once; never in
-machine-readable output, so programs read the same fields; and only after a
-check, so a fresh home stays quiet about a newer release. A command that
-predates the hand-off answers every folder with its own release, so its
-notice needs no check. Unlike `gh`, which prints only to a terminal, a notice
-prints when standard error is not one, because agents, the CLI's main
-callers, run it without a terminal and would otherwise never learn of a newer
-release; `CI` and `NO_UPDATE_NOTIFIER` still silence it.
+落后的副本或项目会针对没人选择的发布版本写代码，而没有别的什么告知其所有者。一条同时指名两个版本与确切命令的提醒把这件事变成一步。它在命令之后打印，因此命令自己的输出在先；每条提醒每天至多一次，因此运行许多命令的人或 Agent 只看到一次；绝不出现在机器可读的输出中，因此程序读取相同的字段；并且只在检查之后，因此全新的主目录对更新的发布版本保持沉默。早于交接机制的命令以自身发布版本回答每个文件夹，因此它的提醒不需要检查。与只向终端打印的 `gh` 不同，当标准错误不是终端时提醒仍会打印，因为 Agent——CLI 的主要调用者——在没有终端的情况下运行它，否则永远无法得知有更新的发布版本；`CI` 与 `NO_UPDATE_NOTIFIER` 仍会使其沉默。
 
-Rejected: a line on every run, which agents learn to ignore; printing only to
-a terminal, which no agent sees; staying silent, which leaves copies and
-projects behind indefinitely; and updating a project automatically, which
-changes a project's versions without its owner.
+已否决：每次运行都打印一行，Agent 会学会忽略它；只向终端打印，没有 Agent 看到；保持沉默，让副本与项目无限期落后；以及自动更新项目，那会在没有其所有者的情况下改变项目的版本。
 
 ### DEC-15 — Every meeting of global and project copies is a table row with a test
 
 **Reference:** `spec:AST-081/DEC-15`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-Global and project copies meet in many ways, from version managers to links
-and shared caches, and each one is easy to get wrong in only one of them. One
-table, one row per case, and one test per row lets a contributor see who
-answers before changing the hand-off, and makes a missing case visible. A
-copy that predates these rules cannot be changed, so it is reported and its
-replacement named, never worked around.
+全局副本与项目副本以许多方式相遇，从版本管理器到链接与共享缓存，而每一种都容易只在其中一种情形里出错。一张表、每个情形一行、每行一个测试，让贡献者在改动交接之前看清由谁作答，并让缺失的情形变得可见。早于这些规则的副本无法改变，因此它会被报告并指名其替代品，绝不被绕过。
 
-Rejected: describing the cases only in prose, which hides the case nobody
-listed.
+已否决：只以散文描述这些情形，那会隐藏没人列出的情形。
 
 ### DEC-16 — Notify, never self-update, as `gh` and the Vercel CLI do
 
 **Reference:** `spec:AST-081/DEC-16`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-The global copy follows the standard that command-line tools installed through
-a package manager share: `gh` checks its newest release once a day and, after
-a command, prints `A new release of gh is available` with the upgrade command;
-the Vercel CLI and the update-notifier package check once a day in a detached
-process, name the install command of the package manager that installed the
-tool, and stay silent in continuous integration and under
-`NO_UPDATE_NOTIFIER`. Following it means the release that answers is always
-the one the person installed, upgrades happen through the package manager's
-own installation and permissions, and a person who knows one of these tools
-knows this one.
+全局副本遵循通过包管理器安装的命令行工具所共享的标准：`gh` 每天检查一次其最新发布版本，并在一条命令之后打印 `A new release of gh is available` 以及升级命令；Vercel CLI 与 update-notifier 包每天在一个分离进程中检查一次，指名安装该工具的那个包管理器的安装命令，并在持续集成中以及 `NO_UPDATE_NOTIFIER` 之下保持沉默。遵循它意味着作答的发布版本始终是那个人所安装的，升级通过包管理器自己的安装与权限进行，而了解这些工具之一的人也了解这一个。
 
-Rejected: installing newer releases into the per-user cache and switching to
-them in the background, which kept the CLI current without a step but changed
-what answers without the person choosing it; the standard was chosen instead.
+已否决：把更新的发布版本安装到每用户缓存中并在后台切换过去，那会让 CLI 在没有额外步骤的情况下保持最新，却在没有那个人选择的情况下改变作答；最终选择了该标准。
 
 ### DEC-17 — Integrations installed for the computer apply outside projects only
 
 **Reference:** `spec:AST-081/DEC-17`
+
 **Decider:** `josephfarina`, `2026-10-19`
 
-Integrations change what the CLI answers, so a person who installs one beside
-the CLI installed for the computer, or a tool that installs one with the CLI,
-expects it to apply wherever no project decides: an agent outside any project
-then learns that integration's components and docs too. Inside a project, the
-project decides: its output must match what it installs, so a component, a
-template, or an import from a package it does not install would be code that
-fails to build. Listing the integration as available, with the project's
-install command, keeps it findable without changing the project's answers.
-Reading the install root itself, instead of a host input, gives every install
-route the same rule.
+集成会改变 CLI 的作答，因此在为计算机安装的 CLI 旁边安装了某个集成的人，或随 CLI 一起安装某个集成的工具，都期望它在没有项目决定的地方生效：任何项目之外的 Agent 于是也能了解该集成的组件与文档。在项目之内，由项目决定：它的输出必须与它所安装的一致，因此一个它没有安装的包中的组件、模板或导入，会成为构建失败的代码。把该集成列为可用并附上项目的安装命令，使它能被找到而不改变项目的作答。直接读取安装根，而不是读取宿主输入，让每条安装路径得到同一条规则。
 
-Rejected: computer-level integrations applying inside projects too, which
-makes a project's answers depend on the computer and prints imports of
-packages the project does not install; and requiring a host entry input for
-them, which leaves a global install without them.
+已否决：计算机级集成在项目之内也生效，那会让项目的作答依赖计算机，并打印出项目未安装的包的导入；以及要求为其提供宿主入口输入，那会让全局安装没有它们。
 
 ## Open questions
 
-None.
+无。

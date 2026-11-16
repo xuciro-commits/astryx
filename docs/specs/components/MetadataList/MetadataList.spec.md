@@ -31,159 +31,136 @@ system_specs: [spec:AST-009]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                           |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `children` (MetadataListItem entries), `columns`, `label` (`position`, `width`), `maxNumOfItems`, `orientation`, `title`, root `BaseProps`, `ref`. |
-| Behavior                | A description list of label and value pairs in one column, several columns, or a wrapping row, with an optional show more and show less toggle.    |
-| End-user impact         | People scan labelled facts in a predictable grid, and assistive technology reads each label with its value.                                        |
-| Builder impact          | None; the record describes shipped behavior.                                                                                                       |
-| Compatibility/readiness | Released behavior recorded as current; no API, default, or output changes.                                                                         |
-| Review checks           | Reject a list that is not a `dl`, a toggle without its expanded state or controlled list, an unlocalized toggle label, or overridable reflection.  |
-| Governing rules         | `architecture:public-component-api` INV5–INV8; `architecture:component-theming-surface`; WCAG 2.2 SC 1.3.1 and 4.1.2.                              |
+| 方面          | 契约                                                                                                                                                 |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公开契约      | `children`（MetadataListItem 条目）、`columns`、`label`（`position`、`width`）、`maxNumOfItems`、`orientation`、`title`、根元素 `BaseProps`、`ref`。 |
+| 行为          | 一个由标签与值配对组成的描述列表，可排成一列、多列或一个换行行，并带有可选的“显示更多”与“显示更少”切换。                                             |
+| 最终用户影响  | 人们在可预期的网格中浏览带标签的事实，辅助技术将每个标签与其值一起朗读。                                                                             |
+| 构建者影响    | 无；该记录描述已发布的行为。                                                                                                                         |
+| 兼容性/就绪度 | 作为 current 记录的已发布行为；无 API、默认值或输出变更。                                                                                            |
+| 审查检查      | 拒绝以下情况：不是 `dl` 的列表、缺少展开状态或受控列表的切换、未本地化的切换标签、可被覆盖的反射。                                                   |
+| 治理规则      | `architecture:public-component-api` INV5–INV8；`architecture:component-theming-surface`；WCAG 2.2 SC 1.3.1 与 4.1.2。                                |
 
-This table is a review projection; the body below is authoritative.
+该表是审查投影；下方正文具有权威性。
 
 ## Intent
 
-MetadataList presents read-only key and value facts as a description list. It
-owns the arrangement of its entries, the label placement it passes to them, and
-the optional disclosure that collapses a long list; callers own the facts.
+MetadataList 以描述列表的形式呈现只读的键值事实。它负责其条目的排布、传递给它条目的标签位置，以及折叠长列表的可选披露控件；事实本身由调用方负责。
 
-Consumer syntax and examples belong in `MetadataList.doc.mjs`.
+使用方语法与示例属于 `MetadataList.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes` — one column, vertical, labels at the
-  start, no collapse.
-- Compatibility class: records shipped behavior; no public prop, default, DOM,
-  target, or styling output changes.
-- Controlled/uncontrolled behavior: the expanded state of the disclosure is
-  uncontrolled.
-- Migration decision: none
+- 保留的已发布默认值：`yes` —— 单列、垂直、标签位于起始处、不折叠。
+- 兼容性类别：记录已发布的行为；无公开 prop、默认值、DOM、目标或样式输出的变更。
+- 受控/非受控行为：披露控件的展开状态为非受控。
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The root, its `metadata-list` target, the optional title, the `dl`, and
-  the show more and show less toggle.
-- Column layout, orientation, and the label position and width its entries
-  read.
+- 根元素、其 `metadata-list` 目标、可选标题、`dl`，以及“显示更多”与“显示更少”切换。
+- 列布局、方向，以及其条目所读取的标签位置与宽度。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Each entry's label and value markup — owned by `component:MetadataListItem`.
-- The facts shown and their formatting — owned by the caller.
-- Editable fields — owned by form components.
+- 每个条目的标签与值标记——由 `component:MetadataListItem` 拥有。
+- 所展示的事实及其格式——由调用方拥有。
+- 可编辑字段——由表单组件拥有。
 
 ## Public concepts
 
-| Concept        | Closed values or states            | Meaning                                                                                                   | Availability by variant/orientation/state            | Default                                                  | Owner                    | Stability | Invalid-value behavior                                              |
-| -------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------- | ------------------------ | --------- | ------------------------------------------------------------------- |
-| Columns        | `single`; `multi`; positive number | One column, auto-filling columns, or exactly N columns.                                                   | Vertical only                                        | `single`                                                 | `component:MetadataList` | Stable    | 1 acts as `single`; a number below 1 falls to the `multi` template. |
-| Orientation    | `vertical`; `horizontal`           | A grid of entries, or one wrapping row of stacked entries.                                                | Always                                               | `vertical`                                               | `component:MetadataList` | Stable    | Closed union; rejected by types.                                    |
-| Label position | `start`; `top`                     | Label beside its value, or stacked above it.                                                              | Vertical only                                        | `top` for `multi` or a number above 1, otherwise `start` | `component:MetadataList` | Stable    | Horizontal always stacks.                                           |
-| Label width    | number (px); CSS length string     | The label track's width; on `multi` it replaces the auto-fill grid with one label and value pair per row. | Vertical with start labels, at one column or `multi` | content width                                            | `component:MetadataList` | Stable    | —                                                                   |
-| Collapse       | positive number; unset             | Entries shown before a show more toggle.                                                                  | Vertical only                                        | unset                                                    | `component:MetadataList` | Stable    | Ignored when horizontal.                                            |
-| Title          | ReactNode; unset                   | Content shown above the list.                                                                             | Always                                               | unset                                                    | `component:MetadataList` | Stable    | —                                                                   |
+| 概念     | 封闭取值或状态               | 含义                                                                  | 按变体/方向/状态的可用性                   | 默认值                                          | 拥有者                   | 稳定性 | 无效值行为                                          |
+| -------- | ---------------------------- | --------------------------------------------------------------------- | ------------------------------------------ | ----------------------------------------------- | ------------------------ | ------ | --------------------------------------------------- |
+| 列       | `single`；`multi`；正数      | 单列、自动填充列，或恰好 N 列。                                       | 仅垂直                                     | `single`                                        | `component:MetadataList` | 稳定   | 1 视作 `single`；小于 1 的数字回落到 `multi` 模板。 |
+| 方向     | `vertical`；`horizontal`     | 条目的网格，或一个由堆叠条目组成的换行行。                            | 始终                                       | `vertical`                                      | `component:MetadataList` | 稳定   | 封闭联合；被类型拒绝。                              |
+| 标签位置 | `start`；`top`               | 标签位于其值旁，或堆叠在其上方。                                      | 仅垂直                                     | `multi` 或大于 1 的数字为 `top`，否则为 `start` | `component:MetadataList` | 稳定   | 水平方向始终堆叠。                                  |
+| 标签宽度 | number（px）；CSS 长度字符串 | 标签轨道的宽度；在 `multi` 上，它以每行一对标签与值取代自动填充网格。 | 使用起始标签的垂直方向，位于单列或 `multi` | 内容宽度                                        | `component:MetadataList` | 稳定   | —                                                   |
+| 折叠     | 正数；未设置                 | 在出现“显示更多”切换之前展示的条目数。                                | 仅垂直                                     | 未设置                                          | `component:MetadataList` | 稳定   | 水平方向时忽略。                                    |
+| 标题     | ReactNode；未设置            | 展示在列表上方的内容。                                                | 始终                                       | 未设置                                          | `component:MetadataList` | 稳定   | —                                                   |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Basis                                                                   |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| FR1 | MetadataList renders a root `div` carrying the `metadata-list` target, which reflects `columns` and `orientation`, holding the optional title, a `dl` of the entries, and, when the list collapses, a toggle button. The title renders above the list with a `--spacing-3` gap as plain content; it is not a heading and does not name the list.                                                                                                                                                                                                                                                                                                                                          | Current source and tests                                                |
-| FR2 | Vertical, one column with start labels is a two-track grid (label `auto`, value `minmax(0, 1fr)`) with `--spacing-2` row and `--spacing-4` column gaps and baseline alignment; a label `width` replaces the label track, and on `multi` with start labels a `width` replaces the auto-fill grid with the same two tracks. One column with top labels is a single track with a `--spacing-3` gap. `multi` auto-fills 280px-minimum columns with a `--spacing-4` gap. A number N above 1 makes exactly N columns, each `1fr` with top labels or a label `auto` and value `minmax(0, 1fr)` pair with start labels, ignoring a label `width`; a number below 1 falls to the `multi` template. | Current source and tests                                                |
-| FR3 | Label position defaults to `top` for `multi` or a number above 1 and to `start` otherwise (including a number below 1), and a caller `position` wins. Horizontal orientation lays entries in one wrapping row with a `--spacing-4` gap, stacks every label above its value, and ignores `columns` and `maxNumOfItems`.                                                                                                                                                                                                                                                                                                                                                                    | Current source and tests                                                |
-| FR4 | When vertical and the entries exceed `maxNumOfItems`, only the first `maxNumOfItems` render, followed by a native button labelled with the localized "Show more", with `aria-expanded="false"` and `aria-controls` naming the `dl`. Activating it renders every entry and switches to "Show less" with `aria-expanded="true"`; activating it again collapses. Focus stays on the button.                                                                                                                                                                                                                                                                                                  | Current source and tests; `architecture:public-component-api`           |
-| FR5 | `ref`, DOM, data, ARIA, and event props, `xstyle`, `className`, and `style` reach or compose on the root; the reflected `data-columns` and `data-orientation` replace a caller's values.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Current source and tests; `architecture:public-component-api` INV5–INV8 |
+| ID  | 不变式                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | 依据                                                          |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| FR1 | MetadataList 渲染一个携带 `metadata-list` 目标的根 `div`，该目标反射 `columns` 与 `orientation`，其中装有可选标题、由条目组成的 `dl`，以及列表折叠时出现的切换按钮。标题以纯内容的形式、以 `--spacing-3` 的间距渲染在列表上方；它不是一个标题元素，也不为列表命名。                                                                                                                                                                                                                                                                                        | 当前源码与测试                                                |
+| FR2 | 垂直、单列且使用起始标签时，是一个双轨道网格（标签 `auto`，值 `minmax(0, 1fr)`），行间距为 `--spacing-2`、列间距为 `--spacing-4`，并采用基线对齐；标签 `width` 会替换标签轨道，而在使用起始标签的 `multi` 上，`width` 会用相同的两条轨道取代自动填充网格。单列且使用顶部标签时是单轨道，间距为 `--spacing-3`。`multi` 以 280px 为最小列宽自动填充，间距为 `--spacing-4`。大于 1 的数字 N 会生成恰好 N 列：使用顶部标签时每列为 `1fr`，使用起始标签时每列为标签 `auto` 与值 `minmax(0, 1fr)` 的配对，并忽略标签 `width`；小于 1 的数字回落到 `multi` 模板。 | 当前源码与测试                                                |
+| FR3 | 对 `multi` 或大于 1 的数字，标签位置默认为 `top`，其余情况（包括小于 1 的数字）默认为 `start`，且调用方提供的 `position` 优先。水平方向将条目排成一个带 `--spacing-4` 间距的换行行，把每个标签堆叠在其值上方，并忽略 `columns` 与 `maxNumOfItems`。                                                                                                                                                                                                                                                                                                        | 当前源码与测试                                                |
+| FR4 | 当处于垂直方向且条目数超过 `maxNumOfItems` 时，只渲染前 `maxNumOfItems` 个条目，其后是一个带有本地化“显示更多”文案的原生按钮，其 `aria-expanded="false"`，并由 `aria-controls` 指向该 `dl`。激活它后渲染全部条目，切换为“显示更少”并令 `aria-expanded="true"`；再次激活则折叠。焦点保持在按钮上。                                                                                                                                                                                                                                                          | 当前源码与测试；`architecture:public-component-api`           |
+| FR5 | `ref`、DOM、data、ARIA 与事件 prop，以及 `xstyle`、`className` 和 `style`，都到达根元素或在其上组合；被反射的 `data-columns` 与 `data-orientation` 会替换调用方的值。                                                                                                                                                                                                                                                                                                                                                                                      | 当前源码与测试；`architecture:public-component-api` INV5–INV8 |
 
 ### Allowed variation
 
-- **AV1 — Facts.** Any MetadataListItem content may fill the list.
-- **AV2 — Title.** Any ReactNode, including a caller's heading, may be the
-  title.
+- **AV1 — 事实。** 任何 MetadataListItem 内容都可以填充该列表。
+- **AV2 — 标题。** 任何 ReactNode，包括调用方提供的标题元素，都可以作为该标题。
 
 ### Representative states
 
-| State      | Required invariant                                                   | Allowed variation |
-| ---------- | -------------------------------------------------------------------- | ----------------- |
-| One column | Label and value tracks; labels at the start.                         | Label width.      |
-| N columns  | Exactly N columns; labels on top by default.                         | N.                |
-| Horizontal | One wrapping row; labels stacked; no toggle.                         | —                 |
-| Collapsed  | First `maxNumOfItems` entries; "Show more"; `aria-expanded="false"`. | Locale.           |
-| Expanded   | Every entry; "Show less"; `aria-expanded="true"`.                    | Locale.           |
+| 状态 | 必需的不变式                                                     | 允许的变化 |
+| ---- | ---------------------------------------------------------------- | ---------- |
+| 单列 | 标签轨道与值轨道；标签位于起始处。                               | 标签宽度。 |
+| N 列 | 恰好 N 列；默认标签在顶部。                                      | N。        |
+| 水平 | 一个换行行；标签堆叠；无切换。                                   | —          |
+| 折叠 | 前 `maxNumOfItems` 个条目；“显示更多”；`aria-expanded="false"`。 | 语言区域。 |
+| 展开 | 全部条目；“显示更少”；`aria-expanded="true"`。                   | 语言区域。 |
 
 ### Transformation and precedence order
 
-- **ORD1 — Label position.** Horizontal → top; otherwise caller `position` →
-  `top` for `multi` or a number above 1 → `start`.
-- **ORD2 — Columns.** Horizontal → no grid; N above 1 → exactly N columns (N tracks with top labels, N label and value pairs with start labels); a
-  start-label `width` → that label track; otherwise the static template.
+- **ORD1 — 标签位置。** 水平 → 顶部；否则调用方的 `position` → 对 `multi` 或大于 1 的数字为 `top` → `start`。
+- **ORD2 — 列。** 水平 → 无网格；大于 1 的 N → 恰好 N 列（使用顶部标签时为 N 条轨道，使用起始标签时为 N 对标签与值）；使用起始标签时 `width` → 该标签轨道；否则使用静态模板。
 
 ### Performance and resources
 
-- **PR1 — Local state only.** MetadataList holds one expanded flag and one
-  generated id, and adds no listener, observer, timer, or measurement.
+- **PR1 — 仅本地状态。** MetadataList 持有一个展开标志和一个生成的 id，且不添加任何监听器、观察器、定时器或测量。
 
 ## Accessibility contract
 
-- **AR1 — Description list semantics.** Entries are `dt` and `dd` pairs inside
-  one `dl`, so assistive technology reads each label with its value
-  (WCAG 2.2 SC 1.3.1).
-- **AR2 — Disclosure state.** The toggle is a native button exposing its
-  expanded state and the list it controls (WCAG 2.2 SC 4.1.2).
-- **AR3 — Localized labels.** The toggle's text comes from the translation
-  catalog, never assembled in the component.
+- **AR1 — 描述列表语义。** 条目是位于同一个 `dl` 内的一对对 `dt` 与 `dd`，因此辅助技术会将每个标签与其值一起朗读（WCAG 2.2 SC 1.3.1）。
+- **AR2 — 披露状态。** 切换是一个原生按钮，它暴露自身的展开状态及其所控制的列表（WCAG 2.2 SC 4.1.2）。
+- **AR3 — 本地化标签。** 切换的文本来自翻译目录，绝不在组件内拼装。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                          | Representation authority     | Hierarchy role | Component contract |
-| ---------------- | ------------------------------------------- | ---------------------------- | -------------- | ------------------ |
-| Title            | Optional content above the list.            | Current source and docs      | Supporting     | FR1                |
-| Label            | The key of each entry.                      | `component:MetadataListItem` | Supporting     | FR2, FR3           |
-| Metadata         | The value of each entry.                    | `component:MetadataListItem` | Prominent      | FR2, FR3           |
-| Disclosure       | Show more or show less in the accent color. | Current source and docs      | Supporting     | FR4                |
+| 结构或状态 | 设计要求                             | 表现权威                     | 层级角色 | 组件契约 |
+| ---------- | ------------------------------------ | ---------------------------- | -------- | -------- |
+| 标题       | 列表上方的可选内容。                 | 当前源码与文档               | 支撑     | FR1      |
+| 标签       | 每个条目的键。                       | `component:MetadataListItem` | 支撑     | FR2, FR3 |
+| 元数据     | 每个条目的值。                       | `component:MetadataListItem` | 突出     | FR2, FR3 |
+| 披露控件   | 以强调色呈现“显示更多”或“显示更少”。 | 当前源码与文档               | 支撑     | FR4      |
 
-Theming: the root carries the `metadata-list` target, which reflects `columns`
-and `orientation`, and each entry carries the `metadata-list-item` target
-(`component:MetadataListItem`). `MetadataList.doc.mjs` names no root anatomy
-part for the `metadata-list` target, so no anatomy-theming block is declared
-here; the Title, value cell, and Disclosure carry no target.
+主题化：根元素携带 `metadata-list` 目标，该目标反射 `columns` 与 `orientation`，并且每个条目携带 `metadata-list-item` 目标（`component:MetadataListItem`）。`MetadataList.doc.mjs` 未为 `metadata-list` 目标命名任何根结构部位，因此此处不声明结构-主题化块；标题、值单元与披露控件都不携带目标。
 
 ## Family and system relationships
 
-- `component:MetadataListItem` owns entry markup and reads the label position
-  this record resolves.
-- `architecture:component-theming-surface` owns target and anatomy mapping.
-- `architecture:public-component-api` owns caller-input routing; FR5 applies
-  it.
-- `spec:AST-009` owns accessibility-tree evidence; the verification map names
-  its gap.
+- `component:MetadataListItem` 拥有条目标记，并读取本记录解析出的标签位置。
+- `architecture:component-theming-surface` 拥有目标与结构映射。
+- `architecture:public-component-api` 拥有调用方输入的路由；FR5 应用它。
+- `spec:AST-009` 拥有可访问性树证据；验证映射标明了它的缺口。
 
 ## Verification map
 
-| Contract        | Verification                                                                                                                                   | Representative states                                      | Mutation or failure expectation                                                                                                                                                                                                                                                                                                   | Audit section                 |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| FR1, AR1        | `MetadataList.test.tsx` description-list, `dl`, and title tests; stable visual baselines `core-metadatalist--basic` (neutral and probe themes) | Items; title                                               | A missing `dl`, `dt`, or `dd`, or a missing title, fails; a changed default layout comes back changed for review. Gap: no accessibility-tree check proves the term and definition pairing (`spec:AST-009` FR3).                                                                                                                   | `audit:MetadataList/a11y`     |
-| FR2, ORD2       | `MetadataList.test.tsx` numeric-column and label-width tests                                                                                   | N columns with top and start labels; `multi`; custom width | A wrong inline grid template for N columns or a label width, or a `repeat(` inline template for `multi`, fails. Gap: the static one-column and `multi` templates and the gaps have no unit check beyond the default baseline. No test covers a width beside N columns with start labels, a width on `multi`, or a number below 1. | `audit:MetadataList/layout`   |
-| FR3, ORD1       | `MetadataList.test.tsx` orientation and default-position tests                                                                                 | Horizontal; omitted position; `columns={2}`                | A horizontal list without stacked labels or with a toggle, or a wrong default position, fails. No test covers `multi`'s top-label default or a number below 1's start-label default.                                                                                                                                              | `audit:MetadataList/layout`   |
-| FR4, AR2, AR3   | `MetadataList.test.tsx` show more, toggle, and localization tests                                                                              | Collapsed; expanded; French catalog                        | A missing toggle, hidden entries that render, a toggle that does not expand and collapse, or English text under a French catalog fails. Gap: no test asserts `aria-expanded`, `aria-controls`, or that focus stays on the button.                                                                                                 | `audit:MetadataList/behavior` |
-| FR5             | `MetadataList.test.tsx` root pass-through, event, and owned-metadata tests                                                                     | `aria-label`, `id`, data; click; colliding reflection      | A dropped attribute or handler, or a caller `data-columns` or `data-orientation` that wins, fails. Gap: no test covers `ref`, `className`, `style`, or the `xstyle` merge order.                                                                                                                                                  | `audit:MetadataList/api`      |
-| PR1             | Source review                                                                                                                                  | Every state                                                | Gap: no automated check fails if MetadataList adds a listener, timer, or measurement.                                                                                                                                                                                                                                             | `audit:MetadataList/behavior` |
-| Theming targets | `themingTargets.test.ts`                                                                                                                       | Root and item targets                                      | A renamed or undocumented target fails. Gap: no check fails if the side-by-side `dt` loses the `metadata-list-item` target.                                                                                                                                                                                                       | `audit:MetadataList/theming`  |
-| RTL relation    | RTL audit curated D2 target (`apps/storybook/rtl-audit/targets.json`) on `MetadataList / Basic`                                                | Side labels; LTR and RTL                                   | A label column that is not at the inline start of the value column fails D2.                                                                                                                                                                                                                                                      | `audit:MetadataList/i18n-rtl` |
+| 契约          | 验证                                                                                                               | 代表状态                                         | 变更或失败预期                                                                                                                                                                                                          | 审计小节                      |
+| ------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| FR1, AR1      | `MetadataList.test.tsx` 的描述列表、`dl` 与标题测试；稳定视觉基线 `core-metadatalist--basic`（中性主题与探针主题） | 条目；标题                                       | 缺少 `dl`、`dt` 或 `dd`，或缺少标题，即失败；默认布局发生变化会以变更形式返回供审查。缺口：没有可访问性树检查能证明术语与定义的配对（`spec:AST-009` FR3）。                                                             | `audit:MetadataList/a11y`     |
+| FR2, ORD2     | `MetadataList.test.tsx` 的数字列与标签宽度测试                                                                     | 带顶部标签与起始标签的 N 列；`multi`；自定义宽度 | N 列或标签宽度的内联网格模板错误，或 `multi` 出现 `repeat(` 内联模板，即失败。缺口：静态单列与 `multi` 模板以及间距，除默认基线外没有单元检查。没有测试覆盖起始标签下 N 列旁的宽度、`multi` 上的宽度，或小于 1 的数字。 | `audit:MetadataList/layout`   |
+| FR3, ORD1     | `MetadataList.test.tsx` 的方向与默认位置测试                                                                       | 水平；省略 position；`columns={2}`               | 水平列表没有堆叠标签或带有切换，或默认位置错误，即失败。没有测试覆盖 `multi` 的顶部标签默认值，或小于 1 的数字的起始标签默认值。                                                                                        | `audit:MetadataList/layout`   |
+| FR4, AR2, AR3 | `MetadataList.test.tsx` 的显示更多、切换与本地化测试                                                               | 折叠；展开；法语目录                             | 缺少切换、隐藏条目仍被渲染、切换无法展开与折叠，或在法语目录下出现英文文本，即失败。缺口：没有测试断言 `aria-expanded`、`aria-controls`，或焦点保持在按钮上。                                                           | `audit:MetadataList/behavior` |
+| FR5           | `MetadataList.test.tsx` 的根透传、事件与自有元数据测试                                                             | `aria-label`、`id`、data；点击；冲突的反射       | 属性或处理器被丢弃，或调用方的 `data-columns` 或 `data-orientation` 获胜，即失败。缺口：没有测试覆盖 `ref`、`className`、`style`，或 `xstyle` 的合并顺序。                                                              | `audit:MetadataList/api`      |
+| PR1           | 源码审查                                                                                                           | 每个状态                                         | 缺口：如果 MetadataList 添加监听器、定时器或测量，没有任何自动化检查会失败。                                                                                                                                            | `audit:MetadataList/behavior` |
+| 主题化目标    | `themingTargets.test.ts`                                                                                           | 根目标与条目目标                                 | 目标被重命名或未记录，即失败。缺口：如果并排的 `dt` 丢失 `metadata-list-item` 目标，没有检查会失败。                                                                                                                    | `audit:MetadataList/theming`  |
+| RTL 关系      | RTL 审计精选的 D2 目标（`apps/storybook/rtl-audit/targets.json`）应用于 `MetadataList / Basic`                     | 侧边标签；LTR 与 RTL                             | 标签列不位于值列的行内起始处，即 D2 失败。                                                                                                                                                                              | `audit:MetadataList/i18n-rtl` |
 
 ## Decision log
 
-None recorded. The record describes shipped behavior.
+无记录。该记录描述已发布的行为。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or entry markup. It links to their owners.
+本文件不重复使用方的 prop 表和示例、当前审计结果、实现步骤或条目标记。它链接到它们的拥有者。

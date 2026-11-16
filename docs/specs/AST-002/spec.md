@@ -40,424 +40,198 @@ affects_consumer_docs: []
 
 ## Intent
 
-Keep Astryx public APIs intentional. A public API should represent a distinction
-the caller owns, not expose a choice the component can make correctly by itself.
-That need is only the first gate. The proposed API must also have clear meaning,
-dependable behavior, and promises the component can keep.
+让 Astryx 的公共 API 保持有意识的设计。一个公共 API 应当表达调用方拥有的区分，而不是暴露组件本身就能正确做出的选择。这一需求只是第一道关卡。提议的 API 还必须具备清晰的语义、可靠的行为，以及组件能够兑现的承诺。
 
-Every public prop, hook, utility, and operation becomes a permanent concept that
-consumers, documentation, tests, themes, migrations, and reviewers must
-understand. The burden is to show why the caller must provide information, not
-merely that an API can solve the immediate example.
+每一个公共 prop、hook、工具函数和操作都会成为一个永久概念，使用方、文档、测试、主题、迁移和审查者都必须理解它。需要论证的是调用方为什么必须提供该信息，而不仅仅是某个 API 能解决眼前的例子。
 
 ## Non-goals
 
-- Removing semantic state, controlled-value, accessibility, or composition APIs.
-- Preventing utility components from exposing the fine-grained controls that are
-  their purpose.
-- Replacing existing styling escape hatches with component-specific layout props.
-- Rejecting an API only because its implementation is difficult.
+- 移除语义状态、受控值、无障碍或组合类 API。
+- 阻止工具类组件暴露细粒度控制项，而这类控制项正是它们的存在目的。
+- 用组件专用的布局 prop 取代现有的样式逃逸出口。
+- 仅因实现困难就否决某个 API。
 
 ## Requirements
 
-A public API proposal is admitted only when it passes both gates:
+公共 API 提议只有同时通过两道关卡才会被接纳：
 
-1. **Need:** the caller owns information the component cannot derive.
-2. **Contract:** the API clearly describes a dependable result the component can
-   enforce.
+1. **需求：** 调用方拥有的信息是组件无法推导出来的。
+2. **契约：** API 清晰地描述出组件能够强制执行的可依赖结果。
 
-- **FR1 — A prop represents caller-owned intent.** A new public prop is justified
-  only when two otherwise identical situations require different resolved design
-  outcomes and the caller owns which outcome applies.
-- **FR2 — Derivable differences stay internal.** Do not add a prop when the
-  component can derive the correct outcome from its state, content, measured or
-  CSS layout, parent context, platform capability, or another existing public
-  concept.
-- **FR3 — Implementation choices are not public concepts.** Internal thresholds,
-  optical tuning, algorithm choices, and one-off fixes remain internal unless
-  FR1 proves that callers need to distinguish semantically identical cases.
-- **FR4 — Existing composition and styling seams come first.** A component does
-  not add a specialized prop when an existing slot, child contract, theme target,
-  `xstyle`, `className`, `style`, or owning layout component already expresses
-  caller intent at the correct layer.
-- **FR5 — The admission argument is reviewable.** A public-API proposal names the
-  two otherwise identical cases, the different required outcomes, why the caller
-  knows the difference, and why the component cannot derive it.
-- **FR6 — High-level components have a higher threshold.** Opinionated
-  compositions prefer internal resolution and composition over accumulating
-  low-level tuning props.
-- **FR7 — The public concept is understandable.** Its name and values describe
-  caller intent without requiring consumers to know the rendering technique that
-  implements it.
-- **FR8 — The result is predictable.** Each value has a stable, observable effect
-  that consumers can explain and tests can verify. A data attribute, theme hook,
-  or implementation difference alone is not a public outcome.
-- **FR9 — The API can keep its stated promise.** The API shape carries or owns
-  the information needed to produce the claimed result. Documentation and review
-  arguments do not credit an enum or styling switch with accessibility,
-  association, or validation behavior it cannot perform. The contract depends
-  only on props, owned children, owned context, and platform facts the component
-  can verify.
-- **FR10 — Every supported state is independently correct.** Accessibility,
-  behavior, and required visual communication do not become valid only when an
-  unverified external condition is assumed. Solve the base component problem
-  before adding API to select between incomplete solutions.
-- **FR11 — One semantic action has one canonical operation.** Within one
-  component module, any public or package-internal operations that implement the
-  same caller-owned action use one canonical operation name. The public contract
-  may expose a narrower option set while the package-internal implementation
-  accepts wider semantic options under that same operation. Add another operation
-  only for genuinely distinct caller-owned intent with a different contract.
-- **FR12 — Mechanical screening does not outrun contract coverage.** Every public
-  API addition or semantic behavior change identifies its exact before → after,
-  canonical owner, and applicable current record before acceptance. Component-local
-  semantics belong in the component spec; family-, architecture-, or system-owned
-  semantics update that owner instead. A draft record is valid review context but
-  not policy and cannot clear the authority gate. Mechanical review also rejects
-  derivable choices, overloaded inputs, hidden conditional precedence, and
-  duplicate operations.
-- **FR13 — Surviving changes make the semantic delta explicit.** Owner review
-  receives a link to the canonical current owner, one sentence stating the semantic
-  before → after, the applicable authority result from
-  `architecture:knowledge-contracts`, and representative syntax only when public
-  syntax changes.
-- **FR14 — Contract restorations are preserves.** A fix is `preserves` only when it
-  restores a current contract or standard and adds no public API or public behavior
-  beyond that authority. It supplies regression evidence. Any additional public
-  delta independently follows FR12 even when delivered in a bug-fix pull request.
-- **FR15 — Invalid states are prevented where practical.** Public APIs prevent
-  bad results when doing so does not make the API harder to understand. Make
-  statically knowable invalid combinations unrepresentable where practical;
-  otherwise validate or warn, or choose a safe documented fallback. Do not
-  silently render a broken state or over-constrain legitimate composition.
-- **FR16 — Public inputs keep one semantic responsibility.** Across its full
-  value domain and every accepted input shape, each public input has one stable
-  semantic responsibility, and its name and type disclose the caller-owned
-  meaning. One semantic input may derive several visual details when they form one
-  cohesive named outcome, such as a semantic status or variant owning both tone
-  and a signifier. Reject an input when its value or shape changes which axis it
-  controls, or when consumers need implementation knowledge to predict the
-  controlled axes. Independently caller-owned axes use separate inputs with
-  invalid and conflicting combinations prevented under FR15; system-owned
-  coordination exposes the semantic concept and derives its details instead of
-  naming the input after one mechanism. Parallel inputs do not create hidden
-  conditional precedence: an override is valid only when its name, type, and
-  behavior across every combination form an explicit coherent contract.
-- **FR17 — Public module and utility function names disclose one atomic role.**
-  Choose a verb from the function's primary caller-observable result and side
-  effects, not from an internal implementation step. Distinguish construction,
-  inspection, lookup, conversion, registration, and guaranteed state. `define*`
-  constructs or normalizes and returns a durable typed value used by a supported
-  consumer. It may reuse validation as a precondition, but a function that only
-  inspects input or returns the same input unchanged is not `define*`. `validate*`
-  and `check*` inspect input and return structured results; their contracts state
-  which failures are returned and which conditions throw. If construction,
-  validation, registration, or another capability is public, expose it as its own
-  callable function rather than hiding two public roles behind one name. A released
-  mismatch is deprecated and migrated under the compatibility contract, not
-  silently renamed. Other verbs receive rules only when shipped repository
-  evidence supports them. Component prop and event naming remains separate. CLI
-  command verbs and their programmatic command twins belong to the
-  [CLI surface architecture](../../architecture/cli-surface.md) and CLI
-  conventions; this requirement does not define their command semantics.
-- **FR18 — Public primitives support composition intentionally.** Astryx prefers
-  public contracts for stable behavior that product builders must compose,
-  coordinate, or build on across callsites. That preference does not promote raw
-  implementation machinery. A proposed primitive API names semantic caller intent,
-  defines accepted and rejected operations and outcomes, and receives an owning
-  current contract before acceptance. Internal focus targets, gesture memory, DOM
-  slots, timers, and equivalent mechanisms stay private unless independently
-  admitted as durable caller-owned concepts.
-- **FR19 — Bug fixes do not smuggle API design.** A bug fix that can restore current
-  behavior without changing public API or behavior beyond current authority MUST do
-  so. Any additional public delta follows `architecture:knowledge-contracts`
-  independently. A separable contradictory or unsettled tagalong MUST be removed or
-  split before review asks the repair to carry a new owner decision, except an
-  undeclared public API row, which goes to human review for an owner's decision
-  rather than being removed or split by review (`architecture:knowledge-contracts`
-  change coupling step 6). Existing current authority may settle an intentional
-  remaining delta; only a surviving, intentional gap, or an undeclared public API
-  row, requires owner judgment. Implementation convenience, removal of an internal
-  wrapper, or exposure of existing internal fields is not evidence that an API
-  should exist.
-- **FR20 — Callsite impact and decision burden are explicit.** A public API change
-  shows representative before and after callsites, including defaults and
-  compatibility, and names every new choice the caller must understand or make. That
-  burden is admitted only when FR1 proves the distinction is caller-owned, the
-  component cannot derive it under FR2, and the choice has predictable meaning under
-  FR7–FR10. Review-generated impact prose is context only; it cannot supply missing
-  caller ownership or authorize the API.
+- **FR1 — 一个 prop 表达调用方拥有的意图。** 只有当两个在其他方面完全相同的情形需要不同的最终设计结果，且由调用方决定适用哪种结果时，新增公共 prop 才成立。
+- **FR2 — 可推导的差异留在内部。** 当组件能够从其状态、内容、测量得到的布局或 CSS 布局、父级上下文、平台能力，或另一个既有公共概念推导出正确结果时，不要新增 prop。
+- **FR3 — 实现层面的选择不是公共概念。** 内部阈值、视觉微调、算法选择以及一次性修复都留在内部，除非 FR1 证明调用方需要区分语义上完全相同的情形。
+- **FR4 — 既有的组合与样式接缝优先。** 当现有插槽、子级契约、主题目标、`xstyle`、`className`、`style` 或所属布局组件已经在正确的层次上表达调用方意图时，组件不新增专用 prop。
+- **FR5 — 接纳论证可供审查。** 公共 API 提议需要点名两个在其他方面完全相同的情形、各自需要的不同结果、调用方为何知道这一差异，以及组件为何无法推导出该差异。
+- **FR6 — 高层组件有更高的门槛。** 有明确取向的组合组件倾向于采用内部解析与组合，而不是不断累积低层调优 prop。
+- **FR7 — 公共概念可被理解。** 它的名称和取值描述调用方意图，而不要求使用方了解实现它的渲染技术。
+- **FR8 — 结果是可预测的。** 每个取值都具有稳定且可观察的效果，使用方能够解释，测试能够验证。仅有一个 data 属性、主题 hook 或实现层面的差异，并不构成公共结果。
+- **FR9 — API 能够兑现其声明的承诺。** API 的形态携带或拥有产出所声称结果所需的信息。文档与审查论证不得把无障碍、关联或校验行为归功于一个枚举或样式开关，而该机制根本无法执行这些行为。契约只依赖 props、所拥有的子级、所拥有的上下文，以及组件能够核实的平台事实。
+- **FR10 — 每个受支持的状态都独立正确。** 无障碍、行为以及必需的视觉传达，不会仅因为假设了一个未经验证的外部条件就变得有效。先解决基础组件问题，再考虑新增 API 以在不完整的方案之间做选择。
+- **FR11 — 一个语义动作只有一个规范操作。** 在同一个组件模块内，任何实现同一调用方动作的公共操作或包内操作都使用同一个规范操作名。公共契约可以暴露更窄的选项集合，而包内实现在同一操作名下接受更宽的语义选项。只有在调用方意图确实不同且契约不同时，才新增另一个操作。
+- **FR12 — 机械筛查不越出契约覆盖范围。** 每一项公共 API 新增或语义行为变更，在被接纳之前都要明确其确切的 before → after、规范所有者，以及适用的 current 记录。组件本地语义属于组件 spec；family、architecture 或 system 所有的语义则改为更新对应的所有者。draft 记录是有效的审查上下文，但不是策略，无法通过权限关卡。机械审查还会否决可推导的选择、过载输入、隐藏的条件优先级，以及重复的操作。
+- **FR13 — 存留下来的变更必须明确语义差异。** 所有者审查会收到指向规范 current 所有者的链接、一句话说明语义的 before → after、来自 `architecture:knowledge-contracts` 的适用权限裁定结果，以及仅在公共语法发生变化时提供的代表性语法。
+- **FR14 — 契约恢复属于 preserves。** 一个修复只有在恢复 current 契约或标准、且不超出该权限新增任何公共 API 或公共行为时，才算 `preserves`。它需要提供回归证据。任何额外的公共差异都独立地遵循 FR12，即使它是在一个 bug 修复型 pull request 中提交的。
+- **FR15 — 在可行之处防止无效状态。** 当这样做不会让 API 更难理解时，公共 API 应防止不良结果。在可行之处，让静态可知的无效组合不可表示；否则进行校验或警告，或选择一个安全且有文档记载的回退方案。不要静默渲染出损坏状态，也不要过度约束合法的组合。
+- **FR16 — 公共输入只承担一项语义职责。** 在其完整的取值域和每一种被接受的输入形态下，每个公共输入都只有一项稳定的语义职责，并且其名称与类型揭示调用方拥有的含义。当一个语义输入推导出多个视觉细节、而这些细节构成一个内聚的具名结果时（例如一个语义状态或变体同时拥有色调和一个标识符号），这是允许的。当某个输入的值或形态改变了它控制的轴，或当使用方需要实现层面的知识才能预测受控的轴时，应否决该输入。相互独立的调用方拥有轴使用各自独立的输入，并在 FR15 下防止无效与冲突的组合；由系统拥有的协调则暴露语义概念并推导其细节，而不是用一个机制来命名该输入。并行输入不会产生隐藏的条件优先级：仅当某个覆盖在名称、类型以及每一种组合下的行为都构成一个明确一致的契约时，它才是有效的。
+- **FR17 — 公共模块与工具函数的名称揭示单一的原子角色。** 动词应取自函数对调用方可观察的主要结果和副作用，而不是取自内部的实现步骤。要区分构造、检查、查找、转换、注册以及保证状态。`define*` 构造或规范化，并返回由受支持使用方使用的持久类型化值。它可以把校验复用为前提条件，但一个仅检查输入或原样返回同一输入的函数不是 `define*`。`validate*` 与 `check*` 检查输入并返回结构化结果；它们的契约要说明哪些失败会被返回、哪些条件会抛出异常。如果构造、校验、注册或其他能力是公共的，就把它暴露为各自可调用的函数，而不是把一个名称背后的两种公共角色隐藏起来。已发布的名称不匹配要在兼容性契约下弃用并迁移，不得静默重命名。其他动词只有在已发布的仓库证据支持时才获得规则。组件 prop 与事件命名保持独立。CLI 命令动词及其对应的程序化命令孪生体属于 [CLI surface architecture](../../architecture/cli-surface.md) 与 CLI 约定；本要求不定义它们的命令语义。
+- **FR18 — 公共原语有意支持组合。** 对于产品构建者必须在多个调用点组合、协调或在其之上构建的稳定行为，Astryx 倾向于提供公共契约。这一倾向并不提升原始的实现机制。提议的原语 API 要明确语义层面的调用方意图，定义被接受与被否决的操作和结果，并在被接纳之前获得一项所属的 current 契约。内部焦点目标、手势记忆、DOM 插槽、定时器以及等价机制保持私有，除非它们作为持久的调用方拥有概念被独立接纳。
+- **FR19 — bug 修复不得夹带 API 设计。** 如果一次 bug 修复能够在不超出 current 权限改动公共 API 或公共行为的前提下恢复 current 行为，它 MUST 这样做。任何额外的公共差异都独立地遵循 `architecture:knowledge-contracts`。可分离的矛盾项或未定的附带项 MUST 在审查要求该修复承载新的所有者决策之前被移除或拆分；未声明的公共 API 行是例外，它会被提交给人工审查以取得所有者决策，而不是由审查移除或拆分（`architecture:knowledge-contracts` 变更耦合第 6 步）。既有的 current 权限可以裁定一项有意保留的剩余差异；只有存留的、有意的缺口，或未声明的公共 API 行，才需要所有者判断。实现上的便利、移除一个内部包装，或暴露既有内部字段，都不构成某个 API 应当存在的证据。
+- **FR20 — 调用点影响与决策负担必须明确。** 公共 API 变更要展示具有代表性的变更前与变更后调用点（包括默认值与兼容性），并点名调用方必须理解或做出的每一项新选择。只有当 FR1 证明该区分由调用方拥有、组件在 FR2 下无法推导出该区分，并且该选择在 FR7–FR10 下具有可预测的含义时，这一负担才会被接纳。由审查生成的影响叙述只是上下文；它不能补足缺失的调用方所有权，也不能授权该 API。
 
 ### Platform support
 
-- Supported feature/engine floor: the rule applies to every exported component,
-  hook, and utility API on every supported renderer.
-- Unsupported behavior: a browser or renderer implementation limitation is not
-  itself evidence that callers should receive a permanent API.
-- Browser evidence: layout-based derivability claims are verified in real
-  supported browsers before concluding that public API is necessary.
+- 支持的功能/引擎下限：该规则适用于每一个受支持渲染器上的每一个导出组件、hook 和工具 API。
+- 不受支持的行为：浏览器或渲染器的实现限制本身并不构成证据，说明调用方应当获得一个永久的 API。
+- 浏览器证据：在得出结论认为必须新增公共 API 之前，基于布局的可推导性主张要在真实受支持的浏览器中验证。
 
 ## Current-state impact
 
-- API review guidance requires both the caller-need argument and the dependable
-  current-contract argument before new public API is accepted.
-- Every public API addition and public behavior change identifies current committed
-  authority, then follows the result and disposition owned by
-  `architecture:knowledge-contracts`. This spec does not redefine those outcomes.
-- Exact-head owner discussion or approval may supply the decision evidence, but it
-  does not become reusable or acceptance-clearing authority until the canonical
-  owning record commits that decision as `current`.
-- Component specs own component-local semantic API contracts, including public
-  hooks and utilities they explicitly co-own. Family, architecture, and system
-  records own their respective shared semantics. The component's `.doc.mjs`
-  remains the consumer syntax and reference authority.
-- `module:Markdown/headingLinks` applies FR18 and DEC-8 to one admitted public
-  module: its factory returns an opaque entry for the existing plugin list rather
-  than adding a broad Markdown prop. The module record owns the API and behavior;
-  this system record owns only that admission result.
-- Component specs inherit current family contracts and record only local public
-  concepts, additions, and explicit exceptions; they do not copy shared rules.
-- Public module and utility function review compares the verb with the function's
-  returned value, validation contract, side effects, and supported consumers.
-  Component prop/event naming and CLI command semantics keep their separate owners.
-  Existing released mismatches remain compatible while an explicit deprecation and
-  migration is designed; this rule does not silently rename or change them.
+- API 审查指导要求在新公共 API 被接受之前，同时具备调用方需求论证与可靠的 current 契约论证。
+- 每一项公共 API 新增和公共行为变更都要明确 current 已提交的权限，然后遵循由 `architecture:knowledge-contracts` 拥有的结果与处置。本 spec 不重新定义这些结果。
+- 精确 head 上的所有者讨论或批准可以提供决策证据，但在规范的所属记录把该决策作为 `current` 提交之前，它不会成为可复用或可通过接纳关卡的权限。
+- 组件 spec 拥有组件本地的语义 API 契约，包括它们明确共同拥有的公共 hook 和工具函数。family、architecture 和 system 记录分别拥有各自的共享语义。组件的 `.doc.mjs` 仍然是使用方语法与参考权威。
+- `module:Markdown/headingLinks` 对某一个被接纳的公共模块适用 FR18 与 DEC-8：其工厂为既有插件列表返回一个不透明条目，而不是新增一个宽泛的 Markdown prop。模块记录拥有该 API 与行为；本 system 记录只拥有那一项接纳结果。
+- 组件 spec 继承 current 的 family 契约，只记录本地的公共概念、新增内容与显式例外；它们不复制共享规则。
+- 公共模块与工具函数的审查要把动词与该函数的返回值、校验契约、副作用和受支持使用方相比较。组件 prop/事件命名与 CLI 命令语义保持各自独立的所有者。已发布的不匹配保持兼容，同时设计明确的弃用与迁移；本规则不会静默重命名或改变它们。
 
 ### Current authority dependency
 
-For every public API or public behavior delta, identify the canonical owner and
-apply the routing defined by `architecture:knowledge-contracts`. This spec owns
-API admission and semantic-shape requirements; the
-[Release compatibility and versioning spec](../AST-017/spec.md) owns lifecycle,
-classification, deprecation, correction, and release treatment. Neither record copies
-review outcomes or pull-request disposition.
+对于每一项公共 API 或公共行为差异，都要确定规范所有者，并应用 `architecture:knowledge-contracts` 定义的路由。本 spec 拥有 API 接纳与语义形态要求；[Release compatibility and versioning spec](../AST-017/spec.md) 拥有生命周期、分类、弃用、更正与发布处理。两个记录都不复制审查结果或 pull request 处置。
 
-A draft record may provide context and route the unresolved question, but it
-cannot clear current authority. Exact-head owner discussion supplies decision
-evidence; the canonical record must commit an accepted decision as `current`
-before implementation acceptance.
+draft 记录可以提供上下文并为未解决的问题指明路由，但无法通过 current 权限。精确 head 上的所有者讨论提供决策证据；在实现被接纳之前，规范记录必须把一项已接受的决策作为 `current` 提交。
 
-This authority dependency does not make public API undesirable. Once current
-authority settles the semantic contract, ordinary correctness and evidence review
-still determine whether the implementation satisfies it.
+这一权限依赖并不会让公共 API 变得不受欢迎。一旦 current 权限确定了语义契约，普通的正确性与证据审查仍然决定实现是否满足该契约。
 
-- Existing props and operations are not removed automatically. They are evaluated
-  when touched, when adjacent API is proposed, or when they cause a concrete
-  maintenance or consistency problem.
-- The proposed PowerSearch editor-popover maximum width is the motivating case
-  for the need gate: its width is an internal resolved design choice rather than
-  a caller-owned distinction, so a new public tuning prop does not pass.
-- A styling switch cannot be justified by accessibility, association, validation,
-  or other behavior its mechanism cannot perform. Solve the component behavior
-  first; consider API only when a clear, enforceable caller-owned distinction
-  remains.
-- [PR #5373](https://github.com/meta/astryx/pull/5373) is evidence that
-  parallel public and package-internal operations for one semantic action create
-  avoidable surface area. Its particular operation names and options are not
-  policy.
-- `TableRowStatus.color` is the motivating overloaded-input counterexample. Its
-  palette and raw values control tone only, while `success`, `warning`, and
-  `error` also select a default themed icon; the optional `icon` then
-  conditionally overrides that representation. This shape would be rejected
-  under FR16 pending a canonical `component:Table` contract. AST-002 does not
-  prescribe the replacement API.
-- Implementing the mechanical API gate and its benchmark is follow-up work. This
-  policy and template change does not add gate implementation code.
+- 既有 props 与操作不会被自动移除。它们会在被触及、在邻近 API 被提议，或当它们造成具体的维护或一致性问题时接受评估。
+- 提议的 PowerSearch 编辑器弹出层最大宽度是需求关卡的反面启发案例：其宽度是内部确定的设计选择，而非调用方拥有的区分，因此新增的公共调优 prop 无法通过。
+- 样式开关不能以无障碍、关联、校验或该机制无法执行的其他行为来论证。先解决组件行为；只有当仍存在清晰、可强制执行的调用方拥有区分时，才考虑 API。
+- [PR #5373](https://github.com/meta/astryx/pull/5373) 是证据，说明为同一语义动作提供并行的公共操作与包内操作会造成本可避免的表面面积。其中具体的操作名与选项不构成策略。
+- `TableRowStatus.color` 是过载输入的典型反例。其调色板值与原始值只控制色调，而 `success`、`warning` 和 `error` 还会选择一个默认的主题图标；随后可选的 `icon` 又会有条件地覆盖那一表现。在缺少规范的 `component:Table` 契约之前，这种形态会在 FR16 下被否决。AST-002 并不规定替代的 API。
+- 实现机械 API 关卡及其基准属于后续工作。本次策略与模板变更不新增关卡实现代码。
 
 ## Verification
 
-| Contract   | Verification                                                                                           | Representative states                                                                              | Mutation or failure expectation                                                                                                                        |
-| ---------- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| FR1, FR5   | Blinded historical API review benchmark                                                                | recent utility, mid-range, and composition API additions                                           | Reviewer accepts a prop without identifying caller-owned semantic variation                                                                            |
-| FR2, FR3   | Component tests and real-browser layout evidence                                                       | content, container, viewport, parent context, and platform variation                               | Public API exposes a value the component can derive reliably                                                                                           |
-| FR4, FR6   | API surface review for utility, mid-range, and composition components                                  | existing slot, theme, style, layout, and behavior seams                                            | High-level component accumulates one-off tuning props instead of using its owning layer                                                                |
-| FR7, FR8   | Consumer examples and behavior tests                                                                   | default, each public value, composed use, and unsupported use                                      | Meaning depends on implementation knowledge or tests assert only classes/data attributes                                                               |
-| FR9, FR10  | Component ownership and accessibility review                                                           | owned content, external sibling content, missing or incorrect context                              | A state is correct only when the caller fulfills a promise the component cannot verify                                                                 |
-| FR11       | Public and package-internal operation inventory; PR #5373                                              | one component module and one semantic action                                                       | One semantic action gains parallel operation names distinguished only by implementation needs                                                          |
-| FR12, FR13 | Public-delta/canonical-owner check and exact authority routing                                         | missing delta/update; matching, contradictory, draft-only, or absent authority                     | Missing delta/owner update passes, contradiction is accepted, draft becomes policy, or automation decides semantics                                    |
-| FR14       | Focused regression tests against the current contract or standard                                      | defect state, representative unchanged states, and any adjacent public delta                       | A restoration invents a new decision, lacks regression evidence, or hides an additional public change under a bug-fix label                            |
-| FR15       | Type-level constraints plus runtime validation and behavior tests                                      | invalid values, unsupported combinations, and legitimate composition                               | The API silently renders a broken state or prevents a valid composition                                                                                |
-| FR16       | Full value-domain, input-shape, and parallel-combination contract review                               | semantic variants, raw or palette values, explicit overrides, and defaults                         | One value or shape switches the controlled axis, or a parallel input silently changes precedence                                                       |
-| FR17       | Public module/utility export inventory plus implementation, test, consumer, and release-history review | construction, inspection, lookup, conversion, registration, hooks, and released compatibility      | A verb hides the returned value or side effect, two public roles are fused, a non-hook utility uses `use*`, or a released mismatch is silently renamed |
-| FR20       | Public callsite and caller-burden review                                                               | representative before/after callsites, defaults, compatibility, and every caller-owned choice      | A new caller decision is hidden, derivable, unpredictable, or justified only by review prose                                                           |
-| FR18       | Multi-caller composition scenarios plus owning-contract review                                         | shared semantic operation, internal-only mechanism, and two representative consumers               | Product builders cannot compose stable behavior, or implementation fields are exposed without caller-owned semantics                                   |
-| FR19       | Bug-fix before/after authority diff plus public-surface and behavior inventory                         | pure restoration, restoration plus separable novel API/visual change, and internal-wrapper removal | A bug-fix label bypasses authority, a removable tagalong forces a broader spec, or internal mechanics become public because exposure is convenient     |
-| Burden     | Benchmark classification: allow, correct pause, false block, not applicable                            | recent accepted and rejected API changes                                                           | Clearly justified APIs are repeatedly paused or blocked without surfacing a real decision                                                              |
+| 契约       | 验证                                                    | 代表性状态                                                              | 变异或失败预期                                                                                      |
+| ---------- | ------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| FR1, FR5   | 盲测的历史 API 审查基准                                 | 近期的工具类、中档与组合式 API 新增                                     | 审查者接受了一个 prop，却未指出调用方拥有的语义差异                                                 |
+| FR2, FR3   | 组件测试与真实浏览器布局证据                            | 内容、容器、视口、父级上下文与平台变化                                  | 公共 API 暴露了组件能够可靠推导出的值                                                               |
+| FR4, FR6   | 针对工具类、中档与组合式组件的 API 表面审查             | 现有的插槽、主题、样式、布局与行为接缝                                  | 高层组件累积一次性调优 prop，而不是使用其所属层次                                                   |
+| FR7, FR8   | 使用方示例与行为测试                                    | 默认值、每个公共取值、组合式用法以及不受支持的用法                      | 含义依赖实现层面的知识，或测试只断言 class/data 属性                                                |
+| FR9, FR10  | 组件所有权与无障碍审查                                  | 所拥有的内容、外部兄弟内容、缺失或不正确的上下文                        | 某个状态只有在调用方履行了组件无法核实的承诺时才正确                                                |
+| FR11       | 公共与包内操作清单；PR #5373                            | 一个组件模块与一个语义动作                                              | 一个语义动作产生了仅以实现需求来区分的并行操作名                                                    |
+| FR12, FR13 | 公共差异/规范所有者检查与精确的权限路由                 | 缺失差异/更新；匹配、矛盾、仅 draft 或缺失的权限                        | 缺失差异/所有者更新仍被通过、矛盾被接受、draft 变成策略，或自动化决定了语义                         |
+| FR14       | 针对 current 契约或标准的聚焦回归测试                   | 缺陷状态、具代表性的未变状态，以及任何相邻的公共差异                    | 一次恢复凭空发明了新决策、缺少回归证据，或在 bug 修复标签下隐藏了额外的公共变更                     |
+| FR15       | 类型层面约束加运行时校验与行为测试                      | 无效值、不受支持的组合以及合法的组合                                    | API 静默渲染出损坏状态，或阻止了合法的组合                                                          |
+| FR16       | 完整取值域、输入形态与并行组合的契约审查                | 语义变体、原始值或调色板值、显式覆盖以及默认值                          | 某个取值或形态切换了受控的轴，或并行输入静默改变了优先级                                            |
+| FR17       | 公共模块/工具导出清单加实现、测试、使用方与发布历史审查 | 构造、检查、查找、转换、注册、hook 以及已发布的兼容性                   | 动词隐藏了返回值或副作用、两种公共角色被合并、非 hook 工具使用 `use*`，或已发布的不匹配被静默重命名 |
+| FR20       | 公共调用点与调用方负担审查                              | 具代表性的变更前/变更后调用点、默认值、兼容性以及每一项调用方拥有的选择 | 一项新的调用方决策被隐藏、可推导、不可预测，或仅由审查叙述来论证                                    |
+| FR18       | 多调用方组合场景加所属契约审查                          | 共享的语义操作、仅内部的机制以及两个代表性使用方                        | 产品构建者无法组合稳定行为，或实现字段在缺少调用方拥有语义的情况下被暴露                            |
+| FR19       | bug 修复的变更前/变更后权限差异加公共表面与行为清单     | 纯恢复、恢复加可分离的新增 API/视觉变更，以及内部包装移除               | bug 修复标签绕过权限、可移除的附带项迫使扩展 spec，或内部机制因为暴露方便而变成公共                 |
+| 负担       | 基准分类：允许、正确暂停、误判拦截、不适用              | 近期被接受与被否决的 API 变更                                           | 明显合理的 API 被反复暂停或拦截，却没有暴露出真正的决策                                             |
 
 ## Decision log
 
 ### DEC-1 — Public props require a non-derivable caller distinction
 
-**Reference:** `spec:AST-002/DEC-1`
-**Decider:** `cixzhang`, `2026-08-30`
+**参考：** `spec:AST-002/DEC-1`
 
-A new public component prop is appropriate only when otherwise identical
-situations need different resolved design decisions and the component cannot
-derive the distinction from information available to it. Public props represent
-caller-owned intent, not implementation knobs.
+**决策者：** `cixzhang`，`2026-08-30`
 
-Rejected: adding props whenever a consumer asks for a different internal layout
-value. That approach duplicates design decisions across callsites and expands the
-permanent API without adding semantic information.
+只有当两个在其他方面完全相同的情形需要不同的最终设计决策、而组件无法从它可获得的信息中推导出这一区分时，新增公共组件 prop 才合适。公共 prop 表达的是调用方拥有的意图，而不是实现层面的旋钮。
+
+已否决：只要使用方要求不同的内部布局取值就新增 prop。这种做法会在各个调用点重复设计决策，并在不增加语义信息的情况下扩张永久 API。
 
 ### DEC-2 — Caller need does not admit an unclear or unenforceable API
 
-**Reference:** `spec:AST-002/DEC-2`
-**Decider:** `cixzhang`, `2026-08-30`
+**参考：** `spec:AST-002/DEC-2`
 
-A non-derivable caller distinction passes only the need gate. The proposed prop
-must also name an understandable concept, produce a dependable observable result,
-and use a mechanism capable of fulfilling the promise used to justify it.
+**决策者：** `cixzhang`，`2026-08-30`
 
-Rejected: admitting a styling switch because review text gives it accessibility,
-association, or validation meaning its mechanism cannot provide. Solve the base
-component behavior first; consider public API only when a clear, enforceable
-caller-owned distinction remains.
+不可推导的调用方区分只通过了需求关卡。提议的 prop 还必须点明一个可理解的概念、产出可靠且可观察的结果，并使用一种能够兑现用于论证它的承诺的机制。
+
+已否决：仅因为审查文字赋予某个样式开关以无障碍、关联或校验含义（而其机制无法提供这些含义）就接纳它。先解决基础组件行为；只有当仍存在清晰、可强制执行的调用方拥有区分时，才考虑公共 API。
 
 ### DEC-3 — One semantic action uses one canonical operation name
 
-**Reference:** `spec:AST-002/DEC-3`
-**Decider:** `cixzhang`, `2026-08-31`
+**参考：** `spec:AST-002/DEC-3`
 
-A component module uses one canonical operation name for one semantic action across
-its public and package-internal forms. The public contract may expose a narrower
-option set while the package-internal implementation accepts wider semantic
-options under that same name. A second operation is admitted only for genuinely
-distinct caller-owned intent and contract.
+**决策者：** `cixzhang`，`2026-08-31`
 
-Rejected: creating a parallel operation because one internal call path needs
-additional control. That choice exposes internal call-path differences and leaves
-maintainers or consumers to distinguish two names for one action.
+组件模块对同一个语义动作，在其公共形态与包内形态上使用同一个规范操作名。公共契约可以暴露更窄的选项集合，而包内实现在同一名称下接受更宽的语义选项。只有在调用方意图与契约确实不同时，才接纳第二个操作。
+
+已否决：因为某一条内部调用路径需要额外控制就新建一个并行操作。这种选择会把内部调用路径的差异暴露出来，并让维护者或使用方去区分同一个动作的两个名称。
 
 ### DEC-4 — API review separates mechanical evidence from owner judgment
 
-**Reference:** `spec:AST-002/DEC-4`
-**Decider:** `cixzhang`, `2026-09-06`
+**参考：** `spec:AST-002/DEC-4`
 
-Mechanical review inventories the exact public API and behavior delta, identifies
-the canonical owner, and rejects objective API-shape violations such as derivable
-choices, overloaded inputs, hidden conditional precedence, or duplicate operation
-names for one semantic action. It does not decide unsettled semantics.
+**决策者：** `cixzhang`，`2026-09-06`
 
-When current authority does not settle a surviving proposal, route it privately to
-the human owner. The owner accepts, rejects, or refines the semantic contract; the
-accepted decision becomes review authority only after it is committed in the
-canonical record as `current`.
+机械审查会清点确切的公共 API 与行为差异，确定规范所有者，并否决客观的 API 形态违规，例如可推导的选择、过载输入、隐藏的条件优先级，或为同一语义动作使用重复的操作名。它不裁决尚未确定的语义。
 
-Rejected: asking owners to discover mechanical defects from implementation code,
-treating generated evidence as a semantic decision, or publishing a contributor-
-facing verdict before the owner settles an absent contract.
+当 current 权限没有裁定某项存留的提议时，将其私下路由给人类所有者。所有者接受、否决或改进语义契约；该已接受决策只有在规范记录中作为 `current` 提交之后，才成为审查权限。
+
+已否决：要求所有者从实现代码中去发现机械缺陷、把生成的证据当作语义决策，或在所有者尚未确定缺失契约之前就发布面向贡献者的裁定。
 
 ### DEC-5 — Public changes require committed current authority
 
-**Reference:** `spec:AST-002/DEC-5`
-**Decider:** `cixzhang`, `2026-09-06`
+**参考：** `spec:AST-002/DEC-5`
 
-Every public API addition and public behavior change identifies applicable current
-committed authority before implementation acceptance. Draft records provide
-context and route questions, but they are not policy and cannot clear the gate.
-Exact-head owner discussion or approval is decision evidence, not a substitute for
-recording the accepted contract as current.
+**决策者：** `cixzhang`，`2026-09-06`
 
-Missing authority creates the private unsettled path owned by
-`architecture:knowledge-contracts`; it is not permission to accept the change and
-not an automatic contributor-facing rejection. After the canonical decision is
-current, review the implementation's exact head against it.
+每一项公共 API 新增和公共行为变更，在实现被接纳之前都要明确适用的 current 已提交权限。draft 记录提供上下文并为问题指明路由，但它们不是策略，无法通过关卡。精确 head 上的所有者讨论或批准是决策证据，不能替代把已接受的契约记录为 current。
 
-Rejected: the former staged exception that let one pull request proceed on owner
-approval while leaving its reusable contract draft or missing. That path made the
-same public behavior acceptable in one review and undiscoverable in the next.
+缺失权限会创建由 `architecture:knowledge-contracts` 拥有的私下未决路径；它不是接受该变更的许可，也不是自动的面向贡献者的否决。当规范决策成为 current 之后，再依据它审查实现的确切 head。
+
+已否决：先前的分阶段例外，它允许一个 pull request 在所有者批准下继续推进，同时让其可复用的契约停留在 draft 或缺失状态。那条路径让同一个公共行为在一次审查中可被接受，而下一次审查中却无法被发现。
 
 ### DEC-6 — Public inputs keep one semantic responsibility
 
-**Reference:** `spec:AST-002/DEC-6`
-**Decider:** `cixzhang`, `2026-09-01`
+**参考：** `spec:AST-002/DEC-6`
 
-Every public input has one stable semantic responsibility across its full value
-domain and every accepted input shape. Its name and type disclose the
-caller-owned meaning. One semantic input may derive several visual details when
-they form one cohesive named outcome, such as a status or variant owning tone and
-a signifier. A property is rejected when its values or shapes change which axis
-it controls, or when consumers need implementation knowledge to predict the
-controlled axes.
+**决策者：** `cixzhang`，`2026-09-01`
 
-When two axes are independently caller-owned, expose separate inputs and prevent
-invalid or conflicting combinations under FR15. When the system owns their
-coordination, expose the semantic concept and derive both details rather than
-naming the input after one mechanism. Parallel inputs may override one another
-only when their names, types, and behavior across every combination define an
-explicit coherent contract and prevent invalid or conflicting states.
+每个公共输入在其完整取值域和每一种被接受的输入形态下都只有一项稳定的语义职责。其名称与类型揭示调用方拥有的含义。当一个语义输入推导出多个视觉细节、而这些细节构成一个内聚的具名结果时（例如一个状态或变体同时拥有色调和一个标识符号），这是允许的。当某个属性的取值或形态改变了它控制的轴，或当使用方需要实现层面的知识才能预测受控的轴时，应否决该属性。
 
-Rejected: `TableRowStatus.color`, whose palette and raw values mean tone only
-while `success`, `warning`, and `error` mean tone plus a default themed icon, with
-an optional `icon` that conditionally overrides representation. That shape would
-not pass current API review pending a canonical `component:Table` contract. This
-decision does not prescribe the replacement API.
+当两个轴相互独立地由调用方拥有时，暴露各自独立的输入，并在 FR15 下防止无效或冲突的组合。当系统拥有它们的协调时，暴露语义概念并推导两者细节，而不是用一个机制来命名该输入。并行输入只有在名称、类型以及每一种组合下的行为共同定义一个明确一致的契约、并防止无效或冲突状态时，才可以相互覆盖。
+
+已否决：`TableRowStatus.color`，其调色板值与原始值只表示色调，而 `success`、`warning` 和 `error` 表示色调加一个默认的主题图标，另有一个可选的 `icon` 会有条件地覆盖表现。在缺少规范的 `component:Table` 契约之前，这种形态不会通过当前的 API 审查。本决策不规定替代的 API。
 
 ### DEC-7 — Public module and utility verbs disclose atomic roles
 
-**Reference:** `spec:AST-002/DEC-7`
-**Decider:** `cixzhang`, `2026-09-03`
+**参考：** `spec:AST-002/DEC-7`
 
-Choose a public module or utility function's verb from its primary
-caller-observable result and side effects, not from an internal implementation
-step. Distinguish construction, inspection, lookup, conversion, registration,
-and guaranteed state. `define*` constructs or normalizes and returns a durable
-typed value used by a supported consumer. Validation may be its precondition, but
-inspection or an unchanged identity result alone is not definition. `validate*`
-and `check*` inspect input and return structured results; their contracts state
-which failures are returned and which conditions throw.
+**决策者：** `cixzhang`，`2026-09-03`
 
-When construction, validation, registration, or another capability is public,
-each has its own callable role. A released mismatch follows an explicit
-deprecation and migration instead of a silent rename or behavior change. Other
-verbs receive repository-wide rules only when shipped evidence supports them.
-Component prop and event naming remains separate. CLI command verbs and their
-programmatic command twins remain with the CLI surface owner.
+公共模块或工具函数的动词应取自它对调用方可观察的主要结果和副作用，而不是取自内部的实现步骤。要区分构造、检查、查找、转换、注册以及保证状态。`define*` 构造或规范化，并返回由受支持使用方使用的持久类型化值。校验可以是它的前提条件，但仅做检查，或返回未改变的身份结果，都不构成定义。`validate*` 与 `check*` 检查输入并返回结构化结果；它们的契约要说明哪些失败会被返回、哪些条件会抛出异常。
 
-Rejected: treating a function that only validates and returns its input as a
-`define*` function, returning a bare predicate from a public `validate*` or
-`check*` function, using `use*` for a non-hook utility, or hiding separately
-public registration inside a constructor without a compatibility plan.
+当构造、校验、注册或其他能力是公共的，每一种都拥有各自可调用的角色。已发布的不匹配要遵循明确的弃用与迁移，而不是静默重命名或改变行为。其他动词只有在已发布的证据支持时才获得仓库范围的规则。组件 prop 与事件命名保持独立。CLI 命令动词及其对应的程序化命令孪生体保留在 CLI 表面所有者处。
+
+已否决：把只做校验并返回其输入的函数当作 `define*` 函数、从公共的 `validate*` 或 `check*` 函数返回裸谓词、对非 hook 工具函数使用 `use*`，或在没有兼容性方案的情况下把单独公开的注册隐藏进构造函数。
 
 ### DEC-8 — Public primitives are intentional semantic contracts
 
-**Reference:** `spec:AST-002/DEC-8`
-**Decider:** `cixzhang`, `2026-09-06`
+**参考：** `spec:AST-002/DEC-8`
 
-Prefer a public primitive when product builders need to compose stable behavior
-across callsites and the contract can name caller intent, operations, outcomes,
-and failure behavior without exposing implementation machinery. Record that
-contract as current before accepting the public surface.
+**决策者：** `cixzhang`，`2026-09-06`
 
-A bug fix does not create an exception. When it restores current authority, keep
-its API and behavior within that contract. Any additional public primitive or
-observable behavior follows `architecture:knowledge-contracts`: first conform,
-remove, or split a separable contradiction or unsettled tagalong; then reuse an
-existing current decision when one settles an intentional surviving delta. Ask the
-owner only for a surviving decision the team actually wants to pursue. An
-undeclared public API row is the exception: change coupling step 6 of
-`architecture:knowledge-contracts` sends it to human review for an owner's
-decision, and review does not remove or split it.
+当产品构建者需要在多个调用点组合稳定行为，并且契约能够在不暴露实现机制的前提下点明调用方意图、操作、结果与失败行为时，优先采用公共原语。在接纳该公共表面之前，把那份契约记录为 current。
 
-Rejected: promoting internal focus targets, gesture memory, DOM slots, timers, or
-other existing fields merely because removing an internal wrapper or fixing one
-path becomes easier. Existing implementation is evidence of mechanics, not intent
-for permanent public API.
+bug 修复不会创造例外。当它恢复 current 权限时，要把其 API 与行为保持在该契约之内。任何额外的公共原语或可观察行为都遵循 `architecture:knowledge-contracts`：先使可分离的矛盾项或未定的附带项符合、移除或拆分；然后在既有 current 决策能够裁定某项有意存留差异时复用它。只有当团队确实想要推进某项存留决策时，才向所有者提出。未声明的公共 API 行是例外：`architecture:knowledge-contracts` 的变更耦合第 6 步把它发送给人工审查以取得所有者决策，审查不会移除或拆分它。
+
+已否决：仅仅因为移除一个内部包装或修好某条路径变得更方便，就把内部焦点目标、手势记忆、DOM 插槽、定时器或其他既有字段提升为公共。既有实现是机制的证据，而不是永久公共 API 的意图证据。
 
 ### DEC-9 — Caller decision burden must be visible and justified
 
-**Reference:** `spec:AST-002/DEC-9`
-**Decider:** `cixzhang`, `2026-09-12`
+**参考：** `spec:AST-002/DEC-9`
 
-A public API proposal shows the callsite before and after the change and names each
-new decision a caller must make. The decision is admitted only when it represents
-caller-owned intent the component cannot derive and its outcome remains predictable
-across defaults, combinations, and supported states.
+**决策者：** `cixzhang`，`2026-09-12`
 
-Rejected: treating a shorter implementation, a persuasive user-impact summary, or
-a completed review checklist as proof that callers should own another choice.
+公共 API 提议要展示变更前后的调用点，并点名调用方必须做出的每一项新决策。只有当该决策代表组件无法推导的调用方拥有意图，且其结果在默认值、组合与受支持状态下保持可预测时，该决策才被接纳。
+
+已否决：把更短的实现、有说服力的用户影响摘要，或已完成的审查清单当作调用方应当再拥有一项选择的证据。
 
 ## Open questions
 
-None.
+无。

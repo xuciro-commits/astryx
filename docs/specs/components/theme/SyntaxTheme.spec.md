@@ -28,127 +28,112 @@ system_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Public contract         | `SyntaxTheme` with a required `theme` (a syntax preset or a `defineSyntaxTheme()` result) and `children`.                      |
-| Behavior                | Applies one syntax highlighting theme to the code components inside it through CSS variables on a wrapper and through context. |
-| End-user impact         | Code blocks inside share one set of syntax colors.                                                                             |
-| Builder impact          | None.                                                                                                                          |
-| Compatibility/readiness | Records shipped behavior; no public change. One implementation gap, listed under Current-state impact.                         |
-| Review checks           | Reject a lost syntax variable or a wrapper without the theme name.                                                             |
-| Governing rules         | `architecture:theme-authoring-contract`; `architecture:theme-application` INV1.                                                |
+| Area                    | Contract                                                                                           |
+| ----------------------- | -------------------------------------------------------------------------------------------------- |
+| Public contract         | `SyntaxTheme` 需要必填属性 `theme`（一个语法预设，或 `defineSyntaxTheme()` 的结果）与 `children`。 |
+| Behavior                | 通过包装元素上的 CSS 变量和通过上下文，对它内部的代码组件应用一套语法高亮主题。                    |
+| End-user impact         | 内部的代码块共享同一套语法颜色。                                                                   |
+| Builder impact          | 无。                                                                                               |
+| Compatibility/readiness | 记录已发布的行为；没有公共变更。一处实现缺口，列在“当前状态影响”一节。                             |
+| Review checks           | 拒绝丢失语法变量，或拒绝一个缺少主题名的包装元素。                                                 |
+| Governing rules         | `architecture:theme-authoring-contract`；`architecture:theme-application` INV1。                   |
 
-This table is a review projection; the body below is authoritative.
+本表是一份审查投影；以下正文才是权威。
 
 ## Intent
 
-SyntaxTheme applies one syntax highlighting theme to the code components in
-its subtree. How syntax themes are authored is owned by
-`architecture:theme-authoring-contract`; this record owns what the component
-renders. Consumer usage lives in `SyntaxTheme.doc.mjs`.
+SyntaxTheme 对它子树中的代码组件应用一套语法高亮主题。语法主题如何编写由 `architecture:theme-authoring-contract` 拥有；本记录拥有该组件渲染什么。使用方用法见 `SyntaxTheme.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public change
-- Controlled/uncontrolled behavior: `theme` is caller-owned
-- Migration decision: none
+- 保留已发布的默认值：`yes`
+- 兼容性类别：记录已发布的行为；没有公共变更
+- 受控/非受控行为：`theme` 由调用方拥有
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Current-state impact
 
-- **Canvas colors can disagree with a forced mode.** The syntax theme hook
-  picks light or dark from the operating system's `prefers-color-scheme`, not
-  from the nearest Theme's mode. Under `<Theme mode="dark">` on a light system,
-  a canvas painter using the hook gets light colors while code blocks paint the
-  dark side; `architecture:theme-application` INV1 has descendants read the
-  nearest provider (FR2).
+- **Canvas 颜色可能与强制模式不一致。** 语法主题 hook 从操作系统的 `prefers-color-scheme` 选择浅色或深色，而不是从最近的 Theme 的模式选择。在浅色系统上使用 `<Theme mode="dark">` 时，使用该 hook 的 canvas 绘制方拿到浅色，而代码块绘制深色一侧；`architecture:theme-application` INV1 要求后代读取最近的提供方（FR2）。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The wrapper, its syntax variables, and its theme-name attribute (FR1).
-- Providing the syntax theme to descendants (FR2).
+- 包装元素、它的语法变量，以及它的主题名属性（FR1）。
+- 向其后代提供语法主题（FR2）。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Authoring syntax themes and their presets — owned by
-  `architecture:theme-authoring-contract`.
-- How a code component paints tokens with these variables — owned by that
-  component.
+- 编写语法主题及其预设——由 `architecture:theme-authoring-contract` 拥有。
+- 某个代码组件如何用这些变量绘制 token——由该组件拥有。
 
 ## Public concepts
 
-No component-local concept beyond the consumer props.
+除使用方属性外，没有组件本地概念。
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Basis                    |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| FR1 | SyntaxTheme renders one block `div` wrapper carrying `data-astryx-syntax-theme` with the theme's name and, as inline custom properties, every syntax token the definition carries. Presets and `defineSyntaxTheme()` fill every diff slot; only a hand-built definition missing a slot leaves it to the CSS default.                                                                                                                                                                                           | Current source and tests |
-| FR2 | Descendants read the syntax theme through context. The syntax theme hook resolves each token for the nearest Theme's effective mode (`architecture:theme-application` INV1); unset marker slots take the theme's own punctuation, and unset `added` and `removed` derive from the page theme. Implementation gap: the hook reads the operating system's `prefers-color-scheme` instead, so under a Theme with a forced mode it can resolve the other side from the wrapper's variables (Current-state impact). | Current source and tests |
+| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                            | Basis          |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| FR1 | SyntaxTheme 渲染一个块级 `div` 包装元素，携带值为主题名的 `data-astryx-syntax-theme`，并以行内自定义属性的形式携带该定义所包含的每一个语法 token。预设与 `defineSyntaxTheme()` 会填充每一个 diff 槽位；只有手工构建的定义缺少某个槽位时，才把它留给 CSS 默认值。                                                                                                     | 当前源码与测试 |
+| FR2 | 后代通过上下文读取语法主题。语法主题 hook 为最近的 Theme 的有效模式解析每一个 token（`architecture:theme-application` INV1）；未设置的标记槽位采用主题自身的标点符号，未设置的 `added` 与 `removed` 从页面主题派生。实现缺口：该 hook 改为读取操作系统的 `prefers-color-scheme`，因此在带有强制模式的 Theme 下，它可能从包装元素的变量解析出另一侧（当前状态影响）。 | 当前源码与测试 |
 
 ### Allowed variation
 
-- **AV1 — Theme.** Any preset or defined syntax theme.
+- **AV1 — Theme。** 任意预设或已定义的语法主题。
 
 ### Representative states
 
-| State                                     | Required invariant                                                                                                     | Allowed variation |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ----------------- |
-| Preset theme                              | Wrapper carries the preset's variables and name.                                                                       | Preset.           |
-| Hand-built definition missing a diff slot | No variable written; the hook derives a missing marker or row paint, and a missing header resolves to an empty string. | Theme.            |
+| State                            | Required invariant                                                  | Allowed variation |
+| -------------------------------- | ------------------------------------------------------------------- | ----------------- |
+| 预设主题                         | 包装元素携带该预设的变量与名称。                                    | 预设。            |
+| 缺少某个 diff 槽位的手工构建定义 | 不写入变量；hook 派生缺失的标记或行绘制，缺失的标题解析为空字符串。 | 主题。            |
 
 ### Transformation and precedence order
 
-- **ORD1 — Nearest provider.** The nearest SyntaxTheme supplies the theme.
+- **ORD1 — 最近的提供方。** 最近的 SyntaxTheme 提供该主题。
 
 ### Performance and resources
 
-- **PR1 — Memoized values.** The wrapper style and context value recompute only
-  when `theme` changes.
+- **PR1 — 记忆化的值。** 包装元素样式与上下文值仅在 `theme` 变化时重新计算。
 
 ## Accessibility contract
 
-- **AR1 — No semantics.** The wrapper adds no role, name, or focus target.
+- **AR1 — 无语义。** 包装元素不添加 role、名称或焦点目标。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                           | Representation authority | Hierarchy role | Component contract |
-| ---------------- | -------------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Wrapper          | Carries syntax variables and the theme name. | Current source           | Supporting     | FR1                |
+| Anatomy or state | Design requirement     | Representation authority | Hierarchy role | Component contract |
+| ---------------- | ---------------------- | ------------------------ | -------------- | ------------------ |
+| 包装元素         | 携带语法变量与主题名。 | 当前源码                 | 支撑           | FR1                |
 
-SyntaxTheme renders no themable part of its own, so no anatomy-theming map
-applies.
+SyntaxTheme 不渲染任何自己的可主题化部件，因此没有适用的解剖-主题映射。
 
 ## Family and system relationships
 
-- `architecture:theme-authoring-contract` owns syntax theme construction and
-  presets.
+- `architecture:theme-authoring-contract` 拥有语法主题的构造与预设。
 
 ## Verification map
 
-| Contract | Verification                                                                                                     | Representative states    | Mutation or failure expectation                                    | Audit section                |
-| -------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------------ | ---------------------------- |
-| FR1      | `defineSyntaxTheme.diff.test.ts` "skips unset diff slots in the CSS and style output of a hand-built definition" | set and unset diff slots | A style value written for an unset slot, or a set one lost, fails. | `audit:SyntaxTheme/behavior` |
-| FR2      | `useSyntaxTheme.diff.test.tsx` "resolves unset marker slots to the theme's own punctuation colour"               | unset marker slots       | A wrong derived slot fails.                                        | `audit:SyntaxTheme/behavior` |
+| Contract | Verification                                                                                                     | Representative states      | Mutation or failure expectation                    | Audit section                |
+| -------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------- | -------------------------------------------------- | ---------------------------- |
+| FR1      | `defineSyntaxTheme.diff.test.ts` "skips unset diff slots in the CSS and style output of a hand-built definition" | 已设置与未设置的 diff 槽位 | 为未设置槽位写入样式值，或丢失已设置的值，即失败。 | `audit:SyntaxTheme/behavior` |
+| FR2      | `useSyntaxTheme.diff.test.tsx` "resolves unset marker slots to the theme's own punctuation colour"               | 未设置的标记槽位           | 派生出的槽位有误即失败。                           | `audit:SyntaxTheme/behavior` |
 
-Read from source, with no focused test yet:
+从源码读取，尚无聚焦测试：
 
-- FR1: the block wrapper, its `data-astryx-syntax-theme` attribute, and the
-  wrapper applying the theme's style values.
+- FR1：块级包装元素、它的 `data-astryx-syntax-theme` 属性，以及包装元素应用主题的样式值。
 
 ## Decision log
 
-No component-local decision is recorded.
+未记录组件本地决策。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables or examples, theme
-authoring, token definitions, or compiler output. It links to their owners.
+本文件不重复使用方属性表或示例、主题编写、token 定义或编译器输出。它链接到它们的所有者。

@@ -37,112 +37,108 @@ system_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                              |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | Grid arranges children in two-dimensional tracks with `columns` (a fixed count or a responsive object), gaps, item alignment, `rowHeight`, and box sizing.                            |
-| Behavior                | A positive number creates exactly N `1fr` tracks without reflow; an object creates fill/fit tracks from a pixel minimum and optional count cap; axis gaps override uniform gap.       |
-| End-user impact         | Content keeps DOM order and logical direction while responsive object-form grids reduce their count to fit. Fixed tracks may narrow or overflow when their content cannot shrink.     |
-| Builder impact          | None; the record describes shipped behavior. Builders choose fixed numeric tracks or responsive object tracks explicitly.                                                             |
-| Compatibility/readiness | Released behavior recorded as current; no API, default, target, or runtime changes.                                                                                                   |
-| Review checks           | Reject automatic reflow for numeric columns, equal-width promises that ignore minimum content, lost gap precedence, raw inline track templates, or caller-overridable owned metadata. |
-| Governing rules         | `family:layout-primitives/FR1–FR7`; `architecture:public-component-api/INV5–INV9`; `architecture:component-theming-surface/INV2–INV6`.                                                |
+| Area                    | Contract                                                                                                                               |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Public contract         | Grid 用 `columns`（固定数量或响应式对象）、间距、子项对齐、`rowHeight` 与盒子尺寸，把子项排布到二维轨道中。                            |
+| Behavior                | 正数会创建恰好 N 条 `1fr` 轨道且不重排；对象会基于像素最小值与可选的数量上限创建 fill/fit 轨道；轴向间距会覆盖统一间距。               |
+| End-user impact         | 内容保持 DOM 顺序与逻辑方向，而响应式对象形式的网格会减少轨道数量以适配。当内容无法收缩时，固定轨道可能变窄或溢出。                    |
+| Builder impact          | 无；本记录描述的是已发布行为。构建者显式选择固定数字轨道或响应式对象轨道。                                                             |
+| Compatibility/readiness | 已发布行为记录为 current；API、默认值、目标或运行时均无变化。                                                                          |
+| Review checks           | 拒绝为数字 columns 引入自动重排、忽视最小内容的等宽承诺、丢失间距优先级、原始内联轨道模板，或调用方可覆盖的组件自有元数据。            |
+| Governing rules         | `family:layout-primitives/FR1–FR7`; `architecture:public-component-api/INV5–INV9`; `architecture:component-theming-surface/INV2–INV6`. |
 
-This table is a review projection; the body below is authoritative.
+本表是审查投影；下文的正文才具有权威性。
 
 ## Intent
 
-Grid arranges caller-supplied items in two-dimensional tracks. It owns track construction, gaps, item alignment, and its box size; it owns no content, surface, or structural page semantics.
+Grid 把调用方提供的子项排布到二维轨道中。它拥有轨道构建、间距、子项对齐及其盒子尺寸；它不拥有任何内容、表面或结构性页面语义。
 
 ## Compatibility and migration
 
-- Released default preserved: yes; omitted, zero, or negative numeric `columns` resolves to one track.
-- Compatibility class: records shipped behavior; no runtime, DOM, styling, target, or public API changes.
-- Controlled/uncontrolled behavior: not applicable.
-- Migration decision: none.
+- 已发布默认值保持不变：是；省略、为零或为负的数字 `columns` 解析为一条轨道。
+- 兼容性类别：记录已发布行为；运行时、DOM、样式、目标或公共 API 均无变化。
+- 受控/非受控行为：不适用。
+- 迁移决策：无。
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明应放在使用方文档与发布说明中。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- Grid's root container, `grid` target, track construction, axis gaps, item alignment, and explicit box dimensions.
-- The `grid-span` target that GridSpan's wrapper carries, which `Grid.doc.mjs` declares and the anatomy map below lists.
-- Root prop and style composition on the Grid root.
+- Grid 的根容器、`grid` 目标、轨道构建、轴向间距、子项对齐以及显式盒子尺寸。
+- GridSpan 的包装器所携带的 `grid-span` 目标，`Grid.doc.mjs` 声明了它，下文的解剖图也列出了它。
+- Grid 根节点上的根 prop 与样式组合。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Caller content, item semantics, surfaces, or interaction — owned by the product callsite or rendered child component.
-- A shared breakpoint or automatic reflow for numeric columns — responsiveness is selected by Grid's object form.
-- The GridSpan wrapper's behavior and one item's row and column participation —
-  owned by `component:GridSpan`, which has its own consumer doc and record.
+- 调用方内容、子项语义、表面或交互——由产品调用点或被渲染的子组件拥有。
+- 共享断点或针对数字 columns 的自动重排——响应式由 Grid 的对象形式选择。
+- GridSpan 包装器的行为以及单个子项对行与列的参与——由 `component:GridSpan` 拥有，它有各自的使用方文档与记录。
 
 ## Public concepts
 
-| Concept              | Closed values or states                    | Meaning                                                                 | Availability by variant/orientation/state | Default                     | Owner                      | Stability | Invalid-value behavior                       |
-| -------------------- | ------------------------------------------ | ----------------------------------------------------------------------- | ----------------------------------------- | --------------------------- | -------------------------- | --------- | -------------------------------------------- |
-| column shape         | fixed number; responsive object; omitted   | Selects fixed `1fr` tracks or intrinsic fill/fit tracks.                | Every Grid                                | one track                   | `component:Grid`           | Stable    | zero/negative number falls back to one track |
-| responsive repeat    | `fill`; `fit`                              | Keeps empty tracks or collapses them so present items stretch.          | Object-form columns                       | `fill`                      | `component:Grid`           | Stable    | Type-constrained                             |
-| responsive count cap | absent; positive `max`; non-positive `max` | Caps the number of intrinsic tracks while allowing present tracks fill. | Object-form columns                       | absent                      | `component:Grid`           | Stable    | non-positive behaves as uncapped             |
-| spacing              | shared `SpacingStep` values                | Separates rows/columns; axis values override uniform gap.               | Every Grid                                | browser grid gap default    | `family:layout-primitives` | Stable    | Type-constrained                             |
-| item alignment       | `start`; `center`; `end`; `stretch`        | Sets `align-items` and `justify-items`.                                 | Every Grid                                | browser `normal`            | `component:Grid`           | Stable    | Type-constrained                             |
-| box size             | number; CSS value string; absent           | Sizes the Grid box; numbers become pixels.                              | Every Grid                                | caller/container-determined | `family:layout-primitives` | Stable    | Browser validates strings                    |
-| implicit row height  | number; absent                             | Sets pixel height for implicit rows used by row spans.                  | Every Grid                                | browser `auto`              | `component:Grid`           | Stable    | Browser validates the resulting CSS          |
+| Concept        | Closed values or states             | Meaning                                       | Availability by variant/orientation/state | Default                | Owner                      | Stability | Invalid-value behavior |
+| -------------- | ----------------------------------- | --------------------------------------------- | ----------------------------------------- | ---------------------- | -------------------------- | --------- | ---------------------- |
+| 列形态         | 固定数字；响应式对象；省略          | 选择固定的 `1fr` 轨道或内在的 fill/fit 轨道。 | 每个 Grid                                 | 一条轨道               | `component:Grid`           | 稳定      | 零/负数回退为一条轨道  |
+| 响应式重复     | `fill`；`fit`                       | 保留空轨道，或折叠空轨道让存在的子项拉伸。    | 对象形式的 columns                        | `fill`                 | `component:Grid`           | 稳定      | 受类型约束             |
+| 响应式数量上限 | 缺失；正的 `max`；非正的 `max`      | 限制内在轨道的数量，同时允许存在的轨道填充。  | 对象形式的 columns                        | 缺失                   | `component:Grid`           | 稳定      | 非正数表现为无上限     |
+| 间距           | 共享的 `SpacingStep` 取值           | 分隔行/列；轴向取值覆盖统一间距。             | 每个 Grid                                 | 浏览器 grid gap 默认值 | `family:layout-primitives` | 稳定      | 受类型约束             |
+| 子项对齐       | `start`；`center`；`end`；`stretch` | 设置 `align-items` 与 `justify-items`。       | 每个 Grid                                 | 浏览器 `normal`        | `component:Grid`           | 稳定      | 受类型约束             |
+| 盒子尺寸       | 数字；CSS 值字符串；缺失            | 设定 Grid 盒子尺寸；数字会转为像素。          | 每个 Grid                                 | 由调用方/容器决定      | `family:layout-primitives` | 稳定      | 浏览器校验字符串       |
+| 隐式行高       | 数字；缺失                          | 为行跨所使用到的隐式行设置像素高度。          | 每个 Grid                                 | 浏览器 `auto`          | `component:Grid`           | 稳定      | 浏览器校验结果 CSS     |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                    | Basis                                                           |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| FR1 | A positive numeric `columns={N}` creates exactly N `1fr` tracks at every width and never reflows; minimum content may widen one track and overflow a narrow container. Omitted, zero, or negative `columns` gives one `1fr` track.                                           | DEC-1; released docs, source, and tests                         |
-| FR2 | Object-form columns use auto-fill by default or auto-fit for `repeat: 'fit'`; `minWidth` is the track floor, while a positive `max` caps the count and lets a lone track shrink to the container.                                                                            | Released docs, source, and tests                                |
-| FR3 | `rowGap` overrides `gap` only for rows, and `columnGap` overrides `gap` only for columns; the effective column gap participates in capped-track math. `rowHeight` sets the implicit row height in pixels.                                                                    | `family:layout-primitives/FR4`; source and tests                |
-| FR4 | The track template is a class-level declaration, so caller `xstyle` and class rules, including media rules, can replace it. Caller `style` wins other inline declarations, and explicit `width`, `height`, `maxWidth`, and `minHeight` props override matching `style` keys. | `architecture:public-component-api/INV5–INV8`; source and tests |
-| FR5 | `align` and `justify` set `align-items` and `justify-items` to `start`, `center`, `end`, or `stretch`; unset leaves the browser default (`normal`, which stretches items without a natural size or aspect ratio).                                                            | Source and tests                                                |
-| FR6 | `ref`, DOM, data, ARIA, and event props, `xstyle`, class name, and inline style reach or compose on the root without replacing the `grid` target or its reflected `columns` (numeric form only), `gap`, `align`, and `justify`.                                              | `architecture:public-component-api/INV5–INV8`; source and tests |
-| FR7 | Grid preserves caller DOM order and uses the document's logical inline direction; it creates no separate keyboard order.                                                                                                                                                     | Platform layout behavior                                        |
+| ID  | Invariant                                                                                                                                                                                                      | Basis                                                     |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| FR1 | 正数 `columns={N}` 在任何宽度下都创建恰好 N 条 `1fr` 轨道，且永不重排；最小内容可能撑宽某条轨道并让窄容器溢出。省略、为零或为负的 `columns` 给出一条 `1fr` 轨道。                                              | DEC-1；已发布文档、源码与测试                             |
+| FR2 | 对象形式的 columns 默认使用 auto-fill，`repeat: 'fit'` 时使用 auto-fit；`minWidth` 是轨道下限，而正数 `max` 限制数量并让单条轨道可收缩至容器。                                                                 | 已发布文档、源码与测试                                    |
+| FR3 | `rowGap` 仅对行覆盖 `gap`，`columnGap` 仅对列覆盖 `gap`；实际生效的列间距参与有上限的轨道计算。`rowHeight` 以像素设置隐式行高。                                                                                | `family:layout-primitives/FR4`；源码与测试                |
+| FR4 | 轨道模板是类级声明，因此调用方的 `xstyle` 与类规则（包括媒体规则）可以替换它。调用方的 `style` 在其他内联声明上胜出，而显式的 `width`、`height`、`maxWidth` 与 `minHeight` props 会覆盖与之匹配的 `style` 键。 | `architecture:public-component-api/INV5–INV8`；源码与测试 |
+| FR5 | `align` 与 `justify` 把 `align-items` 与 `justify-items` 设为 `start`、`center`、`end` 或 `stretch`；未设置则保留浏览器默认值（`normal`，它会拉伸没有自然尺寸或宽高比的子项）。                                | 源码与测试                                                |
+| FR6 | `ref`、DOM、data、ARIA 与事件 props、`xstyle`、类名以及内联样式，都会到达或组合到根节点上，且不替换 `grid` 目标或其反射的 `columns`（仅数字形式）、`gap`、`align` 与 `justify`。                               | `architecture:public-component-api/INV5–INV8`；源码与测试 |
+| FR7 | Grid 保留调用方的 DOM 顺序并使用文档的逻辑行内方向；它不创建单独的键盘顺序。                                                                                                                                   | 平台布局行为                                              |
 
 ### Allowed variation
 
-- **AV1 — Caller content.** Any caller-owned element may participate directly or inside GridSpan; Grid does not inspect or rewrite it.
-- **AV2 — Track count.** Container width, minimum content, gaps, and object-form options may change the rendered responsive count within FR1–FR3.
-- **AV3 — Root styling.** Caller styles may replace track templates or box presentation while preserving the component-owned target and metadata.
+- **AV1 — 调用方内容。** 任何调用方拥有的元素都可以直接参与，或在 GridSpan 内参与；Grid 不会检查或重写它。
+- **AV2 — 轨道数量。** 容器宽度、最小内容、间距与对象形式选项，可以在 FR1–FR3 范围内改变渲染出的响应式数量。
+- **AV3 — 根样式。** 调用方样式可以替换轨道模板或盒子呈现，同时保留组件自有的目标与元数据。
 
 ### Representative states
 
-| State              | Required invariant                                                       | Allowed variation                                     |
-| ------------------ | ------------------------------------------------------------------------ | ----------------------------------------------------- |
-| fixed Grid         | Exactly N explicit `1fr` tracks; no component-owned reflow.              | N, content minimums, gaps, and caller styling.        |
-| responsive fill    | Empty tracks remain allocated while count responds to available width.   | Minimum width, cap, content count, and effective gap. |
-| responsive fit     | Empty tracks collapse and present items stretch.                         | Minimum width, cap, content count, and effective gap. |
-| capped narrow Grid | Count drops and one present track can fill a container below `minWidth`. | Container width and caller content.                   |
-| direct item        | Caller content participates without a Grid-owned wrapper.                | Any caller-owned element and semantics.               |
+| State           | Required invariant                                           | Allowed variation                    |
+| --------------- | ------------------------------------------------------------ | ------------------------------------ |
+| 固定 Grid       | 恰好 N 条显式 `1fr` 轨道；无组件自有重排。                   | N、内容最小值、间距与调用方样式。    |
+| 响应式 fill     | 空轨道保持分配，而数量随可用宽度响应。                       | 最小宽度、上限、内容数量与实际间距。 |
+| 响应式 fit      | 空轨道折叠，存在的子项拉伸。                                 | 最小宽度、上限、内容数量与实际间距。 |
+| 有上限的窄 Grid | 数量下降，且一条存在的轨道可在低于 `minWidth` 的容器中填充。 | 容器宽度与调用方内容。               |
+| 直接子项        | 调用方内容在没有 Grid 自有包装器的情况下参与。               | 任何调用方拥有的元素与语义。         |
 
 ### Transformation and precedence order
 
-- **ORD1 — Track shape.** Responsive object with positive `max` → capped fill/fit template; responsive object without positive `max` → uncapped fill/fit template; positive number → fixed `repeat(N, 1fr)`; otherwise → one `1fr` track.
-- **ORD2 — Gap.** Axis gap → uniform gap → no gap term in capped-track arithmetic.
-- **ORD3 — Root composition.** Caller props apply first; the component-owned target, reflection, and StyleX compose next; `xstyle`, class name, and caller inline style keep their styling precedence; sizing props win over matching inline keys.
+- **ORD1 — 轨道形态。** 带正数 `max` 的响应式对象 → 有上限的 fill/fit 模板；不带正数 `max` 的响应式对象 → 无上限的 fill/fit 模板；正数 → 固定 `repeat(N, 1fr)`；其他 → 一条 `1fr` 轨道。
+- **ORD2 — 间距。** 轴向间距 → 统一间距 → 有上限的轨道计算中无间距项。
+- **ORD3 — 根组合。** 调用方 props 先应用；组件自有的目标、反射与 StyleX 随后组合；`xstyle`、类名与调用方内联样式保持其样式优先级；尺寸 props 胜过匹配的内联键。
 
 ### Performance and resources
 
-- **PR1 — CSS-owned layout.** Grid owns no state, effect, observer, listener, timer, or JavaScript measurement; layout and reflow are CSS-owned.
+- **PR1 — CSS 自有的布局。** Grid 不拥有任何状态、effect、观察器、监听器、定时器或 JavaScript 测量；布局与重排由 CSS 自有。
 
 ## Accessibility contract
 
-- **AR1 — Layout remains nonsemantic.** Grid renders a `<div>` without grid, list, group, or landmark semantics of its own; callers provide semantics when their composition needs them.
-- **AR2 — Order remains perceivable.** DOM order remains the reading and keyboard order in LTR and RTL; visual tracks do not create a second sequence.
+- **AR1 — 布局保持无语义。** Grid 渲染一个 `<div>`，自身不带 grid、列表、分组或地标语义；当组合需要语义时由调用方提供。
+- **AR2 — 顺序保持可感知。** 在 LTR 与 RTL 下，DOM 顺序始终是阅读顺序与键盘顺序；视觉轨道不会创建第二个序列。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                      | Representation authority | Hierarchy role | Component contract |
-| ---------------- | ------------------------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Grid container   | Two-dimensional tracks for caller items; geometry only. | Current source and docs  | Supporting     | FR1–FR6            |
-| Spanning item    | An optional wrapper documented beside Grid.             | `component:GridSpan`     | Supporting     | —                  |
+| Anatomy or state | Design requirement                 | Representation authority | Hierarchy role | Component contract |
+| ---------------- | ---------------------------------- | ------------------------ | -------------- | ------------------ |
+| Grid 容器        | 为调用方子项提供二维轨道；仅几何。 | 当前源码与文档           | 支撑           | FR1–FR6            |
+| 跨项             | 在 Grid 旁记录的可选包装器。       | `component:GridSpan`     | 支撑           | —                  |
 
-Theming: the root is the `grid` target, reflecting `align`, numeric `columns`,
-`gap`, and `justify`. `Grid.doc.mjs` documents the Spanning item part and its
-`grid-span` target, so the map below lists both; `component:GridSpan` owns the
-wrapper's behavior.
+主题化：根节点是 `grid` 目标，它反射 `align`、数字 `columns`、`gap` 与 `justify`。`Grid.doc.mjs` 记录了 Spanning item 部件及其 `grid-span` 目标，因此下面的映射同时列出两者；`component:GridSpan` 拥有包装器的行为。
 
 ### Theming anatomy
 
@@ -157,39 +153,39 @@ wrapper's behavior.
 
 ## Family and system relationships
 
-- `family:layout-primitives` owns shared spacing, sizing, alignment, and item-participation vocabulary; Grid owns the two-dimensional realization, and `component:GridSpan` the participation modifier.
-- `architecture:public-component-api` owns root prop, styling, event, ref, and released-type composition.
-- `architecture:component-theming-surface` sets the rules the `grid` target and its reflected axes follow.
-- `architecture:component-test-sufficiency` owns bounded, mutation-sensitive evidence selection.
+- `family:layout-primitives` 拥有共享的间距、尺寸、对齐与子项参与词汇；Grid 拥有二维实现，`component:GridSpan` 拥有参与修饰符。
+- `architecture:public-component-api` 拥有根 prop、样式、事件、ref 与已发布类型的组合。
+- `architecture:component-theming-surface` 设定 `grid` 目标及其反射轴所遵循的规则。
+- `architecture:component-test-sufficiency` 拥有有边界的、对变异敏感的证据选择。
 
 ## Verification map
 
-| Contract            | Verification                                                                                                      | Representative states                                                         | Mutation or failure expectation                                                                                                                                                                                                                                                                                         | Audit section         |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| FR1–FR3, ORD1, ORD2 | `Grid.test.tsx` track-template, row-height, and capped-gap tests; `Grid.stories.tsx` AuditMatrix play guard       | Fixed; zero and negative; fill; fit; capped with and without gaps; row height | A changed track template (count, fill or fit, floor, cap, or the gap in the cap) or row height fails exact assertions; a grid that overflows its host fails the play guard. Gap: the gap and axis-gap tests assert only that the grid renders, so `rowGap` and `columnGap` overriding `gap` on their axis has no check. | `audit:Grid/behavior` |
-| FR4, FR6, ORD3      | `Grid.test.tsx` raw-inline-template, sizing, ref, passthrough, and owned-metadata tests; `themingTargets.test.ts` | DOM, data, ARIA, events; class, style, xstyle; reflected axes                 | A dropped `aria-label`, replaced owned metadata, a raw inline track, or a wrong width or height fails. Gap: the ref test accepts any element, and the `xstyle`, `className`, `style` merge order and size props winning over `style` have no check.                                                                     | `audit:Grid/api`      |
-| FR5                 | `Grid.test.tsx` alignment and owned-metadata tests                                                                | `align` and `justify`                                                         | A lost `data-align` or `data-justify` reflection fails. Gap: the alignment test asserts only that the grid renders, so the `align-items` and `justify-items` values have no check.                                                                                                                                      | `audit:Grid/behavior` |
-| FR7, AR1, AR2       | `Grid.stories.tsx` AuditMatrix play guard in LTR and RTL                                                          | Fixed tracks in both directions                                               | Items that do not run start to end in the document direction fail the play guard. Gap: no automated check asserts that Grid adds no role or keeps DOM order.                                                                                                                                                            | `audit:Grid/a11y-rtl` |
-| PR1                 | `serverSafeComponents.test.ts`; source review                                                                     | Every state                                                                   | A client API (state, an effect) added without a client directive fails `serverSafeComponents.test.ts`. Gap: a client API added together with a client directive passes, and no automated check fails if Grid adds layout measurement.                                                                                   | `audit:Grid/behavior` |
-| Theming anatomy map | `scripts/check-knowledge.mjs`                                                                                     | Consumer anatomy and current targets                                          | Missing, extra, or stale mappings fail repository validation.                                                                                                                                                                                                                                                           | `audit:Grid/theming`  |
-| RTL relation        | RTL audit curated D2 target (`apps/storybook/rtl-audit/targets.json`) on `Grid / With grid span`                  | Spanning and single-track items; LTR and RTL                                  | A first grid item that is not at the inline start of the next fails D2.                                                                                                                                                                                                                                                 | `audit:Grid/i18n-rtl` |
+| Contract            | Verification                                                                                       | Representative states                                | Mutation or failure expectation                                                                                                                                                                                                             | Audit section         |
+| ------------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| FR1–FR3, ORD1, ORD2 | `Grid.test.tsx` 的轨道模板、行高与有上限间距测试；`Grid.stories.tsx` AuditMatrix play guard        | 固定；零与负数；fill；fit；有上限且带/不带间距；行高 | 轨道模板发生变化（数量、fill 或 fit、下限、上限，或上限中的间距）或行高变化，会使精确断言失败；网格溢出其宿主会使 play guard 失败。缺口：间距与轴向间距测试只断言网格会渲染，因此 `rowGap` 与 `columnGap` 在其轴上覆盖 `gap` 没有任何检查。 | `audit:Grid/behavior` |
+| FR4, FR6, ORD3      | `Grid.test.tsx` 的原始内联模板、尺寸、ref、透传与自有元数据测试；`themingTargets.test.ts`          | DOM、data、ARIA、事件；类、样式、xstyle；反射轴      | 丢失 `aria-label`、替换自有元数据、原始内联轨道，或宽度/高度错误，都会失败。缺口：ref 测试接受任何元素，而 `xstyle`、`className`、`style` 的合并顺序以及尺寸 props 胜过 `style` 没有检查。                                                  | `audit:Grid/api`      |
+| FR5                 | `Grid.test.tsx` 的对齐与自有元数据测试                                                             | `align` 与 `justify`                                 | 丢失 `data-align` 或 `data-justify` 反射会失败。缺口：对齐测试只断言网格会渲染，因此 `align-items` 与 `justify-items` 的取值没有检查。                                                                                                      | `audit:Grid/behavior` |
+| FR7, AR1, AR2       | `Grid.stories.tsx` AuditMatrix play guard，LTR 与 RTL                                              | 两个方向下的固定轨道                                 | 不在文档方向上从头到尾排列的子项会使 play guard 失败。缺口：没有自动化检查断言 Grid 不添加 role 或保持 DOM 顺序。                                                                                                                           | `audit:Grid/a11y-rtl` |
+| PR1                 | `serverSafeComponents.test.ts`；源码审查                                                           | 每个状态                                             | 在没有 client 指令的情况下添加客户端 API（状态、effect）会使 `serverSafeComponents.test.ts` 失败。缺口：与 client 指令一同添加的客户端 API 会通过，且 Grid 若添加布局测量，没有自动化检查会失败。                                           | `audit:Grid/behavior` |
+| Theming anatomy map | `scripts/check-knowledge.mjs`                                                                      | 使用方解剖与当前目标                                 | 缺失、多余或过时的映射会使仓库校验失败。                                                                                                                                                                                                    | `audit:Grid/theming`  |
+| RTL relation        | RTL 审计精选的 D2 目标（`apps/storybook/rtl-audit/targets.json`），位于 `Grid / With grid span` 上 | 跨项与单轨道子项；LTR 与 RTL                         | 若第一个网格子项没有位于下一项的行内起点，则 D2 失败。                                                                                                                                                                                      | `audit:Grid/i18n-rtl` |
 
 ## Decision log
 
 ### DEC-1 — Numeric `columns` stays fixed; reflow uses the existing object form
 
-**Reference:** `component:Grid/DEC-1`
-**Decider:** `cixzhang`, `2026-10-11`
+**引用：** `component:Grid/DEC-1`
 
-`columns={N}` means exactly N `1fr` tracks at every width, and a grid that reflows on small screens uses `{minWidth, max?, repeat?}`. The number is the fixed contract; the object form is the responsive contract.
+**决策者：** `cixzhang`，`2026-10-11`
 
-Rejected: redefining the number as "at most N" would break released numeric grids; a `{count, isFixed}` shape would duplicate the number and the `max` cap.
+`columns={N}` 表示在任何宽度下都恰好 N 条 `1fr` 轨道，而需要在小屏幕上重排的网格使用 `{minWidth, max?, repeat?}`。数字是固定契约；对象形式是响应式契约。
+
+已否决：把数字重新定义为“至多 N”会破坏已发布的数字网格；`{count, isFixed}` 形状会与数字和 `max` 上限重复。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不复制使用方 prop 表/示例、当前审计结果、实现步骤或 family/system 规则。它链接到它们的所有者。

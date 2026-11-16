@@ -119,1457 +119,513 @@ affects_consumer_docs: [release-process, templates]
 
 ## Intent
 
-Give contributors, reviewers, and release owners one durable contract for evolving
-published Astryx surfaces. Classify every change from the installed consumer it
-affects, isolate experimentation from stable behavior, stage deprecations and
-behavior corrections explicitly, and make a planned minor traceable to one locked
-final-patch baseline.
+为贡献者、审查者和发布负责人提供一份持久的契约，用于演进已发布的 Astryx 表面。从受影响的已安装使用方出发对每一项改动进行分类，把实验与稳定行为隔离开来，显式地分阶段推进废弃与行为修正，并让一次计划中的次版本可追溯到一个锁定的最终补丁基线。
 
-A valid consumer of the latest stable release is the compatibility test. The label is
-not a risk or severity score: a small rename can be incompatible, while a large
-rewrite can remain compatible when released usage is preserved. A real bug can also
-be incompatible when consumers validly rely on its released behavior; that case is a
-`[breaking]` change that names the authority the released behavior violated and lands
-in a declared minor (FR31–FR34).
+最新稳定版本的一个有效使用方就是兼容性检验。该标签不是风险或严重程度评分：一次小的重命名可能不兼容，而一次大改写只要保留了已发布的使用方式，也可以保持兼容。当使用方正当地依赖某个真实缺陷的已发布行为时，该缺陷也可以是不兼容的；这种情况属于 `[breaking]` 改动，它要指明被已发布行为违反的权威，并落在已声明的次版本中（FR31–FR34）。
 
-Components take their compatibility rules from this spec. Every other published
-surface, such as the CLI, takes its compatibility contract from its own current record
-(FR54). Every surface goes through the one release process this spec defines.
+组件从本规格获取其兼容性规则。其他每个已发布的表面，例如 CLI，从自身当前的记录获取其兼容性契约（FR54）。每个表面都经过本规格定义的同一条发布流程。
 
-For CLI controls, keep every supported behavior discoverable and put each control on
-the narrowest surface that owns it. Global controls require evidence that their value
-and meaning are global. Cross-cutting guarantees must be complete, observable, and
-independent for each invocation.
+对于 CLI 控制项，让每个受支持的行为都可被发现，并把每个控制项放在拥有它的最窄表面上。全局控制项需要证据表明其取值与含义都是全局的。横切保证必须完整、可观测，并且对每次调用都独立。
 
-Admission is part of that contract. Main declares the next planned version, and a
-release branch releases exactly that version. Incompatible work ships only in a
-release whose declared version is a minor. A release does not change shape because
-one removal merged ahead of the decision to allow it.
+准入是该契约的一部分。Main 分支声明下一个计划版本，发布分支只发布该版本。不兼容的工作只在声明版本为次版本的发布中交付。一次发布不会因为某一项移除在获准决定之前就已合并而改变形态。
 
 ## Non-goals
 
-- Freezing implementation details or every byte of generated example code.
-- Defining component or template naming conventions.
-- Treating private packages, canaries, unreleased work, or explicitly marked
-  experimental surfaces as stable public API.
-- Replacing the public Release Process, Changesets, migration tooling, or direct
-  component and feature authorities. This spec owns the lifecycle and evidence those
-  mechanisms implement; it does not duplicate their operational or product rules.
+- 冻结实现细节，或冻结生成的示例代码的每一个字节。
+- 定义组件或模板的命名约定。
+- 将私有包、金丝雀发布、未发布的工作或显式标记为实验性的表面视为稳定的公共 API。
+- 取代公开的发布流程、Changesets、迁移工具，或组件与特性的直接权威。本规格拥有这些机制所实现的生命周期与证据；它不重复其运营规则或产品规则。
 
 ## Requirements
 
-- **FR1 — Breaking changes require caller adaptation.** A change is breaking only
-  when a valid consumer scenario supported by the latest stable release of a
-  published package must change source or configuration to keep its code,
-  interaction, data, semantic output, or supported workflow working, or loses a
-  stable public surface. FR3's numeric-stepper presentation adaptation is not
-  a stable-surface loss when every condition in that rule holds. The review
-  names the consumer scenario and the released surface it uses. For a surface
-  other than a component, FR54 decides which scenarios are valid and supported.
-- **FR2 — Classify against the latest stable release.** A surface added and then
-  renamed, removed, or reworked before any stable release has no installed
-  consumer and is not breaking. Private or ignored packages are outside the
-  published compatibility promise. Promotion from a private package into a
-  published package is additive from the published side.
-- **FR3 — Released contracts include function and semantics, not exact appearance.**
-  Compatibility covers public exports and import paths; requiredness, accepted values,
-  defaults, return types, callbacks, and error behavior; documented interaction and
-  accessibility behavior; stable CLI command names, options, exit behavior, and
-  machine-readable schemas; and other explicitly documented public extension points.
-  Internal implementation, undocumented markup, source layout, and exact appearance are
-  not stable merely because a consumer can observe them. A change only to existing
-  content's appearance, spacing, typography, layout styling, or visual default is
-  nonbreaking when public API, accepted inputs, interaction, accessibility semantics,
-  data, and machine-readable output keep working. It uses `[fix]` when it restores
-  current visual authority and `[feat]` when it intentionally changes visual direction.
-  Its Changeset names the old and new appearance and how to keep the old look when a
-  supported escape exists. A default that changes a functional or semantic contract is
-  judged under FR1 instead. Its Changeset names the old and new default and the prop or
-  option that restores the old default, which is the migration. When the new default is
-  a touch presentation or an open-surface touch input mode
-  (`architecture:public-component-api` INV16), that restoring input is the component's `presentation` value that keeps its previous
-  surface and input mode. A change to documented
-  interaction or accessibility behavior made for accessibility conformance is
-  classified under FR53.
+- **FR1 — 破坏性改动要求调用方适配。** 一项改动只有在以下情况下才是破坏性的：某个已发布包的最新稳定版本所支持的有效使用方场景，必须改动源码或配置才能让其代码、交互、数据、语义输出或受支持的工作流继续工作，或者丢失了一个稳定的公共表面。当该规则中的每个条件都成立时，FR3 的数字步进器呈现适配不属于稳定表面的丢失。审查要指明该使用方场景及其使用的已发布表面。对于组件之外的表面，由 FR54 决定哪些场景有效且受支持。
+- **FR2 — 对照最新稳定版本进行分类。** 一个表面若在任一次稳定发布之前被新增后又重命名、移除或重做，则没有已安装的使用方，因而并不构成破坏性改动。私有包或被忽略的包不在已发布兼容性承诺之内。从私有包提升为已发布包，从已发布一侧看是增量的。
+- **FR3 — 已发布的契约包含功能与语义，而非精确外观。** 兼容性涵盖公共导出与导入路径；必填性、可接受取值、默认值、返回类型、回调与错误行为；有文档记录的交互与无障碍行为；稳定的 CLI 命令名、选项、退出行为与机器可读 schema；以及其他显式记录在文档中的公共扩展点。内部实现、未记录的标记、源码布局与精确外观，不会仅因为使用方能观察到它们就是稳定的。仅针对既有内容的外观、间距、字体排印、布局样式或视觉默认值的改动，当公共 API、可接受输入、交互、无障碍语义、数据与机器可读输出都照常工作时，是非破坏性的。当它恢复当前视觉权威时使用 `[fix]`，当它有意改变视觉方向时使用 `[feat]`。其 Changeset 要说明旧外观与新外观，以及在存在受支持逃生口时如何保留旧外观。改变功能或语义契约的默认值则改按 FR1 判定。其 Changeset 要说明旧默认值与新默认值，以及恢复旧默认值的 prop 或选项，那就是迁移。当新默认值是触摸呈现或开放表面触摸输入模式（`architecture:public-component-api` INV16）时，该恢复输入就是组件保持其先前表面与输入模式的 `presentation` 取值。为无障碍一致性而对有文档记录的交互或无障碍行为所做的改动，按 FR53 分类。
 
-  Numeric-entry fields MAY hide compact, component-owned auxiliary increment
-  and decrement buttons on coarse primary pointers as a nonbreaking
-  presentation adaptation, even when those buttons are documented and leave
-  the accessibility tree. This narrow rule applies only while existing public
-  props, types, exports, accepted values, validation, submitted values, and
-  numeric callbacks remain unchanged; direct numeric entry remains accessible
-  on the coarse-pointer device; and the field's role, accessible name, value
-  semantics, focusability, and keyboard stepping remain supported. Callers
-  MUST need no source or configuration migration. Non-coarse-pointer steppers
-  remain available, and the component record MUST state the pointer-conditioned
-  availability and verify the preserved entry and stepping contracts. Such an
-  intentional adaptation uses a patch `[feat]` Changeset that describes the
-  buttons' changed availability; it requires no opt-out or deprecation path.
-  This rule does not cover removing a public prop or export, removing an action
-  other than auxiliary numeric stepping, or losing an accessible numeric-entry
-  path. Those changes remain subject to FR1.
+  数值输入字段可以在粗粒度主指针上隐藏紧凑的、组件自有的辅助递增与递减按钮，作为一种非破坏性的呈现适配，即使这些按钮已记录在文档中并会离开无障碍树。这条窄规则仅在以下条件保持时适用：现有公共 props、类型、导出、可接受取值、校验、提交值与数值回调保持不变；在粗指针设备上仍可进行直接数值输入；并且该字段的角色、无障碍名称、取值语义、可聚焦性与键盘步进仍受支持。调用方绝不需要源码或配置迁移。非粗指针步进器仍然可用，且组件记录必须说明该按指针条件生效的可用性，并验证被保留的输入与步进契约。此类有意的适配使用一个补丁级 `[feat]` Changeset，描述按钮可用性的变化；它不需要退出开关或废弃路径。本规则不涵盖移除公共 prop 或导出、移除辅助数值步进以外的某个操作，或丢失可访问的数值输入路径。那些改动仍受 FR1 约束。
 
-- **FR4 — Preserved old usage is nonbreaking.** A rename or replacement is
-  nonbreaking when the old released call, import, option, identifier, or input
-  continues to work with equivalent meaning through a compatibility alias or
-  adapter. A deprecation may warn and point to the replacement, but removing that
-  compatibility path is the breaking event.
-- **FR5 — Additive and victim-free contract restorations are nonbreaking.** New
-  optional capabilities, new components, new commands, broader accepted inputs, and
-  new templates are nonbreaking when old usage is unchanged. A fix that restores an
-  already-documented contract is nonbreaking only when no valid consumer of the
-  released faulty behavior must change. When a supported consumer relies on that
-  behavior and the correction breaks the consumer, FR32–FR35 classify it as an
-  incompatible fix even though the implementation violated authority. A proposal
-  that intentionally replaces the documented contract is not a fix, except an
-  accessibility behavior fix under FR53.
-- **FR6 — Risk does not override compatibility.** Low adoption, low likelihood,
-  engineering approval, or confidence that affected callers are uncommon does not
-  make an incompatible released contract nonbreaking. Conversely, implementation
-  size, visual scope, or review difficulty does not make a compatible change
-  breaking.
-- **FR7 — Changeset tags and lifecycle metadata are orthogonal.** Existing primary
-  tags remain the authoring vocabulary: corrections use `[fix]`, compatible
-  capabilities and replacement-first staging use `[feat]` or the established narrower
-  tag, approved removals use `[breaking]`, and confined experiments use
-  `[experimental]`. The tag and the Changeset body are the whole declaration: a
-  victim-free correction is `[fix]` with a patch bump; a replacement-first
-  deprecation is `[feat]` that names the replacement and the migration and stays
-  patch-compatible while old usage works; a removal or a behavior-correcting
-  incompatibility is `[breaking]` and states the old valid usage, the replacement or
-  corrected behavior, and the migration (FR8). Lifecycle ids (`DEP-*`, `IFIX-*`,
-  `CLN-*`) and classification metadata are optional descriptive cross-references,
-  never a requirement to merge. While Astryx packages remain on `0.x`, the
-  incompatible tier is minor; compatible work is patch. A Changeset's bump states the
-  tier its change requires; it never sets the release version, which is the version
-  main declares under FR46.
-  Documentation-only, test-only, and private-package-only changes need no Changeset.
-  Translation-catalog updates and newly added languages need no Changeset, nor
-  English-catalog description or formatting edits that preserve every message key
-  and default message. This exemption never covers removal of a released locale
-  import path, which follows FR3–FR4 and FR31.
-  Existing Changesets keep their current tag and validated bump semantics and MUST NOT
-  be mass-migrated. `pnpm changeset:new` remains the authoring path, and
-  `pnpm check:changesets` validates tag, bump, contributors, and the declared tier;
-  the migration text is reviewed under FR8. Classify each published package update in
-  multi-package work. A fixed-group version-only co-bump needs no Changeset entry by
-  itself, but a generated dependency or peer-range edit is part of that package's
-  update and must be classified and named. When primary tags differ, use separate
-  Changesets so each package retains its own author-facing category.
-- **FR8 — Migration evidence matches the affected surface.** Every planned removal
-  and incompatible fix names the old valid usage, the replacement or corrected
-  behavior, and how consumers migrate. Supply an `astryx upgrade` codemod when
-  consumer source, configuration, metadata, or project files can be rewritten
-  mechanically. When no rewrite is possible, preserve an explicit compatibility
-  adapter or provide concrete replacement instructions and record why a codemod would
-  be vacuous. Codemods follow `spec:AST-040` and include positive, negative, and
-  second-run idempotence fixtures plus downstream proof.
-- **FR9 — Template slugs are mutable catalog data.** A template slug identifies an
-  entry in the current template catalog; it is data about that template, not a
-  contractual CLI API. Renaming a slug is nonbreaking even when
-  `astryx template <old-slug>` no longer resolves. The Changeset and release note
-  describe the catalog rename so builders can find the new value, but the rename
-  does not use the `[breaking]` category or require an alias or codemod.
-- **FR10 — Template content and metadata are expected to evolve.** Adding a
-  template, rebuilding its starter source, or changing its slug, human-facing
-  name, description, category, keywords, or example data is nonbreaking while the
-  CLI's stable command and machine-readable schema contracts remain compatible.
-  Generated starter code is not promised byte-for-byte stability across releases,
-  and existing projects are not rewritten when a template improves.
-- **FR11 — The CLI contract surrounds the catalog.** The `template` command name,
-  supported options, exit behavior, and machine-readable response schema are
-  contractual surfaces under FR3. Individual catalog values returned through that
-  schema, including template slugs, names, descriptions, categories, keywords, and
-  starter content, are not independently stable API identifiers.
-- **FR12 — Supported inter-package ranges are contracts.** For an update to a
-  published package, its latest stable release's documented installation scenarios
-  and declared dependency or peer ranges define the supported companion package
-  versions. The update is breaking for that package when upgrading it alone makes
-  any such combination stop working unchanged, including by narrowing or raising
-  the range. A coordinated upgrade that works does not change that classification.
-  A dependency bump is not breaking when every previously supported combination
-  keeps working. Keep every previously supported version in range and provide an
-  adapter when needed; otherwise classify the narrower or higher-floor range as
-  breaking, describe the range change in its Changeset release note, and meet FR8's
-  migration obligation.
-- **FR13 — Stable machine schemas project every field.** A stable CLI response
-  contract includes fields inside discriminated `data` entries as well as the
-  outer envelope. Every field is present in the canonical response type, contract
-  tests, text projection where the command provides one, and complete
-  consumer-facing schema documentation. Adding an optional field is nonbreaking
-  when old consumers continue unchanged, but it remains a public schema update and
-  does not bypass current-authority review or documentation.
-- **FR14 — No supported CLI behavior is hidden.** Any Astryx CLI behavior
-  available in a supported flow—including behavior selected automatically and
-  behavior selected by an Astryx-owned control—is a public surface and MUST be
-  documented and discoverable. Every caller-settable control that changes command
-  selection, work, output, side effects, or exit behavior is part of that surface,
-  whether spelled as a command, option, positional argument, package field, or
-  configuration key. The CLI MUST NOT define or read an Astryx-owned environment
-  variable for any purpose. A variable is Astryx-owned when Astryx defines its
-  semantics, regardless of its name or prefix; standard platform variables remain
-  outside this prohibition unless Astryx assigns them an Astryx-specific meaning.
-  Automation MUST use the documented programmatic API.
-  Public controls MUST define their accepted values, default, precedence and
-  interactions, error behavior, and a representative invocation. Commands and
-  options MUST appear in generated help and the machine-readable manifest.
-  Automatic behavior and other controls MUST either appear there or be linked from
-  those discovery surfaces to consumer documentation. A
-  normal invocation mode MUST have a documented command, option, or configuration
-  surface. Private test hooks and maintainer rollout gates MAY affect tests,
-  diagnostics, or staged availability without becoming public controls, but they MUST
-  NOT use environment variables, require action from supported consumers, or serve as
-  the sole interface to a supported mode. The user-facing behavior they gate remains
-  subject to this requirement once supported.
-- **FR15 — Global controls require CLI-wide value and semantics.** An option is
-  global when the root parser accepts it across commands or the manifest lists it in
-  `globalOptions`. A new behavior-changing option MAY be global only when it
-  represents one coherent CLI-wide invariant, solves a demonstrated
-  supported-consumer need that a narrower surface cannot solve, and has defined,
-  meaningful, non-no-op behavior for every executable command and subcommand. The proposal MUST enumerate those surfaces
-  from generated help and the machine-readable manifest and state the control's
-  behavior, output or error effect, and verification for each one. A command on
-  which the control has no meaningful effect is evidence that the proposed scope is too broad. A behavior that applies to only part of the
-  CLI MUST be placed on the nearest command, command group, or programmatic API that
-  owns it. The same name MUST keep the same meaning throughout that scope, and names
-  MUST describe the exact controlled capability rather than make broad claims such as
-  `safe`, `secure`, `trusted`, or `isolated`. A safety or trust control MUST also
-  define its trust boundary and fail closed before untrusted input can execute or
-  cause a side effect.
-- **FR16 — Cross-cutting guarantees define and close their boundary.** A claim that
-  prevents a class of execution, data access, or side effect MUST define the trusted
-  inputs, denied actions, and the points where protection begins and ends. It MUST
-  cover every current entry point and fail closed for an unknown or newly added
-  extension point.
-- **FR17 — Suppressed work is observable.** When a safety or reduced-capability
-  control intentionally omits a normally available source, capability, or unit of
-  work, every successful machine-readable result MUST identify the active mode and
-  what category was omitted. Human-readable output MUST project the same fact. A
-  partial or empty result MUST NOT look like an ordinary complete success. If the
-  operation cannot produce a useful conforming result, it MUST return a stable
-  structured error and, for the CLI, a nonzero exit code before any write or external
-  side effect.
-- **FR18 — Programmatic controls are explicit and invocation-scoped.** A
-  programmatic control MUST be an explicit API input and MUST NOT depend on ambient
-  mutable process state. Concurrent calls MUST be able to select different values
-  independently. When the CLI and programmatic API expose the same control, they MUST
-  share accepted values, defaults, precedence, observable behavior, and error
-  semantics.
-- **FR19 — Configuration is admitted only on evidence.** A new configuration key,
-  or a new accepted value that changes CLI behavior, MUST be justified by a
-  reproducible supported-consumer case in which automatic detection and
-  established project conventions produce the wrong result. The proposal MUST
-  record that case and the convention it tried first. When an established
-  convention or automatic detection can express the need, the CLI MUST use it
-  instead of adding configuration. Configuration MUST NOT duplicate a value the
-  CLI can derive.
-- **FR20 — Integration contributions compose predictably and visibly.** A
-  configuration setting MAY accept contributions from integrations only when its
-  entry in the public configuration contract (the exported `AstryxConfig` type
-  and the configuration schema reference consumers read through the CLI) states:
-  that integrations may contribute; the exact form of a contribution; how the app
-  value and all contributions combine, and in what order; the one documented
-  control through which an app refuses inherited contributions; and what happens
-  when a contribution fails. The setting owns that rule; an integration cannot
-  change it. An integration declares each contribution statically in its
-  integration module, either as a field of the exported `AstryxIntegration`
-  manifest type or as a documented named export, and the integration authoring
-  reference documents that form. Importing an integration module MUST NOT
-  contribute anything as a side effect. The CLI MUST let a caller inspect the
-  effective value of each such setting and the source of each part (the app or a
-  named integration) through a documented command or programmatic API. Unless a
-  setting's contract states and justifies otherwise: app and integration
-  contributions combine rather than replace one another; the app's own value
-  applies first, then integrations in their resolved order; a failing
-  contribution is skipped without removing the others or changing the command's
-  result; the app refuses all inherited contributions through one documented
-  control; and loading the project more than once in one invocation applies each
-  contribution once. No integration contribution can remove or weaken a value
-  supplied by the app or by another integration. When a setting protects the
-  project, a failed contribution MUST fail closed instead of being skipped.
-- **FR21 — Experimental APIs are explicit and opt-in before publication.** A
-  public surface inside a stable published package is outside the stable
-  compatibility promise only when its first stable release exposes it through a
-  canonical experimental boundary and marks it in both declarations and consumer
-  documentation. On an existing stable component, experimental props and callbacks
-  live inside one optional `experimental` prop object; omitting that object preserves
-  the component's stable defaults and behavior. A behavior or utility module without a public
-  contract, such as motion, gesture, or keyboard handling, stays internal: it is
-  never exported, as experimental or otherwise, except through Core's
-  `./internal/*` subpaths, which are reserved for Astryx's own packages,
-  undocumented, outside the compatibility promise, versioned in lockstep with
-  Core, and limited by lint to Core and Lab (`architecture:react-component-runtime` INV13); a swizzled copy of a Lab component also keeps importing a StyleX module Core exports there, since its identity is its path (`spec:AST-110` FR1). In Core, an experimental public
-  API's status is
-  visible at the call site where it is used, carried by the name the caller
-  writes, not only in docs, declarations, or a file path; a component's
-  `experimental` prop object meets this, and any other deliberately
-  experimental public API meets it with an `_experimental` name suffix, such
-  as `useDrag_experimental` (DEC-28). The CLI's
-  own records own its experimental marking (FR54). No file path or subpath, for a
-  component or a module, conveys experimental status by itself. Declarations
-  carry `@experimental`; authored docs carry machine-readable
-  `stability: 'experimental'` metadata and state that the surface may change or be
-  removed in a patch release. Prose-only warnings and reviewer knowledge do not
-  establish this boundary. Any public experimental API in Core also carries
-  its own specification decision.
-- **FR22 — Experimental changes are patch-level and stay confined.** Adding,
-  changing, renaming, or removing an explicitly experimental surface uses an
-  `[experimental]` Changeset and a patch bump. An incompatibility confined to that
-  boundary is `[experimental]`, not `[breaking]`; the Changeset authoring and
-  validation process MUST derive and enforce a patch bump for the category even when
-  the experimental surface changes incompatibly. Its release note names the affected
-  surface and replacement when one exists. A compatibility alias is optional; a
-  codemod is supplied when a mechanical migration would materially reduce caller
-  work. This exception never covers a change to stable defaults, stable runtime or
-  accessibility behavior, ordinary import paths, non-experimental props, or stable
-  CLI commands and machine schemas; those changes follow FR1–FR8. A released stable
-  surface cannot be retroactively demoted to experimental.
-- **FR23 — Promotion creates a stable contract deliberately.** Promotion is an
-  owner-approved change that removes the experimental marker, exposes the settled
-  prop, callback, hook, function, or type on its normal stable surface, and uses a
-  `[feat]` Changeset. From that release forward, FR1–FR8 protect the promoted surface.
-  Moving a component API out of the `experimental` prop object or removing an
-  export's experimental marking names the stable replacement and
-  supplies a codemod when the rewrite is mechanical. Keeping a deprecated
-  experimental alias for a transition is encouraged but is not itself part of the
-  new stable promise.
-- **FR24 — Experimental status is verified per public surface.** Release review
-  compares the previous published surface with current declarations and authored
-  docs, verifies that their experimental markers agree, and rejects an
-  `[experimental]` Changeset when any incompatible delta reaches a stable surface.
-  Integration-theme contribution capability remains the one grandfathered surface;
-  no other released surface may be enrolled retroactively. Its contribution
-  metadata, discovery, and authoring contract may evolve in patch releases until an
-  explicit promotion removes the marker. This prohibition does not turn an
-  unpublished field or behavior into stable API merely because an adjacent feature
-  was released. Integration-template replacement-specific fields and behavior—its
-  `replaces` declaration, replacement selection, optional list projection, and
-  expanded conflict fields—remain pre-publication surfaces under FR2 until their first
-  stable release; that classification is not experimental enrollment. Previously
-  released same-id conflict warning behavior remains stable. The surrounding stable
-  CLI command names, options, exit behavior, and machine-readable envelope remain
-  protected under FR3 and FR13.
-- **FR25 — Stable Core and every published stable package default to compatibility.**
-  Outside a declared minor, changes to behavior, types, exports, CSS or tokens,
-  documented markup or selectors, accessibility semantics, persistence, CLI,
-  configuration, schemas, build tooling, contractual documentation operations, and
-  package files MUST be additive, implementation-equivalent, a nonbreaking default
-  change under FR3, a victim-free contract restoration under FR5, or an accessibility
-  behavior fix under FR53; a breaking change lands only in a declared minor (FR31). Documentation catalog names and routes
-  follow
-  FR45. An internal label, low adoption, or lack of a source-level API change does
-  not weaken this rule; Core's `./internal/*` subpaths are outside it (FR21).
-- **FR26 — Public lifecycle state is explicit.** Each public surface is
-  `experimental`, `stable`, `deprecated`, or `removed`; private and unreleased surfaces
-  remain outside the published lifecycle. Stable cannot become experimental. Deprecated
-  behavior remains supported until a `[breaking]` removal merges for a declared minor
-  (FR31).
-- **FR27 — Experimental isolation covers every surface kind.** Whole experimental
-  components remain in the private canary-only Lab package governed by the public
-  Component Lifecycle. FR21 continues to govern stable-component props and exports.
-  Experimental CLI controls use a dedicated experimental namespace; configuration
-  uses an experimental object; CSS and tokens use dedicated experimental exports and
-  names; persistence uses a feature- and schema-versioned experimental namespace;
-  build tooling uses experimental exports/configuration; and docs use marked
-  experimental routes. An omitted opt-in MUST leave stable defaults, output, routes,
-  data, and behavior unchanged. Promotion requires owner approval and a `[feat]`
-  Changeset; withdrawal uses `[experimental]` and MUST prove no stable spillover.
-  One named exception: stable theme help and docs, one theme line of the agent
-  docs block, one line of `init`'s next steps (beside, never instead of, its
-  existing steps), and one line in each of the `theme eject` and
-  `theme palette generate` results MAY point at the experimental theme editor
-  (`experimental theme editor`, `experimental theme preview`) as the way to make
-  and change a theme, phrased for theme work only and labeled experimental each
-  time; no other experimental surface may be named, and the
-  exception ends when the theme editor graduates or is removed.
-- **FR28 — A planned minor needs no prior deprecation; a patch does.** A change
-  landing in a declared minor needs no deprecation path: its `[breaking]` Changeset
-  describing the change, with the replacement and migration where they help the
-  reader, is enough. A deprecation path is required only when the next planned release
-  is a patch, because a compatible release can only prepare a break: the patch ships
-  the working replacement while old usage remains equivalent, with an exact migration
-  command or codemod when the rewrite is mechanical or ordered, testable instructions
-  when it is not, and the removal lands in a later minor. A public record MAY describe
-  a deprecation with a stable `DEP-*` id and its replacement, migration, and state; the
-  record describes and never gates.
-- **FR29 — Deprecation adds no production-runtime behavior.** Marking a surface
-  deprecated MUST NOT add a production runtime branch, log, byte, network action,
-  changed render, or changed output. Compatibility code needed to keep an already
-  released old contract working is separate from warning delivery and MUST preserve
-  that contract. A development-only runtime diagnostic is permitted only when runtime
-  information is necessary to explain an ambiguous coexistence state, such as both an
-  old and replacement prop being supplied; it explains the direct owner's precedence
-  rule and is not the primary deprecation channel.
-- **FR29a — Warnings live at the earliest accurate authoring surface.** TypeScript
-  declarations use static `@deprecated` metadata. Build-interpreted source and
-  configuration warn in the authoring, validation, or build reader that can name the
-  exact source use. CLI commands and options expose the replacement
-  in their machine result and emit at most one human-readable stderr warning per
-  invocation. CSS and tokens use static diagnostics. Rendered applications never emit
-  a warning merely because a deprecated surface is used. Warnings MUST NOT change a
-  successful exit status, canonical output, machine-readable stdout, generated output,
-  or rendered behavior.
-- **FR29b — Guidance teaches one modern path.** Every warning names the exact
-  replacement, stable versioned instructions, and exact migration command when one
-  exists. Maintained API docs, generated docs, templates, examples, stories,
-  starter output, and agent-facing guidance teach only the replacement. Explicit
-  reference remains available for the deprecated surface, visibly labeled with the
-  same replacement and modernization route. A warning MUST NOT ship before those
-  instructions and that route exist.
-- **FR29c — Modernization is safe and verifiable.** A mechanical migration is
-  previewable, idempotent, evidence-scoped, and complete under `spec:AST-040`; it
-  preserves the old observable result as its baseline and reports every uncertain or
-  blocked case. Non-mechanical migration gives short, ordered, testable instructions
-  rather than saying only to update manually. The direct owner names the applicable
-  source, type, build, runtime, visual, accessibility, and CLI proof. Maintained Astryx
-  packages and authoring surfaces migrate in the deprecation patch.
-- **FR29d — Each public surface projects the lifecycle without inventing another one.**
-  Whole components remain exported, renderable, accessible, themeable, and explicitly
-  discoverable, but leave recommendations and copyable examples; their exports and
-  docs carry the replacement and modernization route, with no render-time deprecation
-  warning. Deprecated props and values keep old-only behavior, declare deterministic
-  old-plus-new precedence, and statically name the replacement; codemods rewrite proven
-  static uses and report spreads or dynamic expressions they cannot prove. Theme API
-  fields, helpers, tokens, targets, and source keep identical normalization and rendered
-  output; declarations use `@deprecated`, and theme build or validation reports exact
-  source uses without `defineTheme`, theme mounting, or applications warning at
-  runtime. Deprecated CLI commands and options remain accepted with their released
-  exit status, canonical stdout, JSON envelope, and side effects; help and explicit
-  lookup label them, human mode warns once on stderr, machine mode carries the
-  deprecation metadata, and generated examples use the replacement. When old and new
-  CLI controls coexist, their direct command contract defines precedence or rejects
-  the ambiguous combination identically in text and JSON modes.
-- **FR30 — Deprecation minima come only from direct authority.** This global spec
-  imposes no elapsed-time or release-count minimum. The structural minimum is that the
-  final patch preserves old and new behavior together. A direct current spec MAY
-  require a duration or number of stable releases for its own surface and names it
-  there. Release cadence MUST NOT be
-  interpreted as a deprecation clock or eligibility gate.
-- **FR31 — No breaking change ships without a planned minor; the gate is the declared
-  version.** When `main` declares a minor (`x.y.0`), a `[breaking]` Changeset is
-  admitted and the change merges on ordinary review and CI. When `main` declares a
-  patch (`x.y.z`, `z > 0`), any `[breaking]` Changeset fails pull-request CI; what may
-  merge is the deprecation under FR28. `pnpm check:changesets` enforces this on every
-  pull request from the fixed group's declared version. Each incompatible delta maps to
-  exactly one `[breaking]` Changeset, which is the one place a reader finds the
-  description; maintained sources teach the replacement once the removal lands.
-  Lifecycle records and the release manifest describe removals; neither gates a merge.
-- **FR32 — A correction with a released victim is a breaking change.** When
-  pre-existing current authority proves released behavior wrong, unsafe, or
-  nonconforming AND a valid latest-stable consumer relies on that behavior such that
-  the correction breaks code, interaction, persisted data, output, or a supported
-  workflow, the correction is `[breaking]` and follows FR31 for the declared tier,
-  stating the corrected contract and the migration. A visible correction with no valid
-  released victim remains `[fix]` under FR5. An accessibility behavior fix is not a
-  breaking correction: FR53 classifies it. For a surface other than a component, the
-  surface's compatibility contract decides whether a caller is a released victim
-  (FR54).
-- **FR33 — A correction's authority and victim are named.** The `[breaking]`
-  Changeset or its pull request names the pre-existing authority the released behavior
-  violated, a latest-stable reproducer, and the migration. Without pre-existing
-  authority, the proposal is a new contract decision for the direct owner, not a fix.
-  For an accessibility behavior fix, the authority is the conformance target FR53
-  names, and the owner records any behavior decision the fix needs in the component's
-  record.
-- **FR34 — A correction follows the same tier rule.** In a declared minor a breaking
-  correction merges on its `[breaking]` Changeset. When `main` declares a patch, the
-  patch ships the corrected opt-in or adapter beside the old behavior (FR28) and the
-  later minor removes the old behavior. A breaking correction cannot enter a release
-  as an incidental compatible fix.
-- **FR35 — Emergency correction is narrow and never relabeled as a patch.** Only
-  urgent security, privacy, severe accessibility, or comparable critical ongoing
-  harm MAY bypass replacement-first coexistence or ordinary scheduling. Waiting must
-  materially extend the harm; no additive mitigation, containment, adapter, or safe
-  rollout may be available; the contract owner and relevant incident owner must
-  approve a dedicated record; public-safe incident evidence and restricted
-  attestation must justify urgency; exact-main quality and migration gates still run;
-  and the release contains no unrelated feature, cleanup, or incompatible fix.
-  Migration ships with the release; an incomplete emergency codemod records an owner,
-  bounded follow-up, fixtures, and delivery target. Rollback never restores known
-  harmful behavior: use containment or safe-forward correction.
-- **FR36 — Minor frequency is planning guidance, not eligibility.** Plan minors
-  generally no more often than once every fourteen calendar days. The plan records
-  the interval from the prior minor for owner review. CI reports the interval but
-  MUST NOT derive deprecation eligibility, a final-patch-to-minor wait, or an
-  exception requirement from it.
-- **FR37 — Every minor has an owner-named target and a manifest generated at the
-  cut.** The owner names the target version on `main` (FR46). The minor's breaking set
-  is the set of `[breaking]` Changesets merged for it. At the cut the release generates
-  its manifest from the consumed Changesets as authored (FR41) — the breaking ones are
-  the minor's migration inventory, the rest its compatible fixes — and freezes it with
-  the cut for release notes and audit. The manifest describes; it never gates a merge. The release fails closed on any incompatible delta between the final patch and
-  the minor that no merged `[breaking]` Changeset describes (FR39, FR43). Operational
-  runbooks may add execution detail but cannot authorize or widen the breaking set.
-- **FR38 — The final patch is the paired minor's locked baseline.** Publish the final
-  patch with deprecated behavior still working, record its
-  exact source and package/docsite/visual/contract receipts, then lock that baseline.
-  The paired minor MAY follow sequentially and immediately when ready and explicitly
-  authorized; no wait exists unless a direct authority requires one.
-- **FR39 — Every final-patch-to-minor delta has exactly one class.** The diff MUST
-  partition into: (a) removals or corrections each described by one merged
-  `[breaking]` Changeset; (b) a closed
-  list of version, changelog, lockfile-integrity, tag, provenance, digest,
-  build-timestamp, and source-map metadata; or (c) independently patch-compatible
-  fixes under FR40. Strict equivalence is the target. Unrelated features, additive
-  product capabilities, incompatible fixes outside approved corrective cleanup,
-  refactors with public deltas, and unclassified changes are prohibited.
-- **FR40 — Compatible fixes may be disclosed separately in the minor.** Each has its
-  own `[fix]` Changeset, current authority or standard, latest-stable regression test,
-  representative unchanged paths, and downstream proof, and is listed apart from the
-  breaking set in the release description. If the fix lands before final-patch lock,
-  include it in both
-  releases. If it lands after publication or lock, it MAY enter the minor as a
-  disclosed compatible delta; do not recut the final patch solely for bookkeeping.
-  CI MUST independently prove patch eligibility. Release notes separate cleanup from
-  compatible fixes.
-- **FR41 — Release artifacts use closed schemas and invent no fields.** The cut-time
-  manifest (FR37) freezes each consumed Changeset exactly as authored — path, content
-  digest, packages, category, headline, contributors, and body — and derives breaking
-  versus compatible from the category; editorial text is generated from the body, never
-  from parallel fields a human must backfill. It also carries the release-metadata
-  deltas and the baseline receipts. The equivalence receipt carries final and candidate
-  digests plus `unclassifiedDeltas`. Unknown fields and one delta mapped more or less
-  than once fail.
-- **FR42 — Contributors declare compatibility intent once.** The Changeset is the
-  declaration: its tag and body state whether the change is compatible, a deprecation
-  with its replacement and migration, or a `[breaking]` change with its migration.
-  No parallel classification vocabulary, id, or plan field is required. Existing
-  Changesets need no backfill. Contributors state intent; maintainers resolve missing
-  authority. External contributors are not required to invent policy.
-- **FR43 — CI validates semantics, not labels.** Pull-request CI compares latest
-  stable to head to establish released victims and base to head to attribute deltas.
-  Release CI compares final patch to paired minor and assigns every delta exactly once
-  to cleanup, release metadata, or compatible fix. It checks exports/types, runtime,
-  CSS/tokens, DOM/accessibility/visual/RTL, CLI/help/routes/schema, persistence, docs,
-  package files, supported package combinations, old-client/new-metadata behavior,
-  fixed-group membership, required evidence, and tag/classification/bump coupling.
-  Plain failures name the victim, missing evidence, and exact repair path.
-- **FR44 — Exact-main release gates and rollback preserve one identity.** The final
-  patch and paired minor each use one immutable source identity for build, package
-  artifacts, gate receipts, tag, publish, and release record. Missing authority,
-  manifest coverage, required migration, exact-main evidence, or any unclassified
-  delta aborts the cut. Partial publishing resumes the same bytes. A bad release rolls
-  forward with a compatible patch that restores aliases or the prior safe
-  compatibility mode; critical-harm recovery follows FR35 and never restores the
-  harmful behavior.
-- **FR45 — Documentation catalog display names and routes are mutable data.** A
-  display name or docs-tree route identifies an entry in the current documentation
-  catalog; it is not a contractual CLI operation or machine-readable schema. Renaming
-  or moving an entry is nonbreaking even when its former value stops resolving, and
-  requires no compatibility alias or codemod. Release metadata identifies the
-  replacement value. The `docs` command name, options, exit behavior, and response
-  schemas remain contractual under FR3 and FR13. Template identifiers, slugs, display
-  names, and names are outside this requirement and remain governed separately by FR9,
-  FR11, and applicable registry identity contracts.
-- **FR46 — Main declares the next planned version.** The fixed package group's
-  version in main's `package.json` files is the owner-selected next release plan. A
-  release owner may raise or lower it before a cut; after a cut, changing it affects
-  only main's future plan because the release branch remains bound to its cut
-  declaration. Pending Changesets do not derive or promote the version. Pull-request
-  lint does not compare main's declaration with the newest stable tag or an active
-  cut. Canary publication owns that ordering boundary instead: the fixed group MUST
-  declare one plain version; a declaration strictly above the newest stable tag
-  publishes `<declared version>-canary.<commit>`, equality publishes nothing, and a
-  lower or split declaration fails rather than publishing. Scheduled canary
-  publication runs at most once an hour, from main's tip at that time, and a release
-  owner can also publish a canary from main on demand. The hourly limit caps
-  frequency only and promises no freshness: a missed or late run leaves the previous
-  canary in place. A tip whose canary packages are all published publishes nothing
-  (DEC-31). Changeset admission still refuses `[breaking]` work while main declares a
-  patch and admits it while main declares the minor successor.
-- **FR47 — A release branch releases the declared version.** A release branch's
-  version is the fixed-group version declared at its cut commit. Admission, the
-  release plan, Changeset consumption, changelog generation, and stable
-  publication run only on a release branch. Consuming Changesets writes changelog
-  entries under the declared version and never moves it: a `[breaking]` Changeset
-  on a branch that declares `0.7.0` releases `0.7.0`, and a patch Changeset on a
-  branch that declares `0.6.8` releases `0.6.8`. Pending Changesets MUST NOT
-  choose the version: an entry waiting to be released is the work admission
-  governs, never evidence for the version that carries it.
-- **FR48 — Admission checks the declared tier.** The declared version is either
-  the patch successor or the minor successor of the latest stable release, and
-  that successor is the release tier. In a patch release, a Changeset carrying the
-  `[breaking]` category is inadmissible and MUST be rejected before the release
-  consumes it. The admissible routes are FR28's replacement-first deprecation,
-  which keeps old usage equivalent and lets the removal ship in a minor release,
-  or an owner bump of main to the minor successor before the cut. This gate
-  decides patch-versus-minor admission and nothing else; the lifecycle conditions
-  of FR28, FR31, FR32, and FR37, and every review and release requirement outside
-  this record, continue to apply on their own terms and are neither restated nor
-  enforced here.
-- **FR49 — The declared version fails closed.** A release is refused when the
-  fixed group does not declare one identical `MAJOR.MINOR.PATCH` version; when the
-  release version differs from the version declared at the cut commit; when no
-  stable release exists to compare against; and when the declared version is
-  neither the patch nor the minor successor of the latest stable release,
-  including a version that is already released. The latest stable release is the
-  newest `vX.Y.Z` tag. A prerelease or canary identifier is publication metadata
-  and is never a declared version or a base.
-- **FR50 — The published release branch squashes back into current main.** After
-  branch-owned tag and stable publication are verified, one merge-back change applies a
-  squash projection of the exact published release branch onto then-current main. It
-  carries the branch's exact generated changelogs, release notes, promoted codemods,
-  and frozen Changeset deletions; it does not regenerate or copy those outputs
-  independently. Branch-only active lifecycle marker and plan files do not land on
-  main. Between cut and merge-back, main's declaration is whatever main currently
-  holds; the release branch cannot change it. The three-way merge MUST preserve that
-  declaration, every post-cut main commit, every post-cut Changeset byte, and every
-  unrelated newer main field; a conflict holds the merge for explicit resolution. A
-  trusted required check binds the merge-back to the immutable tag, release branch head,
-  and plan digest, proves the release-owned bytes and frozen deletions equal the branch,
-  proves post-cut preservation, and refuses every unrelated mutation. FR50 never chooses
-  or lowers the next plan. Merge-back preserves main's current declaration. When it
-  equals or falls below the released version, FR46's canary publication check emits no
-  prerelease at equality and fails below it.
-- **FR51 — The next plan is prepared at the cut and remains separate from merge-back.**
-  When a release cut succeeds, release tooling prepares one pull request from current
-  main that changes every fixed-group package version, every generated exact internal
-  pin, the lockfile, and version-stamped compatibility asset to the successor plan. The
-  default is the cut version's patch successor. The minor successor is used only when
-  Cindy explicitly names that minor as the next plan; pending `[breaking]` Changesets
-  are not that decision. The plan MUST NOT merge before an immutable tag or stable
-  package publication makes the cut version non-reusable. After that point it may land
-  through normal gates before or after FR50; merge-back preserves an already-landed
-  newer plan. A terminal cut with neither an immutable tag nor stable package
-  publication closes its prepared plan unmerged. If main already carries a newer owner plan, the prepared change closes or
-  refreshes instead of duplicating or lowering it. Other main work need not wait, and
-  FR46 remains the independent canary-publication safety boundary. The plan remains
-  malleable under FR46 until the next cut.
-- **FR52 — Repository evidence follows codemods through promotion.** A codemod staged
-  for an unreleased change may move from `transforms/next/` into the immutable
-  `transforms/v<declared-version>/` folder during release generation. A checked-in test,
-  validator, documentation generator, or other repository evidence that reads that
-  transform's source MUST identify the transform independently of its lifecycle folder
-  and resolve its staged or promoted location as appropriate. It MUST fail when the
-  transform is missing, when multiple candidates make the identity ambiguous, or when
-  the promoted source no longer exposes the same transform identity and declared entry
-  set. It MUST NOT keep a duplicate transform solely to preserve the staged path.
-  Promotion remains one generated release output under FR47 and FR50; this requirement
-  changes no consumer migration contract.
-- **FR53 — Accessibility behavior fixes are not breaking.** A change whose purpose is
-  to make a released component conform to its accessibility target — a WCAG 2.2 Level
-  A or AA success criterion, the required parts of an APG pattern the component adopts
-  under `spec:AST-020/FR15`, or a current accessibility requirement in its record — is
-  `[fix]` and patch-eligible, even when it replaces documented interaction or
-  accessibility behavior: roles, accessible names, states and properties, focus
-  movement, and keyboard behavior. No deprecation precedes it and no coexistence path
-  is required. An accessibility behavior fix requires no app-layer code change:
-  existing public props, types, exports, tokens and documented usage keep working
-  unchanged. It may add optional public surface (for example a new optional prop),
-  which is not breaking and is admitted under the existing rules for public additions;
-  it never removes, renames, or narrows existing surface. It ships as a patch `[fix]`,
-  with a release-note line when documented behavior changes; its Changeset names the
-  old and new behavior and the accessibility target it serves. A change that would
-  require apps to edit code must be redesigned so the component absorbs it, or it is
-  classified under FR1.
-- **FR54 — A surface other than a component defines its own compatibility contract.**
-  Each published surface other than a component takes its compatibility contract from
-  its own current record. For the CLI, that record is `architecture:cli-surface`. The
-  contract states which consumer scenarios are valid and supported, what counts as a
-  released victim, and which corrections to the surface are `[fix]` and which are
-  `[breaking]`. The surface record's owners decide that contract through the record's
-  normal approval, and this record does not restate it. Where the surface record
-  states a rule for a case, that rule decides the classification of that case. Where
-  it is silent, FR1–FR6 and this record's rules for that surface apply. A surface rule
-  turns on the change and its contract, never on risk or adoption (FR6), and covers
-  only released, published surfaces (FR2). The release process in this record applies
-  to the result unchanged: Changeset categories and bump tiers (FR7, FR22), migration
-  evidence (FR8), experimental isolation (FR21–FR27), the patch, minor, and emergency
-  paths (FR28, FR31, FR34, FR35, FR48), deprecation and coexistence (FR29–FR30), and
-  the release gates (FR37–FR44). A surface record defines only whether a change is
-  breaking; it never changes how a change ships. A change any surface record classifies
-  as `[breaking]` lands only in a declared minor (FR31) or through the emergency path
-  (FR35), never in a patch release, and no surface record can make it patch-eligible by
-  redefining a release rule. Components keep the rules in this record, including FR3 and
-  FR53.
-- **FR59 — Touch work leaves fine-pointer behavior alone unless it has a reason.**
-  A change made for touch or coarse-pointer use may change what people using a mouse,
-  trackpad, or other fine pointer see or do only to fix a defect those people actually
-  hit, or for deliberate cross-device consistency the pull request names. Either way
-  the pull request shows fine-pointer evidence before and after the change. A new
-  fine-pointer look or feel is never part of touch work, including a
-  cross-device consistency change: it needs its own owner decision under the
-  governing design or component record. Otherwise fine-pointer behavior and
-  appearance stay as they were.
-- **FR60 — Components are built from minimal DOM, and reducing it is compatible.**
-  A component renders one element per role, themable part, or named wrapper,
-  expresses states through attributes and styles, renders content once, and
-  mounts one presentation per open layer, under the two budgets and the
-  exception path `architecture:component-style-authoring` INV7 states. Removing
-  or merging undocumented elements to meet it is compatible (FR3); an element a
-  current theme target or documented anatomy names stays. A component exceeds a
-  budget only through an owner exception recorded with its element counts.
-  Under touch, a component renders no more elements than under a fine pointer,
-  except that a layer, a surface mounted only while open (a sheet, popover,
-  menu, context menu, dialog, toast, or lightbox), may render up to 5 more
-  elements while open, and fewer is preferred (DEC-29). Each added element is
-  an internal node with a job its component's record names; the allowance
-  adds no anatomy part and no theme target. Decoration, such as a pill, an
-  edge tint, a shadow, or a tint, SHOULD be drawn by a pseudo-element or an
-  existing element. While closed, a layer and its trigger render no more
-  elements than under a fine pointer. Repeated components, such as rows, list
-  items, and controls like Button, Switch, and CheckboxInput, keep the strict
-  budget, at rest and pressed. Anything beyond this needs an owner exception
-  with before and after counts.
-- **FR61 — A release branch admits only a proven test repair after its generated bump.**
-  When an exact release-branch gate finds a test or harness defect after the generated
-  version pull request has merged, one repair commit may move that branch only when its
-  stable patch id and exact changed-line digest equal one non-merge commit still present
-  in current `main`. Every changed path is a test under `__tests__`, a `*.spec.*` or
-  `*.test.*` file, or the interaction harness; docsite paths and snapshots are excluded. The repair
-  changes no package, product, Changeset, assertion, test control, timeout, retry, or
-  snapshot. The validator that recognizes this class first lands on `main` through
-  ordinary review and green CI, then judges the release pull request from its trusted
-  base. If an active release branch predates that validator, the release owner appends
-  one normal fast-forward policy synchronization commit after `validate-policy-carry`
-  proves that its policy-only file set and resulting file contents exactly equal the
-  branch-specific bundle reviewed in the validator commit already merged on `main`. The
-  bundle is based on the active release head. It carries this validator and scope change
-  plus the existing undecided-scope contract fallback that treats every file as changed
-  when GitHub truncates the file list; it carries no other later `main` workflow or
-  product work. This sync is not a pull request, uses no force or admin operation, marks no check, grants no release state, and changes no
-  package, product, Changeset, or release output. For `v0.7.12` only, if that
-  first sync's normal release-branch CI exposes an incomplete validator or a
-  missing contract test for the carried fallback, one second and final
-  fast-forward policy sync may follow from the current release head. Its exact
-  reviewed bundle changes only `scripts/release/active-release.mjs`,
-  `scripts/release/active-release.test.mjs`, and
-  `.github/scripts/touched-components.test.mjs`. Every change is an exact port
-  of a normal pull request already merged on `main`; CodeBunny approves the
-  corrective commit's exact head before the fast-forward; and the full
-  visual, accessibility, RTL, product, and test release gate reruns on that
-  head. No third sync is admitted. The repair branch rebases onto the final sync, so
-  every required check runs under the new trusted base before the repair can merge. The
-  repair receives CodeBunny approval at its exact
-  head and every normal product and test lane runs and passes. After it merges, the full
-  exact-head release gate runs again and must pass before tagging or publication. A
-  retry, skipped check, admin merge, or manual override cannot substitute for any proof
-  in this rule.
+- **FR4 — 保留旧用法属于非破坏性变更。** 当已发布的旧调用、导入、选项、标识符或输入通过兼容别名或适配器继续以等价含义工作时，重命名或替换即属非破坏性。弃用可以发出警告并指向替代方案，但移除该兼容路径才是破坏性事件。
+- **FR5 — 增量式且无受害方的契约恢复属于非破坏性变更。** 当旧用法保持不变时，新的可选能力、新组件、新命令、更宽泛的可接受输入以及新模板都是非破坏性的。恢复已文档化契约的修复，只有在已发布错误行为的任何有效使用方都不必改动时才是非破坏性的。当某个受支持的使用方依赖该行为，且该修正破坏了这个使用方时，即使实现违反了权威，FR32–FR35 也将其归类为不兼容修复。刻意替换已文档化契约的提案不是修复，但 FR53 下的无障碍行为修复除外。
+- **FR6 — 风险不能凌驾于兼容性之上。** 采用率低、可能性低、工程批准，或确信受影响的调用者并不常见，都不能使某项不兼容的已发布契约变成非破坏性的。反之，实现规模、视觉范围或审查难度也不能使兼容的变更变成破坏性的。
+- **FR7 — Changeset 标签与生命周期元数据相互正交。** 现有的主标签仍然是创作词汇：修正使用 `[fix]`，兼容的能力与替换优先的分阶段推进使用 `[feat]` 或既有的更窄标签，获批的移除使用 `[breaking]`，受限的实验使用 `[experimental]`。标签与 Changeset 正文合起来就是全部声明：无受害方的修正使用 `[fix]` 并做 patch 递增；替换优先的弃用使用 `[feat]`，在其中指名替代方案与迁移路径，并在旧用法仍可工作时保持 patch 兼容；移除，或修正行为的非兼容变更，使用 `[breaking]`，并说明旧的合法用法、替代方案或被修正后的行为，以及迁移方式（FR8）。生命周期 id（`DEP-*`、`IFIX-*`、`CLN-*`）与分类元数据是可选的描述性交叉引用，绝不是合并的前提条件。当 Astryx 各包仍处于 `0.x` 时，不兼容层级为 minor；兼容工作为 patch。Changeset 的递增声明的是其变更所需的层级；它从不设定发布版本，发布版本是 main 依据 FR46 所声明的版本。仅涉及文档、仅涉及测试以及仅涉及私有包的变更不需要 Changeset。翻译目录更新与新增语言不需要 Changeset；英文目录中保留每一条消息键与默认消息的描述性修改或格式调整也不需要。该豁免绝不涵盖移除已发布的 locale 导入路径，后者遵循 FR3–FR4 与 FR31。已有 Changeset 保留其当前标签与已验证的递增语义，且不得被批量迁移。`pnpm changeset:new` 仍是创作路径，`pnpm check:changesets` 校验标签、递增、贡献者与所声明的层级；迁移文本依据 FR8 评审。多包工作中要对每一个已发布包的更新进行分类。固定组内仅版本号的共同递增本身不需要 Changeset 条目，但生成的依赖或 peer 范围改动属于该包的更新，必须被分类并指名。当主标签不同时，使用分开的 Changeset，以便每个包保留自己面向作者的类别。
+- **FR8 — 迁移证据与受影响的表面相匹配。** 每一项计划中的移除和不兼容修复都要指名旧的合法用法、替代方案或被修正后的行为，以及使用方如何迁移。当使用方的源码、配置、元数据或项目文件可以机械重写时，提供 `astryx upgrade` codemod。当无法重写时，保留显式的兼容适配器，或提供具体的替代说明，并记录 codemod 为何会形同虚设。Codemod 遵循 `spec:AST-040`，并包含正向、反向以及第二次运行幂等性的测试夹具，以及下游证明。
+- **FR9 — 模板 slug 是可变的目录数据。** 模板 slug 标识当前模板目录中的一个条目；它是关于该模板的数据，而不是契约性的 CLI API。即使 `astryx template <old-slug>` 不再能解析，重命名 slug 也是非破坏性的。Changeset 与发布说明会描述该目录重命名，以便构建者找到新值，但该重命名不使用 `[breaking]` 类别，也不需要别名或 codemod。
+- **FR10 — 模板内容与元数据预期会演进。** 新增模板、重建其起始源码，或更改其 slug、面向人的名称、描述、类别、关键词或示例数据，都是非破坏性的，前提是 CLI 的稳定命令契约与机器可读 schema 契约保持兼容。生成的起始代码并不承诺跨版本逐字节稳定，模板改进时也不会重写已有项目。
+- **FR11 — CLI 契约环绕目录。** `template` 命令名、受支持的选项、退出行为以及机器可读的响应 schema 都是 FR3 下的契约性表面。通过该 schema 返回的单个目录值——包括模板 slug、名称、描述、类别、关键词与起始内容——并不是各自独立的稳定 API 标识符。
+- **FR12 — 受支持的包间范围即契约。** 对于已发布包的更新，其最新稳定版本所文档化的安装场景，以及所声明的依赖或 peer 范围，定义了受支持的配套包版本。当单独升级该包会使任何此类组合无法在不变的前提下继续工作时，包括通过收窄或提高范围，该更新对该包即为破坏性的。一次能正常工作的协同升级不改变该分类。当所有此前受支持的组合继续工作时，依赖递增不是破坏性的。把所有此前受支持的版本保留在范围内，并在需要时提供适配器；否则将收窄或提高下限的范围归类为破坏性的，在其 Changeset 发布说明中描述范围变化，并履行 FR8 的迁移义务。
+- **FR13 — 稳定的机器 schema 投影每一个字段。** 稳定的 CLI 响应契约既包括外层信封，也包括可辨识 `data` 条目内部的字段。每个字段都出现在规范响应类型、契约测试、文本投影（当该命令提供时）以及完整的面向使用方的 schema 文档中。新增可选字段在旧使用方保持不变时是非破坏性的，但它仍属公开 schema 更新，不会因此绕过 current 权威审查或文档要求。
+- **FR14 — 没有任何受支持的 CLI 行为被隐藏。** 任何在受支持流程中可用的 Astryx CLI 行为——包括自动选择的行为，以及由 Astryx 自有控件选择的行为——都是公开表面，必须被文档化且可被发现。每一个会改变命令选择、工作内容、输出、副作用或退出行为的调用方可设控件，无论其形式是命令、选项、位置参数、包字段还是配置键，都属于该表面。CLI 不得为任何目的定义或读取 Astryx 自有的环境变量。当 Astryx 定义了某变量的语义时，该变量即属 Astryx 自有，无论其名称或前缀如何；标准平台变量仍不在该禁止范围内，除非 Astryx 赋予其 Astryx 特有的含义。自动化必须使用已文档化的程序化 API。公开控件必须定义其可接受值、默认值、优先级与交互、错误行为，以及一个代表性调用。命令与选项必须出现在生成的帮助与机器可读清单中。自动行为与其他控件必须要么出现在那里，要么从这些发现表面链接到使用方文档。正常的调用模式必须具有已文档化的命令、选项或配置表面。私有测试钩子与维护者发布闸门可以影响测试、诊断或分阶段可用性，而无需成为公开控件，但它们不得使用环境变量、不得要求受支持的使用方采取行动，也不得作为通往某个受支持模式的唯一接口。它们所闸控的面向用户行为，一旦被支持，仍受本要求约束。
+- **FR15 — 全局控件要求 CLI 级的价值与语义。** 当根解析器跨命令接受某个选项，或清单将其列入 `globalOptions` 时，该选项即为全局的。新的行为改变型选项只有在其代表一项连贯的 CLI 级不变式、解决了更窄表面无法解决的、已证明的受支持使用方需求，并且对每个可执行命令与子命令都定义了有意义且非空操作的行为时，才可以成为全局选项。提案必须从生成的帮助与机器可读清单中列举这些表面，并说明该控件在每一个表面上的行为、输出或错误影响以及验证方式。若某个命令上该控件没有有意义的效果，即证明所提议的范围过宽。仅适用于 CLI 一部分的行为必须落在拥有它的最近命令、命令组或程序化 API 上。同一名称在该范围内必须保持同一含义，名称必须描述被控制的确切能力，而不能作出诸如 `safe`、`secure`、`trusted` 或 `isolated` 之类的宽泛宣称。安全或信任类控件还必须定义其信任边界，并在不受信任的输入能够执行或造成副作用之前就失败关闭。
+- **FR16 — 跨切面保证要定义并封闭其边界。** 任何声称阻止某类执行、数据访问或副作用的保证，都必须定义受信任输入、被拒绝的操作，以及保护开始与结束的位置。它必须覆盖每一个当前入口点，并对未知或新增的扩展点失败关闭。
+- **FR17 — 被抑制的工作是可观察的。** 当某项安全或降能力控件有意省略了通常可用的来源、能力或工作单元时，每一个成功的机器可读结果都必须标明当前生效的模式以及被省略的类别。人类可读输出必须投影同一事实。部分或空的结果不得看起来像一次普通的完整成功。若该操作无法产生有用的、符合规范的结果，它必须在任何写入或外部副作用之前返回稳定的结构化错误，并且对 CLI 而言返回非零退出码。
+- **FR18 — 程序化控件是显式的且作用域限于单次调用。** 程序化控件必须是显式的 API 输入，且不得依赖环境中的可变进程状态。并发调用必须能够各自独立地选择不同的值。当 CLI 与程序化 API 暴露同一控件时，它们必须共享可接受值、默认值、优先级、可观察行为与错误语义。
+- **FR19 — 配置仅在证据充分时才被接纳。** 新增配置键，或会改变 CLI 行为的新的可接受值，必须以一个可复现的受支持使用方场景作为正当理由，在该场景中自动检测与既有项目约定会产生错误结果。提案必须记录该场景以及它首先尝试的约定。当既有的约定或自动检测能够表达该需求时，CLI 必须使用它，而不是新增配置。配置不得重复 CLI 可以推导出的值。
+- **FR20 — 集成贡献可预测且可见地组合。** 配置设置只有在公开配置契约中的条目（导出的 `AstryxConfig` 类型，以及使用方通过 CLI 读取的配置 schema 参考）中说明以下内容时，才可以接受来自集成的贡献：集成可以贡献；贡献的确切形式；应用值与所有贡献如何组合，以及按什么顺序；应用通过哪一个已文档化的控件拒绝继承来的贡献；以及贡献失败时会发生什么。该设置拥有该规则；集成不能更改它。集成在其集成模块中静态声明每一项贡献，形式可以是导出的 `AstryxIntegration` 清单类型的字段，也可以是已文档化的具名导出，并且集成创作参考会记录该形式。导入集成模块不得以副作用的方式贡献任何内容。CLI 必须让调用方通过已文档化的命令或程序化 API 检查每项此类设置的有效值以及每个部分的来源（应用或某个具名集成）。除非某项设置的契约另有说明并给出理由：应用与集成的贡献是组合而非相互替换；应用自身的值先生效，然后按解析顺序应用各集成；失败的贡献被跳过，既不删除其他贡献，也不改变命令的结果；应用通过一个已文档化的控件拒绝所有继承来的贡献；在一次调用中多次加载项目时，每项贡献只应用一次。任何集成贡献都不能移除或削弱由应用或另一个集成提供的值。当某项设置保护项目时，失败的贡献必须失败关闭，而不是被跳过。
+- **FR21 — 实验性 API 在发布前是显式且需主动选择的。** 稳定已发布包内部的公开表面，只有在其首个稳定版本通过规范的实验边界暴露它，并在声明与使用方文档两处都加以标记时，才置身于稳定兼容承诺之外。在已有的稳定组件上，实验性的 prop 与回调存在于一个可选的 `experimental` prop 对象内部；省略该对象即保持组件的稳定默认值与行为。没有公开契约的行为或工具模块——例如动效、手势或键盘处理——保持内部：它从不被导出，无论作为实验性还是其他形式，例外是通过 Core 的 `./internal/*` 子路径，这些子路径保留给 Astryx 自己的包，未文档化，处于兼容承诺之外，与 Core 同步版本化，并由 lint 限制在 Core 与 Lab（`architecture:react-component-runtime` INV13）；Lab 组件的 swizzle 副本也继续导入 Core 在那里导出的 StyleX 模块，因为其身份即其路径（`spec:AST-110` FR1）。在 Core 中，实验性公开 API 的状态在它被使用的调用点可见，由调用方所写的名称承载，而不仅存在于文档、声明或文件路径中；组件的 `experimental` prop 对象满足这一点，任何其他刻意实验性的公开 API 通过 `_experimental` 名称后缀来满足它，例如 `useDrag_experimental`（DEC-28）。CLI 自己的记录拥有其实验性标记（FR54）。对于组件或模块而言，没有任何文件路径或子路径本身能传达实验状态。声明携带 `@experimental`；创作文档携带机器可读的 `stability: 'experimental'` 元数据，并说明该表面可能在 patch 版本中变更或被移除。仅散文式警告与评审者知识并不确立该边界。Core 中任何公开的实验性 API 还自带其规格决策。
+- **FR22 — 实验性变更是 patch 级的并保持受限。** 添加、更改、重命名或移除显式的实验性表面使用 `[experimental]` Changeset 与 patch 递增。仅限该边界内的不兼容属于 `[experimental]`，而非 `[breaking]`；Changeset 创作与校验流程必须为该类别推导并强制 patch 递增，即使该实验性表面以不兼容方式变更。其发布说明指明受影响的表面，以及在存在替代方案时的替代方案。兼容别名是可选的；当机械迁移能实质性减少调用方工作时，提供 codemod。该例外绝不涵盖对稳定默认值、稳定运行时或无障碍行为、普通导入路径、非实验性 prop，或稳定 CLI 命令与机器 schema 的变更；这些变更遵循 FR1–FR8。已发布的稳定表面不能被追溯降级为实验性。
+- **FR23 — 提升会有意识地创建稳定契约。** 提升是一项由所有者批准的变更，它移除实验性标记，将已定型的 prop、回调、hook、函数或类型暴露在其常规稳定表面上，并使用 `[feat]` Changeset。从该版本起，FR1–FR8 保护被提升的表面。把组件 API 移出 `experimental` prop 对象，或移除某个导出的实验性标记，都要指名稳定替代方案，并在重写是机械性的时候提供 codemod。为过渡而保留一个已弃用的实验性别名是受鼓励的，但它本身不属于新的稳定承诺。
+- **FR24 — 实验状态按公开表面逐一验证。** 发布审查将上一次已发布的表面与当前声明及创作文档作比较，验证其实验性标记彼此一致，并在任何不兼容差异触及稳定表面时拒绝 `[experimental]` Changeset。集成主题贡献能力仍是唯一被祖父条款保留的表面；其他已发布表面都不得被追溯登记。其贡献元数据、发现机制与创作契约可以在 patch 版本中演进，直到一次显式提升移除该标记。该禁止并不会仅仅因为相邻功能已发布，就把一个未发布的字段或行为变成稳定 API。集成模板的替换专用字段与行为——其 `replaces` 声明、替换选择、可选列表投影以及扩展的冲突字段——在首个稳定版本之前仍是 FR2 下的发布前表面；该分类不构成实验性登记。先前已发布的同 id 冲突警告行为保持稳定。周边的稳定 CLI 命令名、选项、退出行为与机器可读信封仍受 FR3 与 FR13 保护。
+- **FR25 — 稳定的 Core 与每一个已发布的稳定包默认采用兼容性。** 在已声明的 minor 之外，对行为、类型、导出、CSS 或 token、已文档化的标记或选择器、无障碍语义、持久化、CLI、配置、schema、构建工具、契约性文档操作以及包文件的更改，必须是增量式的、实现等价的、FR3 下的非破坏性默认变更、FR5 下无受害方的契约恢复，或 FR53 下的无障碍行为修复；破坏性变更只落在已声明的 minor 中（FR31）。文档目录名称与路由遵循 FR45。内部标签、低采用率，或缺少源码级 API 变更，都不会削弱该规则；Core 的 `./internal/*` 子路径在其之外（FR21）。
+- **FR26 — 公开生命周期状态是显式的。** 每一个公开表面是 `experimental`、`stable`、`deprecated` 或 `removed`；私有与未发布的表面仍处于已发布生命周期之外。稳定不能变为实验性。已弃用的行为在被 `[breaking]` 移除为某个已声明的 minor 合并之前（FR31），仍受支持。
+- **FR27 — 实验隔离覆盖每一种表面类型。** 整个实验性组件留在仅用于 canary 的私有 Lab 包中，受公开的 Component Lifecycle 管辖。FR21 继续管辖稳定组件的 prop 与导出。实验性 CLI 控件使用专门的实验命名空间；配置使用实验性对象；CSS 与 token 使用专门的实验性导出与名称；持久化使用按功能与 schema 版本化的实验命名空间；构建工具使用实验性导出/配置；文档使用带标记的实验性路由。省略主动选择必须使稳定默认值、输出、路由、数据与行为保持不变。提升需要所有者批准与 `[feat]` Changeset；撤销使用 `[experimental]`，且必须证明没有稳定溢出。一个具名例外：稳定的主题帮助与文档、agent 文档块中的一行主题说明、`init` 下一步中的一行（放在其既有步骤旁边，绝不是取而代之），以及 `theme eject` 与 `theme palette generate` 各自结果中的一行，可以指向实验性主题编辑器（`experimental theme editor`、`experimental theme preview`）作为创建与更改主题的方式，措辞仅限于主题工作，并在每次出现时标注为实验性；不得指名任何其他实验性表面，且当主题编辑器毕业或被移除时，该例外即告结束。
+- **FR28 — 计划中的 minor 不需要事先弃用；patch 需要。** 落在已声明 minor 中的变更不需要弃用路径：其 `[breaking]` Changeset 描述该变更，并附上在有助于读者时的替代方案与迁移即可。只有在下一个计划发布是 patch 时才需要弃用路径，因为兼容发布只能为破坏做准备：patch 交付可用的替代方案，同时旧用法保持等价，并在重写是机械性或有序的时候给出确切的迁移命令或 codemod，在不是的时候给出一致、可测试的说明，而移除落在之后的 minor 中。公开记录可以用稳定的 `DEP-*` id 描述一次弃用及其替代方案、迁移与状态；记录只作描述，从不设闸。
+- **FR29 — 弃用不增加生产运行时行为。** 将某个表面标记为已弃用，不得增加生产运行时分支、日志、字节、网络操作、改变的渲染或改变的输出。为使已发布的旧契约继续工作所需的兼容代码与警告投递是分开的，且必须保持该契约。仅限开发环境的运行时诊断只在运行时信息对于解释某个模糊共存状态确有必要时才被允许，例如同时提供了旧 prop 与替代 prop；它解释直接所有者的优先级规则，并不是主要的弃用渠道。
+- **FR29a — 警告位于最早且准确的创作表面。** TypeScript 声明使用静态 `@deprecated` 元数据。构建解释的源码与配置在创作、校验或构建读取器中发出警告，该读取器能指名确切的源码使用。CLI 命令与选项在其机器结果中暴露替代方案，并在每次调用时最多发出一次人类可读的 stderr 警告。CSS 与 token 使用静态诊断。已渲染的应用绝不因为使用了已弃用的表面就发出警告。警告不得改变成功退出状态、规范输出、机器可读 stdout、生成的输出或渲染行为。
+- **FR29b — 指导只教授一条现代路径。** 每条警告都指名确切的替代方案、稳定的版本化说明，以及在存在时确切的迁移命令。受维护的 API 文档、生成的文档、模板、示例、story、起始输出与面向 agent 的指导只教授替代方案。对已弃用表面仍可获得显式参考，并显式标注同一替代方案与现代化路线。在这些说明与该路线存在之前，警告不得发布。
+- **FR29c — 现代化是安全且可验证的。** 机械迁移在 `spec:AST-040` 下是可预览、幂等、以证据为范围并且完整的；它把旧的观察结果保留为其基线，并报告每一个不确定或被阻塞的情形。非机械迁移给出简短、有序、可测试的说明，而不只是说需要手动更新。直接所有者指名适用的源码、类型、构建、运行时、视觉、无障碍与 CLI 证明。受维护的 Astryx 包与创作表面在弃用 patch 中迁移。
+- **FR29d — 每种公开表面都投影该生命周期，而不另造一套。** 整组件仍被导出、可渲染、可访问、可主题化，并显式可发现，但退出推荐与可复制示例；其导出与文档承载替代方案与现代化路线，且在渲染时不做弃用警告。已弃用的 prop 与值保持仅旧行为，声明确定性的旧加新优先级，并静态指名替代方案；codemod 重写已证明的静态用法，并报告它无法证明的展开或动态表达式。主题 API 字段、辅助函数、token、target 与源码保持完全相同的归一化与渲染输出；声明使用 `@deprecated`，主题构建或校验报告确切的源码使用，而不在 `defineTheme`、主题挂载或应用运行时发出警告。已弃用的 CLI 命令与选项继续被接受，保持其已发布的退出状态、规范 stdout、JSON 信封与副作用；帮助与显式查询对它们加以标注，人类模式在 stderr 上警告一次，机器模式携带弃用元数据，生成的示例使用替代方案。当旧与新 CLI 控件共存时，其直接命令契约在文本模式与 JSON 模式中以相同方式定义优先级或拒绝该模糊组合。
+- **FR30 — 弃用最小期限只来自直接权威。** 本全局规格不施加任何经过时间或发布次数的最小值。结构性最小值是：最终 patch 同时保留旧行为与新行为。一条直接 current 规格可以为其自身表面要求一个持续时长或稳定发布次数，并在其中指明。发布节奏不得被解释为弃用时钟或资格闸门。
+- **FR31 — 没有计划的 minor 就不交付破坏性变更；闸门是已声明的版本。** 当 `main` 声明一个 minor（`x.y.0`）时，`[breaking]` Changeset 被接纳，该变更在常规审查与 CI 后合并。当 `main` 声明一个 patch（`x.y.z`，`z > 0`）时，任何 `[breaking]` Changeset 都会使拉取请求 CI 失败；可以合并的是 FR28 下的弃用。`pnpm check:changesets` 在每一个拉取请求上依据固定组所声明的版本强制执行这一点。每一个不兼容差异映射到恰好一个 `[breaking]` Changeset，那是读者找到其描述的唯一地方；一旦移除落地，受维护的源码即教授替代方案。生命周期记录与发布清单描述移除；两者都不对合并设闸。
+- **FR32 — 带有已发布受害方的修正属于破坏性变更。** 当既有的 current 权威证明已发布行为错误、不安全或不符合规范，并且某个有效的最新稳定版使用方依赖该行为，以至于修正会破坏代码、交互、持久化数据、输出或受支持的工作流时，该修正即为 `[breaking]`，并遵循 FR31 关于已声明层级的规定，说明被修正的契约与迁移方式。可见的修正若没有有效的已发布受害方，仍按 FR5 属于 `[fix]`。无障碍行为修复不是破坏性修正：由 FR53 归类。对于组件以外的表面，由该表面的兼容契约决定调用方是否为已发布的受害方（FR54）。
+- **FR33 — 修正的权威与受害方都要被指名。** `[breaking]` Changeset 或其拉取请求要指名已发布行为所违反的既有权威、一个最新稳定版的复现程序，以及迁移方式。若没有既有权威，则该提案是面向直接所有者的新契约决策，而不是修复。对于无障碍行为修复，权威是 FR53 所指名的符合性目标，所有者把该修复所需的任何行为决策记录在组件的记录中。
+- **FR34 — 修正遵循同一层级规则。** 在已声明的 minor 中，破坏性修正凭其 `[breaking]` Changeset 合并。当 `main` 声明 patch 时，patch 在旧行为旁边交付修正后的可选方式或适配器（FR28），之后的 minor 移除旧行为。破坏性修正不能作为顺带的兼容修复进入发布。
+- **FR35 — 紧急修正范围狭窄，且绝不改标为 patch。** 只有紧急的安全、隐私、严重无障碍问题或可比的重大持续伤害，才可绕过替换优先的共存或常规排期。等待必须实质性地延长伤害；不得存在任何增量缓解、遏制、适配器或安全上线方案；契约所有者与相关事件所有者必须批准一份专门记录；可公开的事件证据与受限的证词必须证明其紧迫性；确切 main 的质量与迁移闸门仍要运行；且该发布不含任何无关功能、清理或不兼容修复。迁移随发布一同交付；不完整的紧急 codemod 要记录所有者、有界后续、测试夹具与交付目标。回滚绝不恢复已知有害行为：应使用遏制或安全前进式修正。
+- **FR36 — minor 频率是规划指导，而非资格。** 规划 minor 一般不超过每十四个日历日一次。计划记录距上一 minor 的间隔以供所有者审查。CI 报告该间隔，但不得据其推导弃用资格、最终 patch 到 minor 的等待，或例外要求。
+- **FR37 — 每个 minor 都有一个由所有者指名的目标，以及在切版本时生成的清单。** 所有者在 `main` 上指名目标版本（FR46）。该 minor 的破坏性集合是为它合并的 `[breaking]` Changeset 集合。在切版本时，发布依据所消费 Changeset 的创作原样生成其清单（FR41）——破坏性的那些即该 minor 的迁移清单，其余为兼容修复——并随切版本冻结，以供发布说明与审计。清单只作描述；它从不对合并设闸。若最终 patch 与该 minor 之间存在任何没有已合并 `[breaking]` Changeset 描述的不兼容差异，发布即失败关闭（FR39、FR43）。运维手册可以补充执行细节，但不能授权或扩大破坏性集合。
+- **FR38 — 最终 patch 是配对 minor 的锁定基线。** 在弃用行为仍可工作时发布最终 patch，记录其确切的源码以及包/文档站/视觉/契约回执，然后锁定该基线。配对的 minor 在就绪并被显式授权时可以紧接着、依序立即跟进；除非直接权威要求等待，否则不存在等待。
+- **FR39 — 从最终 patch 到 minor 的每个差异都恰好属于一个类别。** 差异必须划分为：(a) 移除或修正，各自由一个已合并的 `[breaking]` Changeset 描述；(b) 一份封闭清单，包括版本、变更日志、锁文件完整性、标签、来源证明、摘要、构建时间戳与 source-map 元数据；或 (c) FR40 下可独立 patch 兼容的修复。严格等价是目标。无关功能、增量式产品能力、经批准的修正性清理之外的不兼容修复、带公开差异的重构，以及未分类的变更，都被禁止。
+- **FR40 — 兼容修复可以在 minor 中单独披露。** 每项都有自己的 `[fix]` Changeset、current 权威或标准、最新稳定版回归测试、代表性的未变路径以及下游证明，并在发布描述中与破坏性集合分开列出。若该修复在最终 patch 锁定前落地，则把它包含在两个发布中。若它在发布或锁定之后落地，它可以作为已披露的兼容差异进入 minor；不要仅仅为了记账而重新切最终 patch。CI 必须独立证明 patch 资格。发布说明将清理与兼容修复分开。
+- **FR41 — 发布产物使用封闭 schema，且不发明字段。** 切版本时的清单（FR37）按创作原样冻结每一个被消费的 Changeset——路径、内容摘要、包、类别、标题、贡献者与正文——并从类别推导破坏性与兼容性；编辑性文本由正文生成，绝不来自需要人工回填的平行字段。它还携带发布元数据差异与基线回执。等价性回执携带最终与候选摘要以及 `unclassifiedDeltas`。未知字段，以及一个差异被映射多于一次或少于此数，都导致失败。
+- **FR42 — 贡献者一次性声明兼容意图。** Changeset 就是声明：其标签与正文说明该变更是兼容的、是一次带替代方案与迁移的弃用，还是一次带迁移的 `[breaking]` 变更。不需要平行的分类词汇、id 或计划字段。已有 Changeset 无需回填。贡献者声明意图；维护者解决缺失的权威。外部贡献者不必发明政策。
+- **FR43 — CI 校验语义，而非标签。** 拉取请求 CI 将最新稳定版与 head 比较，以确定已发布的受害方；并将 base 与 head 比较，以归因差异。发布 CI 将最终 patch 与配对的 minor 比较，并把每个差异恰好一次地指派给清理、发布元数据或兼容修复。它检查导出/类型、运行时、CSS/token、DOM/无障碍/视觉/RTL、CLI/帮助/路由/schema、持久化、文档、包文件、受支持的包组合、旧客户端/新元数据行为、固定组成员资格、所需证据，以及标签/分类/递增的耦合。普通失败要指名受害方、缺失的证据与确切的修复路径。
+- **FR44 — 确切 main 的发布闸门与回滚保持同一身份。** 最终 patch 与配对的 minor 各自使用一个不可变的源码身份，用于构建、打包产物、闸门回执、标签、发布与发布记录。缺失的权威、清单覆盖、所需迁移、确切 main 证据，或任何未分类差异，都会中止切版本。部分发布以同样的字节继续。坏发布通过兼容的 patch 向前滚动，恢复别名或先前的安全兼容模式；重大伤害的恢复遵循 FR35，且绝不恢复有害行为。
+- **FR45 — 文档目录显示名称与路由是可变的。** 显示名称或文档树路由标识当前文档目录中的一个条目；它不是契约性的 CLI 操作或机器可读 schema。即使某个条目先前的值不再能解析，重命名或移动它也是非破坏性的，且不需要兼容别名或 codemod。发布元数据指明替代值。`docs` 命令名、选项、退出行为与响应 schema 仍按 FR3 与 FR13 属于契约。模板标识符、slug、显示名称与名称不在该要求之内，仍由 FR9、FR11 及适用的注册表身份契约分别管辖。
+- **FR46 — Main 声明下一个计划版本。** 固定包组在 main 的 `package.json` 文件中的版本，是所有者选定的下一发布计划。发布所有者可以在切版本前提高或降低它；切版本之后，更改它只影响 main 的未来计划，因为发布分支仍绑定于其切版本声明。待处理的 Changeset 不推导也不提升该版本。拉取请求 lint 不将 main 的声明与最新稳定标签或某个进行中的切版本作比较。Canary 发布反而拥有该排序边界：固定组必须声明一个普通版本；严格高于最新稳定标签的声明发布 `<declared version>-canary.<commit>`，相等的声明不发布任何内容，更低或分裂的声明则失败而不发布。定时 canary 发布每小时至多运行一次，从当时 main 的 tip 出发，发布所有者也可以按需从 main 发布一次 canary。每小时上限只限制频率，并不承诺新鲜度：某次运行被错过或延迟时，先前的 canary 仍保留在原处。若某个 tip 的所有 canary 包都已发布，则不发布任何内容（DEC-31）。当 main 声明 patch 时，Changeset 接纳仍拒绝 `[breaking]` 工作；当 main 声明该 minor 后继版本时则接纳。
+- **FR47 — 发布分支发布已声明的版本。** 发布分支的版本是其切版本提交处所声明的固定组版本。接纳、发布计划、Changeset 消费、变更日志生成与稳定发布只在发布分支上运行。消费 Changeset 会在已声明版本下写入变更日志条目，且从不移动该版本：在声明 `0.7.0` 的分支上，一个 `[breaking]` Changeset 发布 `0.7.0`；在声明 `0.6.8` 的分支上，一个 patch Changeset 发布 `0.6.8`。待处理的 Changeset 不得选择版本：一个等待发布的条目是被接纳管辖的工作，绝不是承载它的版本的证据。
+- **FR48 — 接纳检查已声明的层级。** 已声明版本要么是最新稳定发布的 patch 后继，要么是其 minor 后继，该后继就是发布层级。在 patch 发布中，携带 `[breaking]` 类别的 Changeset 不可接纳，必须在发布消费它之前被拒绝。可接纳的路径是 FR28 的替换优先弃用——它保持旧用法等价，并让移除去往某个 minor 发布——或在切版本前由所有者把 main 提升到 minor 后继。该闸门只决定 patch 与 minor 的接纳，不决定其他任何事情；FR28、FR31、FR32 与 FR37 的生命周期条件，以及本记录之外的每一项审查与发布要求，继续按各自的条款生效，在这里既不重述也不强制执行。
+- **FR49 — 已声明版本失败关闭。** 当固定组未声明某个统一的 `MAJOR.MINOR.PATCH` 版本时；当发布版本与切版本提交处所声明的版本不同时；当不存在可作比较的稳定发布时；以及当已声明版本既不是最新稳定发布的 patch 后继也不是其 minor 后继时，包括该版本已经被发布过的情况，发布都会被拒绝。最新稳定发布是最新的 `vX.Y.Z` 标签。预发布或 canary 标识符是发布元数据，绝不是已声明版本或基线。
+- **FR50 — 已发布的发布分支 squash 回当前的 main。** 在分支拥有的标签与稳定发布被验证之后，一次合回变更会把确切已发布发布分支的 squash 投影应用到当时当前的 main 上。它携带该分支确切的已生成变更日志、发布说明、已提升的 codemod，以及冻结的 Changeset 删除；它不独立地重新生成或复制这些输出。仅属于分支的活动生命周期标记与计划文件不落到 main 上。在切版本与合回之间，main 的声明就是 main 当前持有的内容；发布分支不能更改它。三方合并必须保留该声明、切版本后的每一个 main 提交、切版本后的每一个 Changeset 字节，以及每一个无关的较新 main 字段；冲突会持有该合并以待显式解决。一项受信任的必需检查把合回绑定到不可变标签、发布分支 head 与计划摘要，证明发布拥有的字节与冻结删除等于该分支，证明切版本后的保留，并拒绝每一项无关改动。FR50 从不选择或降低下一个计划。合回保留 main 当前的声明。当该声明等于或低于已发布版本时，FR46 的 canary 发布检查在相等时不发出任何预发布，在低于时失败。
+- **FR51 — 下一个计划在切版本时准备，并与合回保持分离。** 当一次发布切版本成功时，发布工具从当前 main 准备一个拉取请求，把每个固定组包版本、每个生成的精确内部 pin、锁文件以及带版本戳的兼容资产都改为后继计划。默认是切版本版本的 patch 后继。只有当 Cindy 明确指名该 minor 为下一个计划时才使用 minor 后继；待处理的 `[breaking]` Changeset 并不是该决策。在不可变标签或稳定包发布使切版本版本不可再被复用之前，该计划不得合并。在该时点之后，它可以在 FR50 之前或之后通过常规闸门落地；合回会保留已落地的较新计划。既无不可变标签也无稳定包发布的终止性切版本，会将其准备好的计划以未合并状态关闭。若 main 已经携带更新的所有者计划，则所准备的变更关闭或刷新，而不是重复它或降低它。其他 main 工作不必等待，FR46 仍是独立的 canary 发布安全边界。该计划在下次切版本之前，仍可按 FR46 调整。
+- **FR52 — 仓库证据跟随 codemod 走过提升。** 为一次未发布变更而分阶段准备的 codemod，可以在发布生成期间从 `transforms/next/` 移入不可变的 `transforms/v<declared-version>/` 文件夹。读取该 transform 源码的已检入测试、校验器、文档生成器或其他仓库证据，必须独立于其生命周期文件夹来标识该 transform，并视情况解析其分阶段或已提升的位置。当 transform 缺失、当多个候选项使身份模糊，或当已提升的源码不再暴露相同的 transform 身份与已声明条目集时，它必须失败。它不得仅为保留分阶段路径而保留重复的 transform。提升仍是 FR47 与 FR50 下的一项生成式发布输出；本要求不改变任何使用方迁移契约。
+- **FR53 — 无障碍行为修复不是破坏性的。** 一项变更，如果其目的是使已发布组件符合其无障碍目标——WCAG 2.2 A 级或 AA 级成功准则、`spec:AST-020/FR15` 下该组件所采纳的 APG 模式的必需部分，或其记录中的当前无障碍要求——那么它属于 `[fix]` 且符合 patch 资格，即使它替换了已文档化的交互或无障碍行为：角色、可访问名称、状态与属性、焦点移动以及键盘行为。它之前没有弃用，也不需要共存路径。无障碍行为修复不需要应用层代码改动：既有公开 prop、类型、导出、token 与已文档化用法保持原样继续工作。它可以新增可选公开表面（例如一个新的可选 prop），这并非破坏性的，并按公开新增的既有规则获得接纳；它从不移除、重命名或收窄既有表面。它以 patch `[fix]` 交付，当已文档化行为改变时附一行发布说明；其 Changeset 指名旧行为与新行为，以及它所服务的无障碍目标。一项会要求应用修改代码的变更必须重新设计，使组件自行吸收它，否则按 FR1 归类。
+- **FR54 — 组件以外的表面定义自己的兼容契约。** 组件以外的每个已发布表面，都从其自身的 current 记录取得兼容契约。对 CLI 而言，该记录是 `architecture:cli-surface`。该契约说明哪些使用方场景是有效且受支持的、什么构成已发布的受害方，以及对该表面的哪些修正属于 `[fix]`、哪些属于 `[breaking]`。该表面记录的所有者通过记录的常规批准来决定该契约，本记录不重述它。当表面记录就某个情形陈述了规则时，由该规则决定该情形的分类。当它未作陈述时，则适用 FR1–FR6 以及本记录中适用于该表面的规则。表面规则取决于变更及其契约，从不取决于风险或采用率（FR6），且只涵盖已发布、已公布的表面（FR2）。本记录中的发布流程原样适用于结果：Changeset 类别与递增层级（FR7、FR22）、迁移证据（FR8）、实验隔离（FR21–FR27）、patch、minor 与紧急路径（FR28、FR31、FR34、FR35、FR48）、弃用与共存（FR29–FR30），以及发布闸门（FR37–FR44）。表面记录只定义某项变更是否为破坏性的；它从不改变变更如何交付。任何表面记录归类为 `[breaking]` 的变更只落在已声明的 minor 中（FR31），或通过紧急路径（FR35），绝不进入 patch 发布，并且任何表面记录都不能通过重新定义发布规则来使其获得 patch 资格。组件保留本记录中的规则，包括 FR3 与 FR53。
+- **FR59 — 触控工作在有理由之前不改变精确指针行为。** 为触控或粗指针用途所作的变更，可以改变使用鼠标的人，
+  触控板或其他精细指针的人所看到或所做的内容，只用于修复这些人真正遇到的缺陷，或用于 pull request 明确指出的刻意的跨设备一致性。无论哪种情况，pull request 都要展示改动前后的精细指针证据。新的精细指针外观或观感绝不构成触控工作的一部分，包括跨设备一致性改动：它需要依据管辖的设计记录或组件记录，由所有者单独决策。否则，精细指针的行为和外观维持原状。
+
+- **FR60 — 组件由最小 DOM 构建，缩减 DOM 是兼容的。** 组件为每个角色、可主题化部件或具名包装器渲染一个元素，通过属性和样式表达状态，只渲染一次内容，并为每个打开的层挂载一个呈现，同时遵守两个预算以及 `architecture:component-style-authoring` INV7 所述的例外路径。为满足该要求而移除或合并没有文档记录的元素是兼容的（FR3）；由当前主题目标或已记录的解剖结构命名的元素则保留。组件只有通过记录其元素数量的所有者例外，才能超出某个预算。在触控下，组件渲染的元素不多于精细指针下的情况，例外是：层——一种仅在打开期间挂载的表面（sheet、popover、menu、context menu、dialog、toast 或 lightbox）——在打开时最多可多渲染 5 个元素，且越少越好（DEC-29）。每个新增元素都是内部节点，其职责由该组件的记录命名；这一允许量不增加解剖部件，也不增加主题目标。装饰，例如 pill、边缘着色、阴影或色调，SHOULD 由伪元素或已有元素绘制。关闭时，层及其触发器渲染的元素不多于精细指针下的情况。重复性组件，例如行、列表项，以及 Button、Switch 和 CheckboxInput 这类控件，在静止和按下时都保持严格预算。任何超出这一范围的情况都需要带前后数量对比的所有者例外。
+- **FR61 — 发布分支在其生成的版本提升之后只接纳已证实的测试修复。** 当精确的发布分支闸门在生成的版本 pull request 合并之后发现测试或测试框架缺陷时，一个修复提交只有在以下条件下才能推动该分支：其稳定的 patch id 和精确的改动行摘要等同于当前 `main` 中仍存在的一个非合并提交。每个改动的路径都是 `__tests__` 下的测试、`*.spec.*` 或 `*.test.*` 文件，或交互测试框架；docsite 路径和快照除外。修复不改变任何包、产品、Changeset、断言、测试控制、超时、重试或快照。识别这一类别的校验器首先通过常规审查和绿色 CI 落到 `main`，然后再从其可信基线判定该发布 pull request。如果某个活跃的发布分支早于该校验器，则在 `validate-policy-carry` 证明其仅策略的文件集以及最终文件内容完全等于 `main` 上已合并的校验器提交中所审查的分支专属 bundle 之后，发布所有者追加一个正常的快进策略同步提交。该 bundle 基于活跃的发布头。它携带该校验器和作用域改动，以及现有的未决作用域契约回退——当 GitHub 截断文件列表时，该回退将每个文件都视为已改动；它不携带其他任何后来的 `main` 工作流或产品工作。此同步不是 pull request，不使用强制或管理员操作，不标记任何检查，不授予任何发布状态，也不改动任何包、产品、Changeset 或发布输出。仅对 `v0.7.12`，如果该首次同步的正常发布分支 CI 暴露出不完整的校验器，或所携带回退缺少契约测试，则可以从当前发布头再进行一次第二次、也是最后一次的快进策略同步。其经审查的确切 bundle 只改动 `scripts/release/active-release.mjs`、`scripts/release/active-release.test.mjs` 和 `.github/scripts/touched-components.test.mjs`。每个改动都是对 `main` 上已合并的正常 pull request 的精确移植；CodeBunny 在快进之前批准该纠正提交的确切头；完整的视觉、无障碍、RTL、产品和测试发布闸门会在该头上重新运行。不允许第三次同步。修复分支变基到最终同步之上，因此在修复能够合并之前，每个必需的检查都在新的可信基线之下运行。修复在其确切头上获得 CodeBunny 批准，并且每个正常的产品和测试通道都运行并通过。合并之后，完整的精确头发布闸门再次运行，并且必须在打标签或发布之前通过。重试、跳过的检查、管理员合并或手动覆盖，都不能替代本规则中的任何证据。
 
 ### Platform support
 
-- Supported feature/engine floor: every published Astryx package and stable CLI
-  release.
-- Unsupported behavior: private packages, unreleased branch state, canary-only
-  surfaces, and surfaces that meet FR21's explicit experimental contract carry no
-  stable compatibility promise.
-- Browser evidence: not applicable to the classification itself; a browser-owned
-  compatibility claim still follows the governing component or platform spec.
+- 支持的功能/引擎下限：每个已发布的 Astryx 包和稳定 CLI 版本。
+- 不支持的行为：私有包、未发布的分支状态、仅 canary 表面，以及满足 FR21 明确实验性契约的表面，都不带有稳定兼容性承诺。
+- 浏览器证据：不适用于分类本身；由浏览器归属的兼容性声明仍遵循管辖的组件或平台规格。
 
 ## Authority relationships
 
-This spec owns compatibility classification for components, and the release process
-every surface's classification goes through: lifecycle state, release-pair delta
-classes, and the evidence that admits them. A surface other than a component defines
-its own compatibility contract in its current record (FR54). It delegates narrower
-questions rather than restating them:
+本规格拥有组件的兼容性分类，以及每个表面的分类所经过的发布流程：生命周期状态、发布对差异类别，以及接纳这些类别的证据。除组件之外的表面在其当前记录中定义自己的兼容性契约（FR54）。它委派更窄的问题，而不是复述它们：
 
-- [`spec:AST-002` — Public API admission and operation shape](../AST-002/spec.md)
-  owns whether a public API concept should exist and its semantic shape.
-- [`architecture:public-component-api` — Public component API](../../architecture/public-component-api.md)
-  owns the stable component contract; this spec owns how it evolves.
-- [`architecture:cli-surface` — CLI surface architecture](../../architecture/cli-surface.md)
-  and [`spec:AST-042` — CLI command admission and programmatic parity system spec](../AST-042-cli-command-admission/spec.md)
-  own CLI structure, admission, and parity. `architecture:cli-surface` also owns the
-  CLI's compatibility contract under FR54; this spec owns the release process that
-  applies it.
-- [`architecture:theme-tokens` — Theme token architecture](../../architecture/theme-tokens.md)
-  owns token semantics; this spec owns compatibility and experimental isolation.
-- [`spec:AST-013` — Browser and platform support system spec](../AST-013/spec.md)
-  owns support floors and fallbacks; this spec owns release treatment of a support
-  reduction.
-- [`spec:AST-035` — Integration template replacement system spec](../AST-035/spec.md)
-  owns template-replacement semantics. This spec classifies each field and behavior
-  against the latest stable release: unpublished replacement-specific surfaces follow
-  FR2, while previously released same-id conflict warning behavior remains stable.
-- [`spec:AST-040` — Evidence-based consumer file modification system spec](../AST-040-consumer-file-modification/spec.md)
-  owns what a codemod may edit and the evidence it requires; this spec owns when a
-  migration must supply one.
-- [`spec:AST-010` — Structured percentage useResizable configuration system spec](../AST-010/spec.md)
-  and [`spec:AST-043` — Date and time input presentation system spec](../AST-043-input-presentation/spec.md)
-  own their concrete mappings and any surface-specific deprecation minimums.
-- [`spec:AST-030` — Positive CI surface routing system spec](../AST-030/spec.md)
-  owns pull-request lane routing; this spec owns the compatibility checks each
-  affected surface must receive and the exact-main release gate.
-- [`spec:AST-039` — Integration contribution descriptor system spec](../AST-039/spec.md)
-  is a related draft, not authority. If promoted, it links its compatibility readers
-  and removals to this lifecycle.
-- The public [Component Lifecycle](https://github.com/meta/astryx/wiki/Component-Lifecycle)
-  owns whole-component Lab-to-Core readiness. Lab remains the private canary-only
-  incubation boundary; this spec owns the compatibility effect of promotion.
-- The public [API Conventions](https://github.com/meta/astryx/wiki/API-Conventions),
-  [Distribution](https://github.com/meta/astryx/wiki/Distribution), and
-  [Release Process](https://github.com/meta/astryx/wiki/Release-Process) pages
-  are operational projections. When they discuss compatibility lifecycle, they MUST
-  link here and cannot create competing rules.
-- [`.changeset/config.json`](../../../.changeset/config.json),
-  [`scripts/check-changesets.mjs`](../../../scripts/check-changesets.mjs), and
-  [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml) implement fixed
-  grouping, declaration validation, and checks. Their current behavior is not policy
-  when it differs from this spec. The `fixed` group in that config is why one
-  incompatible Changeset puts every published package in a minor release.
-  `check-changesets.mjs` validates Changeset format on every pull request, and the
-  release-branch tooling under [`scripts/release/`](../../../scripts/release/)
-  implements FR47–FR51 admission, versioning, merge-back, and next-plan validation;
-  none of these files may narrow or widen the rule it implements.
+- [`spec:AST-002` — 公共 API 准入与操作形态](../AST-002/spec.md) 拥有某个公共 API 概念是否应当存在及其语义形态。
+- [`architecture:public-component-api` — 公共组件 API](../../architecture/public-component-api.md) 拥有稳定组件契约；本规格拥有它如何演进。
+- [`architecture:cli-surface` — CLI 表面架构](../../architecture/cli-surface.md) 和 [`spec:AST-042` — CLI 命令准入与程序化对等系统规格](../AST-042-cli-command-admission/spec.md) 拥有 CLI 结构、准入和对等性。`architecture:cli-surface` 还拥有 FR54 下 CLI 的兼容性契约；本规格拥有应用该契约的发布流程。
+- [`architecture:theme-tokens` — 主题 token 架构](../../architecture/theme-tokens.md) 拥有 token 语义；本规格拥有兼容性与实验性隔离。
+- [`spec:AST-013` — 浏览器与平台支持系统规格](../AST-013/spec.md) 拥有支持下限与回退；本规格拥有对支持范围缩减的发布处理。
+- [`spec:AST-035` — 集成模板替换系统规格](../AST-035/spec.md) 拥有模板替换语义。本规格依据最新稳定版本对每个字段和行为进行分类：未发布的替换专属表面遵循 FR2，而先前已发布的同 id 冲突警告行为保持稳定。
+- [`spec:AST-040` — 基于证据的使用方文件修改系统规格](../AST-040-consumer-file-modification/spec.md) 拥有 codemod 可以编辑什么以及它需要什么证据；本规格拥有迁移何时必须提供这类证据。
+- [`spec:AST-010` — 结构化百分比 useResizable 配置系统规格](../AST-010/spec.md) 和 [`spec:AST-043` — 日期与时间输入呈现系统规格](../AST-043-input-presentation/spec.md) 拥有各自的具体映射，以及任何表面专属的弃用最低期限。
+- [`spec:AST-030` — 正向 CI 表面路由系统规格](../AST-030/spec.md) 拥有 pull request 通道路由；本规格拥有每个受影响表面必须接收的兼容性检查，以及精确 main 的发布闸门。
+- [`spec:AST-039` — 集成贡献描述符系统规格](../AST-039/spec.md) 是一份相关草稿，而不是权威。若被提升，它会将其兼容性读取方和移除项链接到本生命周期。
+- 公共 [Component Lifecycle](https://github.com/meta/astryx/wiki/Component-Lifecycle) 拥有整组件从 Lab 到 Core 的就绪性。Lab 仍是私有且仅 canary 的孵化边界；本规格拥有提升的兼容性效果。
+- 公共 [API Conventions](https://github.com/meta/astryx/wiki/API-Conventions)、[Distribution](https://github.com/meta/astryx/wiki/Distribution) 和 [Release Process](https://github.com/meta/astryx/wiki/Release-Process) 页面是运营性投影。当它们讨论兼容性生命周期时，它们 MUST 链接到此处，且不能创建相竞争的规则。
+- [`.changeset/config.json`](../../../.changeset/config.json)、[`scripts/check-changesets.mjs`](../../../scripts/check-changesets.mjs) 和 [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml) 实现固定分组、声明校验和各项检查。它们的当前行为与本规格不一致时并不构成策略。该配置中的 `fixed` 组正是为什么一个不兼容的 Changeset 会把每个已发布的包都放进 minor 发布。`check-changesets.mjs` 在每个 pull request 上校验 Changeset 格式，[`scripts/release/`](../../../scripts/release/) 下的发布分支工具实现 FR47–FR51 的准入、版本化、合并回主以及下一计划校验；这些文件都不得收窄或放宽它所实现的规则。
 
-The direct current owner decides the intended product contract. For a surface other
-than a component, its record also decides what counts as breaking (FR54). This spec
-decides the release process every change goes through. The public Release Process
-decides how an eligible release is operated. A direct spec cannot waive compatibility silently;
-an incompatible change to its surface lands in a declared minor under FR31.
+直接的当前所有者决定预期的产品契约。对于除组件之外的表面，其记录还决定什么算作破坏性变更（FR54）。本规格决定每个改动所经过的发布流程。公共 Release Process 决定如何运营一次符合条件的发布。直接规格不能静默放弃兼容性；对其表面的不兼容改动会依据 FR31 落在已声明的 minor 中。
 
 ## Current-state impact
 
-Public lifecycle classification remains in force with these operational effects:
+公共生命周期分类继续有效，并带来以下运营效果：
 
-- stable changes default to compatible patch treatment;
-- experimental containment extends to every public surface kind;
-- a breaking change ships only in a declared minor, described by its `[breaking]`
-  Changeset; when `main` declares a patch, a deprecation ships first — warnings stay
-  at authoring surfaces, production runtime stays unchanged, and an executable
-  modernization route precedes warning delivery;
-- planned minors use a locked final-patch baseline, and the cut generates the
-  release description from the consumed Changesets;
-- minor frequency remains planning guidance and creates no deprecation or pair wait;
-- contributor declarations are the Changeset tag and body, with no parallel
-  lifecycle metadata and no migration of existing Changesets;
-- documentation catalog display names and routes remain mutable data while the stable
-  `docs` command and machine-readable schemas stay contractual;
-- exact-main release comparison rejects unclassified deltas; and
-- a surface other than a component is classified by its own record's compatibility
-  contract, and the release process here applies to the result;
-- touch work that changed fine-pointer behavior only as a side effect becomes
-  touch-only with fine pointers unchanged, and a fine-pointer visual change proposed
-  alongside touch work, such as a new modal backdrop dim, becomes its own design
-  decision (FR59);
-- no file path or subpath marks a surface experimental and Core's behavior and
-  utility modules without a public contract stay unexported, except through
-  the reserved `./internal/*` subpaths (FR21).
+- 稳定改动默认按兼容的 patch 处理；
+- 实验性收容扩展到每一种公共表面类型；
+- 破坏性改动只在已声明的 minor 中发布，并由其 `[breaking]` Changeset 描述；当 `main` 声明的是 patch 时，先发布弃用——警告保留在编写表面，生产运行时保持不变，并且可执行的现代化路径先于警告交付；
+- 计划中的 minor 使用锁定的最终 patch 基线，切版时从已消耗的 Changeset 生成发布说明；
+- minor 频率仍是规划指导，不产生弃用或配对等待；
+- 贡献者声明就是 Changeset 的标签和正文，没有并行的生命周期元数据，也不迁移现有 Changeset；
+- 文档目录的显示名称和路由仍是可变数据，而稳定的 `docs` 命令和机器可读 schema 保持契约性；
+- 精确 main 的发布比较会拒绝未分类的增量；并且
+- 除组件之外的表面由其自身记录的兼容性契约分类，此处的发布流程适用于其结果；
+- 仅作为副作用改变了精细指针行为的触控工作，会变为仅触控改动，精细指针保持不变；而与触控工作一同提出的精细指针视觉改动，例如新的模态背景变暗，会成为其自身的设计决策（FR59）；
+- 没有任何文件路径或子路径会把某个表面标记为实验性，而 Core 的行为和没有公共契约的工具模块保持不导出，除非通过保留的 `./internal/*` 子路径（FR21）。
 
-Main declares the next planned version, and Changeset admission uses that declaration
-to refuse `[breaking]` work on a patch plan. Pull-request lint does not compare the
-declaration with stable or an active cut. The canary publisher compares at publication
-time: strictly above stable publishes, equality skips, and lower or split declarations
-fail closed. A release branch releases the cut's declaration unchanged and admits
-incompatible work only when it is a minor; the Changeset cannot choose that version
-itself. Published branch bytes squash back into current main without regeneration,
-post-cut consumption, or plan changes. Release tooling prepares the separate successor
-plan at cut time—patch by default, minor only when Cindy names it—and holds it until the
-cut version becomes non-reusable. It may then land before or after merge-back without
-holding unrelated main work; a terminal cut with neither an immutable tag nor stable
-package publication closes it unmerged.
+`main` 声明下一个计划版本，Changeset 准入使用该声明来拒绝 patch 计划上的 `[breaking]` 工作。Pull request lint 不会把该声明与稳定版本或活跃切版进行比较。canary 发布器在发布时进行比较：严格高于稳定版本的会发布，相等则跳过，而更低或分裂的声明会失败关闭。发布分支按切版的声明原样发布，并且只有当该声明是 minor 时才接纳不兼容的工作；Changeset 本身不能选择该版本。已发布的分支字节会压回当前 main，不做重新生成、切版后消耗或计划改动。发布工具在切版时准备单独的继任计划——默认 patch，只有 Cindy 指定时才为 minor——并一直保持到切版版本变为不可重用。此后它可以在合并回主之前或之后落地，而不会挂起无关的 main 工作；对于既没有不可变标签、也没有稳定包发布的终止性切版，该计划会在未合并的状态下关闭。
 
-Codemod promotion relocates staged transform source into the immutable release folder.
-Repository evidence that reads a transform follows that lifecycle location and treats a
-missing or ambiguous identity as a failure rather than preserving a duplicate source.
+Codemod 提升会把暂存的转换源码迁移到不可变的发布文件夹。读取转换的仓库证据遵循该生命周期位置，并把缺失或有歧义的身份视为失败，而不是保留重复的源码。
 
-These requirements alter no published package by themselves and need no Changeset.
-Authoring helpers, validators, metadata projections, compatibility snapshots, release
-workflows, and contributor guidance implement the contract. Until each projection
-lands, maintainers apply its requirement in review and release approval.
+这些要求本身不改变任何已发布的包，也不需要 Changeset。编写辅助工具、校验器、元数据投影、兼容性快照、发布工作流和贡献者指南实现该契约。在每个投影落地之前，维护者在审查和发布批准中应用其要求。
 
 ## Verification
 
-| Contract  | Verification                                                                                                                                                                                                                                                                                                                                                    | Representative states                                                                                                                                                                                                                                                                                                                                                                                   | Mutation or failure expectation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1–FR3   | PR compatibility statement plus latest stable package inspection                                                                                                                                                                                                                                                                                                | released export, narrowed type, changed interaction default; unreleased and private surface; visual-only spacing, typography, layout styling, or default appearance; a new touch presentation or open-surface touch mode as a default                                                                                                                                                                   | A change is labeled from diff size or possibility alone, a functional contract loss is hidden as visual-only, or a pixel-only change is tagged `[breaking]` even though callers need no source or configuration change, or such a touch default names no `presentation` value that restores the previous surface and mode                                                                                                                                                                                                                                                                                                                      |
-| FR4–FR6   | Old-usage type/runtime/CLI regression test                                                                                                                                                                                                                                                                                                                      | alias retained, deprecation warning, broad rewrite, low-adoption caller                                                                                                                                                                                                                                                                                                                                 | Contractual old usage fails despite a nonbreaking label, or risk is substituted for compatibility                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| FR7–FR8   | `pnpm check:changesets` (tag, bump, contributors, declared tier) plus FR8 migration review of `[breaking]` text                                                                                                                                                                                                                                                 | existing `[fix]`, `[feat]`, `[breaking]`, and `[experimental]` tags paired with compatible, deprecation, planned-removal, or incompatible-fix metadata                                                                                                                                                                                                                                                  | A new lifecycle replaces an established tag, tag/metadata/bump diverge, an incompatible correction uses bare `[fix]`, or migration is unusable                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| FR9–FR13  | CLI contract tests, response-schema/type snapshots, text projections, generated consumer docs, and template catalog/output tests                                                                                                                                                                                                                                | slug rename, metadata edit, source rebuild, optional field addition, command or schema change                                                                                                                                                                                                                                                                                                           | Catalog data is frozen as API, a command/schema incompatibility is mislabeled as catalog-only, or a response field lacks a complete projection                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| FR12      | Minimum and representative supported-version tests plus manifest and release-note review                                                                                                                                                                                                                                                                        | retained range, narrowed range, adapter, coordinated upgrade                                                                                                                                                                                                                                                                                                                                            | An in-range combination breaks under a nonbreaking label, or release coordination hides the affected package or migration                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| FR14      | Help/manifest snapshots, public API and consumer docs, and focused contract tests                                                                                                                                                                                                                                                                               | command, option, API/config, private rollout/test hook                                                                                                                                                                                                                                                                                                                                                  | Supported behavior is hidden, an environment variable changes behavior, or automation lacks a documented API                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| FR15      | Full manifest-derived command matrix, supported-consumer evidence, and scope-specific contract tests                                                                                                                                                                                                                                                            | global invariant, scoped command group, single command, programmatic API                                                                                                                                                                                                                                                                                                                                | A global control is a no-op for any command, has different meanings, or replaces a narrower owning surface                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| FR16–FR18 | Boundary inventory, hostile side-effect probes, response snapshots, and concurrent API tests                                                                                                                                                                                                                                                                    | known and new extension, partial result, text/JSON/API parity, independent concurrent calls                                                                                                                                                                                                                                                                                                             | A route bypasses the guarantee, omitted work looks complete, or one invocation changes another                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| FR19–FR20 | Proposal evidence with a regression fixture for the detection failure, plus composition and provenance tests                                                                                                                                                                                                                                                    | convention covers the case, detection fails, app plus two integrations, refusal, failing contribution, repeated load                                                                                                                                                                                                                                                                                    | A key ships without a reproduced detection failure, a contribution displaces the app or applies twice, a part of the effective value has no inspectable source, or a failure silently weakens protection                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| FR21–FR24 | Published-surface comparison, declaration/doc metadata checks, import-boundary checks, and Changeset classification review                                                                                                                                                                                                                                      | experimental prop object, experimental subpath, patch evolution, promotion, unpublished adjacent field, stable warning behavior, integration theme; a component or module `/experimental` subpath; an `_experimental` export; a behavior module; an `./internal/*` subpath imported from Core, from Lab, and from another package; a swizzled copy's import of an exported `./internal/*.stylex` module | A prose-only marker excludes a stable API, adjacency falsely publishes a new field, an experimental export leaks through a stable path, a patch changes stable behavior, or a promoted API remains unprotected, a file path or subpath alone marks a surface experimental, a behavior, utility, or internal module without a public contract is exported other than through `./internal/*`, an `./internal/*` subpath is documented or imported outside Core and Lab other than a swizzled copy's exported StyleX module (FR21), or an experimental public API in Core does not show its status at the call site in the name the caller writes |
-| FR25–FR27 | Stable-surface inventory and experimental-boundary matrix                                                                                                                                                                                                                                                                                                       | package/API, CSS/token, CLI/config, persistence, build tooling, docs, whole Lab component                                                                                                                                                                                                                                                                                                               | An unmarked experiment changes stable defaults or a stable surface bypasses compatibility review                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| FR28–FR31 | Declared-tier check: on a minor, the `[breaking]` Changeset describes the change (old usage, replacement, migration); on a patch, a breaking Changeset is refused and the deprecation ships instead; declaration/doc/build/CLI warning projections; old/new fixtures; dry-run/idempotence/migration tests; maintained-source and latest-stable upgrade evidence | whole component, prop/value, theme field/helper/token/target/source, CLI command, CLI option; old-only, new-only, both, static/dynamic/uncertain migration, text/JSON, development/production                                                                                                                                                                                                           | A warning has no usable modernization route, production runtime changes for deprecation, maintained guidance teaches the old surface, a migration guesses, old behavior degrades early, cadence invents a wait, or one cleanup id covers multiple incompatible deltas                                                                                                                                                                                                                                                                                                                                                                          |
-| FR32–FR35 | Latest-stable victim fixture, pre-existing authority named in the Changeset or pull request, owner review, declared-tier check, and emergency attestation                                                                                                                                                                                                       | victim-free `[fix]`, `[fix]` plus incompatible-fix metadata, coexistence, cleanup transition, critical-harm emergency                                                                                                                                                                                                                                                                                   | A released victim uses bare `[fix]`, a new Changeset tag replaces metadata, a correction record disagrees with its public-surface state, or urgency bypasses migration                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| FR36–FR40 | Owner-declared target, locked final-patch receipt, three-way delta classification against the merged `[breaking]` Changesets, and separated release notes                                                                                                                                                                                                       | ordinary cadence, immediate pair, cleanup, release metadata, pre/post-lock compatible fix                                                                                                                                                                                                                                                                                                               | Cadence becomes eligibility, the final patch is recut for bookkeeping, a feature or incompatible fix enters the incidental-fix lane, or release notes merge cleanup with fixes                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| FR41–FR44 | Schema validation, PR declaration, semantic stable/base/head comparisons, exact-main gate, and immutable publish/rollback receipt                                                                                                                                                                                                                               | duplicate ids, missing evidence, route/schema removal, old-client metadata, partial publish, safe rollback                                                                                                                                                                                                                                                                                              | A label passes without semantics, a delta maps zero or multiple times, fixed-group membership drifts, or a release rebuilds under one identity                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| FR45      | Docs route inventory, repository-reference checks, and Changeset review                                                                                                                                                                                                                                                                                         | catalog entry rename, former-route miss, stable command and JSON schema                                                                                                                                                                                                                                                                                                                                 | Catalog routing is frozen as API, or a rename silently changes the contractual command or response schema                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| FR46–FR47 | Declared-tier Changeset admission, canary publication ordering and cadence, and release-versioning fixtures                                                                                                                                                                                                                                                     | owner increase/decrease, above/equal/below stable, split group, `[breaking]` on patch and minor plans, hourly, on-demand and already-published canary runs                                                                                                                                                                                                                                              | Pending Changesets derive the plan, `[breaking]` passes on a patch or fails on a minor, equality publishes a canary, a lower/split declaration publishes instead of failing, a canary publishes on every push, or a tip whose canaries are all published publishes again                                                                                                                                                                                                                                                                                                                                                                       |
-| FR48      | Category and classification admission under each declared tier                                                                                                                                                                                                                                                                                                  | patch release with `[breaking]`, patch release with a deprecation, minor release with `[breaking]`                                                                                                                                                                                                                                                                                                      | Incompatible work passes in a patch release, or a deprecation is refused in one                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| FR49      | Malformed and inconsistent declaration fixtures                                                                                                                                                                                                                                                                                                                 | disagreeing group versions, canary identifier, release version unlike the cut manifest, already-released version, skipped version, no stable tag                                                                                                                                                                                                                                                        | An untrustworthy or mismatched declaration is released                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| FR50      | Three-way squash merge-back fixtures bound to the immutable tag, branch head, and plan digest                                                                                                                                                                                                                                                                   | exact branch outputs, frozen deletion, branch-only marker exclusion, post-cut Changeset/manifest edit, newer main declaration, merge conflict, regenerated output                                                                                                                                                                                                                                       | Merge-back differs from release bytes, lands lifecycle files, consumes post-cut work, overwrites a newer main declaration or unrelated field, or chooses a version                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| FR51      | Cut-time successor-plan preparation plus manifest/pin/lockfile/compatibility-asset and lifecycle fixtures                                                                                                                                                                                                                                                       | default patch successor, explicitly named minor, abort before any tag or publication, immutable tag before merge-back, pre-advanced main plan, unrelated main work during equality                                                                                                                                                                                                                      | The plan merges before the cut version is non-reusable, survives a terminal cut with neither an immutable tag nor stable publication, skips the default patch, derives a minor from pending Changesets, splits pins/assets, or the prepared plan or merge-back lowers or duplicates an existing newer plan                                                                                                                                                                                                                                                                                                                                     |
-| FR52      | Promotion fixtures plus every checked-in source consumer run before and after codemod promotion                                                                                                                                                                                                                                                                 | staged transform, promoted transform, missing source, ambiguous candidates, changed entry identity                                                                                                                                                                                                                                                                                                      | Evidence hardcodes only `next/`, keeps a duplicate source, silently chooses among candidates, or passes when the promoted transform no longer exposes the same identity and entries                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| FR53      | Changeset classification review against the governing component record's accessibility evidence                                                                                                                                                                                                                                                                 | a fix that replaces documented keyboard or focus behavior to meet an adopted APG pattern's required parts; a fix that changes a role, state, or accessible name to meet WCAG 2.2 A/AA; a fix that adds an optional prop                                                                                                                                                                                 | An accessibility fix is held for a minor, given a coexistence path, or classified `[breaking]`; or a change that needs an app-layer code edit, or that removes, renames, or narrows public surface, ships as an accessibility `[fix]`                                                                                                                                                                                                                                                                                                                                                                                                          |
-| FR54      | Changeset classification review against the surface's current record, then the same tier admission every Changeset receives                                                                                                                                                                                                                                     | a CLI correction the CLI record classifies as `[fix]`; a CLI change the CLI record leaves undecided; a CLI change the CLI record classifies as `[breaking]` on a patch plan; a component change                                                                                                                                                                                                         | A non-component change is classified by a rule this record restates instead of its surface record, a surface rule turns on risk or adoption, a surface-classified `[breaking]` change ships in a patch or a surface rule makes it patch-eligible, or a component change is classified by a surface record                                                                                                                                                                                                                                                                                                                                      |
-| FR59      | Pull request review of fine-pointer before-and-after evidence                                                                                                                                                                                                                                                                                                   | a touch change that also fixes a defect fine-pointer users hit; a deliberate cross-device consistency change; a touch-only change; a new fine-pointer look proposed with touch work                                                                                                                                                                                                                     | A touch change alters fine-pointer behavior or appearance with neither reason, shows no fine-pointer before-and-after evidence, or ships a new fine-pointer look without its own owner decision                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| FR60      | Element counts per story at rest and open, fine and coarse pointer, against architecture INV7                                                                                                                                                                                                                                                                   | a surface component at rest; an open layer; a DOM reduction; a recorded exception; an open layer under touch with extra elements                                                                                                                                                                                                                                                                        | An element beyond INV7's budgets with no recorded owner exception, a hidden twin or second presentation, or a DOM reduction that removes a theme target or documented anatomy, or that is classified as breaking; an open layer more than 5 elements over its fine-pointer count, an added element that is themeable, a new anatomy part, or without a job in its record, or a closed layer, trigger, or repeated component above its fine-pointer count                                                                                                                                                                                       |
-| FR61      | Release-validator, initial and corrective policy-carry, and scope-routing fixtures; one exact test port; exact-head CodeBunny/CI; then the full release gate                                                                                                                                                                                                    | one non-merge test commit still present on main; stable patch id equal but changed-line digest different; reverted source; product, package, Changeset, snapshot, assertion, test-control, timeout or retry edits; multiple commits; unauthorized policy-carry path; undecidable file list                                                                                                              | A broader change enters the release branch, the carried policy differs from its reviewed main commit, the repair runs a narrow lane, a repeated or waived gate substitutes for proof, or tagging starts before the new exact head passes the full release gate                                                                                                                                                                                                                                                                                                                                                                                 |
-| FR3       | Current component contract, latest-stable inspection, and coarse/non-coarse browser evidence                                                                                                                                                                                                                                                                    | Auxiliary numeric steppers hidden with accessible direct entry and keyboard stepping retained; lost entry path; removed public prop or essential action                                                                                                                                                                                                                                                 | A qualifying numeric-stepper adaptation is labeled breaking, or the narrow rule is used to excuse a lost API, essential action, value/validation/callback contract, or accessible entry path                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 契约      | 验证                                                                                                                                                                                                                                              | 代表性状态                                                                                                                                                                                                                                                                                                 | 变更或失败预期                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1–FR3   | PR 兼容性声明，加上对最新稳定包的检查                                                                                                                                                                                                             | 已发布的导出、收窄的类型、变更的交互默认值；未发布与私有的表面；仅涉及视觉的间距、排版、布局样式或默认外观；以新的触摸呈现方式或开放表面触摸模式作为默认值                                                                                                                                                 | 仅凭 diff 大小或可能性就给变更打标签，把功能契约的丧失伪装成仅视觉变更，或者把仅像素级的变更标记为 `[breaking]`——尽管调用方无需改动源码或配置；又或者这样的触摸默认值没有指明任何能恢复先前表面与模式的 `presentation` 值                                                                                                                                                                                                                                                        |
+| FR4–FR6   | 旧用法的类型/运行时/CLI 回归测试                                                                                                                                                                                                                  | 保留别名、弃用警告、大规模重写、低采用率调用方                                                                                                                                                                                                                                                             | 契约性的旧用法在非破坏性标签下仍然失败，或者用风险替代兼容性判断                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| FR7–FR8   | `pnpm check:changesets`（标签、版本递增、贡献者、声明的层级），加上针对 `[breaking]` 文本的 FR8 迁移审查                                                                                                                                          | 既有的 `[fix]`、`[feat]`、`[breaking]` 和 `[experimental]` 标签，与兼容、弃用、计划移除或不兼容修复的元数据相配对                                                                                                                                                                                          | 新的生命周期替换了既有标签，标签/元数据/版本递增三者不一致，不兼容的修正使用了裸 `[fix]`，或者迁移不可用                                                                                                                                                                                                                                                                                                                                                                         |
+| FR9–FR13  | CLI 契约测试、响应 schema/类型快照、文本投影、生成的使用方文档，以及模板目录/输出测试                                                                                                                                                             | slug 重命名、元数据编辑、源重建、可选字段新增、命令或 schema 变更                                                                                                                                                                                                                                          | 把目录数据固化为 API，把命令/schema 的不兼容错误地归为仅目录变更，或者某个响应字段缺少完整投影                                                                                                                                                                                                                                                                                                                                                                                   |
+| FR12      | 最低版本与代表性支持版本的测试，加上清单和发布说明审查                                                                                                                                                                                            | 保留的版本范围、收窄的版本范围、适配器、协同升级                                                                                                                                                                                                                                                           | 范围内的组合在非破坏性标签下失效，或者发布协同掩盖了受影响的包或迁移                                                                                                                                                                                                                                                                                                                                                                                                             |
+| FR14      | 帮助/清单快照、公共 API 与使用方文档，以及聚焦的契约测试                                                                                                                                                                                          | 命令、选项、API/配置、私有发布/测试钩子                                                                                                                                                                                                                                                                    | 受支持的行为被隐藏，环境变量改变了行为，或者自动化缺少有文档的 API                                                                                                                                                                                                                                                                                                                                                                                                               |
+| FR15      | 完整的清单派生命令矩阵、支持使用方的证据，以及特定作用域的契约测试                                                                                                                                                                                | 全局不变式、作用域命令组、单条命令、程序化 API                                                                                                                                                                                                                                                             | 全局控制对任何命令都是空操作、具有不同含义，或者替代了更窄的所有者表面                                                                                                                                                                                                                                                                                                                                                                                                           |
+| FR16–FR18 | 边界清单、恶意副作用探测、响应快照，以及并发 API 测试                                                                                                                                                                                             | 已知与新扩展、部分结果、文本/JSON/API 一致性、独立的并发调用                                                                                                                                                                                                                                               | 某条路径绕过了该保证，被省略的工作看起来已完整，或者一次调用改变了另一次调用                                                                                                                                                                                                                                                                                                                                                                                                     |
+| FR19–FR20 | 带有检测失败回归测试夹具的提议证据，加上组合与来源测试                                                                                                                                                                                            | 约定覆盖该情形、检测失败、应用加两个集成、拒绝、失败的贡献、重复加载                                                                                                                                                                                                                                       | 某个键在没有复现检测失败的情况下就发布，某个贡献顶替了应用或被应用两次，生效值的一部分没有可检查的来源，或者失败会悄悄削弱保护                                                                                                                                                                                                                                                                                                                                                   |
+| FR21–FR24 | 已发布表面的比较、声明/文档元数据检查、导入边界检查，以及 Changeset 分类审查                                                                                                                                                                      | experimental 属性对象、experimental 子路径、补丁演进、转正、未发布的相邻字段、稳定的警告行为、集成主题；组件或模块的 `/experimental` 子路径；`_experimental` 导出；behavior 模块；从 Core、从 Lab 以及从另一个包导入的 `./internal/*` 子路径；被 swizzle 出的副本对已导出 `./internal/*.stylex` 模块的导入 | 仅凭散文式标记就排除某个稳定 API，相邻性错误地发布了新字段，experimental 导出经由稳定路径泄漏，补丁改变了稳定行为，或者转正后的 API 仍不受保护；仅凭文件路径或子路径就把某个表面标记为 experimental；没有公共契约的 behavior、工具或内部模块通过 `./internal/*` 之外的方式导出；`./internal/*` 子路径在 Core 与 Lab 之外被写入文档或被导入——被 swizzle 出的副本所导出的 StyleX 模块除外（FR21）；或者 Core 中某个 experimental 公共 API 没有在调用处以调用方所写的名称显示其状态 |
+| FR25–FR27 | 稳定表面清单与 experimental 边界矩阵                                                                                                                                                                                                              | 包/API、CSS/token、CLI/配置、持久化、构建工具、docs、整个 Lab 组件                                                                                                                                                                                                                                         | 未标记的实验改变了稳定默认值，或者某个稳定表面绕过了兼容性审查                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| FR28–FR31 | 声明层级检查：在 minor 上，`[breaking]` Changeset 描述该变更（旧用法、替代方案、迁移）；在 patch 上，破坏性 Changeset 被拒绝，改为发布弃用；声明/文档/构建/CLI 警告投影；旧/新测试夹具；dry-run/幂等性/迁移测试；受维护源码与最新稳定版的升级证据 | 整个组件、prop/值、主题字段/辅助函数/token/目标/来源、CLI 命令、CLI 选项；仅旧、仅新、两者皆有、静态/动态/不确定的迁移、文本/JSON、开发/生产                                                                                                                                                               | 警告没有可用的现代化路径，生产运行时因弃用而改变，受维护的指南仍在教旧表面，迁移靠猜测，旧行为过早退化，节奏凭空造出等待期，或者一个清理 id 覆盖了多个不兼容差异                                                                                                                                                                                                                                                                                                                 |
+| FR32–FR35 | 最新稳定版受害方测试夹具、在 Changeset 或 pull request 中点名的既有权威、所有者审查、声明层级检查，以及紧急情况证明                                                                                                                               | 无受害方的 `[fix]`、`[fix]` 加上不兼容修复元数据、共存、清理过渡、严重危害紧急情况                                                                                                                                                                                                                         | 已发布的受害方使用了裸 `[fix]`，新的 Changeset 标签替代了元数据，修正记录与其公共表面状态不一致，或者紧急情况绕过了迁移                                                                                                                                                                                                                                                                                                                                                          |
+| FR36–FR40 | 所有者声明的目标、锁定的最终补丁凭证、针对已合并 `[breaking]` Changeset 的三方差异分类，以及分开的发布说明                                                                                                                                        | 常规节奏、立即配对、清理、发布元数据、锁定前/锁定后的兼容修复                                                                                                                                                                                                                                              | 节奏变成了资格条件，为记账而重新切出最终补丁，某个功能或不兼容修复进入附带修复通道，或者发布说明把清理与修复混在一起                                                                                                                                                                                                                                                                                                                                                             |
+| FR41–FR44 | schema 校验、PR 声明、语义化的 stable/base/head 比较、精确 main 门禁，以及不可变的发布/回滚凭证                                                                                                                                                   | 重复 id、缺失证据、路由/schema 移除、旧客户端元数据、部分发布、安全回滚                                                                                                                                                                                                                                    | 标签在没有语义依据的情况下通过，某个差异映射为零次或多次，固定组成员关系发生漂移，或者一次发布在同一身份下重新构建                                                                                                                                                                                                                                                                                                                                                               |
+| FR45      | Docs 路由清单、仓库引用检查，以及 Changeset 审查                                                                                                                                                                                                  | 目录条目重命名、旧路由失效、稳定命令与 JSON schema                                                                                                                                                                                                                                                         | 把目录路由固化为 API，或者重命名悄悄改变了契约性命令或响应 schema                                                                                                                                                                                                                                                                                                                                                                                                                |
+| FR46–FR47 | 声明层级的 Changeset 准入、金丝雀发布的顺序与节奏，以及发布版本化测试夹具                                                                                                                                                                         | 所有者升高/降低、高于/等于/低于稳定版、拆分组、在 patch 与 minor 计划上的 `[breaking]`、每小时、按需以及已发布的金丝雀运行                                                                                                                                                                                 | 未决的 Changeset 推导出计划，`[breaking]` 在 patch 上通过或在 minor 上失败，相等时发布金丝雀，较低/拆分的声明发布而非失败，每次 push 都发布金丝雀，或者某个 tip 的金丝雀均已发布却又再次发布                                                                                                                                                                                                                                                                                     |
+| FR48      | 每个声明层级下的类别与分类准入                                                                                                                                                                                                                    | 带 `[breaking]` 的 patch 发布、带弃用的 patch 发布、带 `[breaking]` 的 minor 发布                                                                                                                                                                                                                          | 不兼容的工作在 patch 发布中通过，或者弃用在其中被拒绝                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| FR49      | 格式错误与不一致声明的测试夹具                                                                                                                                                                                                                    | 相互矛盾的组版本、金丝雀标识符、与切出版本清单不同的发布版本、已发布的版本、被跳过的版本、没有稳定标签                                                                                                                                                                                                     | 发布了不可信或不匹配的声明                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| FR50      | 绑定到不可变标签、分支 head 和计划摘要的三方 squash 回填测试夹具                                                                                                                                                                                  | 精确的分支输出、冻结的删除、仅分支标记的排除、切出后的 Changeset/清单编辑、更新的 main 声明、合并冲突、重新生成的输出                                                                                                                                                                                      | 回填与发布字节不一致、落入了生命周期文件、消耗了切出后的工作、覆盖了更新的 main 声明或无关字段，或者自行选择版本                                                                                                                                                                                                                                                                                                                                                                 |
+| FR51      | 切出时后继计划的准备工作，加上清单/pin/lockfile/兼容性资产以及生命周期测试夹具                                                                                                                                                                    | 默认 patch 后继、显式指定的 minor、在打任何标签或发布之前中止、回填之前先有不可变标签、预先推进的 main 计划、相等期间无关的 main 工作                                                                                                                                                                      | 计划在切出版本变得不可重用之前就合并，在既无不可变标签也无稳定发布的终止性切出后仍然存活，跳过了默认 patch，从未决 Changeset 推导出 minor，拆分了 pin/资产，或者准备好的计划或回填降低或重复了已有的更新计划                                                                                                                                                                                                                                                                     |
+| FR52      | 转正测试夹具，加上每个已签入源码使用方在 codemod 转正前后的运行                                                                                                                                                                                   | 分阶段转换、已转正的转换、缺失源码、有歧义的候选、变更的条目身份                                                                                                                                                                                                                                           | 证据只硬编码了 `next/`，保留了重复的源码，在候选中悄悄做出选择，或者在已转正的转换不再暴露相同身份与条目时仍然通过                                                                                                                                                                                                                                                                                                                                                               |
+| FR53      | 依据管辖组件记录的无障碍证据对 Changeset 进行分类审查                                                                                                                                                                                             | 为满足所采用 APG 模式的必需部分而替换已记录的键盘或焦点行为的修复；为满足 WCAG 2.2 A/AA 而改变 role、状态或可访问名称的修复；添加可选 prop 的修复                                                                                                                                                          | 无障碍修复被推迟到 minor、被给予共存路径，或被归类为 `[breaking]`；或者某个需要应用层代码编辑、或移除、重命名、收窄公共表面的变更，以无障碍 `[fix]` 发布                                                                                                                                                                                                                                                                                                                         |
+| FR54      | 依据该表面的当前记录对 Changeset 进行分类审查，然后适用每个 Changeset 都要接受的同一层级准入                                                                                                                                                      | CLI 记录归类为 `[fix]` 的 CLI 修正；CLI 记录未作决定的 CLI 变更；CLI 记录在 patch 计划上归类为 `[breaking]` 的 CLI 变更；组件变更                                                                                                                                                                          | 非组件变更依据本记录复述的规则而非其表面记录来分类，表面规则取决于风险或采用情况，被表面归类为 `[breaking]` 的变更在 patch 中发布，或者表面规则使其符合 patch 条件，或者组件变更依据表面记录来分类                                                                                                                                                                                                                                                                               |
+| FR59      | pull request 中对精指针前后对比证据的审查                                                                                                                                                                                                         | 同时修复精指针用户所遇缺陷的触摸变更；刻意的跨设备一致性变更；仅触摸的变更；随触摸工作一同提出的新精指针外观                                                                                                                                                                                               | 触摸变更在没有理由的情况下改变了精指针的行为或外观，没有展示精指针前后对比证据，或者在缺少其自身所有者决策的情况下发布了新的精指针外观                                                                                                                                                                                                                                                                                                                                           |
+| FR60      | 每个 story 在静置与展开状态、精指针与粗指针下的元素计数，对照架构 INV7                                                                                                                                                                            | 静置的表面组件；展开的层；DOM 缩减；已记录的例外；触摸下带有额外元素的展开层                                                                                                                                                                                                                               | 某个元素超出 INV7 的预算且没有已记录的所有者例外，存在隐藏的孪生体或第二呈现，或者 DOM 缩减移除了主题目标或已记录的解剖结构，或被归类为破坏性；展开层超出其精指针计数 5 个元素以上，新增的元素可被主题化、属于新的解剖部件，或在其记录中没有职责；又或者关闭的层、触发器或重复组件超出其精指针计数                                                                                                                                                                               |
+| FR61      | 发布校验器、初始与纠正性策略携带，以及作用域路由的测试夹具；一个精确的测试端口；精确 head 的 CodeBunny/CI；然后是完整发布门禁                                                                                                                     | main 上仍存在一个非合并的测试提交；稳定补丁 id 相同但变更行摘要不同；被还原的源码；产品、包、Changeset、快照、断言、测试控制、超时或重试的编辑；多个提交；未经授权的策略携带路径；无法判定的文件列表                                                                                                       | 更宽泛的变更进入发布分支，携带的策略与其已审查的 main 提交不同，修复走的是窄通道，重复或豁免的门禁替代了证明，或者在新精确 head 通过完整发布门禁之前就开始打标签                                                                                                                                                                                                                                                                                                                 |
+| FR3       | 当前组件契约、最新稳定版检查，以及粗/非粗指针的浏览器证据                                                                                                                                                                                         | 辅助的数字步进器被隐藏，同时保留可访问的直接输入与键盘步进；丢失的输入路径；被移除的公共 prop 或必要操作                                                                                                                                                                                                   | 符合条件的数字步进器适配被标记为破坏性，或者用这条窄规则来开脱丢失的 API、必要操作、值/校验/回调契约，或可访问的输入路径                                                                                                                                                                                                                                                                                                                                                         |
 
 ## Decision log
 
 ### DEC-1 — Breaking means a released consumer must change
 
-**Reference:** `spec:AST-017/DEC-1`
-**Decider:** `cixzhang`, `2026-09-02`
+**引用：** `spec:AST-017/DEC-1`
 
-Classify compatibility from the latest stable published contract and name the
-consumer scenario that stops working. This makes labels predictable, keeps
-unreleased and private experimentation free to change, and prevents low-risk but
-incompatible edits from hiding in patch releases.
+**决策者：** `cixzhang`, `2026-09-02`
 
-Rejected: classifying by implementation size, perceived risk, reviewer confidence,
-or any observable difference. Those tests either miss real contract breakage or
-freeze implementation details and data values that were never promised.
+依据最新稳定已发布的契约判定兼容性，并点名会因此停止工作的使用方场景。这使标签可预测，让未发布与私有的实验保持可自由变更，并防止低风险但不兼容的编辑藏在 patch 发布中。
+
+已否决：依据实现规模、感知风险、审查者信心或任何可观察差异来分类。这些判据要么漏掉真正的契约破坏，要么把从未承诺过的实现细节与数据值固化下来。
 
 ### DEC-2 — Template slugs and source are mutable catalog data
 
-**Reference:** `spec:AST-017/DEC-2`
-**Decider:** `cixzhang`, `2026-09-02`
+**引用：** `spec:AST-017/DEC-2`
 
-Treat a template slug as data describing the current catalog entry, alongside its
-name, description, category, keywords, and starter content. Those values may evolve
-in patch releases, including a slug rename that makes the previous value stop
-resolving. The release note should make the new value discoverable, but the change
-is not `[breaking]` and needs no compatibility alias or codemod.
+**决策者：** `cixzhang`, `2026-09-02`
 
-Keep the surrounding CLI operation contractual: incompatible changes to the
-`template` command, its options, exit behavior, or machine-readable schema still
-follow the normal breaking-change rule. This lets the template library improve
-without confusing current catalog contents with the interface that serves them.
+把模板 slug 当作描述当前目录条目的数据，与它的名称、描述、类别、关键词和起始内容并列。这些值可以在 patch 发布中演进，包括让先前值不再能解析的 slug 重命名。发布说明应当让新值可被发现，但该变更不是 `[breaking]`，也不需要兼容性别名或 codemod。
 
-Rejected: treating a slug as stable API merely because it is interpolated into an
-exact CLI invocation. That would freeze catalog data and discourage clearer naming
-without protecting a contract the template system intends to make.
+保持周围的 CLI 操作为契约性：对 `template` 命令、其选项、退出行为或机器可读 schema 的不兼容变更仍遵循常规的破坏性变更规则。这让模板库得以改进，同时不会把当前目录内容与为其服务的接口混为一谈。
+
+已否决：仅因为 slug 被插值进某条精确的 CLI 调用，就把它当作稳定 API。那会固化目录数据、抑制更清晰命名，却没有保护模板系统有意建立的契约。
 
 ### DEC-3 — Package updates keep their own range promises
 
-**Reference:** `spec:AST-017/DEC-3`
-**Decider:** `cixzhang`, `2026-09-03`
+**引用：** `spec:AST-017/DEC-3`
 
-Treat the latest stable package's declared dependency or peer range and documented
-installation scenario as its compatibility promise. Consumers may upgrade that
-package with any companion version the range still allows; a coordinated release
-cannot require an undeclared lockstep upgrade. Classify the package update that
-creates the mismatch. Supporting package updates keep their own classifications.
-A coordinated breaking range change remains allowed when its Changeset release note
-describes the new range and its FR8 migration tells consumers how to move.
+**决策者：** `cixzhang`, `2026-09-03`
 
-Rejected: marking every dependency bump breaking, which would freeze compatible
-maintenance, or calling an update nonbreaking merely because a coordinated upgrade
-works, which would break supported independent consumers.
+把最新稳定包所声明的依赖或 peer 范围及其有文档的安装场景当作它的兼容性承诺。使用方可以在该范围仍然允许的情况下，用任何配套版本升级该包；协同发布不能要求未声明的同步升级。对造成不匹配的那次包更新进行分类。配套的包更新保持各自的分类。当协同的破坏性范围变更在其 Changeset 发布说明中描述了新范围，且其 FR8 迁移告诉使用方如何迁移时，该变更仍然允许。
+
+已否决：把每次依赖升级都标记为破坏性——那会冻结兼容性维护；或者仅因协同升级可行就称某次更新为非破坏性——那会破坏受支持的独立使用方。
 
 ### DEC-4 — Stable CLI response fields receive complete projections
 
-**Reference:** `spec:AST-017/DEC-4`
-**Decider:** `cixzhang`, `2026-09-06`
+**引用：** `spec:AST-017/DEC-4`
 
-Treat every field in a stable machine-readable CLI response—including nested
-entry fields—as public schema. Keep its canonical type, contract tests, applicable
-text output, and complete consumer documentation aligned in the same change.
+**决策者：** `cixzhang`, `2026-09-06`
 
-An optional field addition may remain nonbreaking when old consumers continue
-unchanged. That compatibility result does not make the field private or waive
-current-authority and documentation requirements.
+把稳定机器可读 CLI 响应中的每个字段——包括嵌套条目字段——都当作公共 schema。在同一次变更中保持其规范类型、契约测试、适用的文本输出和完整的使用方文档彼此对齐。
 
-Rejected: documenting only the outer envelope, relying on implementation typedefs
-as consumer documentation, or treating a response-entry field as mutable catalog
-data merely because the value it carries may evolve.
+可选字段的新增在旧使用方保持不变的情况下可以保持为非破坏性。该兼容性结果并不会使该字段变为私有，也不会豁免当前权威与文档要求。
+
+已否决：只记录外层封装、把实现中的 typedef 当作使用方文档，或者仅因为某个响应条目字段所携带的值可能演进，就把它当作可变目录数据。
 
 ### DEC-5 — Supported CLI behavior is never hidden
 
 **Reference:** `spec:AST-017/DEC-5`
+
 **Decider:** `josephfarina`, `2026-09-23`
 
-Any Astryx CLI behavior available in a supported flow is public and must be
-documented and discoverable, including behavior selected automatically. A control
-that can change supported CLI behavior is public and must be documented and
-discoverable. Its status follows the behavior it changes, not whether it is spelled
-as a command, option, package field, or configuration key.
+任何在受支持流程中可用的 Astryx CLI 行为都是公开的，必须被记录且可被发现，包括自动选择的行为。任何能够改变受支持 CLI 行为的控制项都是公开的，必须被记录且可被发现。它的状态跟随它所改变的行为，而不取决于它被写成命令、选项、包字段还是配置键。
 
-Use an option for invocation-scoped behavior, placed on the nearest command or
-command group that owns it; a global option must meet FR15's CLI-wide evidence bar.
-Use a documented configuration surface for persistent project behavior. Do not
-introduce Astryx-owned environment variables, including aliases for another surface.
-Automation uses the documented programmatic API. Private tests use injected test
-seams instead of environment variables. A maintainer rollout gate may control staged
-availability, but it is not a public user interface, must not use an environment
-variable, and cannot be the only way to reach a supported mode. The user-facing
-behavior it gates becomes subject to this requirement once supported.
+对调用范围内的行为使用选项，并把它放在拥有它的最近命令或命令组上；全局选项必须满足 FR15 的 CLI 全局证据标准。对持久的项目行为使用有记录的配置面。不要引入 Astryx 自有的环境变量，包括为另一个配置面提供的别名。自动化使用有记录的程序化 API。私有测试使用注入的测试接缝，而不是环境变量。维护者的灰度发布闸门可以控制分阶段可用性，但它不是公开的用户界面，不得使用环境变量，也不能是到达受支持模式的唯一途径。一旦受支持，它所控制的面向用户的行为就受本要求约束。
 
-Rejected: documented or undocumented environment-variable controls, naming a hidden
-rollout gate as the user interface, or describing a behavior only in prose while
-omitting it—or a direct link to its documentation—from generated help and the
-machine-readable manifest.
+已否决：有记录或未记录的环境变量控制项、把隐藏的灰度发布闸门称为用户界面，或者只在正文中描述某个行为，却把它——或指向其文档的直接链接——从生成的帮助和机器可读清单中省略。
 
 ### DEC-6 — Global CLI controls prove global value
 
 **Reference:** `spec:AST-017/DEC-6`
+
 **Decider:** `josephfarina`, `2026-09-23`
 
-Treat a behavior-changing global control as a last resort, not as the default home for
-invocation-scoped behavior. Because it changes every command, it requires current
-system-spec authority before implementation. Its proposal must show one stable
-invariant with meaningful behavior for every command, a supported-consumer need that
-narrower command or API scope cannot satisfy, and a manifest-derived command matrix that verifies the claim. A
-no-op or different meaning on any command means the control is scoped too broadly.
+把改变行为的全局控制项视为最后手段，而不是调用范围行为的默认归属地。因为它会改变每一个命令，所以在实现之前需要当前系统规格的授权。它的提案必须展示一个稳定的不变式，该不变式对每个命令都有实际意义；展示一个更窄的命令或 API 范围无法满足的受支持使用方需求；并展示一个由清单派生的命令矩阵来验证该主张。若在任一命令上无操作或含义不同，则说明该控制项的作用范围过宽。
 
-Put narrower behavior on the nearest command, command group, or programmatic API that
-owns it. Name the control for the exact capability it changes rather than using broad
-quality claims such as `safe`, `secure`, `trusted`, or `isolated`. A safety or trust
-control also defines its trust boundary and fails closed before untrusted input can
-execute or cause a side effect.
+把更窄的行为放在拥有它的最近命令、命令组或程序化 API 上。按照它所改变的确切能力来命名控制项，而不是使用 `safe`、`secure`、`trusted` 或 `isolated` 这类宽泛的质量主张。安全或信任控制项还要定义其信任边界，并在不可信输入能够执行或引发副作用之前失败关闭。
 
-Rejected: making a control global because several implementations share a switch,
-because root parsing is convenient, or because unrelated commands can silently ignore
-it. Those approaches enlarge the public surface without establishing coherent value.
+已否决：因为多个实现共享一个开关就把控制项做成全局；因为根解析方便就做成全局；或者因为无关命令可以静默忽略它而做成全局。这些做法扩大了公开面，却没有确立连贯的价值。
 
 ### DEC-7 — Cross-cutting controls are complete, observable, and per invocation
 
 **Reference:** `spec:AST-017/DEC-7`
+
 **Decider:** `josephfarina`, `2026-09-23`
 
-Define a cross-cutting guarantee by its complete boundary, not by the current list of
-implementation sites. Unknown and future extension points fail closed.
+通过完整的边界来定义横切保证，而不是通过当前的实现点列表。未知的和未来的扩展点都会失败关闭。
 
-Make work omitted by a safety or reduced-capability mode part of the result contract
-so a partial result cannot be mistaken for a complete one. When no useful result
-remains, return a stable error before writes or external effects. Pass programmatic controls as explicit inputs, keep
-them independent across concurrent calls, and preserve semantics across equivalent CLI
-and API surfaces.
+让安全模式或能力削减模式所省略的工作成为结果契约的一部分，这样部分结果就不会被误认为完整结果。当不再有任何有用的结果时，在写入或外部影响发生之前返回一个稳定的错误。把程序化控制项作为显式输入传入，使它们在并发调用之间彼此独立，并在等价的 CLI 面与 API 面上保持语义一致。
 
-Rejected: best-effort interception of known loaders, silent fallback to partial or
-empty results, process-global mutable switches, and separate CLI and API meanings. Each can
-make the advertised guarantee false while the happy-path tests remain green.
+已否决：对已知加载器做尽力而为的拦截、静默回退到部分或空结果、进程全局的可变开关，以及 CLI 与 API 各自不同的含义。每一种做法都可能让对外宣称的保证落空，而顺利路径的测试仍然全绿。
 
 ### DEC-8 — Configuration is a last resort, and contributions compose
 
 **Reference:** `spec:AST-017/DEC-8`
+
 **Decider:** `josephfarina`, `2026-09-23`
 
-Every configuration key is permanent public surface under FR3 and FR14, and it
-asks every consumer to make a decision. A key often hides a gap in detection, so
-detection and established conventions come first, and a new key needs a
-reproduced case where they fail.
+在 FR3 和 FR14 之下，每个配置键都是永久的公开面，而且它要求每个使用方做出决定。配置键常常掩盖检测上的缺口，因此检测和既定约定优先，新增键需要有可复现的案例来证明它们确实失效。
 
-Integration contributions let one package set shared behavior once, as the
-`debug` setting does for organization-wide debug logs, while the app keeps the
-final say. The setting defines how contributions combine; an integration only
-declares its contribution, in the documented form. Contributions combine with the
-app value instead of replacing it, they are isolated from one another, each part
-of the effective value can be traced to its source, and a protective setting
-fails closed.
+集成贡献让一个包可以一次性设定共享行为，正如 `debug` 设置对组织范围的调试日志所做的那样，而应用保留最终决定权。设置定义贡献如何组合；集成只以有记录的形式声明自己的贡献。贡献与应用值组合，而不是替换它；贡献之间彼此隔离；有效值的每一部分都能追溯到其来源；保护性设置失败关闭。
 
-Rejected: adding a key because it is easy to add, a key that duplicates a
-convention or a derivable value, an integration silently replacing an app value,
-an integration defining its own merge rule, contributions made by import side
-effects, and one broken integration disabling a setting for every app.
+已否决：因为某个键容易添加就添加它；添加重复某个约定或可推导值的键；集成静默替换应用值；集成定义自己的合并规则；通过导入副作用做出贡献；以及一个损坏的集成使所有应用的某个设置失效。
 
 ### DEC-9 — Existing stable components incubate APIs behind one explicit boundary
 
 **Reference:** `spec:AST-017/DEC-9`
+
 **Decider:** `cixzhang`, `2026-09-28`
 
-Keep Lab as the canary-only home for an entire experimental component. When an
-existing stable component needs to test a new prop or callback, put it inside the
-component's optional `experimental` prop object so every callsite opts in visibly
-and the ordinary prop namespace stays stable. Put experimental hooks, functions,
-and types on the owning component's `/experimental` subpath (DEC-27 replaces
-this placement). Mark the same surface
-in declarations and authored docs, and keep stable defaults unchanged when the
-experimental boundary is unused.
+让 Lab 继续作为整个实验性组件的仅金丝雀归属地。当现有稳定组件需要测试新的 prop 或回调时，把它放进组件的可选 `experimental` prop 对象内，这样每个调用点都显式加入，而普通的 prop 命名空间保持稳定。把实验性的 hook、函数和类型放在拥有它的组件的 `/experimental` 子路径上（DEC-27 取代了这一放置方式）。在声明和撰写的文档中标记同一表面，并在实验边界未被使用时保持稳定默认值不变。
 
-Allow those marked surfaces to evolve through `[experimental]` patch releases.
-Promotion is a separate `[feat]` decision that moves the settled API onto its stable
-surface; after that release the ordinary compatibility rules apply. Never use an
-experimental marker to demote an already stable contract. Integration-theme
-contributions remain the single explicitly recorded grandfathered surface because
-they shipped before this declaration mechanism while still being introduced for early
-iteration.
+允许这些被标记的表面通过 `[experimental]` 补丁发布演进。提升是一个单独的 `[feat]` 决策，它把已定型的 API 移入其稳定表面；在该版本发布之后，常规兼容性规则适用。绝不要用实验性标记来降级已经稳定的契约。集成主题贡献仍然是唯一被明确记录的既存豁免面，因为它们在声明机制之前就已发布，同时又是为早期迭代而引入的。
 
-That retroactive-marker prohibition does not make unpublished additions stable by
-association. Integration-template replacement-specific declarations, selection,
-optional projection, and expanded conflict fields remain pre-publication under FR2;
-their classification is not an experimental enrollment. The already released same-id
-conflict warning behavior remains stable.
+该追溯标记禁令并不会让未发布的添加因关联而变得稳定。集成模板替换专用的声明、选择、可选投影以及扩展的冲突字段在 FR2 之下仍属发布前状态；它们的分类不属于实验性登记。已发布的同 id 冲突警告行为保持稳定。
 
-Rejected: moving a stable component into Lab to test one new API, scattering
-`unstableFoo` names through its ordinary prop namespace, relying on prose warnings
-that tooling cannot verify, treating every recently added API as implicitly
-experimental, and retroactively marking another released stable surface unstable.
+已否决：为了测试一个新 API 就把稳定组件移入 Lab；在普通 prop 命名空间中散布 `unstableFoo` 名称；依赖工具无法验证的正文警告；把每个最近添加的 API 都视为隐式实验性；以及追溯地把另一个已发布的稳定表面标记为不稳定。
 
 ### DEC-10 — Replacement-first records own deprecation and cleanup
 
 **Reference:** `spec:AST-017/DEC-10`
+
 **Decider:** `cixzhang`, `2026-09-29`
 
-Keep old and replacement behavior together in the final patch when the next planned
-release is a patch; direct authorities may impose a longer transition for their own
-surfaces, and release cadence never invents one. DEC-18 supersedes the record-and-
-manifest gate this decision once carried.
+当下一个计划发布是补丁时，在最终补丁中把旧行为与替代行为放在一起；直接权威可以为自己的表面规定更长的过渡期，而发布节奏绝不自造过渡期。DEC-18 取代了本决策曾经承担的记录与清单闸门。
 
-Rejected: prose-only deprecation, silent removal, a global wait inferred from cadence,
-and one cleanup id covering unrelated deltas.
+已否决：仅正文的弃用说明、静默移除、由发布节奏推断出的全局等待，以及一个清理 id 覆盖互不相关的变更。
 
 ### DEC-11 — Behavior-correcting incompatibility is not an ordinary fix
 
 **Reference:** `spec:AST-017/DEC-11`
+
 **Decider:** `cixzhang`, `2026-09-29`
 
-A correction with a valid released victim is not an ordinary fix: pre-existing
-authority proves the expected behavior, latest-stable evidence proves the victim, and
-the change ships as `[breaking]` in a declared minor under FR31–FR34. A victim-free
-restoration is `[fix]` with patch treatment. DEC-18 supersedes the `incompatible-fix`
-classification, `IFIX-*` record and `CLN-*` item this decision once required.
+带有有效已发布受害者的纠错不是普通修复：既有权威证明预期行为，最新稳定证据证明受害者，并且该变更按 FR31–FR34 在已声明的次版本中以 `[breaking]` 发布。无受害者的恢复是 `[fix]`，按补丁处理。DEC-18 取代了本决策曾经要求的 `incompatible-fix` 分类、`IFIX-*` 记录和 `CLN-*` 条目。
 
-Rejected: treating every visible correction as breaking, and hiding a released victim
-behind a bare `[fix]`.
+已否决：把每个可见的纠错都当作破坏性变更，以及用裸的 `[fix]` 掩盖已发布的受害者。
 
 ### DEC-12 — The paired minor admits only three delta classes
 
 **Reference:** `spec:AST-017/DEC-12`
+
 **Decider:** `cixzhang`, `2026-09-29`
 
-Lock the final-patch baseline and classify every paired-minor delta as approved
-cleanup, closed release metadata, or an independently patch-compatible fix. A fix
-that lands after baseline lock may be disclosed in the minor without recutting the
-patch solely for bookkeeping. Keep cleanup and compatible fixes separate in both the
-manifest and release notes.
+锁定最终补丁基线，并把每个配对次版本的变更归类为已批准的清理、已关闭的发布元数据，或独立于补丁的兼容修复。在基线锁定之后落地的修复可以在次版本中披露，而不必仅为账务目的重切补丁。在清单和发布说明中都把清理与兼容修复分开。
 
-Rejected: unrelated features, unclassified deltas, an incompatible fix in the
-compatible-fix lane, and strict byte identity that forces a needless replacement
-final patch for an independently valid patch fix.
+已否决：无关特性、未分类的变更、把不兼容修复放进兼容修复通道，以及要求严格字节同一性——它会为一个独立有效的补丁修复强行产出不必要的替代最终补丁。
 
 ### DEC-13 — Cadence guides planning; readiness and authority gate the cut
 
 **Reference:** `spec:AST-017/DEC-13`
+
 **Decider:** `cixzhang`, `2026-09-29`
 
-Plan minor releases generally no more often than once every fourteen calendar days,
-but do not turn that interval into deprecation eligibility or a required wait between
-the final patch and paired minor. A ready, authorized pair may publish sequentially.
+规划次版本发布的频率一般不超过每十四个日历日一次，但不要把该间隔变成弃用资格，也不要把它变成最终补丁与配对次版本之间必需的等待。一对就绪且已获授权的版本可以顺序发布。
 
-Rejected: an inferred elapsed-time gate, a special exception merely to publish a
-ready pair, and using cadence to waive replacement, migration, cleanup, or exact-main
-evidence.
+已否决：推断出来的时间间隔闸门、仅为发布一对就绪版本而设的特殊例外，以及利用发布节奏来免除替代、迁移、清理或精确 main 证据。
 
 ### DEC-14 — Documentation catalog display names and routes are mutable data
 
 **Reference:** `spec:AST-017/DEC-14`
+
 **Decider:** `josephfarina`, `2026-09-29`
 
-Treat a documentation catalog display name or tree route as data identifying a current
-entry. It may change in a patch release even when its former value stops resolving.
-Release metadata identifies the replacement; no compatibility alias or codemod is
-required.
+把文档目录的显示名称或树路由当作标识当前条目的数据。即使其旧值不再能解析，它也可以在补丁发布中变更。发布元数据标示出替代项；不需要兼容性别名或 codemod。
 
-Keep the surrounding operation contractual: incompatible changes to the `docs`
-command, its options, exit behavior, or machine-readable response schemas still
-follow FR1–FR8 and FR13. Template identifiers, slugs, display names, and names remain
-outside this documentation rule and follow FR9, FR11, and applicable registry identity
-contracts.
+让外围操作保持契约性：对 `docs` 命令、其选项、退出行为或机器可读响应模式的非兼容变更仍然遵循 FR1–FR8 和 FR13。模板标识符、slug、显示名称和名称不属于本文档规则，遵循 FR9、FR11 以及适用的注册表身份契约。
 
-Rejected: treating every route-shaped positional value as stable CLI API. That would
-freeze documentation organization rather than protect the command and schema
-contracts readers and automation rely on.
+已否决：把每个路由形式的位置值都当作稳定的 CLI API。那会冻结文档组织，而不是保护读者和自动化所依赖的命令与模式契约。
 
 ### DEC-15 — Main declares the plan; publication enforces ordering
 
 **Reference:** `spec:AST-017/DEC-15`
+
 **Decider:** `cixzhang`, `2026-10-09`; revised `2026-10-12`
 
-Main's `package.json` carries the owner-selected next planned version. Release tooling
-runs on a release branch and takes the cut declaration unchanged; admission, versioning,
-changelogs, and stable publication happen there. Later main planning cannot change that
-branch release. After publication, a three-way squash projection returns the exact
-release-owned branch bytes to current main while preserving post-cut work and main's
-declaration. A separate owner change declares the patch successor by default, or the
-minor successor only when Cindy names it.
+main 的 `package.json` 承载所有者选定的下一个计划版本。发布工具在发布分支上运行，并原样接受切割声明；准入、版本编排、变更日志和稳定发布都在那里发生。后续的 main 规划不能改变该分支的发布。发布之后，一次三方 squash 投影把发布分支所拥有的确切字节返回到当前 main，同时保留切割后的工作和 main 的声明。一次单独的所有者变更默认声明补丁后继版本，或仅在 Cindy 指定时才声明次版本后继。
 
-Required pull-request lint does not compare main's declaration with stable or an active
-cut, because prerelease ordering belongs to canary publication rather than ordinary PR
-admission. The canary publisher is the smaller authority boundary: it publishes only
-when one plain fixed-group declaration is strictly above the newest stable tag, skips
-equality, and fails below-stable or split declarations. Changeset admission independently
-refuses `[breaking]` work on a patch plan and admits it on a declared minor.
+必需的 pull request lint 不比较 main 的声明与 stable 或进行中的切割，因为预发布排序属于金丝雀发布，而不属于普通的 PR 准入。金丝雀发布器是更小的权威边界：仅当一个普通的固定组声明严格高于最新稳定标签时才发布，跳过相等的情况，并对低于稳定版本或拆分的声明失败。Changeset 准入独立地在补丁计划上拒绝 `[breaking]` 工作，并在已声明的次版本上予以准入。
 
-Rejected: deriving the version from pending Changesets, because the entry being judged
-would be its own authorization; publishing a canary at or below stable; regenerating
-release outputs during merge-back; and folding the next owner plan into shipped-byte
-reconciliation.
+已否决：从待处理的 Changeset 推导版本，因为被评判的条目会成为自己的授权；在等于或低于稳定版本处发布金丝雀；在回合并期间重新生成发布产物；以及把下一个所有者计划折叠进已发布字节的对账。
 
-Rejected: a dated schedule file beside `package.json`, because two declarations of the
-next version can disagree.
+已否决：在 `package.json` 旁边放一个带日期的计划文件，因为对下一个版本的两种声明可能互相矛盾。
 
-Rejected: resetting a newer main declaration to the released version, because release-
-branch authority owns shipped outputs, not post-cut planning on main.
+已否决：把更新的 main 声明重置为已发布的版本，因为发布分支的权威拥有已发布的产物，而不拥有 main 上切割后的规划。
 
 ### DEC-16 — Deprecation acts at authoring surfaces, not production runtime
 
 **Reference:** `spec:AST-017/DEC-16`
+
 **Decider:** `cixzhang`, `2026-10-07`
 
-A deprecation reaches a builder where the obsolete choice is authored: declarations,
-generated reference, theme validation or build, CLI help and invocation, and supported
-migration tooling. The working replacement and executable modernization route exist
-before warnings begin. Maintained guidance teaches the replacement, while explicit
-lookup keeps the deprecated surface and its exact route discoverable.
+弃用要在构建者撰写过时选择的地方触达他：声明、生成的参考文档、主题校验或构建、CLI 帮助与调用，以及受支持的迁移工具。可用的替代方案和可执行的现代化路线必须在警告开始之前就已存在。维护中的指南讲授替代方案，而显式查找则让被弃用的表面及其确切路线保持可被发现。
 
-Production runtime behavior and bytes remain unchanged merely because a surface is
-deprecated. The old contract continues working until its separately approved cleanup;
-a runtime-only coexistence conflict may receive a development diagnostic explaining
-the direct owner's precedence rule. Cleanup follows only after the migration can
-preserve or explicitly account for every observable result it owns.
+仅仅因为某个表面被弃用，生产运行时行为和字节保持不变。旧契约会继续工作，直到其单独获批的清理；仅运行时出现的共存冲突可以获得一条开发诊断，解释直接所有者的优先级规则。只有迁移能够保留或明确说明它所拥有的每一项可观察结果之后，清理才会跟进。
 
-Rejected: a runtime compatibility flag or branch used only to acknowledge deprecation,
-a warning without an available modernization path, copyable guidance that keeps
-teaching the old surface, and a migration that guesses at uncertain consumer intent.
+已否决：仅为承认弃用而使用的运行时兼容标志或分支、没有可用现代化路径的警告、继续讲授旧表面的可复制指南，以及猜测不确定使用方意图的迁移。
 
 ### DEC-17 — Visual-only changes are compatible even when pixels change
 
 **Reference:** `spec:AST-017/DEC-17`
+
 **Decider:** `cixzhang`, `2026-10-12`
 
-Compatibility asks whether a valid latest-stable caller must edit source or
-configuration to keep a supported functional contract working. Removing or renaming a
-public surface, narrowing an accepted type, or changing interaction, accessibility
-semantics, data, machine-readable output, or another behavior contract can therefore be
-breaking. A functional default change's Changeset names the old and new default and the
-prop or option that restores the old default; that restoring input is its migration.
-Changing only the appearance, spacing, typography, layout styling, or visual default of
-existing content is not: it ships as `[feat]` or `[fix]` under FR3 even when an untouched
-caller sees different pixels. Its release note names the old and new
-appearance and how to keep the old look when a supported escape exists; that escape is
-guidance, not a required compatibility migration.
+兼容性要问的是：一个有效的最新稳定调用方是否必须修改源码或配置，才能让受支持的功能契约继续工作。因此，移除或重命名公开表面、收窄已接受的类型，或者改变交互、无障碍语义、数据、机器可读输出或其他行为契约，都可能是破坏性的。功能性默认值变更的 Changeset 要指明旧默认值与新默认值，以及恢复旧默认值的 prop 或选项；那个用于恢复的输入就是它的迁移。只改变现有内容的外观、间距、排版、布局样式或视觉默认值则不算：即使未改动的调用方看到不同的像素，它也按 FR3 以 `[feat]` 或 `[fix]` 发布。它的发布说明要指明旧外观与新外观，以及在存在受支持逃逸时如何保持旧外观；那个逃逸是指导，不是必需的兼容性迁移。
 
-Rejected: treating any pixel difference as a released victim; and calling an
-interaction, semantic, data, or machine-output change visual-only because its UI also
-looks different.
+已否决：把任何像素差异都当作已发布的受害者；以及因为某个交互、语义、数据或机器输出变更的 UI 看起来也不同，就把它称为纯视觉变更。
 
 ### DEC-18 — Two rules and one gate
 
 **Reference:** `spec:AST-017/DEC-18`
+
 **Decider:** `cixzhang`, `2026-10-11`
 
-Anything going into a planned minor needs no deprecation first; its `[breaking]`
-Changeset describing the change is enough. The two rules that govern compatibility
-are: no breaking change ships without a planned minor, and when the next planned
-release is a patch a deprecation path is required — deprecate in the patch, remove in
-a later minor. The one mechanical gate is the pull-request check that fails a
-`[breaking]` Changeset while `main` declares a patch version and admits it while
-`main` declares a minor. Everything else — lifecycle records, cleanup ids, the release
-manifest, transition rows, migration-evidence cells — is description: the manifest is
-generated at the cut from the consumed Changesets exactly as authored and frozen with
-the cut as the minor's migration inventory, and the cut fails closed on any
-incompatible final-patch-to-minor delta that no `[breaking]` Changeset describes.
+任何进入计划次版本的内容都不需要先弃用；描述该变更的 `[breaking]` Changeset 就足够了。治理兼容性的规则有两条：没有计划次版本，就不发布破坏性变更；当下一计划发布是补丁时，需要一条弃用路径——在补丁中弃用，在后续次版本中移除。唯一的机械闸门是 pull request 检查：当 `main` 声明补丁版本时它让 `[breaking]` Changeset 失败，当 `main` 声明次版本时它予以准入。其他一切——生命周期记录、清理 id、发布清单、过渡行、迁移证据单元格——都是描述性的：清单在切割时根据已消费的 Changeset 按撰写原样生成，并随切割一起冻结，作为该次版本的迁移清单；对于任何没有 `[breaking]` Changeset 描述的、从最终补丁到次版本的不兼容变更，切割会失败关闭。
 
-Rejected: a lifecycle record and frozen manifest that every removal had to appear in
-before merging, which duplicated the Changeset and made bookkeeping the blocker; a
-per-record transition requirement and waiver, which the patch rule already expresses;
-and dropping the manifest, which would lose the minor's migration inventory.
+已否决：要求每次移除在合并之前都必须出现在某个生命周期记录和冻结清单中，这重复了 Changeset 并使账务成为阻塞项；每条记录的过渡要求和豁免，而补丁规则已经表达了这一点；以及放弃清单，那会丢失次版本的迁移清单。
 
 ### DEC-19 — Promotion moves codemod source without invalidating its evidence
 
 **Reference:** `spec:AST-017/DEC-19`
+
 **Decider:** `cixzhang`, 2026-10-14
 
-A staged codemod and its promoted release copy are one transform at two lifecycle
-locations. Checked-in evidence identifies the transform and resolves whichever location
-the repository state owns; promotion cannot turn a valid source-level guard red merely
-by moving the source, and it cannot make that guard silently stop running. Missing,
-ambiguous, or identity-changing promotion fails.
+暂存的 codemod 与其提升后的发布副本是同一个转换在两个生命周期位置上的存在。已提交的证据标识该转换，并解析到仓库状态所拥有的那个位置；提升不能仅通过移动源码就把一个有效的源码级守卫变红，也不能让该守卫静默停止运行。缺失、含义不明或改变同一性的提升会失败。
 
-Rejected: retaining a duplicate under `next/` after promotion; hardcoding only the
-staged path or one release folder; and copying transform declarations into a test.
+已否决：提升之后在 `next/` 下保留重复副本；只硬编码暂存路径或某一个发布文件夹；以及把转换声明复制进测试。
 
 ### DEC-20 — Accessibility behavior fixes are not breaking
 
 **Reference:** `spec:AST-017/DEC-20`
+
 **Decider:** `cixzhang`, `2026-10-14`
 
-Every user of a component that misses its accessibility target is harmed until the
-fix ships, and the people harmed most are the ones least able to work around it.
-Holding such a fix for a planned minor, or shipping it behind an opt-in beside the
-inaccessible behavior, keeps that harm in place to protect callers who depended on
-behavior that excluded someone. So a change made for accessibility conformance is a
-`[fix]` in the patch line even when it replaces documented roles, names, states, focus
-or keyboard behavior. The boundary is the public surface: the fix needs no app-layer code change, may add optional surface, and never removes, renames, or narrows existing surface; a change that would make apps edit code is redesigned so the component absorbs it, or classified as any other change.
+在修复发布之前，未能达到无障碍目标的组件的每一位用户都受到损害，而受损害最深的恰恰是最无力绕开它的人。为了一个计划次版本而搁置这样的修复，或把它放在不可访问行为旁边的可选开关之后发布，都是把这种损害保留在原位，以保护那些依赖排除了某些人的行为的调用方。因此，为无障碍一致性所做的变更在补丁线上是 `[fix]`，即使它替换了已记录的 role、名称、状态、焦点或键盘行为。边界是公开表面：该修复不需要应用层代码改动，可以增加可选表面，并且绝不会移除、重命名或收窄现有表面；会让应用改代码的变更要么被重新设计使组件吸收它，要么被归为其他类型的变更。
 
-Rejected: classifying accessibility corrections as breaking whenever a released
-caller observes the old behavior, which delays every conformance fix to a minor.
+已否决：只要已发布的调用方观察到旧行为，就把无障碍纠错归类为破坏性，那会把每一项一致性修复都推迟到次版本。
 
 ### DEC-21 — The cut prepares but does not authorize the successor plan
 
 **Reference:** `spec:AST-017/DEC-21`
+
 **Decider:** `cixzhang`, 2026-10-14
 
-The cut knows the default successor and every file that must move together, so it
-prepares the separate plan change immediately. That change cannot merge until an
-immutable tag or stable package publication makes the cut version non-reusable. It may
-then land before or after merge-back because FR50 preserves a newer main declaration.
-A terminal cut with neither an immutable tag nor stable package publication closes the
-prepared change unmerged.
+切割知道默认后继版本和必须一起移动的每个文件，因此它立即准备那条单独的计划变更。该变更在不可变标签或稳定包发布使切割版本不可复用之前不能合并。此后它可以先于或后于回合并落地，因为 FR50 保留更新的 main 声明。既无不可变标签也无稳定包发布的终止切割会关闭所准备的变更且不予合并。
 
-Rejected: merging the successor before the cut version becomes non-reusable, which
-strands a terminal cut with neither a tag nor a publication on a skipped plan; and waiting until merge-back to
-prepare information already fixed at the cut.
+已否决：在切割版本变得不可复用之前就合并后继版本，这会让一个既无标签也无发布的终止切割滞留在被跳过的计划上；以及等到回合并才准备那些在切割时已经确定的信息。
 
 ### DEC-22 — Each surface defines what breaks; this record owns the release process
 
 **Reference:** `spec:AST-017/DEC-22`
-**Decider:** `cixzhang`, 2026-10-15
 
-The owners of a surface know which of its behaviors callers may rely on and which of
-its corrections leave a real victim. A surface other than a component therefore
-defines its compatibility contract in its own current record, decided by that record's
-owners: the CLI's lives in `architecture:cli-surface`. This record applies the result
-through one release process, so every surface uses the same categories, tiers, paths,
-gates, and coexistence rules. Components keep their rules here, because the component
-contract and its accessibility fixes (DEC-20) are defined across all components in
-this record. Where a surface record is silent, this record's rules for that surface
-still apply, so no surface is left without a classification.
+**Decider:** `cixzhang`, `2026-10-15`
 
-Rejected: keeping every surface's breaking rules in this record, which makes this
-record's owners decide contracts for surfaces they do not own.
+表面的所有者知道调用方可以依赖它的哪些行为，以及它的哪些纠错留下了真正的受害者。因此，组件之外的表面在自己当前的记录中定义其兼容性契约，由该记录的所有者决定：CLI 的契约位于 `architecture:cli-surface`。本记录通过一个发布流程来应用该结果，所以每个表面都使用相同的类别、层级、路径、闸门和共存规则。组件把自己的规则留在这里，因为组件契约及其无障碍修复（DEC-20）是在本记录中跨所有组件定义的。当某个表面的记录沉默时，本记录针对该表面的规则仍然适用，因此没有表面会被留下而没有分类。
+
+已否决：把每个表面的破坏性规则都保留在本记录中，那会让本记录的所有者为并不属于他们的表面决定契约。
 
 ### DEC-23 — A touch presentation default is restored by the component's presentation prop
 
 **Reference:** `spec:AST-017/DEC-23`
+
 **Decider:** `cixzhang`, `2026-10-24`
 
-Touch presentations, and the input modes of an open surface under a finger,
-serve touch users best when they are the default where they make sense, and
-callers know their product better than any default: the caller's decision is
-respected. One `presentation` prop that keeps the previous surface
-gives every caller the same way to keep it, and the same input is the migration
-a functional default change names, so no touch default ships without a way back.
-A touch mode of that kind hard-coded inside a component would leave callers no
-such choice. Touch styling and touch-only behavior other records define keep
-their own rules.
+触控呈现方式，以及在手指下打开的表面的输入模式，在它们说得通的地方作为默认值时为触控用户服务得最好，而调用方比任何默认值更了解自己的产品：调用方的决定受到尊重。一个保持先前表面的 `presentation` prop 为每个调用方提供相同的保持方式，而同一个输入就是功能性默认值变更所指明的迁移，所以任何触控默认值都不会在没有回退方式的情况下发布。把这类触控模式硬编码在组件内部会使调用方没有这种选择。触控样式和其他记录定义的仅触控行为保留各自的规则。
 
-Rejected: a touch presentation or open-surface touch mode callers cannot pin.
+已否决：调用方无法固定的触控呈现方式，或打开中的表面的触控模式。
 
 ### DEC-25 — Touch work changes fine-pointer behavior only for a defect or deliberate consistency
 
 **Reference:** `spec:AST-017/DEC-25`
+
 **Decider:** `cixzhang`, `2026-10-24`
 
-People using a mouse or trackpad are a released audience, and touch work that
-changes their experience as a side effect surprises them without anyone deciding
-it. Allowing a fine-pointer change only to fix a defect they hit, or to make
-devices consistent on purpose, with before-and-after evidence, keeps touch work
-from reshaping desktop by accident while still letting it fix real desktop
-problems. A new desktop look or feel is a design choice of its own and gets its own
-owner decision.
+使用鼠标或触控板的人群也是一个已发布的受众，而作为副产品改变他们体验的触控工作会在无人决定的情况下让他们意外。只有当为了修复他们遇到的缺陷，或为了有意让设备保持一致（并附前后对比证据）时才允许精细指针变更，这既能防止触控工作意外重塑桌面，又能让它修复真实的桌面问题。新的桌面外观或手感本身就是一项设计选择，需要它自己的所有者决策。
 
-Rejected: letting touch work change fine-pointer behavior freely, and forbidding every fine-pointer change, which would block real desktop fixes.
+已否决：让触控工作随意改变精细指针行为，以及禁止一切精细指针变更——那会阻止真正的桌面修复。
 
 ### DEC-26 — Components are built from minimal DOM
 
 **Reference:** `spec:AST-017/DEC-26`
+
 **Decider:** `cixzhang`, `2026-10-24`
 
-Correct construction, not a running change budget, is what keeps components
-light: one element per role, themable part, or named wrapper, states through
-attributes and styles, content rendered once, and one presentation per open
-layer. Two budgets make that checkable, one for surface components at rest and
-one for open layers, and an owner-recorded exception path covers the cases that
-genuinely need more. Because undocumented markup is not a released contract,
-reducing DOM to meet the rule is compatible.
+让组件保持轻量的是正确的构造，而不是运行中的变更预算：每个角色、可主题化部件或具名包装器只用一个元素，用属性和样式表达状态，内容只渲染一次，每个打开层只有一种呈现。两个预算使这一点可被检查，一个针对静置状态的表面组件，一个针对打开层，而由所有者记录的例外路径覆盖确需更多元素的情况。由于未记录在文档中的标记不是已发布的契约，为符合规则而减少 DOM 是兼容的。
 
-Rejected: a budget that only limits how many elements a change may add, which says nothing about what a correct component looks like.
+已否决：只限制一次变更可以增加多少元素的预算，那对正确的组件应当是什么样子毫无说明。
 
 ### DEC-27 — A file path never makes a public API experimental
 
 **Reference:** `spec:AST-017/DEC-27`
+
 **Decider:** `cixzhang`, `2026-10-25`
 
-A public module whose only experimental marker is its file path looks like any
-other import to the people using it, so they come to depend on it as if it were
-stable. Keeping behavior and utility modules without a public contract internal,
-never experimental exports,
-and requiring any experimental public API in Core to show its status at the
-call site where it is used, in the name the caller writes, with its own decision,
-keeps the public surface honest about what is promised. The `experimental`
-prop object and the `_experimental` name suffix, such as
-`useDrag_experimental` (DEC-28), are how that is met today. This replaces DEC-9's placement of experimental hooks,
-functions, and types on a component's `/experimental` subpath; DEC-9's
-`experimental` prop object stands.
+一个公开模块如果其唯一的实验性标记只是文件路径，那么在使用它的人看来它就像任何其他导入，于是他们开始依赖它，仿佛它是稳定的。把没有公开契约的行为模块和工具模块保持为内部，绝不做实验性导出，并要求 Core 中任何实验性公开 API 在使用它的调用点、以调用方所写的名称、附带自己的决策来显示其状态，这样才能让公开表面对所承诺的内容保持诚实。`experimental` prop 对象和 `_experimental` 名称后缀（例如 `useDrag_experimental`（DEC-28））就是今天满足这一点的方式。这取代了 DEC-9 把实验性 hook、函数和类型放在组件 `/experimental` 子路径上的做法；DEC-9 的 `experimental` prop 对象继续成立。
 
-Rejected: `/experimental` subpaths that mark status by path, for modules or components.
+已否决：按路径标记状态的 `/experimental` 子路径，无论对模块还是组件。
 
 ### DEC-28 — The experimental name marking is a suffix
 
 **Reference:** `spec:AST-017/DEC-28`
+
 **Decider:** `cixzhang`, `2026-10-25`
 
-A suffix keeps the API's own name first, so `useDrag_experimental` reads and
-sorts beside the stable `useDrag` it may become, and promotion only drops the
-ending. The call site still shows the status in the name the caller writes, as
-DEC-27 requires.
+后缀把 API 自己的名称放在前面，因此 `useDrag_experimental` 会读起来并排序在它可能成为的稳定 `useDrag` 旁边，而提升只需去掉结尾。如 DEC-27 所要求，调用点仍然以调用方所写的名称显示该状态。
 
-Rejected: an `experimental_` name prefix.
+已否决：`experimental_` 名称前缀。
 
 ### DEC-29 — An open layer may render up to 5 more elements under touch
 
 **Reference:** `spec:AST-017/DEC-29`
+
 **Decider:** `cixzhang`, `2026-10-25`
 
-Pages render few layers at once, so an open layer can afford a small, fixed
-allowance that rows and controls, repeated across a page, cannot. The
-allowance covers internal elements with named jobs and never adds anatomy or
-theme targets, so themes and docs see the same parts on every pointer.
-Decoration belongs on pseudo-elements and existing elements, and each
-implementation tries to use fewer than the allowance.
+页面同时渲染的层很少，因此一个打开层能够承担一份小而固定的配额，而在整页重复出现的行和控件则不能。该配额涵盖承担具名职责的内部元素，绝不用来增加结构部件或主题目标，因此主题和文档在每种指针下都看到相同的部件。装饰应放在伪元素和既有元素上，每个实现都尽量用得比配额更少。
 
-Rejected: strict parity for layers, with an owner exception for every sheet frame.
+已否决：对层要求严格对齐，并为每个 sheet 框架申请所有者例外。
 
 ### DEC-30 — Numeric entry does not depend on compact touch steppers
 
 **Reference:** `spec:AST-017/DEC-30`
+
 **Decider:** `imdreamrunner`, `2026-10-29`
 
-Compact auxiliary numeric steppers may adapt to primary-pointer precision while
-accessible direct entry, numeric contracts, and keyboard stepping remain intact.
-FR3 defines the conditions for patch-compatible adaptation and its limits;
-button visibility is not independently frozen when those conditions hold.
+紧凑的辅助数字步进器可以适配主指针精度，同时无障碍的直接输入、数字契约和键盘步进保持完好。FR3 定义了补丁兼容适配的条件及其限制；当这些条件成立时，按钮可见性并不独立冻结。
 
-Rejected: classifying every documented auxiliary button's disappearance as breaking despite preserved numeric entry and caller contracts.
+已否决：尽管数字输入和调用方契约得以保留，却把每个有记录的辅助按钮的消失都归类为破坏性。
 
 ### DEC-31 — Canaries publish at most hourly from main's tip
 
 **Reference:** `spec:AST-017/DEC-31`
-**Decider:** the Chief with the release owner, `2026-11-05`
 
-Canaries publish at most once an hour from main's tip, a cap on frequency that
-promises no freshness, and a release owner can publish one from main on demand.
+**Decider:** the Chief 与发布所有者，`2026-11-05`
 
-A canary from a recent main tip serves the people who install `@canary` as well
-as one per commit does. Every canary adds a version to each package's npm
-document, and a large document slows how quickly npm serves a new version,
-stable releases included. A release owner can still publish a canary from main
-on demand, for example to prove the publish path before a cut. Stable
-publication never waits for a canary.
+金丝雀最多每小时从 main 的末端发布一次，这是对频率的上限，并不承诺新鲜度，而发布所有者可以按需从 main 发布一个金丝雀。
 
-Rejected: a canary for every commit that reaches main.
+来自近期 main 末端的金丝雀，为安装 `@canary` 的人服务的效果与每个提交一个金丝雀一样好。每个金丝雀都会给每个包的 npm 文档增加一个版本，而庞大的文档会拖慢 npm 提供新版本的速度，稳定发布也不例外。发布所有者仍可按需从 main 发布一个金丝雀，例如在切割前验证发布路径。稳定发布从不等待金丝雀。
+
+已否决：为每个到达 main 的提交都发布金丝雀。
 
 ### DEC-32 — Post-bump release repairs prove that they are test-only ports
 
 **Reference:** `spec:AST-017/DEC-32`
-**Decider:** the Chief with the release owner, `2026-11-09`
 
-A release gate can expose a defect in its own test after the generated version pull
-request has merged. Recutting from a newer `main` can add unrelated or undecided
-product work, while accepting the red result would waive a release gate. The branch
-therefore admits the narrow FR61 class: one test-only patch still present on `main`,
-proved by patch id, exact changed-line digest, and explicit content limits. A branch
-that predates the rule first receives the branch-specific reviewed policy bundle
-through the validated policy-only carry. For `v0.7.12` only, a defect in that
-sync's validator or matching workflow-contract test admits one second and final
-three-file corrective sync, after its exact bundle has merged on `main` and
-CodeBunny has approved the corrective commit's exact head. The repair is then
-reviewed and tested normally before a new full exact-head release gate.
+**Decider:** the Chief 与发布所有者，`2026-11-09`
 
-Rejected: another unchanged retry, accepting a named flake, copying an unreviewed
-patch, allowing product or release-output changes in the repair, or merging around a
-required check.
+在生成的版本 pull request 合并之后，发布闸门可能暴露其自身测试中的缺陷。从更新的 `main` 重新切割可能引入无关或未决的产品工作，而接受红色结果则等于豁免一个发布闸门。因此该分支准入狭窄的 FR61 类别：一个仍存在于 `main` 上的仅测试补丁，由补丁 id、确切的变更行摘要和显式的内容限制来证明。早于该规则的分支先通过经校验的仅策略携带获得该分支专属的已审查策略包。仅对 `v0.7.12`，该同步的校验器或匹配的工作流契约测试中的缺陷允许一次第二次也是最终的三文件纠正同步，前提是其确切策略包已在 `main` 上合并，且 CodeBunny 已批准纠正提交的确切 head。随后该修复按常规接受审查与测试，之后再进行一次新的完整确切 head 发布闸门。
+
+已否决：又一次不变的刷新重试、接受一个具名偶发故障、复制未经审查的补丁、允许修复中包含产品或发布产物变更，以及绕过必需的检查进行合并。
 
 ## Open questions
 
-None.
+无。

@@ -21,95 +21,61 @@ deciding_specs: []
 
 ## User intent
 
-People working with an agent should understand whether it is progressing,
-waiting, inspecting, synchronizing, or presenting a result without learning a
-second unrelated state language. Agent feedback should communicate actionable
-system status, not expose private or hidden reasoning.
+与智能体协作的人应当能够理解它是在取得进展、等待、检查、同步还是呈现结果，而无需学习另一套不相关的状态语言。智能体反馈应传达可操作的系统状态，而不是暴露私有或隐藏的推理。
 
-This seed record names the unresolved design surface. It intentionally does not
-approve visual treatments for individual agent states.
+本种子记录点明了尚未解决的设计领域。它有意不批准各个智能体状态的视觉处理。
 
 ## Design principles
 
-- **DR1 — Extend established state language first.** Agentic states SHOULD reuse
-  representations from `design:user-states` and `design:system-states` when the
-  underlying intention is the same.
+- **DR1 — 优先扩展现有状态语言。** 当底层意图相同时，智能体状态应复用 `design:user-states` 和 `design:system-states` 中的表示。
 
-No additional agentic-state design requirement is approved in this seed draft.
-The questions below identify areas that still require human decisions.
+本种子草案未批准其他智能体状态设计需求。下列问题指出了仍需要人工决策的领域。
 
 ## Anatomy and hierarchy
 
-The wiki does not define agentic-state anatomy or relationships. Those remain open
-for a future proposal rather than being inferred by this seed draft.
+该 wiki 未定义智能体状态的结构或关系。这些内容留待未来的提案，而不是由本种子草案推断。
 
 ## State representation
 
-No agentic-state visual representation is approved in this seed draft.
-Candidate treatments must first show why existing loading, processing, status,
-selection, or temporal-overlay language is insufficient.
+本种子草案未批准任何智能体状态的视觉表示。候选处理方案必须首先说明现有的加载、处理、状态、选中或瞬态覆盖层语言为何不足。
 
 ## Responsive and input behavior
 
-No agentic-state responsive or input requirement is approved. Candidate
-proposals must address attribution under reflow, incremental output, interruption,
-and reduced motion as part of the relevant open question.
+本种子草案未批准任何智能体状态的响应式或输入要求。候选提案必须作为相关待决问题的一部分，处理重排下的归属、增量输出、中断和减少动效。
 
 ## Accessibility intent
 
-Accessibility requirements remain unresolved with the visual treatments. Each
-proposal should evaluate non-motion and non-color alternatives, announcement
-frequency, focus stability, reading position, and input operability without
-assuming an answer in this draft.
+无障碍要求仍与视觉处理一同悬而未决。每份提案都应评估非动效和非颜色替代方案、播报频率、焦点稳定性、阅读位置和输入可操作性，而不在本草案中预设答案。
 
-This record does not require disclosure of hidden chain-of-thought. Any
-user-visible rationale is product content and must follow its own privacy,
-safety, and content contracts.
+本记录不要求披露隐藏的思维链。任何用户可见的理由说明都属于产品内容，必须遵循其自身的隐私、安全和内容契约。
 
 ## Representative examples
 
-No representation is normative yet. Candidate examples should compare reuse of
-existing system-state feedback with any proposed agent-specific treatment and explain
-what user need the new treatment serves.
+尚无规范性的表示。候选示例应比较复用现有系统状态反馈与任何提议的智能体专属处理，并解释新处理服务于什么用户需求。
 
 ## Visual references
 
-No normative visual assets are included. Candidate evidence should be added only
-after an open question below receives a proposed treatment.
+不包含规范性视觉素材。只有在下列某项待决问题获得提议的处理方案后，才应添加候选证据。
 
 ## Component contract links
 
-No component contract links are asserted. Agent-facing components should not
-claim adoption until individual state representations are decided and approved.
+未声明任何组件契约链接。在各项状态表示得到决定和批准之前，面向智能体的组件不应声称已采用。
 
 ## Decision log
 
-No agentic-state visual decisions have been approved. The public Design
-Conventions wiki explicitly identified this area as mostly undefined; this draft
-preserves that uncertainty rather than converting labels into policy.
+尚未批准任何智能体状态的视觉决策。公共 Design Conventions wiki 明确将该领域标记为主要未定义；本草案保留这种不确定性，而不是将标签转化为政策。
 
 ## Open questions
 
-- **OQ1 — Thinking or processing.** When does agent work need a representation
-  distinct from ordinary system processing?
-- **OQ2 — User-visible rationale.** What treatment, if any, distinguishes an
-  intentionally authored explanation from ordinary output without implying
-  access to hidden reasoning?
-- **OQ3 — Streaming.** How should incremental text remain visibly incomplete
-  without distracting from text already available?
-- **OQ4 — Tool execution.** What information about backend work is useful to the
-  person, and when should it remain collapsed?
-- **OQ5 — Awaiting input.** How should a required human response outrank passive
-  progress while preserving the surrounding task context?
-- **OQ6 — Synchronizing and synchronized.** How should pending and completed
-  synchronization differ from generic processing and success?
-- **OQ7 — Inspecting.** Does agent inspection need a distinct state, or is
-  ordinary progress plus scoped context sufficient?
-- **OQ8 — Rendering.** How should generated UI communicate partial mounting and
-  completion without exposing implementation churn?
+- **OQ1 — 思考或处理。** 智能体工作何时需要一种区别于普通系统处理的表示？
+- **OQ2 — 用户可见的理由说明。** 如果有的话，何种处理能将有意撰写的说明与普通输出区分开，同时又不暗示可以访问隐藏推理？
+- **OQ3 — 流式输出。** 增量文本应如何保持可见的不完整状态，同时又不分散对已可用文本的注意力？
+- **OQ4 — 工具执行。** 关于后端工作的哪些信息对用户有用，何时应保持折叠？
+- **OQ5 — 等待输入。** 所需的人工响应应如何在保留周围任务上下文的同时，优先于被动的进度？
+- **OQ6 — 同步中与已同步。** 待定和已完成的同步应如何区别于普通处理和成功？
+- **OQ7 — 检查。** 智能体检查是否需要一种独特状态，还是普通进度加上限定范围的上下文就足够了？
+- **OQ8 — 渲染。** 生成的 UI 应如何传达部分挂载和完成，而不暴露实现层面的频繁变动？
 
 ## Content boundary
 
-This file frames unresolved human-facing agentic states. It does not define agent
-protocols, hidden reasoning disclosure, tool telemetry, progress-event schemas,
-product copy, implementation mechanics, or approved visual treatments.
+本文件描述尚未解决的、面向人的智能体状态。它不定义智能体协议、隐藏推理披露、工具遥测、进度事件模式、产品文案、实现机制或已批准的视觉处理。

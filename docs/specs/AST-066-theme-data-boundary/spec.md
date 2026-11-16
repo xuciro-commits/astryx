@@ -25,80 +25,44 @@ affects_consumer_docs: [theme]
 
 ## Prebuilt Core CSS carries the data-token defaults
 
-The public `dataVars` entry in prebuilt mode contains compiled `var()` references,
-not a `defineVars()` call. An application using that entry and the shipped Core
-CSS has no StyleX extraction step that can materialize the referenced defaults.
-Core's prebuilt stylesheet therefore carries the group as part of its public
-CSS contract; theme presence does not control its availability.
+预构建模式下公开的 `dataVars` 条目包含已编译的 `var()` 引用，而不是一次 `defineVars()` 调用。使用该条目和随包发布的 Core CSS 的应用没有可生成所引用默认值的 StyleX 提取步骤。因此 Core 的预构建样式表将该分组作为其公开 CSS 契约的一部分；主题是否存在并不控制它的可用性。
 
 ## Intent
 
-Astryx owns one canonical 56-token data palette in the same public StyleX token
-system as its other design tokens. Components import the public StyleX variable
-object instead of constructing literal `var(--color-data-*)` strings. The
-StyleX compiler emits the canonical group when a source-compiled consumer uses it
-and omits the group from graph-based source builds that do not use it. Core's
-prebuilt `astryx.css` and the `@astryxdesign/build` PostCSS integration include
-the group whether or not a consumer imports it.
+Astryx 在与其其他设计令牌相同的公共 StyleX 令牌系统中拥有一个规范的 56 令牌数据调色板。组件导入公开的 StyleX 变量对象，而不是构造字面量 `var(--color-data-*)` 字符串。当源码编译的使用方使用该分组时，StyleX 编译器会输出该规范分组；在不使用它的基于图的源码构建中则省略该分组。无论使用方是否导入，Core 的预构建 `astryx.css` 和 `@astryxdesign/build` 的 PostCSS 集成都会包含该分组。
 
-A concrete theme emits only data-token values that the theme explicitly authors,
-inside its existing theme donut. It never carries the canonical defaults or a
-raw global data-token block. Unspecified data colors use the StyleX defaults and
-normal CSS inheritance; a nested theme changes only the subset it authors.
+具体主题只在其已有的主题 donut 内输出该主题显式编写的那些数据令牌值。它绝不携带规范默认值或原始全局数据令牌块。未指定的数据颜色使用 StyleX 默认值和常规 CSS 继承；嵌套主题只改动它编写的那个子集。
 
-The public CSS custom-property names, JavaScript token resolution, generated
-JavaScript marker, and three existing global `color-scheme` rules remain stable.
-Runtime and built theme compilation produce the same sparse scoped override.
+公开的 CSS 自定义属性名、JavaScript 令牌解析、生成的 JavaScript 标记，以及三条已有的全局 `color-scheme` 规则保持稳定。运行时与构建主题编译产生相同的稀疏作用域覆盖。
 
-StyleX 0.19 tree-shakes `defineVars` at the module/group boundary, not per
-property. The 56 data variables intentionally form one semantic group: a
-graph-based source build emits zero data defaults when the module is unused and
-all 56 when any member is used. The prebuilt Core stylesheet and the
-`@astryxdesign/build` PostCSS integration always include the complete group. The
-contract does not claim token-granular pruning that the compiler does not provide.
+StyleX 0.19 在模块/分组边界处对 `defineVars` 进行摇树优化，而不是按属性进行。56 个数据变量有意构成一个语义分组：当模块未被使用时，基于图的源码构建输出零个数据默认值；当任一成员被使用时，输出全部 56 个。预构建的 Core 样式表和 `@astryxdesign/build` 的 PostCSS 集成始终包含完整分组。本契约不声称编译器提供了令牌粒度的裁剪。
 
 ## Non-goals
 
-- Changing the names or values of the 56 canonical data defaults.
-- Adding a separate CSS defaults asset or keeping a parallel plain-JavaScript
-  token family as an independent source of truth.
-- Making concrete themes repeat defaults they do not author.
-- Scoping, renaming, or redesigning the three existing global `color-scheme`
-  selectors.
-- Changing scoped prose defaults, non-data token declarations, component
-  overrides, adaptations, MediaTheme rules, icon output, or type augmentation.
-- Defining the separate `@astryxdesign/build` source-build composition contract,
-  beyond FR3's data-group guarantee for its PostCSS integration.
-- Release scheduling and versioning beyond the breaking-minor requirement in
-  FR17.
-- Equivalent internal implementations remain valid when they satisfy this
-  public contract.
+- 更改 56 个规范数据默认值的名称或值。
+- 新增一份独立的 CSS 默认值资产，或保留一份平行的纯 JavaScript 令牌族作为独立的真值来源。
+- 让具体主题重复它们并未编写的默认值。
+- 对三条已有的全局 `color-scheme` 选择器进行作用域限定、重命名或重新设计。
+- 更改作用域文本默认值、非数据令牌声明、组件覆盖、适配、MediaTheme 规则、图标输出或类型增强。
+- 定义 `@astryxdesign/build` 单独的源码构建组合契约，超出 FR3 对其 PostCSS 集成的数据分组保证。
+- 发布排期与版本管理，超出 FR17 中的破坏性次版本要求。
+- 当等效的内部实现满足本公开契约时，它们仍然有效。
 
 ## Requirements
 
 ### Canonical source, public API, and typing
 
-- **FR1 — The public StyleX source owns every derived view.** The checked-in
-  `dataTokens.stylex.ts` module MUST be the sole canonical source for all 56 names
-  and default values. It contains the static object literal consumed by
-  `stylex.defineVars()` and exports the public `dataVars` object.
+- **FR1 — 公开的 StyleX 源码拥有每一个派生视图。** 检入仓库的 `dataTokens.stylex.ts` 模块必须是全部 56 个名称与默认值的唯一规范来源。它包含被 `stylex.defineVars()` 使用的静态对象字面量，并导出公开的 `dataVars` 对象。
 
-  Generation MUST read that `.stylex.ts` source and produce:
+  生成过程必须读取该 `.stylex.ts` 源码并产出：
 
-  1. the existing plain `dataTokenDefaults` compatibility view without importing
-     the StyleX value module into ordinary token-resolution graphs;
-  2. `DataTokenName` and the theme-input validation inventory; and
-  3. any generated documentation inventory.
+  1. 现有的纯 `dataTokenDefaults` 兼容视图，且不把 StyleX 值模块导入常规令牌解析图；
+  2. `DataTokenName` 与主题输入校验清单；以及
+  3. 任何生成的文档清单。
 
-  `dataTokenDefaults` MUST NOT be hand-maintained independently from `dataVars`.
-  A repository check MUST fail when generated values, names, or types drift from
-  the canonical `.stylex.ts` source. The canonical file MUST keep a static object
-  literal because StyleX rejects an imported object as a `defineVars()` argument.
+  `dataTokenDefaults` 不得独立于 `dataVars` 手工维护。当生成的值、名称或类型偏离规范的 `.stylex.ts` 源码时，仓库检查必须失败。规范文件必须保留静态对象字面量，因为 StyleX 拒绝把导入的对象作为 `defineVars()` 参数。
 
-- **FR2 — Data variables are an explicit public StyleX subpath.** Core MUST
-  export `dataVars` from
-  `@astryxdesign/core/theme/dataTokens.stylex`. Every existing public custom
-  property name remains byte-for-byte stable, for example:
+- **FR2 — 数据变量是一个显式的公开 StyleX 子路径。** Core 必须从 `@astryxdesign/core/theme/dataTokens.stylex` 导出 `dataVars`。每个已有的公开自定义属性名都保持逐字节稳定，例如：
 
   ```ts
   import {dataVars} from '@astryxdesign/core/theme/dataTokens.stylex';
@@ -106,86 +70,31 @@ contract does not claim token-granular pruning that the compiler does not provid
   const positive = dataVars['--color-data-categorical-green'];
   ```
 
-  The package export MUST use the same `source`, `types`, and `default` condition
-  shape as `@astryxdesign/core/theme/tokens.stylex`; the existing StyleX
-  `sideEffects` declaration continues to cover the source module. The focused
-  subpath prevents ordinary Theme, token-resolution, or non-data component
-  imports from retaining the StyleX variable group as a side effect in source
-  compilation. In prebuilt mode the same public entry provides compiled `var()`
-  references; loading `@astryxdesign/core/astryx.css` MUST supply their defaults
-  without requiring a consumer StyleX compilation step.
+  包的导出必须使用与 `@astryxdesign/core/theme/tokens.stylex` 相同的 `source`、`types` 和 `default` 条件形状；已有的 StyleX `sideEffects` 声明继续覆盖该源码模块。这个聚焦的子路径可防止普通的 Theme、令牌解析或非数据组件导入在源码编译中把 StyleX 变量组保留为副作用。在预构建模式下，同一公开条目提供已编译的 `var()` 引用；加载 `@astryxdesign/core/astryx.css` 必须提供它们的默认值，而无需使用方执行 StyleX 编译步骤。
 
-- **FR3 — Tree-shaking is truthful at the group boundary.** A graph-based
-  source compilation, one that compiles the modules reachable from the
-  product's imports, with no value import from the data StyleX subpath MUST emit
-  no `--color-data-*` default declarations. A graph that retains any `dataVars`
-  value import MUST emit one canonical StyleX variable group containing all 56
-  defaults. Importing one member is not required to prune the other 55.
+- **FR3 — 摇树在分组边界上是诚实的。** 一次基于图的源码编译（即编译从产品导入可达的模块）若未从数据 StyleX 子路径做值导入，则必须不输出任何 `--color-data-*` 默认声明。保留任何 `dataVars` 值导入的图必须输出一个包含全部 56 个默认值的规范 StyleX 变量分组。导入一个成员不要求裁剪其余 55 个。
 
-  The `@astryxdesign/build` PostCSS integration compiles every module Core
-  publishes rather than a reachable graph. Its output MUST contain exactly one
-  canonical 56-variable group, with every canonical name and value, whether or
-  not the product imports `dataVars`.
+  `@astryxdesign/build` 的 PostCSS 集成编译 Core 发布的每个模块，而不是一个可达图。无论产品是否导入 `dataVars`，其输出都必须恰好包含一个规范的 56 变量分组，且包含每个规范名称与值。
 
-  Core's prebuilt `@astryxdesign/core/astryx.css` MUST contain exactly one
-  canonical 56-variable group even when no Core component consumes it. The
-  package's compiled public `dataVars` entry exposes CSS references that this
-  stylesheet MUST define; consumer imports cannot trigger extraction from the
-  already-compiled entry. This exception applies only to the prebuilt Core
-  stylesheet and the PostCSS integration above, not to graph-based source
-  compilation or concrete themes.
+  即使没有任何 Core 组件使用它，Core 的预构建 `@astryxdesign/core/astryx.css` 也必须恰好包含一个规范的 56 变量分组。包中已编译的公开 `dataVars` 条目所公开的 CSS 引用必须由该样式表定义；使用方导入无法从已编译条目触发提取。此例外仅适用于预构建的 Core 样式表和上述 PostCSS 集成，不适用于基于图的源码编译或具体主题。
 
-  Distribution output MUST remain dependency-aware: referenced cross-package
-  StyleX variable dependencies appear exactly once across a satellite stylesheet
-  and its required provider stylesheet. A data-consumer package whose provider
-  already declares the group MUST NOT repeat it; without that provider, a
-  retained group MUST be emitted. Unreferenced groups other than the explicit
-  Core distribution exception remain absent. Bundle evidence MUST report the raw
-  and compressed cost of the retained group.
+  分发输出必须保持依赖感知：被引用的跨包 StyleX 变量依赖在卫星样式表与其必需的提供方样式表中恰好出现一次。提供方已声明该分组的数据使用方包不得重复它；没有该提供方时，被保留的分组必须被输出。除显式的 Core 分发例外之外，未被引用的分组仍然缺席。打包证据必须报告被保留分组的原始与压缩成本。
 
-  Supported source and distribution integrations MUST place the emitted variable
-  group in `@layer astryx-base`, like other Astryx StyleX output. An unlayered
-  StyleX pipeline is outside the authored-theme-override guarantee in FR8–FR10 and
-  MUST be diagnosed or documented rather than silently claimed as equivalent.
+  受支持的源码与分发集成必须像其他 Astryx StyleX 输出一样，把输出的变量分组放在 `@layer astryx-base` 中。不带层的 StyleX 流水线在 FR8–FR10 的编写主题覆盖保证之外，必须被诊断或记录，而不是被静默地声称等效。
 
 ### Consumer behavior
 
-- **FR4 — CSS-capable consumers use the public object.** Astryx TypeScript and
-  TSX consumers MUST import `dataVars` when passing a selected value to StyleX,
-  DOM styles, or SVG presentation attributes. They MUST NOT construct literal
-  `var(--color-data-*)` strings. This includes default prop values such as
-  candlestick up/down colors.
+- **FR4 — 支持 CSS 的使用方使用公开对象。** Astryx 的 TypeScript 与 TSX 使用方在把选定的值传给 StyleX、DOM 样式或 SVG 呈现属性时，必须导入 `dataVars`。它们不得构造字面量 `var(--color-data-*)` 字符串。这包括诸如 K 线涨/跌颜色的默认 prop 值。
 
-  CanvasRenderingContext2D and other non-CSS APIs MUST NOT receive `dataVars`
-  `var()` references. They MUST use the existing concrete mode-resolved JavaScript
-  path, such as `resolveThemeToken()` or `useTheme().token()`, consistent with
-  FR13. The generated compatibility view keeps that resolver derived from the
-  same canonical `.stylex.ts` source.
+  CanvasRenderingContext2D 及其他非 CSS API 不得接收 `dataVars` 的 `var()` 引用。它们必须使用现有的按模式解析的具体 JavaScript 路径，例如 `resolveThemeToken()` 或 `useTheme().token()`，与 FR13 保持一致。生成的兼容视图让该解析器仍然派生自同一份规范 `.stylex.ts` 源码。
 
-  In prebuilt mode, raw CSS and consumer code MAY reference the stable
-  `var(--color-data-*)` names with no fallback: the prebuilt Core stylesheet
-  defines the complete group under FR3. A source-built product reads data colors
-  through `dataVars`, which retains the group in the source graph. The
-  `@astryxdesign/build` PostCSS integration always emits the group under FR3; a
-  graph-based source build that does not import `dataVars` leaves raw
-  references undefined, which is unsupported. An explicit local fallback remains valid in
-  every mode. Documentation MUST not imply that a theme stylesheet itself
-  materializes the defaults.
+  在预构建模式下，原始 CSS 与使用方代码可以引用稳定的 `var(--color-data-*)` 名称而不带任何回退：预构建的 Core 样式表在 FR3 下定义完整分组。源码构建的产品通过 `dataVars` 读取数据颜色，它会在源码图中保留该分组。`@astryxdesign/build` 的 PostCSS 集成在 FR3 下始终输出该分组；不导入 `dataVars` 的基于图的源码构建会让原始引用处于未定义状态，这不受支持。显式的本地回退在每种模式下仍然有效。文档不得暗示主题样式表本身会生成默认值。
 
-- **FR5 — Direct SVG and DOM values paint correctly.** A `dataVars` value passed
-  directly to an SVG presentation attribute or DOM style MUST compile to the
-  stable `var(--color-data-*)` reference. In source compilation the import MUST
-  retain the variable-definition module; in prebuilt mode Core's stylesheet MUST
-  provide the group under FR3. Default and theme-overridden values MUST paint the
-  expected fill and stroke. An undeclared data variable paints a candlestick
-  body black and drops its wick stroke; that state MUST NOT recur.
+- **FR5 — 直接的 SVG 与 DOM 值能正确绘制。** 直接传给 SVG 呈现属性或 DOM 样式的 `dataVars` 值必须编译为稳定的 `var(--color-data-*)` 引用。在源码编译中，该导入必须保留变量定义模块；在预构建模式下，Core 的样式表必须在 FR3 下提供该分组。默认值与主题覆盖值必须绘制出预期的 fill 与 stroke。未声明的数据变量会把 K 线实体绘成黑色并丢掉其灯芯描边；该状态不得再出现。
 
 ### Sparse theme output
 
-- **FR6 — Concrete themes emit only explicitly authored data values.** Runtime
-  and static theme compilation MUST identify the authored input set before
-  default resolution. For every explicitly authored `--color-data-*` name, the
-  concrete theme emits that declaration in its existing `astryx-theme` donut:
+- **FR6 — 具体主题只输出显式编写的数值。** 运行时与静态主题编译必须在默认值解析之前识别编写的输入集合。对于每个显式编写的 `--color-data-*` 名称，具体主题在其已有的 `astryx-theme` donut 中输出该声明：
 
   ```text
   @layer astryx-theme {
@@ -197,109 +106,47 @@ contract does not claim token-granular pruning that the compiler does not provid
   }
   ```
 
-  A theme that authors no data values emits none. A partial authoring set emits
-  exactly that subset. Resolved defaults, compatibility maps, and inherited
-  parent values MUST NOT be serialized as though the theme authored them.
+  不编写任何数值的主题不输出任何声明。部分编写的集合恰好输出该子集。已解析的默认值、兼容映射与继承的父级值不得被序列化得像是主题编写了它们。
 
-- **FR7 — Theme build never emits raw global data defaults.** Neither runtime
-  `<Theme>` injection nor standalone, multi-file, or family `theme build` output
-  may emit canonical data defaults on `:root`, `html`, `body`, or another
-  out-of-donut selector. Theme compilation MUST not call, inline, or retain a
-  raw `generateDataTokenDefaultsCSS()` equivalent. The canonical StyleX group,
-  retained by source consumers or Core distribution under FR3, is the only
-  CSS-default owner.
+- **FR7 — 主题构建绝不输出原始全局数据默认值。** 无论是运行时 `<Theme>` 注入，还是独立、多文件或 family 的 `theme build` 输出，都不得在 `:root`、`html`、`body` 或其他 donut 之外的选择器上输出规范数据默认值。主题编译不得调用、内联或保留等同于 `generateDataTokenDefaultsCSS()` 的原始实现。在 FR3 下由源码使用方或 Core 分发保留的规范 StyleX 分组，是唯一的 CSS 默认值所有者。
 
-  Removing the old defaults block MUST NOT remove its layer-order side effect.
-  Every standalone, multi-file, family, and runtime theme output MUST retain an
-  explicit order registration equivalent to:
+  移除旧的默认值块不得移除其层顺序副作用。每个独立、多文件、family 与运行时主题输出都必须保留一个等同于以下内容的显式顺序注册：
 
   ```text
   @layer reset, astryx-base, astryx-theme;
   ```
 
-  The registration contains no data declaration. It keeps `astryx-base` below
-  authored theme overrides regardless of whether theme CSS or component CSS loads
-  first.
+  该注册不包含任何数据声明。无论主题 CSS 还是组件 CSS 先加载，它都保持 `astryx-base` 位于编写的主题覆盖之下。
 
 ### Cascade behavior
 
-- **FR8 — Nested themes inherit every unspecified data value.** Same-identity and
-  different-identity nested themes use normal custom-property inheritance. A
-  child that authors no data value inherits the parent's effective value. A
-  child that authors a subset replaces only that subset inside its donut; every
-  omitted name continues to inherit. Changing identity alone does not reset the
-  palette.
+- **FR8 — 嵌套主题继承每一个未指定的数值。** 同标识与不同标识的嵌套主题都使用常规自定义属性继承。不编写任何数值的子主题继承父级的有效值。编写子集的子主题只在其 donut 内替换该子集；每个被省略的名称继续继承。仅改变标识并不会重置该调色板。
 
-- **FR9 — Sibling roots remain isolated for authored overrides.** A scoped
-  override in one Theme root MUST NOT affect a sibling Theme root. Both roots
-  resolve unspecified names from the same retained StyleX canonical group.
+- **FR9 — 同级根对编写的覆盖保持隔离。** 一个 Theme 根中的作用域覆盖不得影响同级的 Theme 根。两个根都从同一个被保留的 StyleX 规范分组解析未指定的名称。
 
-- **FR10 — Dynamic identity switching selects only authored deltas.** Under the
-  required `reset < astryx-base < astryx-theme` order, and when all target theme
-  stylesheets are loaded, changing a root's theme identity MUST add, remove, or
-  replace exactly the selected theme's authored data subset. Every omitted name
-  returns to the inherited StyleX default or ancestor value. Physical stylesheet
-  order MUST NOT change the winner after the layer order is registered. Selecting
-  a built theme whose CSS is absent remains incomplete consumer setup.
+- **FR10 — 动态标识切换只选择编写的增量。** 在必需的 `reset < astryx-base < astryx-theme` 顺序下，且当所有目标主题样式表都已加载时，改变某个根的 theme 标识必须恰好添加、移除或替换所选主题的编写数据子集。每个被省略的名称都回退到继承的 StyleX 默认值或祖先值。在层顺序注册之后，物理样式表顺序不得改变胜出者。选择一个 CSS 缺失的已构建主题，仍属于使用方设置不完整。
 
-- **FR11 — Light and dark keep existing resolution.** Canonical and authored
-  `light-dark()` data values MUST resolve from the effective `color-scheme` as
-  other StyleX variables do. Explicit light, explicit dark, system mode,
-  MediaTheme, same-theme nesting, and different-theme nesting preserve the
-  existing mode contract.
+- **FR11 — 浅色与深色保留现有的解析。** 规范与编写的 `light-dark()` 数值必须像其他 StyleX 变量一样从有效的 `color-scheme` 解析。显式浅色、显式深色、系统模式、MediaTheme、同主题嵌套与不同主题嵌套都保留现有的模式契约。
 
 ### Availability and JavaScript compatibility
 
-- **FR12 — Availability follows the compilation mode, not Theme presence.** A
-  graph-based source build without a compiled consumer retaining `dataVars`
-  contains no data-variable defaults. Core's prebuilt stylesheet always retains
-  the group under FR3, because the compiled public entry alone cannot emit
-  definitions, and the `@astryxdesign/build` PostCSS integration always retains
-  it because it compiles all published Core source. In every mode, standard
-  StyleX 0.19 output declares the complete group on
-  `:root` plus its variable-group class, exactly like existing canonical StyleX
-  token groups. This global declaration is an accepted compiler consequence of
-  the chosen canonical token system; it MUST NOT be attributed to or duplicated
-  by theme build.
+- **FR12 — 可用性遵循编译模式，而非主题是否存在。** 没有已编译使用方保留 `dataVars` 的基于图的源码构建不包含数据变量默认值。Core 的预构建样式表在 FR3 下始终保留该分组，因为仅凭已编译的公开条目无法输出定义；而 `@astryxdesign/build` 的 PostCSS 集成始终保留它，因为它编译所有已发布的 Core 源码。在每种模式下，标准 StyleX 0.19 输出都会在 `:root` 上加上其变量分组类来声明完整分组，与已有的规范 StyleX 令牌分组完全一样。这个全局声明是所选规范令牌系统导致的、已被接受的编译器结果；它不得被归因于 theme build，也不得由 theme build 复制。
 
-  In supported Astryx source and distribution integrations, the emitted group
-  MUST be wrapped in `@layer astryx-base`. A bare StyleX transform emits the same
-  selector without a layer; on the document root that unlayered default outranks a
-  layered theme override and can miscolor portals. Such a pipeline is outside the
-  themed-override guarantee and MUST be diagnosed or documented explicitly.
+  在受支持的 Astryx 源码与分发集成中，输出的分组必须包裹在 `@layer astryx-base` 中。裸 StyleX 转换会输出相同的选择器但不带层；在文档根上，那个不带层的默认值会压过带层的主题覆盖，并可能让 portal 着色错误。这样的流水线在主题覆盖保证之外，必须被诊断或明确记录。
 
-  Consumers that require data variables only inside a Theme MUST enforce that
-  usage boundary in component structure. This contract does not claim that a
-  retained StyleX `defineVars` group is absent from unthemed DOM.
+  只在 Theme 内部才需要数据变量的使用方必须在组件结构中实施该使用边界。本契约不声称被保留的 StyleX `defineVars` 分组不出现在无主题的 DOM 中。
 
-- **FR13 — JavaScript token resolution remains compatible.** Existing
-  `dataTokenDefaults`, `domainTokenDefaults`, `tokenDefaults`,
-  `resolveThemeToken()`, `resolveThemeTokens()`, `useTheme().token()`, and
-  `useTheme().tokens` names and return shapes remain available. Their canonical
-  data values derive from FR1. This work MUST NOT turn the token APIs into
-  computed-style readers or change their existing provider/no-provider
-  semantics.
+- **FR13 — JavaScript 令牌解析保持兼容。** 现有的 `dataTokenDefaults`、`domainTokenDefaults`、`tokenDefaults`、`resolveThemeToken()`、`resolveThemeTokens()`、`useTheme().token()` 与 `useTheme().tokens` 名称与返回形状仍然可用。它们的规范数据值派生自 FR1。本工作不得把令牌 API 变成计算样式读取器，也不得改变它们现有的有提供方/无提供方语义。
 
 ### Runtime, built, and family parity
 
-- **FR14 — Runtime and built theme output are equivalent sparse deltas.** For the
-  same theme input, runtime and static compilation emit the same authored data
-  names, values, layer, selector, and donut boundary. Neither path emits
-  defaults. Generated JavaScript remains `__built: true`; the marker continues
-  to mean that concrete theme CSS is loaded and runtime compilation is skipped.
-  No fallback data injection or second marker is added.
+- **FR14 — 运行时与构建主题输出是等效的稀疏增量。** 对于相同的主题输入，运行时与静态编译输出相同的编写数据名称、数值、层、选择器与 donut 边界。两条路径都不输出默认值。生成的 JavaScript 仍为 `__built: true`；该标记继续表示具体主题 CSS 已加载，运行时编译被跳过。不添加回退数据注入或第二个标记。
 
-- **FR15 — Family output contains only member-authored subsets.** One family CSS
-  file contains each selected member's explicit data overrides under that
-  member's identity. A zero-data-delta member contributes no data declaration.
-  The family file never repeats the canonical 56. Nested members follow FR8,
-  switching follows FR10, and the family file emits the global color-scheme
-  policy at most once.
+- **FR15 — family 输出只包含成员编写的子集。** 一个 family CSS 文件在该成员的标识下包含每个所选成员的显式数据覆盖。零数据增量的成员不贡献任何数据声明。family 文件绝不重复规范的 56。嵌套成员遵循 FR8，切换遵循 FR10，family 文件最多输出一次全局 color-scheme 策略。
 
 ### Global color-scheme compatibility
 
-- **FR16 — Complete bundles may keep one compatible global environment policy.**
-  A concrete bundle MAY continue to emit exactly these three rules:
+- **FR16 — 完整的包可以保留一份兼容的全局环境策略。** 一个具体包可以继续输出恰好以下三条规则：
 
   ```text
   @layer astryx-theme {
@@ -309,320 +156,199 @@ contract does not claim token-granular pruning that the compiler does not provid
   }
   ```
 
-  A standalone concrete bundle that emits the policy MUST emit all three
-  byte-equivalent selectors, declarations, and layer ownership. A theme MUST NOT
-  specialize, partially emit, reorder, or otherwise diverge from that policy. A
-  standalone bundle MAY omit the policy only as a complete set. Family
-  aggregation retains its existing identity-scoped color-scheme composition;
-  this specification neither redesigns that composition nor treats it as a new
-  concrete-theme policy. These environment declarations do not permit theme
-  build to emit data defaults globally.
+  输出该策略的独立具体包必须输出全部三个字节等效的选择器、声明与层归属。主题不得特化、部分输出、重排或以其他方式偏离该策略。独立包只有作为完整集合时才能省略该策略。family 聚合保留其现有的按标识限定作用域的 color-scheme 组合；本规格既不重新设计该组合，也不把它当作新的具体主题策略。这些环境声明不允许 theme build 全局输出数据默认值。
 
 ### Compatibility, migration, and documentation
 
-- **FR17 — The ownership move uses the breaking 0.x path.** The first release
-  that removes theme-build global defaults MUST use the repository's breaking
-  change process: a minor version for affected 0.x packages, a breaking
-  Changeset, and migration notes. The break is observable for raw data-variable
-  consumers whose graph does not retain `dataVars`, consumers that relied on
-  concrete theme CSS to define globals, and generated artifacts that still
-  contain the old root block.
+- **FR17 — 归属迁移使用破坏性的 0.x 路径。** 移除 theme build 全局默认值的第一个版本必须使用仓库的破坏性变更流程：对受影响的 0.x 包使用次版本号、一个破坏性 Changeset 与迁移说明。对于图不保留 `dataVars` 的原始数据变量使用方、依赖具体主题 CSS 来定义全局值的使用方，以及仍包含旧 root 块的生成产物，这个破坏是可观察的。
 
-- **FR18 — Migration prefers public imports, not compatibility CSS.** Astryx
-  component, fixture, example, and test migrations MUST replace constructible
-  literal strings with `dataVars` references when the source is StyleX-capable.
-  Upgrade tooling and regeneration MUST reject stale raw root defaults. Upgrade
-  tooling does not inspect direct raw consumers and MUST NOT require a fallback
-  for them. Raw CSS and generated templates that already carry explicit
-  fallbacks remain valid. Migration MUST NOT add a legacy global-data theme mode,
-  provider prop, sidecar stylesheet, arbitrary Theme wrapper, or invented
-  fallback color.
+- **FR18 — 迁移优先使用公开导入，而非兼容 CSS。** 当源码支持 StyleX 时，Astryx 组件、测试夹具、示例与测试的迁移必须用 `dataVars` 引用替换可构造的字面量字符串。升级工具与重新生成必须拒绝陈旧的原始 root 默认值。升级工具不检查直接的原始使用方，并且不得要求它们提供回退。已经带有显式回退的原始 CSS 与生成模板保持有效。迁移不得添加传统全局数据主题模式、提供方 prop、sidecar 样式表、任意的 Theme 包装器或臆造的回退颜色。
 
-- **FR19 — Theme input validation and CLI output remain truthful.** Every stable
-  data name remains valid theme input and every unknown name remains rejected.
-  Theme build keeps its current CSS/JS/declaration filenames and pairing, but
-  generated CSS and docs MUST describe data declarations as authored sparse
-  overrides. `--check` and upgrade validation MUST fail an old artifact that
-  still contains the canonical root block or a theme-scoped un-authored default.
+- **FR19 — 主题输入校验与 CLI 输出保持真实。** 每个稳定的数据名称仍然是有效的主题输入，每个未知名称仍然被拒绝。theme build 保持其当前的 CSS/JS/声明文件名与配对，但生成的 CSS 与文档必须把数据声明描述为编写的稀疏覆盖。`--check` 与升级校验必须让仍包含规范 root 块或主题作用域内未编写默认值的旧产物失败。
 
-- **FR20 — Consumer docs distinguish three paths.** Documentation MUST show:
-  (1) `dataVars` for StyleX-capable component code, the path a source build
-  uses; (2) JavaScript token resolution for APIs that need concrete
-  mode-resolved values; and (3) raw CSS custom-property use in prebuilt mode,
-  where `@astryxdesign/core/astryx.css` supplies the defaults, or with an
-  explicit fallback. It MUST state whole-group tree-shaking honestly and keep
-  color-scheme compatibility and release work outside this change.
+- **FR20 — 使用方文档区分三条路径。** 文档必须展示：(1) 用于支持 StyleX 的组件代码的 `dataVars`，即源码构建使用的路径；(2) 用于需要具体按模式解析值的 API 的 JavaScript 令牌解析；以及 (3) 预构建模式下原始 CSS 自定义属性的用法，此时由 `@astryxdesign/core/astryx.css` 提供默认值，或带有显式回退。文档必须如实说明整组摇树，并把 color-scheme 兼容性与发布工作留在本次变更之外。
 
 ### Platform support
 
-- Supported browser floor: the existing Theme, StyleX, and `@scope` matrix.
-- Unsupported behavior: browsers outside that floor retain the existing support
-  policy; no global theme-build data fallback is added.
-- Browser evidence: real Chromium computed styles and painted SVG values across
-  the matrix in Verification.
+- 支持的浏览器下限：现有的 Theme、StyleX 与 `@scope` 矩阵。
+- 不支持的行为：低于该下限的浏览器沿用现有的支持策略；不新增全局的 theme build 数据回退。
+- 浏览器证据：Verification 中矩阵范围内的真实 Chromium 计算样式与已绘制的 SVG 值。
 
 ## Current-state impact
 
-The public StyleX data group owns canonical CSS defaults; the compatibility,
-type, validation, and documentation views derive from it. Graph-based source
-compilation retains whole-group tree-shaking. Core's prebuilt stylesheet supplies
-the same group for the compiled public `dataVars` entry, without a consumer
-compilation step or runtime Theme injection, and the `@astryxdesign/build`
-PostCSS integration always emits it.
+公开的 StyleX 数据分组拥有规范 CSS 默认值；兼容性、类型、校验与文档视图都从它派生。基于图的源码编译保留整组摇树。Core 的预构建样式表为已编译的公开 `dataVars` 条目提供同一分组，无需使用方编译步骤或运行时 Theme 注入，而 `@astryxdesign/build` 的 PostCSS 集成始终输出它。
 
-Concrete standalone and family themes contain only authored scoped overrides.
-Nested themes inherit omissions, JavaScript resolution remains compatible, and
-the global `color-scheme` rules, built marker, filenames, and paired CSS/JS/type
-outputs are unchanged.
+具体独立主题与 family 主题只包含编写的限定作用域覆盖。嵌套主题继承省略项，JavaScript 解析保持兼容，全局 `color-scheme` 规则、构建标记、文件名以及配对的 CSS/JS/类型输出都不变。
 
-`architecture:theme-compilation` owns runtime/static sparse theme output.
-`architecture:theme-application` owns provider nesting and style lifetime.
-`architecture:theme-tokens` owns the shared vocabulary and derived compatibility
-views; this record's FR3 owns the prebuilt and PostCSS data-group availability
-guarantees. Beyond that guarantee, `spec:AST-080` governs `@astryxdesign/build`.
+`architecture:theme-compilation` 拥有运行时/静态稀疏主题输出。`architecture:theme-application` 拥有提供方嵌套与样式生命周期。`architecture:theme-tokens` 拥有共享词汇与派生的兼容视图；本记录的 FR3 拥有预构建与 PostCSS 数据分组可用性保证。在该保证之外，`spec:AST-080` 管辖 `@astryxdesign/build`。
 
 ## Verification
 
-| Contract  | Verification                                                                                     | Representative states                                                                                                                                                                            | Mutation or failure expectation                                                                                                                                                             |
-| --------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1–FR3   | generator drift, public export, graph-aware compiler, PostCSS integration, and package CSS tests | graph-based source graphs without imports; PostCSS build without a `dataVars` import, development and production; prebuilt Core; one retained member; cross-package provider pair; raw/gzip size | plain defaults drift; public key changes; unused graph-based source emits data vars; prebuilt Core or PostCSS build omits or changes any; one use emits fewer/more than 56; duplicate group |
-| FR4–FR5   | source audit, compiler fixture, component tests, real Chromium                                   | direct SVG fill/stroke; DOM style; Canvas concrete resolution; explicit props; canonical green/red; authored override                                                                            | literal construction remains; direct CSS value does not retain definitions; Canvas receives `var()`; body paints black or wick disappears                                                   |
-| FR6–FR7   | runtime/static/family structure and layer-order tests                                            | zero/one/many authored names; all 56 canonical names; `:root`/html/body scan; theme CSS before/after component CSS                                                                               | omitted default serialized; authored value outside donut; raw defaults remain; layer order flips                                                                                            |
-| FR8–FR11  | real-browser cascade matrix                                                                      | same/different nesting; parent/child subsets; siblings; dynamic switch; light/dark/system/MediaTheme; portals; layered and unlayered source CSS                                                  | omission resets; sibling leaks; order/mode changes winner; unlayered root silently claims override parity                                                                                   |
-| FR12–FR16 | compiler/runtime/build parity and environment-policy tests                                       | no data consumer; retained layered group; runtime and built themes; standalone and family color-scheme composition                                                                               | Theme presence emits defaults; built/runtime differ; family repeats defaults; global policy diverges                                                                                        |
-| FR17–FR20 | Changeset, codemod, CLI check, docs, and regeneration fixtures                                   | literal component/fixture use; raw CSS with/without fallback in prebuilt and source builds; old root artifact; ordinary/family build                                                             | no breaking note; unsafe auto-rewrite; stale artifact passes; raw use fails upgrade; docs claim theme CSS supplies defaults or token-granular pruning                                       |
+| 契约      | 验证                                                          | 代表性状态                                                                                                                                   | 变异或失败预期                                                                                                                                           |
+| --------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1–FR3   | 生成器漂移、公共导出、图感知编译器、PostCSS 集成与包 CSS 测试 | 不含导入的基于图的源码图；没有导入 `dataVars` 的 PostCSS 构建，开发与生产模式；预构建 Core；一个被保留的成员；跨包提供方配对；原始/gzip 大小 | 纯默认值漂移；公共键变化；未使用的基于图的源码输出了数据变量；预构建 Core 或 PostCSS 构建省略或改变了任何一项；一次使用输出的数量少于或多于 56；分组重复 |
+| FR4–FR5   | 源码审计、编译器测试夹具、组件测试、真实 Chromium             | 直接的 SVG fill/stroke；DOM 样式；Canvas 具体值解析；显式 props；规范绿/红；编写的覆盖                                                       | 仍存在字面量构造；直接的 CSS 值未保留定义；Canvas 收到 `var()`；实体绘成黑色或灯芯消失                                                                   |
+| FR6–FR7   | 运行时/静态/family 结构与层顺序测试                           | 零个/一个/多个编写的名称；全部 56 个规范名称；`:root`/html/body 扫描；主题 CSS 在组件 CSS 之前/之后                                          | 被省略的默认值被序列化；编写的数值落在 donut 之外；原始默认值仍在；层顺序反转                                                                            |
+| FR8–FR11  | 真实浏览器层叠矩阵                                            | 相同/不同嵌套；父/子子集；同级根；动态切换；浅色/深色/系统/MediaTheme；portal；带层与不带层的源码 CSS                                        | 省略导致重置；同级根泄漏；顺序/模式改变胜出者；不带层的根静默声称与覆盖等效                                                                              |
+| FR12–FR16 | 编译器/运行时/构建一致性与环境策略测试                        | 没有数据使用方；被保留的带层分组；运行时与构建主题；独立与 family 的 color-scheme 组合                                                       | 主题存在即输出默认值；构建与运行时不同；family 重复默认值；全局策略偏离                                                                                  |
+| FR17–FR20 | Changeset、codemod、CLI 检查、文档与重新生成测试夹具          | 组件/测试夹具中的字面量用法；预构建与源码构建中带/不带回退的原始 CSS；旧的 root 产物；普通/family 构建                                       | 缺少破坏性说明；不安全的自动重写；陈旧产物通过检查；原始用法使升级失败；文档声称主题 CSS 提供默认值或令牌粒度裁剪                                        |
 
-Real-browser verification MUST independently assert canonical and authored values,
-not reuse generator output as the oracle. It MUST reproduce the
-black-body/invisible-wick state with the variable declaration removed, then prove
-correct SVG fill and stroke after the public StyleX import. It MUST cover default,
-explicit prop, parent override, child subset override, same/different nested
-identity, siblings, dynamic switching, light/dark values, and portal content that
-inherits from the document root. Non-CSS verification MUST resolve the same
-canonical and authored colors through the JavaScript token API and assert that a
-Canvas assignment never receives a `var()` reference. An unlayered StyleX output
-MUST be a red arm: it must demonstrate why the supported integration wraps
-canonical defaults in `astryx-base` rather than being reported as equivalent.
+真实浏览器验证必须独立断言规范值与编写的数值，而不得把生成器输出复用为判据。它必须在移除变量声明的情况下复现黑实体/不可见灯芯状态，然后证明在公开 StyleX 导入之后 SVG fill 与 stroke 正确。它必须覆盖默认、显式 prop、父级覆盖、子集覆盖、相同/不同嵌套标识、同级根、动态切换、浅色/深色数值，以及从文档根继承的 portal 内容。非 CSS 验证必须通过 JavaScript 令牌 API 解析相同的规范颜色与编写的颜色，并断言 Canvas 赋值绝不收到 `var()` 引用。不带层的 StyleX 输出必须是一个红色分支：它必须证明为什么受支持的集成把规范默认值包裹在 `astryx-base` 中，而不是被报告为等效。
 
-Compiler verification MUST compile an unused entry and a one-member consumer
-through a graph-based pipeline. The unused output contains zero
-`--color-data-*` defaults; the retained output contains every canonical name
-exactly once in the StyleX variable group. It MUST not claim per-property
-pruning. PostCSS integration verification MUST run the documented configuration
-over a product that does not import `dataVars`, in development and production
-modes, and compare the output with the canonical source: every name and value
-exactly once, declared on `:root` inside `@layer astryx-base`. Distribution verification MUST prove Core's
-prebuilt stylesheet defines all 56 canonical values exactly once and a
-satellite/provider pair does not duplicate the group. A production application
-using only the prebuilt CSS and the compiled public `dataVars` entry MUST paint
-canonical and authored values in both light/dark modes and both stylesheet load
-orders. Report raw and gzip deltas for the retained group.
+编译器验证必须通过基于图的流水线编译一个未使用的条目和一个单成员使用方。未使用的输出包含零个 `--color-data-*` 默认值；被保留的输出在 StyleX 变量分组中恰好包含每个规范名称一次。它不得声称按属性裁剪。PostCSS 集成验证必须在开发与生产模式下，把文档化的配置运行在一个不导入 `dataVars` 的产品上，并把输出与规范源码比较：在 `@layer astryx-base` 内的 `:root` 上，每个名称与值都恰好声明一次。分发验证必须证明 Core 的预构建样式表恰好一次定义全部 56 个规范值，且卫星/提供方配对不重复该分组。仅使用预构建 CSS 与已编译公开 `dataVars` 条目的生产应用必须在浅色/深色两种模式以及两种样式表加载顺序下绘制规范值与编写的数值。报告被保留分组的原始与 gzip 增量。
 
-Theme-output verification MUST enumerate all 56 canonical names and fail if an
-un-authored canonical value appears in standalone, multi-file, family, or runtime
-Theme CSS. It MUST fail on any raw `:root` data declaration from theme build and
-on removal of the explicit `reset, astryx-base, astryx-theme` order registration.
-Global color-scheme verification separately compares the complete standalone
-three-rule policy across representative emitting bundles, asserts that a
-non-emitting standalone bundle contains none of the three, and preserves existing
-family composition.
+主题输出验证必须枚举全部 56 个规范名称，并在独立、多文件、family 或运行时 Theme CSS 中出现未编写的规范值时失败。它必须在 theme build 输出任何原始 `:root` 数据声明时失败，也必须在移除显式 `reset, astryx-base, astryx-theme` 顺序注册时失败。全局 color-scheme 验证另行在有代表性的输出包之间比较完整的独立三规则策略，断言不输出该策略的独立包不包含这三条中的任何一条，并保留现有的 family 组合。
 
 ### Completion criteria
 
-Conformance requires:
+一致性要求：
 
-- one canonical `.stylex.ts` source, a public `dataVars` export, and generated
-  compatibility/type/validation views;
-- truthful whole-group tree-shaking in graph-based source builds, the complete
-  group in PostCSS integration output, and the explicit prebuilt-Core
-  availability guarantee, with dependency-aware satellite deduplication;
-- migrated Astryx consumers with no constructible raw data-var strings;
-- sparse donut overrides and zero theme-build raw defaults across runtime,
-  standalone, multi-file, and family modes;
-- JS token API and theme-input compatibility;
-- real Chromium SVG/cascade evidence, including the undeclared-variable red arm;
-- regeneration and migration evidence for downstream theme artifacts; and
-- independent architecture review plus green CI.
+- 一个规范的 `.stylex.ts` 来源、一个公开的 `dataVars` 导出，以及生成的兼容/类型/校验视图；
+- 基于图的源码构建中如实的整组摇树、PostCSS 集成输出中的完整分组，以及显式的预构建 Core 可用性保证，并具有依赖感知的卫星去重；
+- 已迁移的 Astryx 使用方，且没有可构造的原始数据变量字符串；
+- 在运行时、独立、多文件与 family 模式下，稀疏的 donut 覆盖与零 theme build 原始默认值；
+- JS 令牌 API 与主题输入兼容性；
+- 真实 Chromium 的 SVG/层叠证据，包括未声明变量的红色分支；
+- 下游主题产物的重新生成与迁移证据；以及
+- 独立的架构审查加上通过的 CI。
 
 ## Decision log
 
 ### DEC-1 — Public StyleX variables own canonical CSS defaults
 
-**Reference:** `spec:AST-066/DEC-1`
-**Decider:** `cixzhang`, `2026-10-01`
+**参考：** `spec:AST-066/DEC-1`
 
-The data palette joins the canonical StyleX token system. The checked-in
-`.stylex.ts` module owns the names and defaults, and components import its public
-object with stable CSS names. Plain JavaScript defaults, types, validation, and
-documentation remain generated compatibility views, not a second hand-maintained
-authority.
+**决定者：** `cixzhang`，`2026-10-01`
 
-Rejected: preserving `dataTokenDefaults` as an independent CSS generator input.
-That is the parallel metadata architecture that allowed consumers and emitted CSS
-to disagree.
+数据调色板加入规范的 StyleX 令牌系统。检入仓库的 `.stylex.ts` 模块拥有名称与默认值，组件导入其具有稳定 CSS 名称的公开对象。纯 JavaScript 默认值、类型、校验与文档保持为生成的兼容视图，而不是第二个手工维护的权威。
+
+已否决：把 `dataTokenDefaults` 保留为独立的 CSS 生成器输入。那正是让使用方与输出的 CSS 彼此不一致的平行元数据架构。
 
 ### DEC-2 — Tree-shake one semantic 56-variable group
 
-**Reference:** `spec:AST-066/DEC-2`
-**Decider:** `cixzhang`, `2026-10-01`
+**参考：** `spec:AST-066/DEC-2`
 
-StyleX 0.19 emits a complete `defineVars` group when its module is retained and
-cannot prune individual object properties. One data palette group matches the
-existing `colorVars` model, keeps the public API coherent, and gives an honest
-source-compiled zero-or-56 boundary. Precompiled package CSS remains graph-aware
-across packages, with the explicit Core distribution exception in FR3; it does
-not use a repository-wide file scan. DEC-10 scopes the boundary to graph-based
-source builds.
+**决定者：** `cixzhang`，`2026-10-01`
 
-Rejected: claiming token-granular pruning, or splitting the palette across many
-files solely to simulate it. Both would make the API and maintenance cost exceed
-the demonstrated compiler capability.
+StyleX 0.19 在其模块被保留时输出完整的 `defineVars` 分组，且无法裁剪单个对象属性。一个数据调色板分组与已有的 `colorVars` 模型一致，保持公共 API 连贯，并给出诚实的、源码编译下的零或 56 边界。预编译的包 CSS 跨包仍然图感知，FR3 中有显式的 Core 分发例外；它不使用全仓库文件扫描。DEC-10 将该边界限定为基于图的源码构建。
+
+已否决：声称令牌粒度裁剪，或仅为模拟它而把调色板拆到许多文件中。两者都会让 API 与维护成本超出已证明的编译器能力。
 
 ### DEC-3 — Theme output contains authored deltas only
 
-**Reference:** `spec:AST-066/DEC-3`
-**Decider:** `cixzhang`, `2026-10-01`
+**参考：** `spec:AST-066/DEC-3`
 
-Theme build owns customization, not canonical availability. It serializes only
-explicit data inputs in the normal donut and never emits a raw root defaults
-block. It preserves a declaration-only layer prelude so removing that block does
-not invert `astryx-base` and `astryx-theme` when CSS load order changes.
+**决定者：** `cixzhang`，`2026-10-01`
 
-Rejected: copying 56 defaults into every theme and keeping one unconditional
-root block. The former duplicates defaults; the latter makes Theme presence,
-not actual StyleX use, own the palette.
+theme build 拥有定制，而非规范可用性。它只在常规 donut 中序列化显式的数据输入，绝不输出原始 root 默认值块。它保留仅含声明的层前奏，使得移除该块后，当 CSS 加载顺序变化时不会颠倒 `astryx-base` 与 `astryx-theme`。
+
+已否决：把 56 个默认值复制进每个主题并保留一个无条件的 root 块。前者重复默认值；后者让 Theme 是否存在（而非实际的 StyleX 使用）拥有调色板。
 
 ### DEC-4 — Nested omission inherits
 
-**Reference:** `spec:AST-066/DEC-4`
-**Decider:** `cixzhang`, `2026-10-01`
+**参考：** `spec:AST-066/DEC-4`
 
-Same and different nested themes inherit every unspecified custom property and
-replace only the authored subset. Identity alone is not a palette reset.
+**决定者：** `cixzhang`，`2026-10-01`
 
-Rejected: treating an omitted value as an authored request for the canonical
-default.
+相同与不同的嵌套主题都继承每一个未指定的自定义属性，并且只替换编写的子集。仅有身份并不构成调色板重置。
+
+已否决：把省略的值当作对规范默认值的编写请求。
 
 ### DEC-5 — Accept standard StyleX root emission when the group is retained
 
-**Reference:** `spec:AST-066/DEC-5`
-**Decider:** `cixzhang`, `2026-10-01`
+**参考：** `spec:AST-066/DEC-5`
 
-`stylex.defineVars(defaults)` emits its group on `:root` plus a variable-group
-class. This is the same canonical mechanism as existing token groups. The strict
-boundary in this decision is therefore ownership: unused graph-based source
-graphs emit nothing, Core distribution and the PostCSS integration retain the
-group under FR3 (DEC-10), and theme build never emits data defaults globally.
+**决定者：** `cixzhang`，`2026-10-01`
 
-Rejected: promising that retained canonical StyleX variables are absent from
-unthemed DOM. Standard `defineVars` cannot make that promise; a manually scoped
-parallel declaration or unconditional Theme class would contradict the chosen
-source-of-truth and tree-shaking model.
+`stylex.defineVars(defaults)` 在 `:root` 上加上一个变量分组类输出其分组。这与已有的令牌分组是同一套规范机制。因此本决策中的严格边界在于归属：未使用的基于图的源码图不输出任何内容，Core 分发与 PostCSS 集成在 FR3（DEC-10）下保留该分组，而 theme build 绝不全局输出数据默认值。
+
+已否决：承诺被保留的规范 StyleX 变量不出现在无主题的 DOM 中。标准 `defineVars` 无法做出该承诺；手工限定作用域的平行声明或无条件的 Theme 类会与选定的真值来源和摇树模型相矛盾。
 
 ### DEC-6 — Keep JavaScript resolution compatibility
 
-**Reference:** `spec:AST-066/DEC-6`
-**Decider:** `cixzhang`, `2026-10-01`
+**参考：** `spec:AST-066/DEC-6`
 
-Existing resolver names, shapes, and mode behavior remain available from a
-generated compatibility view. This lets CSS ownership change without forcing
-callers that already need concrete values onto a DOM computed-style API.
+**决定者：** `cixzhang`，`2026-10-01`
 
-Rejected: deleting `dataTokenDefaults` or changing `useTheme` into a cascade
-reader. Neither is required to fix CSS ownership.
+现有的解析器名称、形状与模式行为仍由生成的兼容视图提供。这让 CSS 归属可以改变，而不必强迫已经需要具体值的调用方改用 DOM 计算样式 API。
+
+已否决：删除 `dataTokenDefaults` 或把 `useTheme` 改为层叠读取器。修复 CSS 归属并不需要这两者。
 
 ### DEC-7 — Keep one compatible global color-scheme policy
 
-**Reference:** `spec:AST-066/DEC-7`
-**Decider:** `cixzhang`, `2026-10-01`
+**参考：** `spec:AST-066/DEC-7`
 
-The three root/html rules intentionally configure browser-wide `light-dark()`
-and UA behavior. Complete theme bundles may repeat them when identical, or omit
-the complete set. Tests prevent specialization or partial emission.
+**决定者：** `cixzhang`，`2026-10-01`
 
-Rejected: scoping or splitting color-scheme packaging.
+这三条 root/html 规则有意配置浏览器范围的 `light-dark()` 与 UA 行为。完整的主题包在完全一致时可以重复它们，或省略整个集合。测试防止特化或部分输出。
+
+已否决：对 color-scheme 打包进行作用域限定或拆分。
 
 ### DEC-8 — Migrate through an atomic stack and breaking minor
 
-**Reference:** `spec:AST-066/DEC-8`
-**Decider:** `cixzhang`, `2026-10-01`
+**参考：** `spec:AST-066/DEC-8`
 
-The implementation separates canonical public StyleX ownership, consumer
-migration, and theme-generator cleanup so each review has one reason to change.
-The release uses a breaking 0.x minor with regeneration and consumer diagnostics.
+**决定者：** `cixzhang`，`2026-10-01`
 
-Rejected: a legacy global-data mode. It would keep new artifacts on the behavior
-this decision removes and make runtime/static ownership mode-dependent.
+实现将规范公共 StyleX 归属、使用方迁移与主题生成器清理分开，使每次审查只有一个变更理由。发布使用破坏性的 0.x 次版本，并附带重新生成与使用方诊断。
+
+已否决：传统全局数据模式。它会让新产物停留在此决策要移除的行为上，并使运行时/静态归属依赖模式。
 
 ### DEC-9 — Prebuilt Core CSS defines the public data-variable entry
 
-**Reference:** `spec:AST-066/DEC-9`
-**Decider:** `cixzhang`, `2026-10-20`
+**参考：** `spec:AST-066/DEC-9`
 
-The prebuilt public `dataVars` entry contains CSS `var()` references with no
-surviving `defineVars()` call. A prebuilt-CSS consumer cannot retain defaults by
-importing that already-compiled object. Core's stylesheet therefore includes the
-single canonical group, like its other public token defaults. Graph-based
-source compilation retains the zero-or-56 rule (DEC-10); themes contain only
-authored deltas. The fixed
-cost is one group of 56 declarations, not a second source or a new runtime mode.
+**决定者：** `cixzhang`，`2026-10-20`
 
-Rejected: requiring prebuilt consumers to compile the source token entry, because
-it defeats the prebuilt-CSS contract and its documented import path.
+预构建的公开 `dataVars` 条目包含 CSS `var()` 引用，其中没有存留的 `defineVars()` 调用。预构建 CSS 的使用方无法通过导入那个已编译对象来保留默认值。因此 Core 的样式表包含了这个唯一的规范分组，就像它的其他公共令牌默认值一样。基于图的源码编译保留零或 56 规则（DEC-10）；主题只包含编写的增量。固定成本是一组 56 条声明，而不是第二个来源或新的运行时模式。
+
+已否决：要求预构建使用方编译源码令牌条目，因为这会破坏预构建 CSS 契约及其文档化的导入路径。
 
 ### DEC-10 — Source builds read data colors through `dataVars`
 
-**Reference:** `spec:AST-066/DEC-10`
-**Decider:** `cixzhang`, `<pending>`
+**参考：** `spec:AST-066/DEC-10`
 
-Raw `var(--color-data-*)` strings are the prebuilt path: Core's stylesheet
-defines the group (FR3, DEC-9). A source build reads data colors through
-`dataVars`, which retains the group in a graph-based pipeline and keeps DEC-2's
-zero-or-56 boundary there. The `@astryxdesign/build` PostCSS integration
-compiles every module Core publishes, so its output always carries the complete
-group in `astryx-base`. This decision scopes DEC-2's source boundary and DEC-5's
-unused-graph rule to graph-based source builds. Upgrade tooling requires no
-fallback for raw consumers (FR18); raw strings in a graph-based source build
-without a `dataVars` import are unsupported (FR4).
+**决定者：** `cixzhang`，`<pending>`
 
-Rejected: an upgrade check that infers the build mode and requires fallbacks,
-since no project signal reliably separates prebuilt from source builds.
+原始 `var(--color-data-*)` 字符串是预构建路径：Core 的样式表定义该分组（FR3、DEC-9）。源码构建通过 `dataVars` 读取数据颜色，它在基于图的流水线中保留该分组，并在那里维持 DEC-2 的零或 56 边界。`@astryxdesign/build` 的 PostCSS 集成编译 Core 发布的每个模块，因此其输出始终在 `astryx-base` 中携带完整分组。本决策把 DEC-2 的源码边界与 DEC-5 的未使用图规则限定为基于图的源码构建。升级工具对原始使用方不要求回退（FR18）；在没有 `dataVars` 导入的基于图的源码构建中，原始字符串不受支持（FR4）。
+
+已否决：推断构建模式并要求回退的升级检查，因为没有任何项目信号能可靠区分预构建与源码构建。
 
 ## Deprecation and cleanup records
 
 ### IFIX-0009 — Themes stop emitting raw global data-color defaults
 
-| Field         | Value                                                                                                                                                                                                                                                       |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| id            | `IFIX-0009`                                                                                                                                                                                                                                                 |
-| cleanup       | `CLN-0016`                                                                                                                                                                                                                                                  |
-| package       | `@astryxdesign/core`, `@astryxdesign/cli`                                                                                                                                                                                                                   |
-| surface       | The unscoped raw `:root` block of canonical data-color defaults that `Theme` runtime and `theme build` (standalone and family) emit for every theme                                                                                                         |
-| authority     | FR6 (concrete themes emit only explicitly authored data values), FR7 (theme build never emits raw global data defaults), and FR12 (availability follows compilation mode, not Theme presence). Owners: `spec:AST-066`: `cixzhang`                           |
-| reproducer    | With the latest stable packages, a theme that authors no data colors emits every canonical data default in an unscoped root block, in runtime CSS and in `theme build` output                                                                               |
-| affected      | CSS that reads a raw data-color custom property directly, relying on a theme to define it, without compiling a `dataVars` consumer; and stale generated theme CSS checked into an app                                                                       |
-| matrix        | Theme with no authored data colors: every canonical default before; none after. Authored override: emitted before and after, scoped to its theme. StyleX `dataVars` consumers: same painted values before and after. Global `color-scheme` rules: unchanged |
-| coexistence   | The public `dataVars` group supplies canonical values through retained source compilation or the prebuilt Core stylesheet; a compiled import alone does not emit CSS.                                                                                       |
-| migration     | Read data colors through the public `dataVars` group, or author the needed values in the theme. Regenerate built theme CSS                                                                                                                                  |
-| codemod       | `astryx upgrade` runs a validator that rejects stale generated CSS; direct raw consumers need no codemod                                                                                                                                                    |
-| downstream    | Maintained docs and templates read data colors through `dataVars`                                                                                                                                                                                           |
-| rollback      | Restore the raw default block in runtime and `theme build` output from the final-patch baseline                                                                                                                                                             |
-| harm of delay | Every theme keeps shipping a second global palette that survives without any consumer and can disagree with the canonical StyleX group                                                                                                                      |
-| harm of apply | CSS that reads a raw data variable without `dataVars` or an authored value paints with the variable unset until it migrates                                                                                                                                 |
-| transition    | no prior transition                                                                                                                                                                                                                                         |
-| state         | `proposed`                                                                                                                                                                                                                                                  |
-| open decision | None beyond approving this proposed record and its cleanup                                                                                                                                                                                                  |
+| Field         | Value                                                                                                                                                                                        |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| id            | `IFIX-0009`                                                                                                                                                                                  |
+| cleanup       | `CLN-0016`                                                                                                                                                                                   |
+| package       | `@astryxdesign/core`, `@astryxdesign/cli`                                                                                                                                                    |
+| surface       | `Theme` 运行时与 `theme build`（独立与 family）为每个主题输出的、由规范数据颜色默认值构成的未限定作用域原始 `:root` 块                                                                       |
+| authority     | FR6（具体主题只输出显式编写的数值）、FR7（theme build 绝不输出原始全局数据默认值）与 FR12（可用性遵循编译模式，而非主题是否存在）。所有者：`spec:AST-066`：`cixzhang`                        |
+| reproducer    | 使用最新的稳定包时，不编写任何数据颜色的主题会在运行时 CSS 与 `theme build` 输出中以未限定作用域的 root 块输出每一个规范数据默认值                                                           |
+| affected      | 直接读取原始数据颜色自定义属性、依赖主题来定义它、且未编译 `dataVars` 使用方的 CSS；以及检入应用的陈旧生成主题 CSS                                                                           |
+| matrix        | 不编写数据颜色的主题：之前是每个规范默认值，之后没有。编写的覆盖：之前与之后都输出，并限定在其主题作用域内。StyleX `dataVars` 使用方：之前与之后的绘制值相同。全局 `color-scheme` 规则：不变 |
+| coexistence   | 公开的 `dataVars` 分组通过被保留的源码编译或预构建 Core 样式表提供规范值；仅编译导入并不会输出 CSS。                                                                                         |
+| migration     | 通过公开的 `dataVars` 分组读取数据颜色，或在主题中编写所需的值。重新生成构建主题 CSS                                                                                                         |
+| codemod       | `astryx upgrade` 运行一个校验器，拒绝陈旧的生成 CSS；直接的原始使用方不需要 codemod                                                                                                          |
+| downstream    | 维护中的文档与模板通过 `dataVars` 读取数据颜色                                                                                                                                               |
+| rollback      | 从最终补丁基线恢复运行时与 `theme build` 输出中的原始默认值块                                                                                                                                |
+| harm of delay | 每个主题都会继续附带第二份全局调色板，它在没有任何使用方的情况下依然存在，并可能与规范的 StyleX 分组不一致                                                                                   |
+| harm of apply | 在迁移之前，未使用 `dataVars` 或未编写值就读取原始数据变量的 CSS 会以该变量未设置的状态绘制                                                                                                  |
+| transition    | 无先前的过渡                                                                                                                                                                                 |
+| state         | `proposed`                                                                                                                                                                                   |
+| open decision | 除批准这份提议中的记录及其清理之外，没有其他内容                                                                                                                                             |
 
 ### CLN-0016 — Remove raw global data-color defaults from theme output
 
-| Field     | Value                                                                                                                                              |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| id        | `CLN-0016`                                                                                                                                         |
-| lifecycle | `IFIX-0009`                                                                                                                                        |
-| delta     | Runtime and built themes emit only authored data values, scoped to their theme. Explicit layer order and global `color-scheme` rules are unchanged |
-| rollback  | Restore the raw default block from the final-patch baseline                                                                                        |
-| state     | `pending` — lands in a declared minor with its `[breaking]` Changeset                                                                              |
+| Field     | Value                                                                                                |
+| --------- | ---------------------------------------------------------------------------------------------------- |
+| id        | `CLN-0016`                                                                                           |
+| lifecycle | `IFIX-0009`                                                                                          |
+| delta     | 运行时与构建主题只输出编写的数值，并限定在其主题作用域内。显式的层顺序与全局 `color-scheme` 规则不变 |
+| rollback  | 从最终补丁基线恢复原始默认值块                                                                       |
+| state     | `pending` —— 随一个已声明的次版本及其 `[breaking]` Changeset 落地                                    |
 
 ## Open questions
 
-None.
+无。

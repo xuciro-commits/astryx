@@ -29,311 +29,153 @@ references:
 
 # Neutral theme specification
 
-This record is the current approved palette and Neutral token-mapping record.
-It does not decide cross-theme local-token, palette-generation, compiler, or
-artifact APIs; current `spec:AST-006` owns the accepted local-token contract.
-DEC-2 ratifies the exact palette shipped by this change, and DEC-4 ratifies the
-reviewed Neutral token mappings shipped with it. Proposed local-token roles and
-additional component mappings remain separate work and must not be treated as
-an approved public contract.
+本记录是当前已批准的调色板与 Neutral token 映射记录。它不决定跨主题的本地 token、调色板生成、编译器或产物 API；当前的 `spec:AST-006` 拥有已接受的本地 token 契约。DEC-2 批准本次变更所交付的确切调色板，DEC-4 批准随其交付的已评审 Neutral token 映射。提议的本地 token 角色和额外组件映射仍是独立工作，不得视为已批准的公有契约。
 
 ## Intent and audience
 
-Neutral serves builders who want a quiet grayscale foundation with restrained
-surfaces and distinguishable semantic and categorical color. It should remain
-product-neutral while status and interaction states stay recognizable in both
-color modes.
+Neutral 服务于希望获得安静灰度基础、克制表面以及可区分语义色和分类色的构建者。它应保持产品中立，同时让状态和交互状态在两种颜色模式下都保持可识别。
 
 ## Inheritance and base
 
-Neutral starts from Astryx core defaults and overrides selected typography,
-motion, radius, shadow, semantic color, syntax, icon, and component values. It
-does not currently extend another published package theme.
+Neutral 从 Astryx 核心默认值出发，并覆盖选定的排版、动效、圆角、阴影、语义颜色、语法、图标和组件值。它目前不扩展其他已发布的包主题。
 
 ## Portable token overrides
 
-The exact shipped values remain in `source_theme`. Neutral owns its grayscale
-canvas/surface hierarchy, near-black/near-white content roles, status and
-categorical selections, neutral boundaries, and syntax choices. Cross-theme token
-vocabulary remains owned by `architecture:theme-tokens`.
+确切交付的值仍位于 `source_theme`。Neutral 拥有其灰度画布/表面层级、近黑/近白内容角色、状态与分类选择、中性边界以及语法选择。跨主题 token 词汇仍由 `architecture:theme-tokens` 拥有。
 
 ## Theme-local role definitions
 
-Neutral emits one theme-local role, kept as a compatibility contract for
-Neutral extensions. It is deprecated: Neutral paints every status through the
-portable `--color-*` roles and does not read it, and it keeps its exact name,
-meaning, and value:
+Neutral 发出一个主题本地角色，作为 Neutral 扩展的兼容性契约保留。它已弃用：Neutral 通过可移植的 `--color-*` 角色绘制每个状态，并不读取它，同时保留其确切名称、含义和值：
 
-| Exact name                                        | Neutral-only meaning | Value                    | Status     |
-| ------------------------------------------------- | -------------------- | ------------------------ | ---------- |
-| `--astryx-theme-neutral-color-status-fill-accent` | Filled accent status | `['#0074e2', '#6d9cfe']` | Deprecated |
+| 确切名称                                          | 仅 Neutral 的含义 | 值                       | 状态   |
+| ------------------------------------------------- | ----------------- | ------------------------ | ------ |
+| `--astryx-theme-neutral-color-status-fill-accent` | 填充强调状态      | `['#0074e2', '#6d9cfe']` | 已弃用 |
 
-Core components consume the portable `--color-*` semantic roles; no Core
-implementation or Neutral mapping depends on this alias.
+Core 组件消费可移植的 `--color-*` 语义角色；没有任何 Core 实现或 Neutral 映射依赖此别名。
 
 ## Tonal palette definitions
 
-Candidate source work contains complete light and dark ramps for neutral, red,
-orange, yellow, green, teal, cyan, blue, purple, and pink. The committed request,
-generated module, and receipt make the reviewed `astryx-oklch-v1` result
-reproducible. Draft `spec:AST-018` separately owns the cross-theme authoring and
-validation contract. Regeneration is an explicit reviewed palette change and
-never occurs during a normal theme build. Mapping runtime tokens to these stops
-is reviewed in a separate stacked change.
+候选源码工作包含中性色、红色、橙色、黄色、绿色、蓝绿色、青色、蓝色、紫色和粉色的完整浅色与深色色阶。已提交的请求、生成的模块和回执使已评审的 `astryx-oklch-v1` 结果可复现。草案 `spec:AST-018` 单独拥有跨主题编写与验证契约。重新生成是一项明确的已评审调色板变更，绝不会在常规主题构建期间发生。将运行时 token 映射到这些色阶的工作在单独的堆叠变更中评审。
 
-The approved dark-mode adjustment reduces realized chroma to 50% through stop
-25 for chromatic families, with a 65% family override for yellow, and recovers
-smoothly to the standard recipe at stop 60. It leaves the light ramps, neutral
-ramps, and stops 60 through 100 unchanged. It does not use opacity or change
-tone coordinates.
+已批准的深色模式调整将彩色色族的实际色度在 stop 25 及之前降至 50%，黄色色族使用 65% 覆盖值，并在 stop 60 平滑恢复到标准配方。它保持浅色色阶、中性色阶以及 stop 60 到 100 不变。它不使用不透明度，也不改变色调坐标。
 
 ## Component and state mappings
 
-Core components choose semantic roles by surface (`architecture:theme-tokens`
-INV11): strong fills use `--color-<status>` with `--color-on-<status>`, pale
-surfaces use `--color-<status>-muted` with `--color-on-<status>-muted`, and
-status text, icons, and borders on the default surfaces use `--color-text-*`,
-`--color-icon-*`, and `--color-border-*`. Neutral sets the portable status
-fills directly: `--color-info` `['#0074e2', '#6d9cfe']`, `--color-success`
-`['#198100', '#64af4c']`, `--color-warning` `'#ffce2f'`, and `--color-error`
-`['#c9303a', '#ff705d']`, the colours its Badges have always shown. Accent
-variants of ProgressBar, StatusDot, and Stepper indicators paint Neutral's
-accent, and Banner and the pale destructive Button use the portable overlay
-and neutral roles; Neutral adds no component override for any of them. Every new mapping needs exact-head theme review and
-rendered light/dark evidence; shared color alone is not enough.
+Core 组件按表面选择语义角色（`architecture:theme-tokens` INV11）：强填充使用 `--color-<status>` 搭配 `--color-on-<status>`，浅色表面使用 `--color-<status>-muted` 搭配 `--color-on-<status>-muted`，默认表面上的状态文本、图标和边框使用 `--color-text-*`、`--color-icon-*` 和 `--color-border-*`。Neutral 直接设置可移植的状态填充：`--color-info` `['#0074e2', '#6d9cfe']`、`--color-success` `['#198100', '#64af4c']`、`--color-warning` `'#ffce2f'` 和 `--color-error` `['#c9303a', '#ff705d']`，即其 Badge 一直显示的颜色。ProgressBar、StatusDot 和 Stepper 指示器的强调变体绘制 Neutral 的强调色，Banner 和浅色破坏性 Button 使用可移植的 overlay 和中性角色；Neutral 不为其中任何一个添加组件覆盖。每个新映射都需要精确到 head 的主题评审以及渲染的浅色/深色证据；仅共享颜色还不够。
 
-Neutral's selected fill, `--color-accent-muted`, is `neutral.light[85]` /
-`neutral.dark[30]` (`#d4d4d4` / `#474747`). Text on it reads at 4.5:1 or more
-in both modes. In dark mode Neutral lifts `--color-text-secondary` to
-`neutral.dark[80]` on a selected `item` or `tree-list-item` (a checked
-CheckboxListItem row reflects `selected` on its `item` target), on a
-`citation` with `variant:number`, on a `file-input` with `mode:dropzone`,
-whose drag-over fill has no state target, and on every `segmented-control-item`,
-whose unselected label sits on the translucent track over the page surface, so
-that text clears 4.5:1 at rest and under the hover overlay. Neutral's syntax `comment`, `operator` and
-`punctuation` colours are `neutral.light[35]` / `neutral.dark[75]`, so they
-read on a highlighted code line.
+Neutral 选定的填充 `--color-accent-muted` 为 `neutral.light[85]` / `neutral.dark[30]`（`#d4d4d4` / `#474747`）。其上的文本在两种模式下均达到 4.5:1 或更高。在深色模式下，Neutral 将 `--color-text-secondary` 提升为 `neutral.dark[80]`，适用于：选中的 `item` 或 `tree-list-item`（勾选的 CheckboxListItem 行会在其 `item` 目标上反映 `selected`）、带 `variant:number` 的 `citation`、带 `mode:dropzone` 且拖拽悬停填充没有状态目标的 `file-input`，以及每个 `segmented-control-item`（其未选中标签位于页面表面之上的半透明轨道上），从而使文本在静止状态和悬停覆盖层下均超过 4.5:1。Neutral 的语法 `comment`、`operator` 和 `punctuation` 颜色为 `neutral.light[35]` / `neutral.dark[75]`，因此它们在突出显示的代码行上可读。
 
-This work does not add component states. It intentionally excludes
-`table-row-status`, which has no approved theming target, and SegmentedControl
-geometry/shadow changes, which are reviewed independently.
+本工作不添加组件状态。它有意排除没有已批准主题化目标的 `table-row-status`，以及单独评审的 SegmentedControl 几何/阴影变更。
 
 ## Compatibility and migration
 
-This record documents the package output shipped by the current Neutral change.
-Existing Neutral authoring and portable token names remain stable while the
-reviewed mappings are emitted through the runtime theme and CLI template.
-Neutral explicitly supplies `localTokens`; the exact names and meanings are
-therefore part of its public compatibility contract.
+本记录记录当前 Neutral 变更所交付的包输出。现有 Neutral 编写和可移植 token 名称保持稳定，同时已评审的映射通过运行时主题和 CLI 模板发出。Neutral 显式提供 `localTokens`；因此其确切名称和含义是其公有兼容性契约的一部分。
 
-Implementation requires the parent AST-006 implementation to ship first,
-followed by complete rendered evidence and exact-head approval for every
-proposed value and mapping. When Neutral ships a definition, its exact name and
-approved semantic meaning become a public compatibility contract of the Neutral
-family. A local-token name, enrolled theme name, or semantic meaning change must
-preserve descendants and consumers through an explicit reviewed migration or
-alias. Compiled CSS does not broaden a role beyond its approved contexts.
+实现要求父级 AST-006 实现先行交付，随后为每个提议的值和映射提供完整的渲染证据和精确到 head 的批准。当 Neutral 交付某个定义时，其确切名称和已批准的语义含义即成为 Neutral 家族的公有兼容性契约。本地 token 名称、登记的主题名称或语义含义的变更必须通过明确的已评审迁移或别名来保留后代和消费者。编译后的 CSS 不会将角色扩展到其已批准上下文之外。
 
 ## Accessibility and contrast evidence
 
-A current cross-theme design record for contrast methodology does not yet exist,
-so this draft does not select or restate a methodology. The future record is an
-unresolved dependency and therefore is not listed in frontmatter.
+目前尚不存在关于对比度方法论的当前跨主题设计记录，因此本草案不选择也不重述方法论。未来的记录是一个未解决的依赖，因此未列在 frontmatter 中。
 
-Current Neutral-specific receipts include the Badge contrast check and pairings
-documented beside Neutral source. The candidate accent fill uses `#0074e2` in
-light mode and `#6d9cfe` in dark mode, but those values are not an accessibility
-claim by themselves. Adoption requires the actual Badge informational foreground
-and background pairing to meet its threshold in rendered light and dark states;
-every later mapping needs receipts for its foreground, graphical-object,
-interaction, and disabled states. No palette stop is accessible by itself, and
-color cannot replace another signal required by the component contract. This
-record will own those pairings, exceptions, measurements, and known gaps after
-the shared methodology is current; it will not copy the methodology or shared
-measurement-tool implementation.
+当前的 Neutral 专属回执包括 Badge 对比度检查以及记录在 Neutral 源码旁的组合。候选强调填充在浅色模式下使用 `#0074e2`，在深色模式下使用 `#6d9cfe`，但这些值本身并不构成无障碍声明。采用要求实际的 Badge 信息前景与背景组合在渲染的浅色和深色状态下达到其阈值；之后的每个映射都需要其前景、图形对象、交互和禁用状态的回执。没有任何调色板色阶本身是无障碍的，颜色不能替代组件契约所要求的其他信号。在共享方法论成为当前记录后，本记录将拥有这些组合、例外、测量和已知差距；它不会复制方法论或共享测量工具的实现。
 
 ## Build and artifact contract
 
-The package manifest and build tests define Neutral's runtime, CSS, declaration,
-and export outputs. The complete palette remains in a theme-owned source file
-for authoring and audits, while the generated selected-stop references used by
-`defineTheme` are included in the runtime and CLI template artifacts. The
-complete authoring palette is not bundled into generated CSS or generic
-theme-build artifacts.
+包清单和构建测试定义 Neutral 的运行时、CSS、声明和导出输出。完整调色板保留在主题拥有的源码文件中，用于编写和审计；而 `defineTheme` 使用的生成的选定色阶引用包含在运行时和 CLI 模板产物中。完整的编写调色板不会打包进生成的 CSS 或通用主题构建产物中。
 
-The selected-stop module is a deterministic derived artifact. A checked-in,
-explicit maintenance command MUST discover every palette family, mode, and stop
-referenced by Neutral's theme source, resolve each one from the committed full
-palette, and regenerate the selected-stop module without changing token mappings.
-A non-writing check MUST compare the complete generated module with the committed
-file and fail on missing, extra, stale, or invalid references. Theme verification
-MUST fail when the committed module differs from this deterministic projection.
-Normal theme builds MUST NOT regenerate or adopt palette values.
+选定色阶模块是确定性的派生产物。一个签入的、明确的维护命令必须发现 Neutral 主题源码引用的每个调色板色族、模式和色阶，从已提交的完整调色板中解析每一个，并在不改变 token 映射的情况下重新生成选定色阶模块。一个非写入检查必须将完整的生成模块与已提交文件进行比较，并在引用缺失、多余、过期或无效时失败。当已提交模块与该确定性投影不同时，主题验证必须失败。常规主题构建不得重新生成或采用调色板值。
 
-The selected-stop module MUST contain exactly the palette stops referenced by
-Neutral's theme source. Removing an unreferenced private entry preserves every
-referenced value, the complete authoring palette, all token mappings, rendered
-output, and public APIs.
+选定色阶模块必须恰好包含 Neutral 主题源码所引用的调色板色阶。移除未引用的私有条目会保留每个被引用的值、完整的编写调色板、所有 token 映射、渲染输出和公有 API。
 
 ## Verification map
 
-| Theme contract            | Evidence                                            | Representative states                                          | Failure signal                                                                                                 |
-| ------------------------- | --------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Current value inventory   | Neutral source and theme tests                      | light/dark token families                                      | Source and record disagree about a theme-owned meaning.                                                        |
-| Local role contract       | Planned AST-006 implementation and Neutral fixtures | exact declaration/use/output name; public meaning; rename      | The shipped name or meaning changes without reviewed compatibility handling, or leaks into portable/Core APIs. |
-| Component mappings        | Theme-spec review and rendered evidence             | Badge info; each future mapping; light/dark; interaction state | A mapping does not genuinely mean filled accent status or lands without contextual evidence.                   |
-| Contrast                  | Badge check plus rendered component matrix          | light/dark and interactive states                              | A required pairing falls below its threshold.                                                                  |
-| Selected runtime refs     | Deterministic regeneration plus exhaustive parity   | every referenced family, mode, and stop                        | A generated reference is missing, extra, invalid, or differs from the committed full palette.                  |
-| Existing package contract | Theme build, package, and resolution tests          | runtime, CSS, declarations, public exports                     | This record implies an artifact that the package does not ship.                                                |
+| 主题契约         | 证据                                   | 代表性状态                                    | 失败信号                                                                      |
+| ---------------- | -------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------- |
+| 当前值清单       | Neutral 源码和主题测试                 | 浅色/深色 token 色族                          | 源码与记录对某个主题拥有的含义存在分歧。                                      |
+| 本地角色契约     | 计划的 AST-006 实现和 Neutral 测试夹具 | 确切的声明/使用/输出名称；公有含义；重命名    | 交付的名称或含义在没有已评审兼容性处理的情况下变更，或泄漏到可移植/Core API。 |
+| 组件映射         | 主题规范评审和渲染证据                 | Badge 信息；每个未来映射；浅色/深色；交互状态 | 某个映射并非真正表示填充强调状态，或缺少上下文证据就落地。                    |
+| 对比度           | Badge 检查以及渲染组件矩阵             | 浅色/深色和交互状态                           | 某个必需组合低于其阈值。                                                      |
+| 选定的运行时引用 | 确定性重新生成以及穷尽一致性检查       | 每个被引用的色族、模式和色阶                  | 某个生成的引用缺失、多余、无效，或与已提交的完整调色板不同。                  |
+| 现有包契约       | 主题构建、包和解析测试                 | 运行时、CSS、声明、公有导出                   | 本记录暗示了包并未交付的产物。                                                |
 
 ## Decision log
 
-The decisions below record settled input for the portions they name. DEC-2
-approves the exact palette, and DEC-4 approves the reviewed token mappings
-shipped by this release. Local-token roles and rendered-evidence questions
-remain subject to the specific approval gates stated in their decisions.
+以下决策记录其所述部分的既定输入。DEC-2 批准确切的调色板，DEC-4 批准本次发布交付的已评审 token 映射。本地 token 角色和渲染证据问题仍受其决策中所述的具体批准门禁约束。
 
 ### DEC-1 — Own one exact Neutral filled-accent-status role
 
-**Reference:** `theme:neutral/DEC-1`
-**System-boundary decider:** `cixzhang`, `2026-08-31`
-**Final Neutral adoption decider:** `rubyycheung`, `2026-10-17`
+**引用：** `theme:neutral/DEC-1`
+**系统边界决策者：** `cixzhang`, `2026-08-31`
+**最终 Neutral 采用决策者：** `rubyycheung`, `2026-10-17`
 
-Neutral owns theme-local definitions in this colocated theme spec.
-`--astryx-theme-neutral-color-status-fill-accent` represents filled accent
-status under the stable `name: 'neutral'`. Its exact name, meaning, and
-`['#0074e2', '#6d9cfe']` value are a public Neutral-family
-compatibility contract, despite not being portable across themes or consumed by
-Core.
+Neutral 在此同置主题规范中拥有主题本地定义。`--astryx-theme-neutral-color-status-fill-accent` 在稳定的 `name: 'neutral'` 下表示填充强调状态。其确切名称、含义和 `['#0074e2', '#6d9cfe']` 值是 Neutral 家族的公有兼容性契约，尽管它不能跨主题移植，也不被 Core 消费。
 
-The token may be applied only where the mapped context genuinely means filled
-accent status. It is deprecated: Neutral itself maps no component to it and
-uses the portable status roles instead, and it stays defined for Neutral
-extensions. A new component mapping requires rendered light/dark evidence for
-its actual interaction states.
+该 token 只能应用于映射上下文真正表示填充强调状态的地方。它已弃用：Neutral 本身不将任何组件映射到它，而是使用可移植的状态角色，并且它继续为 Neutral 扩展保留定义。新的组件映射需要其实际交互状态的渲染浅色/深色证据。
 
-Rejected: treating the role as global, treating it as disposable private output,
-or applying it merely because two contexts currently share a color.
+已拒绝：将该角色视为全局角色、将其视为可丢弃的私有输出，或仅仅因为两个上下文当前共享一种颜色就应用它。
 
 ### DEC-2 — Approve the Neutral palette as a decision anchor
 
-**Reference:** `theme:neutral/DEC-2`
+**引用：** `theme:neutral/DEC-2`
 
-**Decider:** `rubyycheung`, `2026-09-02`
+**决策者：** `rubyycheung`, `2026-09-02`
 
-Neutral's exact palette values are approved as the stable starting point for
-subsequent color and contrast decisions. The request, generated result, receipt,
-and visual review must change together. Runtime token mappings are deliberately
-excluded from this decision and reviewed in a separate stacked change. The
-complete authoring palette is not added to the runtime theme object or generated
-CSS.
+Neutral 的确切调色板值被批准为后续颜色和对比度决策的稳定起点。请求、生成结果、回执和视觉评审必须一起变更。运行时 token 映射被有意排除在此决策之外，并在单独的堆叠变更中评审。完整的编写调色板不会添加到运行时主题对象或生成的 CSS 中。
 
-Neutral is the repository reference implementation for palette-aware theme
-templates. Templates may reuse its ownership, review, and alignment workflow;
-they do not inherit Neutral's values, mappings, or stop layout as requirements.
+Neutral 是仓库中调色板感知主题模板的参考实现。模板可以复用其所有权、评审和对齐工作流；它们不会将 Neutral 的值、映射或色阶布局作为要求继承。
 
-Rejected: regenerating the palette during a normal build, silently changing
-runtime token mappings as part of palette generation, or requiring complete
-component-level contrast conformance before the palette can serve as the
-baseline for measuring and improving those mappings.
+已拒绝：在常规构建期间重新生成调色板、作为调色板生成的一部分静默更改运行时 token 映射，或在调色板能够作为衡量和改进这些映射的基线之前要求完整的组件级对比度一致性。
 
 ### DEC-3 — Mute the dark chromatic edge without changing its tone scale
 
-**Reference:** `theme:neutral/DEC-3`
+**引用：** `theme:neutral/DEC-3`
 
-**Decider:** `rubyycheung`, `2026-09-04`
+**决策者：** `rubyycheung`, `2026-09-04`
 
-Neutral's dark chromatic ramps use a 50% realized-chroma multiplier through
-stop 25 and recover smoothly to the standard recipe at stop 60. Yellow uses a
-65% multiplier to preserve its identity. The adjustment emits solid colors: it
-adds no alpha, changes no light or neutral ramp, and preserves exact endpoint
-and stop coordinates.
+Neutral 的深色彩色色阶在 stop 25 及之前使用 50% 的实际色度乘数，并在 stop 60 平滑恢复到标准配方。黄色使用 65% 乘数以保留其身份。该调整发出纯色：不添加 alpha，不改变浅色或中性色阶，并保留确切的端点和色阶坐标。
 
-Rejected: reducing the entire palette's vibrancy, using translucent colors, or
-changing semantic token mappings in the palette-value change.
+已拒绝：降低整个调色板的鲜艳度、使用半透明颜色，或在调色板值变更中更改语义 token 映射。
 
 ### DEC-4 — Map Neutral roles through reviewed palette references
 
-**Reference:** `theme:neutral/DEC-4`
+**引用：** `theme:neutral/DEC-4`
 
-**Decider:** `rubyycheung`, `2026-09-04`
+**决策者：** `rubyycheung`, `2026-09-04`
 
-Neutral's semantic, categorical, syntax, and color-bearing effect values use
-named palette-stop references when an approved match exists; the status fills,
-which keep explicit values, are recorded in DEC-6. Alpha
-variants derive from the referenced stop rather than duplicating its hex value.
+Neutral 的语义、分类、语法和带颜色的效果值在存在已批准匹配时使用命名的调色板色阶引用；保持显式值的状态填充记录在 DEC-6 中。Alpha 变体从被引用的色阶派生，而不是复制其十六进制值。
 
-The mapping is role-aware rather than a blind nearest-color conversion. Very
-dark foregrounds preserve their darker role, ordinary backgrounds do not become
-true black automatically, and a reviewed token may use the closer value from
-the companion ramp. Intentional values without an approved palette match remain
-explicit theme-local values.
+该映射是角色感知的，而不是盲目的最近颜色转换。非常深的前景保留其更深的角色，普通背景不会自动变为纯黑，已评审的 token 可以使用伴生色阶中更接近的值。没有已批准调色板匹配的有意值仍为显式的主题本地值。
 
 ### DEC-5 — Generate the selected runtime references from their owned sources
 
-**Reference:** `theme:neutral/DEC-5`
+**引用：** `theme:neutral/DEC-5`
 
-**Decider:** `rubyycheung`, `2026-09-30`
+**决策者：** `rubyycheung`, `2026-09-30`
 
-Neutral's selected-stop module is generated from two existing sources of truth:
-the family, mode, and stop references used by Neutral's theme source, and the exact
-values in the committed full palette. Regeneration copies only those selected
-values into the runtime artifact. It neither chooses mappings nor regenerates the
-full palette.
+Neutral 的选定色阶模块从两个现有的事实来源生成：Neutral 主题源码使用的色族、模式和色阶引用，以及已提交完整调色板中的确切值。重新生成只将这些选定的值复制到运行时产物中。它既不选择映射，也不重新生成完整调色板。
 
-The generator has an explicit write mode for maintainers and a non-writing check
-for verification. The check compares the entire expected artifact, so a missing,
-extra, invalid, or stale selected reference fails before package output is
-accepted. Normal theme builds never rewrite committed palette source.
+生成器有一个供维护者使用的显式写入模式和一个用于验证的非写入检查。该检查比较整个预期产物，因此缺失、多余、无效或过期的选定引用会在包输出被接受之前失败。常规主题构建绝不重写已提交的调色板源码。
 
-Rejected: importing the complete palette at runtime, maintaining a second manual
-selection manifest, or treating token-mapping assertions as proof that copied
-hex values still match the approved palette.
+已拒绝：在运行时导入完整调色板、维护第二个手动选择清单，或将 token 映射断言视为复制的十六进制值仍与已批准调色板匹配的证据。
 
 ### DEC-6 — Paint status through the portable roles, with no other local tokens
 
-**Reference:** `theme:neutral/DEC-6`
+**引用：** `theme:neutral/DEC-6`
 
-**Decider:** `cixzhang`, `2026-10-25`
+**决策者：** `cixzhang`, `2026-10-25`
 
-Neutral paints status, tinted surfaces, and the pale destructive Button through
-the portable `--color-*` roles. It defines no local token for them other than
-the deprecated `--astryx-theme-neutral-color-status-fill-accent` of DEC-1.
+Neutral 通过可移植的 `--color-*` 角色绘制状态、着色表面和浅色破坏性 Button。除 DEC-1 中已弃用的 `--astryx-theme-neutral-color-status-fill-accent` 外，它不为这些定义任何本地 token。
 
-This is the `spec:AST-006` FR10 exception for nine local names that earlier
-Neutral releases emitted: `--astryx-theme-neutral-color-status-fill-success`,
-`-status-fill-warning`, `-status-fill-error`, `-status-muted-accent`,
-`-on-tint-neutral`, `-on-tint-overlay-hover`, `-on-tint-overlay-pressed`,
-`-destructive-overlay-hover`, and `-destructive-overlay-pressed`. None of them
-was a Neutral-family contract: this record listed the first three and the
-on-tint names as proposed roles that must not be treated as an approved public
-contract, and never documented the others. They therefore carry no alias. Their
-replacements are `--color-success`, `--color-warning`, and `--color-error` for
-the status fills, `--color-info-muted` for the pale accent surface,
-`--color-neutral` for on-tint content, and `--color-overlay-hover` and
-`--color-overlay-pressed` for the overlays.
+这是 `spec:AST-006` FR10 针对早期 Neutral 发布所发出的九个本地名称的例外：`--astryx-theme-neutral-color-status-fill-success`、`-status-fill-warning`、`-status-fill-error`、`-status-muted-accent`、`-on-tint-neutral`、`-on-tint-overlay-hover`、`-on-tint-overlay-pressed`、`-destructive-overlay-hover` 和 `-destructive-overlay-pressed`。它们都不是 Neutral 家族契约：本记录曾将前三个和 on-tint 名称列为提议角色，不得视为已批准的公有契约，且从未记录其他名称。因此它们不携带别名。它们的替代项是：状态填充使用 `--color-success`、`--color-warning` 和 `--color-error`，浅色强调表面使用 `--color-info-muted`，on-tint 内容使用 `--color-neutral`，覆盖层使用 `--color-overlay-hover` 和 `--color-overlay-pressed`。
 
-Neutral's `--color-success`, `--color-warning`, and `--color-error` are its
-strong status fills under `architecture:theme-tokens` INV11, set to the
-explicit colours its Badges have always shown, which no palette stop matches.
-Their Neutral values therefore change from the darker colours earlier releases
-used, which `--color-text-<status>` now carries for status text on the page.
+根据 `architecture:theme-tokens` INV11，Neutral 的 `--color-success`、`--color-warning` 和 `--color-error` 是其强状态填充，设置为它的 Badge 一直显示的显式颜色，没有任何调色板色阶与之匹配。因此它们的 Neutral 值会从早期发布使用的较深颜色发生变化，这些较深颜色现在由 `--color-text-<status>` 承载，用于页面上的状态文本。
 
-Rejected: keeping the nine as deprecated aliases, which would preserve names
-that were never promised and that Neutral no longer reads.
+已拒绝：将九个名称保留为已弃用别名，这会保留从未承诺且 Neutral 不再读取的名称。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This record owns Neutral's intent, factual value inventory, approved local-token
-name and meaning, proposed value, selected mappings, required pairings/states,
-theme-specific exceptions, measured receipts, known gaps, compatibility, and
-package facts. A future current design record owns the cross-theme contrast
-methodology; shared measurement implementation belongs to
-architecture/tooling. This record does not define cross-theme local-token or
-palette APIs. `spec:AST-006` owns the cross-theme local-token API, namespace,
-validation, lineage, and compiler invariants. Component/family records own
-observable behavior, and consumer docs own supported syntax and examples.
+本记录拥有 Neutral 的意图、事实值清单、已批准的本地 token 名称与含义、提议值、选定映射、必需组合/状态、主题特定例外、测量回执、已知差距、兼容性和包事实。未来的当前设计记录拥有跨主题对比度方法论；共享测量实现属于架构/工具链。本记录不定义跨主题本地 token 或调色板 API。`spec:AST-006` 拥有跨主题本地 token API、命名空间、验证、谱系和编译器不变量。组件/家族记录拥有可观察行为，消费者文档拥有受支持的语法和示例。

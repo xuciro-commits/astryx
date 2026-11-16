@@ -1,99 +1,95 @@
-# Typed slots (Swift)
+# 类型化插槽（Swift）
 
 - Status: draft
-- Relation: applies AST-082 FR4
-  (`docs/specs/AST-082-native-first-surfaces/spec.md`: typed slots, text,
-  icon, and content, and a platform's wider form for a content slot with the
-  same meaning), and FR17 (shared icon names) to Swift. It decides how each slot kind appears in
-  SwiftUI; it does not define the kinds.
+- Relation: 将 AST-082 FR4
+  （`docs/specs/AST-082-native-first-surfaces/spec.md`：类型化插槽——text、
+  icon 和 content——以及平台对含义相同的 content 插槽采用更宽的形式）和 FR17（共享图标名称）应用于 Swift。它决定每种插槽类型在
+  SwiftUI 中如何呈现；它不定义这些类型。
 
-## Summary
+## 摘要
 
-An iOS developer can put an icon in a button, an avatar at the start of a list
-row, or any SwiftUI view at its end, the way SwiftUI's own `Label` takes an
-icon view, and the component still sizes and orders what it holds, so every
-row lines up and reads the same way. Icons are always ones the platform can
-draw. The person using the app sees the same parts in the same
-places as on the web, read by VoiceOver in the same order.
+iOS 开发者可以在按钮中放一个图标、在列表行的开头放一个头像，或在行的末尾放任何
+SwiftUI 视图，就像 SwiftUI 自己的 `Label` 接受
+图标视图那样，而组件仍会为其内容设定尺寸并排序，因此每一行都对齐并以相同方式阅读。
+图标始终是平台能够绘制的图标。应用的使用者看到的部件及其位置
+与 Web 上相同，VoiceOver 以相同顺序阅读它们。
 
-## Requirements
+## 要求
 
-- **S1 — Each AST-082 slot kind has one Swift form.**
-  - A **text** slot is a `String`, the contract's exact type (AST-093 FR5). A
-    localized text spelling is outside this record.
-  - An **icon** slot is an `IconName` (S2).
-  - A **content** slot accepts any SwiftUI view, through a `@ViewBuilder`
-    closure (S3). The core's content slot holds named Astryx components; Swift
-    accepts this wider form under AST-082 FR4, which lets a platform accept a
-    wider form for a content slot with the same meaning, as the web
-    accepts a React node. The component's native additions still name the Astryx
-    components the core slot holds, and whether it holds one or many (a list item's `startContent` holds one of `Icon`, `Avatar`, or `CheckboxInput`; a card holds many).
-    Text and icon slots take no wider form (no attributed text, no image), so
-    they mean the same thing on Swift as in the core; a localized text
-    spelling stays outside this record, as above. A free-form web
-    prop with no slot kind stays in the web contract only.
-- **S2 — Icon names are a string-backed type with the built-ins as members.**
-  `IconName` is a `RawRepresentable`, `ExpressibleByStringLiteral`,
-  `Hashable`, `Codable`, `Sendable` value. Every built-in semantic name is a
-  static member (`.search`, `.close`), generated from AST-082 FR17's shared
-  icon names, read at build time through the icon-names read AST-082 FR16 lists
-  (later through core's portable entry), never from core's web icon registry. A
-  namespaced name (`"acme:rocket"`) is valid once the theme maps it to an
-  image. `Theme(icons:)` maps a shared or namespaced name to an `IconImage`:
-  `.systemName(_:)` for an SF Symbol, or `.assetName(_:)` for an image in the
-  app's asset catalog, as AST-082 FR17 names a native icon by `systemName` or
-  `assetName`; a string literal is an SF Symbol name. An unknown name, or an
-  asset the app does not ship, stops a development build with a message
-  naming it, and draws nothing in a release build, never a substitute.
-- **S3 — Content slots are open, the SwiftUI way.** A content slot is a generic
-  `@ViewBuilder` closure parameter named as the core prop
-  (`startContent: () -> StartContent` where `StartContent: View`), as in
-  SwiftUI's `Label { } icon: { }`, never `AnyView`. For
-  each Astryx component the core slot names, the view also has a convenience
-  initializer that takes that component's props directly (for example a row's
-  `startContent: AvatarProps`). The props initializer takes the slot as the matching
-  generated node type.
-- **S4 — The owner sizes what it holds.** A component proposes the size of
-  each slot from its own size and clips or aligns what the slot draws to it,
-  whatever view is in it. An Astryx child inherits its owner's size only where
-  core's does: an `Icon` in an owner's documented icon slot (an `Icon` in a
-  small `IconButton` is small), and a child of a component whose contract
-  adopts the size cascade. Every other child keeps its own default (an unsized `Avatar` in a list item
-  stays `md`). An explicit size on a child wins wherever core's does, and a
-  component that sizes its members in core keeps doing so: core's `AvatarGroup`
-  sets every member `Avatar`'s size, explicit or not.
-- **S5 — Reading order follows the slots.** VoiceOver reads a component's slots
-  in the core contract's order (for a list item: `marker`, `startContent`,
-  `label`, `description`, `endContent`), whatever views they hold. A decorative
-  icon in a slot is hidden unless it carries a label (AST-082 FR17).
-- **S6 — Slots are declared, not guessed.** Each component's native additions
-  name the slot kind, and for a content slot the Astryx components the core
-  slot holds, for every free-form prop it keeps; the contract generator fails
-  when a kept free-form prop has none.
+- **S1 — 每个 AST-082 插槽类型都有一种 Swift 形式。**
+  - **text** 插槽是 `String`，即契约的确切类型（AST-093 FR5）。本地化的
+    文字写法不在本记录范围内。
+  - **icon** 插槽是 `IconName`（S2）。
+  - **content** 插槽通过 `@ViewBuilder`
+    闭包接受任何 SwiftUI 视图（S3）。核心的 content 插槽持有具名的 Astryx 组件；Swift
+    依据 AST-082 FR4 接受这种更宽的形式，该条允许平台对含义相同的 content 插槽
+    接受更宽的形式，就如 Web 接受 React 节点。组件的原生附加项仍会列出核心插槽
+    所持有的 Astryx 组件，以及它持有的是一个还是多个（列表项的 `startContent` 持有 `Icon`、`Avatar` 或 `CheckboxInput` 之一；卡片持有多个）。
+    text 和 icon 插槽不采用更宽形式（不支持富文本，不支持图片），因此
+    它们在 Swift 上与在核心中含义相同；如上所述，本地化的文字
+    写法仍不在本记录范围内。没有插槽类型的自由形式 Web
+    prop 只保留在 Web 契约中。
+- **S2 — 图标名称是由字符串支撑的类型，内置名称作为成员。**
+  `IconName` 是 `RawRepresentable`、`ExpressibleByStringLiteral`、
+  `Hashable`、`Codable`、`Sendable` 值。每个内置语义名称都是
+  静态成员（`.search`、`.close`），由 AST-082 FR17 的共享
+  图标名称生成，在构建时通过 AST-082 FR16 列出的图标名称
+  读取方式读取（以后通过核心的可移植入口），绝不从核心的 Web 图标注册表读取。
+  带命名空间的名称（`"acme:rocket"`）在主题将其映射到
+  图像后有效。`Theme(icons:)` 将共享或命名空间名称映射到 `IconImage`：
+  `.systemName(_:)` 用于 SF Symbol，`.assetName(_:)` 用于
+  应用资源目录中的图像，正如 AST-082 FR17 以 `systemName` 或
+  `assetName` 命名原生图标；字符串字面量是 SF Symbol 名称。未知名称，或
+  应用未提供的资源，会使开发构建停止并给出指明它的消息，
+  在发布构建中不绘制任何内容，绝不使用替代品。
+- **S3 — content 插槽是开放的，遵循 SwiftUI 的方式。** content 插槽是一个泛型
+  `@ViewBuilder` 闭包参数，按核心 prop 命名
+  （`startContent: () -> StartContent`，其中 `StartContent: View`），如
+  SwiftUI 的 `Label { } icon: { }`，绝不使用 `AnyView`。对于
+  核心插槽列出的每个 Astryx 组件，视图还有一个便利
+  初始化器直接接收该组件的 props（例如行的
+  `startContent: AvatarProps`）。props 初始化器将该插槽作为匹配的
+  生成节点类型接收。
+- **S4 — 所有者为其内容设定尺寸。** 组件根据自身的尺寸提出
+  每个插槽的尺寸，并对插槽绘制的内容进行裁剪或对齐，
+  无论其中是什么视图。Astryx 子级只有在核心如此时才继承其所有者的尺寸：
+  所有者文档化的 icon 插槽中的 `Icon`（小号 `IconButton` 中的 `Icon` 是小号），
+  以及契约采用尺寸级联的组件的子级。其他每个子级都保持自己的默认值（列表项中未指定尺寸的 `Avatar`
+  保持 `md`）。子级上显式指定的尺寸在核心如此的地方优先，而在核心中为其成员
+  设定尺寸的组件继续保持该行为：核心的 `AvatarGroup`
+  会设置每个成员 `Avatar` 的尺寸，无论是否显式指定。
+- **S5 — 阅读顺序遵循插槽顺序。** VoiceOver 按核心契约的顺序阅读组件的插槽
+  （对于列表项：`marker`、`startContent`、
+  `label`、`description`、`endContent`），无论它们持有什么视图。插槽中的装饰性
+  图标除非带有标签，否则隐藏（AST-082 FR17）。
+- **S6 — 插槽是声明的，不是猜的。** 每个组件的原生附加项
+  为其保留的每个自由形式 prop 声明插槽类型，对于 content 插槽还要声明核心
+  插槽所持有的 Astryx 组件；当保留的自由形式 prop 没有这些声明时，
+  契约生成器失败。
 
-## Acceptance checks
+## 验收检查
 
-| Requirement | Check                                                                                                                                                                                                                                                                          |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| S1, S6      | The generator test fails on a fixture component that keeps a free-form prop with no slot kind, or keeps a content slot that names no components; a fixture's unkept free-form prop stays web-only with no Swift form; a fixture with all three kinds produces each Swift form. |
-| S2          | Every built-in name maps to an SF Symbol that exists on the package's iOS floor; registering `acme:rocket` makes `"acme:rocket"` draw it; an unregistered name stops a development build and draws nothing in release.                                                         |
-| S3          | A compile test passes `Avatar(…)` into a list item's `startContent` through the closure, through the `AvatarProps` convenience initializer, and a plain SwiftUI `Image` through the closure; `AnyView` does not appear in the components module.                               |
-| S4          | A test reads the resolved size of an unsized icon in a small and a large owner's icon slot, finds an unsized `Avatar` in a list item at `md`, and finds the drawn bounds of an oversized SwiftUI view in `startContent` within the slot.                                       |
-| S5          | A UI test reads a list item with a marker, `startContent`, label, description, and `endContent` in that order, with an Astryx badge and with a plain SwiftUI text in `endContent`.                                                                                             |
+| 要求   | 检查                                                                                                                                                                                                         |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| S1, S6 | 生成器测试在以下夹具组件上失败：保留没有插槽类型的自由形式 prop，或保留未列出任何组件的 content 插槽；夹具中未保留的自由形式 prop 保持仅 Web，没有 Swift 形式；具有全部三种类型的夹具会生成每种 Swift 形式。 |
+| S2     | 每个内置名称都映射到包的最低 iOS 版本上存在的 SF Symbol；注册 `acme:rocket` 会使 `"acme:rocket"` 绘制它；未注册的名称会停止开发构建，并在发布版中不绘制任何内容。                                            |
+| S3     | 编译测试通过闭包将 `Avatar(…)` 传入列表项的 `startContent`，通过 `AvatarProps` 便利初始化器传入，并通过闭包传入一个普通 SwiftUI `Image`；`AnyView` 不出现在组件模块中。                                      |
+| S4     | 一项测试读取小号和大号所有者的 icon 插槽中未指定尺寸的图标解析后的尺寸，发现列表项中未指定尺寸的 `Avatar` 为 `md`，并发现 `startContent` 中过大的 SwiftUI 视图的绘制边界位于插槽内。                         |
+| S5     | 一项 UI 测试按顺序读取带有 marker、`startContent`、标签、描述和 `endContent` 的列表项，分别使用 Astryx 徽标和 `endContent` 中的普通 SwiftUI 文本。                                                           |
 
-## Current state
+## 当前状态
 
-- The contract generator knows two slot kinds, `text` and `content`; an icon
-  prop has no portable form, so the icon props of Button and Badge are
-  web-only.
-- The built-in icon names map to SF Symbols in TypeScript only.
+- 契约生成器知道两种插槽类型：`text` 和 `content`；icon
+  prop 没有可移植形式，因此 Button 和 Badge 的 icon props
+  仅 Web。
+- 内置图标名称仅在 TypeScript 中映射到 SF Symbols。
 
-## Open questions
+## 开放问题
 
-None.
+无。
 
-## References
+## 参考文献
 
-- HIG, SF Symbols: https://developer.apple.com/design/human-interface-guidelines/sf-symbols
-- `ViewBuilder`: https://developer.apple.com/documentation/swiftui/viewbuilder
-- SwiftUI `Label` (open icon slot): https://developer.apple.com/documentation/swiftui/label
+- HIG，SF Symbols：https://developer.apple.com/design/human-interface-guidelines/sf-symbols
+- `ViewBuilder`：https://developer.apple.com/documentation/swiftui/viewbuilder
+- SwiftUI `Label`（开放的 icon 插槽）：https://developer.apple.com/documentation/swiftui/label

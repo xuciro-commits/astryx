@@ -39,200 +39,163 @@ system_specs: [spec:AST-002, spec:AST-020, spec:AST-029, spec:AST-032]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                                |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | The exported control selects send or stop presentation from props over ChatComposer context, accepts `sm` or `md`, supports icon overrides, and extends the rendered Button with supported Button DOM, event, styling, and ref inputs.  |
-| Behavior                | Send is disabled from explicit or composer readiness, stop remains enabled, state-specific actions run before a composed generic click handler, and current send artwork resolves from an explicit override before the shared fallback. |
-| End-user impact         | People receive a translated, state-appropriate send or stop action whose availability follows composer readiness.                                                                                                                       |
-| Builder impact          | None.                                                                                                                                                                                                                                   |
-| Compatibility/readiness | Records shipped behavior; no public change. One implementation gap, listed under Current-state impact.                                                                                                                                  |
-| Review checks           | Reject lost send/stop routing, consumer events that replace the state action, a disabled stop action, unlabelled icon-only output, dropped root inputs, or a lost explicit-first send icon or `arrowUp` fallback.                       |
-| Governing rules         | `spec:AST-032` FR2–FR3; `architecture:public-component-api` INV5–INV8; `architecture:interaction-modality`; `architecture:component-test-sufficiency`; `spec:AST-020`; `spec:AST-029`.                                                  |
+| Area                    | Contract                                                                                                                                                                                |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public contract         | 导出的控件通过 props 相对 ChatComposer 上下文选择发送或停止呈现，接受 `sm` 或 `md`，支持图标覆盖，并用受支持的 Button DOM、事件、样式与 ref 输入扩展所渲染的 Button。                   |
+| Behavior                | 发送依据显式或 composer 就绪状态被禁用，停止保持启用，状态专属操作先于组合的通用 click 处理器运行，当前发送图形先解析显式覆盖，再解析共享回退。                                         |
+| End-user impact         | 用户获得已翻译的、与状态相称的发送或停止操作，其可用性跟随 composer 就绪状态。                                                                                                          |
+| Builder impact          | 无。                                                                                                                                                                                    |
+| Compatibility/readiness | 记录已发布行为；无公共变更。一处实现缺口，列于当前状态影响下。                                                                                                                          |
+| Review checks           | 拒绝丢失发送/停止路由、使用方事件替换状态操作、停止操作被禁用、无标签的纯图标输出、丢失根输入，或丢失显式优先的发送图标或 `arrowUp` 回退。                                              |
+| Governing rules         | `spec:AST-032` FR2–FR3；`architecture:public-component-api` INV5–INV8；`architecture:interaction-modality`；`architecture:component-test-sufficiency`；`spec:AST-020`；`spec:AST-029`。 |
 
-This table is a review projection; the body below is authoritative.
+此表是供审查的投影；以下正文具有权威性。
 
 ## Intent
 
-ChatSendButton is the compact action control used by ChatComposer. It translates
-composer readiness and streaming state into a shared Button while keeping action,
-icon, styling, and ref seams available for standalone composition.
+ChatSendButton 是 ChatComposer 使用的紧凑操作控件。它把 composer 就绪状态与流式状态转译为共享 Button，同时保留操作、图标、样式与 ref 接缝，以供独立组合使用。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public change
-- Controlled/uncontrolled behavior: not applicable; explicit props take
-  precedence over context-derived values
-- Migration decision: none
+- 已发布默认值保留：`yes`
+- 兼容类别：记录已发布行为；无公共变更
+- 受控/非受控行为：不适用；显式 props 优先于由上下文派生的值
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明应放在使用方文档与发布说明中。
 
 ## Current-state impact
 
-- **The send icon has no component-slot stage.** Send artwork resolves from
-  `sendIcon`, then the shared `arrowUp`. `spec:AST-032` FR2–FR3 put a
-  component-icon slot stage in that resolution; ChatSendButton does not offer
-  it yet (FR3).
+- **发送图标没有组件槽阶段。** 发送图形先解析 `sendIcon`，再解析共享的 `arrowUp`。`spec:AST-032` FR2–FR3 在该解析中放入了一个组件图标槽阶段；ChatSendButton 尚未提供它（FR3）。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- Selection of the send or stop state.
-- State-specific translated accessible names and Button variants.
-- Composer-context fallback for readiness and actions.
-- Send and stop icon selection at the component seam.
-- Composition of the state action with an accepted generic click handler.
-- The `chat-send-button` theme target and circular root treatment.
+- 选择发送或停止状态。
+- 状态专属的已翻译可访问名称与 Button 变体。
+- 就绪状态与操作的 ChatComposer 上下文回退。
+- 在组件接缝处选择发送与停止图标。
+- 将状态操作与已接受的通用 click 处理器组合。
+- `chat-send-button` 主题目标与圆形根样式处理。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- ChatComposer value editing, submission lifecycle, streaming lifecycle, or placement.
-- Shared Button activation, focus, disabled semantics, hit area, or base styling.
-- Shared icon artwork or theme icon registration.
-- A public policy for whether `isStopShown` may appear without a stop action.
+- ChatComposer 的值编辑、提交流程生命周期、流式生命周期或放置。
+- 共享 Button 的激活、焦点、禁用语义、命中区域或基础样式。
+- 共享图标图形或主题图标注册。
+- 关于 `isStopShown` 是否可以在没有停止操作的情况下出现的公共策略。
 
 ## Public concepts
 
-Consumer syntax remains in `ChatSendButton.doc.mjs`. This inventory closes the
-observable semantic surface without duplicating the prop table.
+使用方语法仍位于 `ChatSendButton.doc.mjs`。本清单收束可观察的语义面，而不重复 prop 表。
 
-| Concept      | Closed values or states                                        | Meaning                                                                                | Availability by variant/orientation/state | Default                                                     | Owner                               | Stability | Invalid-value behavior                                                                      |
-| ------------ | -------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------- | ----------------------------------------------------------- | ----------------------------------- | --------- | ------------------------------------------------------------------------------------------- |
-| Action state | send; stop                                                     | Selects the name, Button variant, icon role, disabled rule, and state action.          | Every render.                             | Composer `isStopShown`, otherwise send.                     | `component:ChatSendButton`          | Stable    | Values outside the boolean prop type are unsupported.                                       |
-| Availability | enabled; disabled                                              | Prevents send activation when content is not ready. Stop intentionally ignores it.     | Disabled applies only to send.            | Explicit `isDisabled`, otherwise inverse composer canSend.  | component and ChatComposer context  | Stable    | Values outside the boolean prop type are unsupported.                                       |
-| Action       | state callback; composer fallback; composed generic click      | Runs the state action and then an accepted consumer click handler.                     | Enabled send and stop activation.         | `onSend` or submit current value; `onStop` or context stop. | component, context, and caller      | Stable    | With no state callback or matching context action, only a supplied generic click can run.   |
-| Send icon    | explicit content; shared fallback                              | Selects artwork for the send state.                                                    | Send state.                               | `sendIcon`, then shared `arrowUp`.                          | component and caller                | Stable    | Unsupported React content follows the shared Button rendering boundary.                     |
-| Stop icon    | explicit content; shared fallback                              | Selects artwork for the stop state.                                                    | Stop state.                               | `stopIcon`, then shared `stop`.                             | component and caller                | Stable    | Unsupported React content follows the shared Button rendering boundary.                     |
-| Size         | `sm`; `md`                                                     | Selects the delegated Button size while preserving circular treatment.                 | Both states.                              | `md`.                                                       | `component:ChatSendButton`          | Stable    | Values outside the public union are rejected by TypeScript.                                 |
-| Root surface | ref; supported Button DOM/data/ARIA/events; style/class/xstyle | Extends and styles the rendered Button without replacing component-owned action logic. | Every render.                             | Omitted.                                                    | `architecture:public-component-api` | Stable    | Unsupported BaseProps omissions remain unsupported; owned semantics win accidental clashes. |
+| Concept  | Closed values or states                                     | Meaning                                                   | Availability by variant/orientation/state | Default                                             | Owner                               | Stability | Invalid-value behavior                                                  |
+| -------- | ----------------------------------------------------------- | --------------------------------------------------------- | ----------------------------------------- | --------------------------------------------------- | ----------------------------------- | --------- | ----------------------------------------------------------------------- |
+| 操作状态 | 发送；停止                                                  | 选择名称、Button 变体、图标角色、禁用规则与状态操作。     | 每次渲染。                                | Composer `isStopShown`，否则为发送。                | `component:ChatSendButton`          | 稳定      | 布尔 prop 类型之外的值不受支持。                                        |
+| 可用性   | 启用；禁用                                                  | 当内容未就绪时阻止发送激活。停止有意忽略它。              | 禁用仅适用于发送。                        | 显式 `isDisabled`，否则取 composer canSend 的反值。 | 组件与 ChatComposer 上下文          | 稳定      | 布尔 prop 类型之外的值不受支持。                                        |
+| 操作     | 状态回调；composer 回退；组合的通用 click                   | 运行状态操作，然后运行已接受的使用方 click 处理器。       | 已启用的发送与停止激活。                  | `onSend` 或提交当前值；`onStop` 或上下文停止。      | 组件、上下文与调用方                | 稳定      | 若无状态回调或匹配的上下文操作，则只能运行所提供的通用 click。          |
+| 发送图标 | 显式内容；共享回退                                          | 为发送状态选择图形。                                      | 发送状态。                                | `sendIcon`，然后是共享 `arrowUp`。                  | 组件与调用方                        | 稳定      | 不受支持的 React 内容遵循共享 Button 的渲染边界。                       |
+| 停止图标 | 显式内容；共享回退                                          | 为停止状态选择图形。                                      | 停止状态。                                | `stopIcon`，然后是共享 `stop`。                     | 组件与调用方                        | 稳定      | 不受支持的 React 内容遵循共享 Button 的渲染边界。                       |
+| 尺寸     | `sm`；`md`                                                  | 选择委托的 Button 尺寸，同时保留圆形处理。                | 两种状态。                                | `md`。                                              | `component:ChatSendButton`          | 稳定      | 公共联合类型之外的值会被 TypeScript 拒绝。                              |
+| 根表面   | ref；受支持的 Button DOM/data/ARIA/事件；style/class/xstyle | 扩展并样式化所渲染的 Button，而不替换组件拥有的操作逻辑。 | 每次渲染。                                | 省略。                                              | `architecture:public-component-api` | 稳定      | 不受支持的 BaseProps 省略项仍不受支持；组件拥有的语义在意外冲突中优先。 |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                         | Basis                                                                                    |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| FR1 | The send state MUST render a primary icon-only Button named by the send translation, and it MUST be disabled when explicit or context-derived readiness is false.                                                 | Current implementation, docs, tests, `spec:AST-020`, and shared Button behavior          |
-| FR2 | The stop state MUST render a secondary icon-only Button named by the stop translation, remain enabled regardless of send readiness, and invoke explicit or context stop behavior.                                 | Current implementation, docs, and tests                                                  |
-| FR3 | Send icon resolution prefers `sendIcon` and otherwise resolves the shared `arrowUp`. Implementation gap: the component-icon slot stage `spec:AST-032` FR2–FR3 require is not offered (Current-state impact).      | Current implementation, docs, tests, and current owner requirement in `spec:AST-032`     |
-| FR4 | Stop icon resolution prefers `stopIcon` and otherwise resolves the shared `stop` icon.                                                                                                                            | Current implementation, docs, and tests                                                  |
-| FR5 | Explicit state, disabled, callback, icon, and size props MUST win over their context or component fallback. A generic accepted click handler MUST compose after the selected state action rather than replace it. | Current source and tests; `architecture:public-component-api` INV5–INV7                  |
-| FR6 | Supported Button DOM, data, ARIA, className, style, xstyle, and ref inputs MUST reach or compose on the rendered Button while component-owned label, state, and activation behavior remain intact.                | Current implementation plus `architecture:public-component-api/INV5-INV8`                |
-| FR7 | The component MUST paint through the shared Button on the co-located `chat-send-button` target and preserve its circular component treatment.                                                                     | Current implementation, Chat consumer docs, and `architecture:component-theming-surface` |
+| ID  | Invariant                                                                                                                                               | Basis                                                                    |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| FR1 | 发送状态必须渲染一个主级纯图标 Button，其名称来自发送译文；当显式或上下文派生的就绪状态为 false 时，它必须被禁用。                                      | 当前实现、文档、测试、`spec:AST-020` 以及共享 Button 行为                |
+| FR2 | 停止状态必须渲染一个次级纯图标 Button，其名称来自停止译文，无论发送就绪状态如何都保持启用，并调用显式或上下文停止行为。                                 | 当前实现、文档与测试                                                     |
+| FR3 | 发送图标解析优先 `sendIcon`，否则解析共享的 `arrowUp`。实现缺口：尚未提供 `spec:AST-032` FR2–FR3 所要求的组件图标槽阶段（当前状态影响）。               | 当前实现、文档、测试，以及 `spec:AST-032` 中的当前所有者要求             |
+| FR4 | 停止图标解析优先 `stopIcon`，否则解析共享的 `stop` 图标。                                                                                               | 当前实现、文档与测试                                                     |
+| FR5 | 显式的状态、禁用、回调、图标与尺寸 props 必须优先于其上下文或组件回退。已接受的通用 click 处理器必须在所选状态操作之后组合，而不是替换它。              | 当前源码与测试；`architecture:public-component-api` INV5–INV7            |
+| FR6 | 受支持的 Button DOM、data、ARIA、className、style、xstyle 与 ref 输入必须到达所渲染的 Button 或在其上组合，同时组件拥有的标签、状态与激活行为保持完整。 | 当前实现加上 `architecture:public-component-api/INV5-INV8`               |
+| FR7 | 组件必须通过共享 Button 在共置的 `chat-send-button` 目标上绘制，并保留其圆形组件处理。                                                                  | 当前实现、Chat 使用方文档，以及 `architecture:component-theming-surface` |
 
 ### Allowed variation
 
-- **AV1 — Context or standalone composition.** A builder may rely on ChatComposer
-  context or provide all state, action, and disabled values explicitly.
-- **AV2 — Artwork.** Explicit send and stop content and shared fallback artwork may
-  vary within the icon resolution FR3 and FR4 state.
-- **AV3 — Consumer styling.** Supported styling inputs may extend the Button while
-  component-owned state and activation behavior remain.
+- **AV1 — 上下文或独立组合。** 构建者可以依赖 ChatComposer 上下文，或显式提供全部状态、操作与禁用值。
+- **AV2 — 图形。** 显式发送与停止内容以及共享回退图形，可在图标解析 FR3 与 FR4 的状态内变化。
+- **AV3 — 使用方样式。** 受支持的样式输入可以扩展 Button，同时组件拥有的状态与激活行为保持不变。
 
 ### Representative states
 
-| State                  | Required invariant                                                                  | Allowed variation                               |
-| ---------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------- |
-| Send, disabled         | Primary translated send action is unavailable and does not run callbacks.           | Icon source, size, theme, and consumer styling. |
-| Send, enabled          | Primary translated send action runs explicit or context submission.                 | Icon source, size, theme, and consumer styling. |
-| Stop                   | Secondary translated stop action remains enabled and runs explicit or context stop. | Icon source, size, theme, and consumer styling. |
-| Explicit override      | Explicit state, callback, icon, disabled value, and size win their fallback seams.  | Context may still supply unspecified values.    |
-| Composed generic click | State action and accepted generic click both run without one replacing the other.   | Either handler may be absent.                   |
+| State            | Required invariant                                       | Allowed variation                  |
+| ---------------- | -------------------------------------------------------- | ---------------------------------- |
+| 发送，禁用       | 主级已翻译发送操作不可用，且不运行回调。                 | 图标来源、尺寸、主题与使用方样式。 |
+| 发送，启用       | 主级已翻译发送操作运行显式或上下文提交。                 | 图标来源、尺寸、主题与使用方样式。 |
+| 停止             | 次级已翻译停止操作保持启用，并运行显式或上下文停止。     | 图标来源、尺寸、主题与使用方样式。 |
+| 显式覆盖         | 显式的状态、回调、图标、禁用值与尺寸在其回退接缝上优先。 | 上下文仍可提供未指定的值。         |
+| 组合的通用 click | 状态操作与已接受的通用 click 都会运行，互不替换。        | 任一处理器都可能缺失。             |
 
 ### Transformation and precedence order
 
-- **ORD1 — Resolve state.** Explicit `isStopShown` wins, then composer context,
-  then the send state.
-- **ORD2 — Resolve action.** Explicit state callback wins its composer fallback.
-  The selected state action runs before the accepted generic click handler because
-  this component does not promise consumer cancellation of its state action.
-- **ORD3 — Resolve availability.** Stop remains enabled. Send uses explicit
-  `isDisabled`, then inverse composer readiness, then disabled outside context.
-- **ORD4 — Resolve artwork.** In send, explicit `sendIcon` wins, then shared
-  `arrowUp`; in stop, explicit `stopIcon` wins, then shared `stop`. The
-  component-icon slot stage `spec:AST-032` FR2 requires is not offered yet
-  (FR3).
-- **ORD5 — Compose root.** Apply component-owned Button semantics and the
-  `chat-send-button` target while preserving supported consumer root inputs.
+- **ORD1 — 解析状态。** 显式 `isStopShown` 优先，其次是 composer 上下文，最后是发送状态。
+- **ORD2 — 解析操作。** 显式状态回调优先于其 composer 回退。所选状态操作在已接受的通用 click 处理器之前运行，因为该组件并不承诺使用方可以取消其状态操作。
+- **ORD3 — 解析可用性。** 停止保持启用。发送使用显式 `isDisabled`，其次取 composer 就绪状态的反值，最后在上下文之外为禁用。
+- **ORD4 — 解析图形。** 在发送状态，显式 `sendIcon` 优先，其次是共享 `arrowUp`；在停止状态，显式 `stopIcon` 优先，其次是共享 `stop`。`spec:AST-032` FR2 所要求的组件图标槽阶段尚未提供（FR3）。
+- **ORD5 — 组合根。** 应用组件拥有的 Button 语义与 `chat-send-button` 目标，同时保留受支持的使用方根输入。
 
 ### Performance and resources
 
-- **PR1 — Render-only projection.** The component adds no Effect, observer,
-  listener, timer, state mirror, or owned async lifecycle.
+- **PR1 — 仅渲染投影。** 该组件不添加任何 Effect、observer、监听器、定时器、状态镜像或自有的异步生命周期。
 
 ## Accessibility contract
 
-- **AR1 — Native action semantics.** The delegated Button MUST own native button
-  activation, keyboard behavior, focus indication, and disabled semantics.
-- **AR2 — State-appropriate name.** The icon-only control MUST expose the current
-  translated send or stop label independently of icon artwork.
-- **AR3 — Disabled send behavior.** A disabled send action MUST not invoke either
-  the state action or a consumer click handler.
-- **AR4 — Modality parity.** Pointer and keyboard activation MUST traverse the same
-  state-action and composed-event path.
+- **AR1 — 原生操作语义。** 委托的 Button 必须拥有原生按钮激活、键盘行为、焦点指示与禁用语义。
+- **AR2 — 与状态相称的名称。** 纯图标控件必须独立于图标图形暴露当前的已翻译发送或停止标签。
+- **AR3 — 禁用发送行为。** 禁用的发送操作必须既不调用状态操作，也不调用使用方 click 处理器。
+- **AR4 — 模态一致性。** 指针与键盘激活必须经过相同的状态操作与组合事件路径。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                                | Representation authority                                     | Hierarchy role           | Component contract |
-| ---------------- | ----------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------ | ------------------ |
-| Action button    | Circular compact Button carrying the current send or stop action. | Current source and consumer docs; exact tuning stays in code | Primary/secondary action | FR1, FR2, FR7      |
-| Send artwork     | Upward send glyph unless explicit content wins (FR3's gap).       | Current source and docs; `spec:AST-032` FR2–FR3              | Action cue               | FR3                |
-| Stop artwork     | Shared stop glyph unless explicit content wins.                   | Current source and consumer docs                             | Action cue               | FR4                |
+| Anatomy or state | Design requirement                               | Representation authority                   | Hierarchy role | Component contract |
+| ---------------- | ------------------------------------------------ | ------------------------------------------ | -------------- | ------------------ |
+| 操作按钮         | 承载当前发送或停止操作的圆形紧凑 Button。        | 当前源码与使用方文档；精确调参保留在代码中 | 主级/次级操作  | FR1, FR2, FR7      |
+| 发送图形         | 向上的发送字形，除非显式内容优先（FR3 的缺口）。 | 当前源码与文档；`spec:AST-032` FR2–FR3     | 操作提示       | FR3                |
+| 停止图形         | 共享停止字形，除非显式内容优先。                 | 当前源码与使用方文档                       | 操作提示       | FR4                |
 
-This record selects no new dimensions, variants, icon artwork, color roles, or
-visual prominence. No anatomy-theming map is recorded yet; the block is
-optional during migration, so the map is deferred.
+本记录不选择任何新的尺寸、变体、图标图形、颜色角色或视觉突出度。尚未记录结构-主题映射；该块在迁移期间是可选的，因此映射被推迟。
 
-The Chat family consumer doc catalogs `chat-send-button`. Button owns the
-underlying painting and interaction-state styling; the component target is
-co-located on that painting element.
+Chat 家族使用方文档收录了 `chat-send-button`。Button 拥有底层绘制与交互状态样式；该组件目标共置于该绘制元素上。
 
 ## Family and system relationships
 
-- ChatComposer owns value, readiness, submission, stop lifecycle, and placement.
-- Button owns shared activation, focus, disabled semantics, hit area, and paint.
-- `architecture:public-component-api` owns BaseProps reachability, style/ref
-  composition, and deliberate event composition.
-- `architecture:icon-resolution-and-component-slots` owns the shared slot model;
-  `spec:AST-032` FR2–FR3 put a component-slot stage in send resolution, which is
-  not shipped (Current-state impact).
-- `architecture:component-theming-surface` owns the qualification and placement
-  of the co-located `chat-send-button` target.
-- `architecture:interaction-modality` and `spec:AST-020` own pointer, keyboard,
-  focus, and accessibility parity inherited through Button.
-- `architecture:component-test-sufficiency` owns public-seam regression coverage.
-- `spec:AST-029` owns the audit evidence inventory this record's verification
-  map follows.
+- ChatComposer 拥有值、就绪状态、提交、停止生命周期与放置。
+- Button 拥有共享激活、焦点、禁用语义、命中区域与绘制。
+- `architecture:public-component-api` 拥有 BaseProps 可达性、style/ref 组合与刻意的事件组合。
+- `architecture:icon-resolution-and-component-slots` 拥有共享槽模型；`spec:AST-032` FR2–FR3 在发送解析中放入一个组件槽阶段，该阶段尚未发布（当前状态影响）。
+- `architecture:component-theming-surface` 拥有共置 `chat-send-button` 目标的资格与放置。
+- `architecture:interaction-modality` 与 `spec:AST-020` 拥有通过 Button 继承的指针、键盘、焦点与可访问性一致性。
+- `architecture:component-test-sufficiency` 拥有公共接缝的回归覆盖。
+- `spec:AST-029` 拥有本记录验证映射所遵循的审计证据清单。
 
 ## Verification map
 
-| Contract                  | Verification                                                                                                         | Representative states                                                                                                    | Mutation or failure expectation                                                                                                                  | Audit section                        |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
-| FR1, FR2, AR1-AR4         | `ChatSendButton.test.tsx`, `ChatSendButton.a11y.chromium.spec.ts`, and `ChatComposer.test.tsx`                       | Enabled/disabled send, stop with and without handler, context stop, keyboard/pointer, light/dark interaction states      | Label, disabled, native activation, state routing, or interaction paint drift fails focused or exact-head browser evidence.                      | `audit:ChatSendButton/accessibility` |
-| FR3                       | `ChatSendButton.test.tsx`                                                                                            | Explicit and shared-fallback send icon                                                                                   | Losing explicit-first precedence or the `arrowUp` fallback fails focused tests; the `spec:AST-032` slot stage is not tested here.                | `audit:ChatSendButton/theming`       |
-| FR4                       | `ChatSendButton.test.tsx`                                                                                            | Explicit and fallback stop icon                                                                                          | Losing explicit precedence or registry resolution fails focused assertions.                                                                      | `audit:ChatSendButton/behavior`      |
-| FR5, FR6                  | `ChatSendButton.test.tsx` callback composition, ordering, size, root passthrough, disabled-click, and keyboard tests | Send, stop, `sm`/`md`, ref/class/data/ARIA, Enter/Space                                                                  | Consumer events replacing state actions, cancellation reordering, lost root inputs, or modality drift fails focused tests.                       | `audit:ChatSendButton/api`           |
-| FR7                       | `themingTargets.test.ts` and `ChatSendButton.a11y.chromium.spec.ts`                                                  | Send and stop themes                                                                                                     | Target removal, movement off paint, or undocumented target drift fails tests or browser evidence.                                                | `audit:ChatSendButton/theming`       |
-| RTL relation              | RTL shared-fixture route plus refreshed verified-N/A source receipts for ChatSendButton and ChatComposer             | Send and stop                                                                                                            | Directional artwork, physical positioning, or transform invalidates the checked-in receipts.                                                     | `audit:ChatSendButton/i18n-rtl`      |
-| Browser matrix            | `ChatSendButton.a11y.chromium.spec.ts` browser states                                                                | Light/dark send and stop rest/hover/focus/press, disabled rest/hover, `sm`/`md`, 320px coarse pointer, D7 contrast pairs | A stale build, decoy selector, missing state, changed disabled paint, absent interaction pixels, failed contrast, or geometry miss fails closed. | `audit:ChatSendButton/visual`        |
-| Documentation and surface | Consumer docs, export checks, Storybook, and `check:knowledge`                                                       | Props, public subpath, states, contract                                                                                  | Missing or stale docs, exports, relationships, or required structure fails validation.                                                           | `audit:ChatSendButton/docs`          |
+| Contract                  | Verification                                                                                 | Representative states                                                                             | Mutation or failure expectation                                                                                | Audit section                        |
+| ------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| FR1, FR2, AR1-AR4         | `ChatSendButton.test.tsx`、`ChatSendButton.a11y.chromium.spec.ts` 与 `ChatComposer.test.tsx` | 启用/禁用的发送、有无处理器的停止、上下文停止、键盘/指针、浅色/深色交互状态                       | 标签、禁用、原生激活、状态路由或交互绘制漂移，会使聚焦测试或 exact-head 浏览器证据失败。                       | `audit:ChatSendButton/accessibility` |
+| FR3                       | `ChatSendButton.test.tsx`                                                                    | 显式与共享回退的发送图标                                                                          | 丢失显式优先的优先级或 `arrowUp` 回退会使聚焦测试失败；`spec:AST-032` 的槽阶段不在此处测试。                   | `audit:ChatSendButton/theming`       |
+| FR4                       | `ChatSendButton.test.tsx`                                                                    | 显式与回退的停止图标                                                                              | 丢失显式优先级或注册表解析会使聚焦断言失败。                                                                   | `audit:ChatSendButton/behavior`      |
+| FR5, FR6                  | `ChatSendButton.test.tsx` 回调组合、顺序、尺寸、根透传、禁用点击与键盘测试                   | 发送、停止、`sm`/`md`、ref/class/data/ARIA、Enter/Space                                           | 使用方事件替换状态操作、取消导致重排、丢失根输入或模态漂移，会使聚焦测试失败。                                 | `audit:ChatSendButton/api`           |
+| FR7                       | `themingTargets.test.ts` 与 `ChatSendButton.a11y.chromium.spec.ts`                           | 发送与停止主题                                                                                    | 目标移除、移出绘制元素，或未记录的目标漂移，会使测试或浏览器证据失败。                                         | `audit:ChatSendButton/theming`       |
+| RTL relation              | RTL 共享测试夹具路由，加上为 ChatSendButton 与 ChatComposer 刷新的已验证不适用源回执         | 发送与停止                                                                                        | 方向性图形、物理定位或变换会使已检入的回执失效。                                                               | `audit:ChatSendButton/i18n-rtl`      |
+| Browser matrix            | `ChatSendButton.a11y.chromium.spec.ts` 浏览器状态                                            | 浅色/深色下发送与停止的静止/悬停/聚焦/按下、禁用静止/悬停、`sm`/`md`、320px 粗指针、D7 对比度配对 | 过期的构建、诱饵选择器、缺失状态、变更的禁用绘制、缺失的交互像素、对比度不达标或几何偏差，都会使校验失败关闭。 | `audit:ChatSendButton/visual`        |
+| Documentation and surface | 使用方文档、导出检查、Storybook 与 `check:knowledge`                                         | props、公共子路径、状态、契约                                                                     | 文档、导出、关系或必需结构缺失或过期，会使校验失败。                                                           | `audit:ChatSendButton/docs`          |
 
-Read from source, with no focused test yet:
+从源码读取，尚无聚焦测试：
 
-- FR5: explicit props winning over ChatComposer context.
-- FR6: `style` and `xstyle` reaching the root.
+- FR5：显式 props 优先于 ChatComposer 上下文。
+- FR6：`style` 与 `xstyle` 到达根。
 
 ## Decision log
 
-No component-local decision is recorded.
+未记录任何组件本地决策。
 
 ## Open questions
 
-- **Cross-reference: stop without handler.** `component:ChatComposer/OQ4` owns
-  the unresolved policy for a visible stop action without an explicit or context
-  `onStop`. This record covers today's enabled no-op branch without
-  duplicating that question.
+- **交叉引用：无处理器的停止。** `component:ChatComposer/OQ4` 拥有关于可见停止操作在没有显式或上下文 `onStop` 时如何处理的未决策略。本记录覆盖当前已启用的空操作分支，而不重复该问题。
 
 ## Content boundary
 
-This file does not duplicate consumer examples, audit scores, screenshots,
-eligibility data, or shared Button and icon-system rules. It links to their owners.
+本文件不重复使用方示例、审计得分、截图、资格数据，或共享 Button 与图标系统规则。它链接到它们的所有者。

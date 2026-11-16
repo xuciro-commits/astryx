@@ -20,197 +20,83 @@ affects_consumer_docs: [templates]
 
 ## Intent
 
-People should be able to preview an Astryx template with realistic media, copy
-it into their project, and then replace the demonstration content without
-inheriting Astryx's preview infrastructure or mistaking sample media for product
-assets.
+人们应当能够用贴近真实的媒体预览 Astryx 模板，把它复制到自己的项目里，然后替换掉演示内容，而不会顺带继承 Astryx 的预览基础设施，也不会把示例媒体误当成产品资产。
 
-Templates are starting points. They are intended to be copied and modified by
-the consumer. Images and videos included with a template demonstrate the
-composition, crop, density, and state the template was designed for; they are
-not production content or a supported consumer asset library.
+模板是起点。它们本来就是让使用方复制并修改的。模板随附的图片和视频展示该模板所针对的构图、裁切、密度和状态；它们不是生产内容，也不是受支持的使用方资产库。
 
 ## Scope
 
-This contract owns static demonstration assets used by templates, including
-images, posters, and videos. It covers their authored references, maintainer
-previews, copied output, and fallbacks. It also owns demo-content elements:
-repository-only elements that stand in for docs-only demo contents, such as a
-playing-card face, that a real Astryx component wraps in a motion or gesture
-example.
+本规格管辖模板所使用的静态演示资产，包括图片、海报和视频。它涵盖这些资产的创作侧引用、维护者预览、复制后的输出以及回退。它还管辖演示内容元素：仅存在于本仓库、用来代替仅用于文档的演示内容的元素，例如扑克牌牌面，由真实的 Astryx 组件在动作或手势示例中包裹。
 
-It does not own icons. Icons may be component props, registry values, imported
-modules, inline symbols, or product assets, and their conversion and portability
-concerns require a separate contract.
+它不负责图标。图标可能是组件 prop、注册表值、导入的模块、内联符号或产品资产，它们的转换与可移植性问题需要单独的规格。
 
 ## Non-goals
 
-- Publishing Astryx's template media as a consumer asset package.
-- Copying every demonstration image or video into the consumer's project.
-- Defining icon resolution, icon imports, SVG-component conversion, favicons, or
-  application icons.
-- Guaranteeing that demonstration content is appropriate for a consumer's brand,
-  product, locale, or production license needs.
-- Defining product data loaders or the broader template data boundary.
-- Making templates immutable after copying.
+- 把 Astryx 的模板媒体发布为使用方资产包。
+- 把每一张演示图片或每一段演示视频都复制到使用方的项目中。
+- 定义图标解析、图标导入、SVG 组件转换、favicon 或应用图标。
+- 保证演示内容适合使用方的品牌、产品、语言区域或生产许可需求。
+- 定义产品数据加载器或更宽泛的模板数据边界。
+- 让模板在复制之后不可更改。
 
 ## Requirements
 
 ### Template and asset ownership
 
-- **FR1 — A template is editable source.** A copied page or block template MUST
-  be ordinary consumer-owned source that can be changed, split, connected to
-  product data, or deleted without retaining a runtime dependency on Astryx's
-  preview host.
-- **FR2 — Static template media is demonstration content.** Images, posters, and
-  videos shipped for a template MUST be treated as fixtures that demonstrate the
-  intended composition and state. Their presence in a template MUST NOT imply
-  that consumers should ship those files, URLs, subjects, copy, or brands in a
-  product.
-- **FR3 — Fixture ownership is explicit and local.** Astryx-owned static template
-  fixtures MUST use the repository's designated template-fixture namespace and
-  MUST be available to maintainers without private network access. Product-owned
-  paths and explicit third-party URLs are not Astryx fixture references and MUST
-  NOT be rewritten merely because they occur in template source.
+- **FR1 — 模板是可编辑的源码。** 复制出的页面或区块模板必须是使用方拥有的普通源码，可以被修改、拆分、接入产品数据或删除，且不保留对 Astryx 预览宿主的运行时依赖。
+- **FR2 — 模板的静态媒体是演示内容。** 随模板提供的图片、海报和视频必须视为展示预期构图与状态的测试夹具。它们在模板中的存在不得暗示使用方应在产品中随附这些文件、URL、主题、文案或品牌。
+- **FR3 — 夹具归属明确且本地化。** Astryx 拥有的静态模板夹具必须使用仓库指定的模板夹具命名空间，并且必须让维护者无需访问私有网络即可获取。产品自有路径和显式的第三方 URL 不是 Astryx 夹具引用，不得仅仅因为它们出现在模板源码中就被改写。
 
 ### Preview behavior
 
-- **FR4 — Maintainer previews show the real fixture.** Local development, the
-  docsite, the sandbox, and pull-request previews MUST resolve each Astryx-owned
-  static fixture to the representative image or video. A preview MAY rewrite the
-  deployment base path, but that rewrite MUST leave the portable template source
-  unchanged.
-- **FR5 — One canonical fixture may serve many previews.** Preview deployment MAY
-  share one published fixture set rather than duplicate media into every preview.
-  The owning deployment MUST keep references deterministic and prevent a preview
-  from silently resolving to an unrelated file.
-- **FR6 — Preview failure is visible and bounded.** A missing or unsupported
-  fixture MUST produce an actionable authoring or preview failure naming the
-  reference. It MUST NOT silently render a fallback of the wrong media kind and
-  claim the template preview is representative.
+- **FR4 — 维护者预览显示真实夹具。** 本地开发、文档站点、沙箱和拉取请求预览必须把每个 Astryx 拥有的静态夹具解析为具代表性的图片或视频。预览可以改写部署基础路径，但该改写必须保持可移植的模板源码不变。
+- **FR5 — 一套规范夹具可以服务多个预览。** 预览部署可以共享一套已发布的夹具，而不是把媒体复制进每个预览。拥有该夹具的部署必须保持引用确定，并防止某个预览静默解析到无关的文件。
+- **FR6 — 预览失败可见且有界。** 缺失或不支持的夹具必须产生可操作的创作或预览失败，并指明该引用。它不得静默渲染错误媒体类型的回退，并声称该模板预览具有代表性。
 
 ### Copy behavior
 
-- **FR7 — Copied source drops the preview dependency.** Copying or scaffolding a
-  template MUST remove every Astryx-owned static fixture reference from the
-  generated source. The output MUST NOT fetch from the Astryx docsite, sandbox,
-  GitHub Pages preview, private CDN, or repository-only `/template-assets/`
-  namespace at runtime.
-- **FR8 — Fallbacks preserve source usability, not demo content.** The copy path
-  MUST produce source that still parses and renders without setup. Image and
-  poster references MAY become a neutral self-contained visual placeholder.
-  Video references MAY become an explicit empty or non-playing replacement point
-  when no verified portable video placeholder exists. In either case, the output
-  MUST make no claim that the original demonstration content was copied.
-- **FR9 — Fallbacks are media-kind safe.** An image fallback MUST NOT be supplied
-  as a video source, and video bytes MUST NOT be supplied as an image fallback.
-  Classification MUST use the complete final filename suffix and be
-  case-insensitive. If the copy path cannot safely classify an Astryx-owned
-  fixture, it MUST fail with the fixture path and unsupported format rather than
-  guess or leave a preview-only reference behind.
-- **FR10 — Mixed static media transforms independently.** A template containing
-  an image poster and a video source MUST transform each reference according to
-  its own media kind. One unsupported reference MUST NOT cause another reference
-  to receive the wrong fallback.
-- **FR11 — Copy receipts disclose replacement.** A successful copy operation MUST
-  tell the consumer when Astryx demonstration media was replaced and identify the
-  generated file or replacement points they need to customize. The receipt MUST
-  not imply that production-ready media was installed.
-- **FR13 — Demo-content elements are replaced during copy.** In a motion or
-  gesture example, a real Astryx component MAY wrap docs-only demo contents,
-  such as `<Card><PlayingCardContents /></Card>`. A demo-content element is a
-  repository-only element that stands in for those contents. Every copy MUST
-  replace repository-only demo assets (FR7–FR10) and every demo-content element
-  with generic placeholders, keeping the outer component and its props, and the
-  copied source MUST NOT reference the repository-only code that defines a
-  demo-content element. A demo-content wrapper that only adds docs-only
-  presentation around a real component, such as a usage hint, is removed rather
-  than replaced: the copy keeps the wrapped component and its props as if the
-  wrapper were absent, and `demoContentReplaced` counts only the placeholders,
-  since only they need the consumer's own content.
-  The copies are `template copy` and the docsite's shadcn
-  Install item, which writes the example into the consumer's project. The copy
-  receipt (FR11) MUST count the replaced elements as `demoContentReplaced`.
-  Until the next minor, the persisted `.astryx/<item>.json` receipt keeps its
-  v2 shape (released readers validate it strictly), so the replacement counts
-  appear in the copy response that `template copy` and `template show` report.
-  `template show` returns the same source a copy writes and MUST report
-  `demoContentReplaced` in its response, as it reports `demoMediaReplaced`.
-  For the shadcn Install item, whose output Astryx does not control, FR11's
-  disclosure is carried by the placeholders themselves (each replaced element
-  and media reference is a visibly marked placeholder at its replacement point)
-  and by the registry item's description. At 0.8.0, the next minor, the
-  persisted counts move to a v3 receipt, with a migration note (CLN-0027).
-  Surfaces other than these copies and `template show` that hand out example
-  source without writing it into a project replace only demo-content elements
-  and keep their fixture media:
-  `astryx component <Name> --showcase`, which prints the component's showcase
-  source, and the docsite surfaces of `spec:AST-033` FR23. Live previews render
-  the originals (FR4). A check MUST fail when copied, shown, or handed-out
-  output still references a demo-content element or the code that defines it.
-  How a demo-content element is marked and replaced belongs to
-  `architecture:template-authoring`.
+- **FR7 — 复制后的源码去除预览依赖。** 复制或搭建模板必须从生成的源码中移除每一个 Astryx 拥有的静态夹具引用。输出不得在运行时从 Astryx 文档站点、沙箱、GitHub Pages 预览、私有 CDN 或仅存在于仓库的 `/template-assets/` 命名空间抓取内容。
+- **FR8 — 回退保留源码可用性，而非演示内容。** 复制路径必须生成无需额外配置即可解析和渲染的源码。图片与海报引用可以变成中性的、自包含的视觉占位符。当不存在经过验证的可移植视频占位符时，视频引用可以变成显式的空白或不可播放的替换点。无论哪种情况，输出都不得声称原始演示内容已被复制。
+- **FR9 — 回退在媒体类型上是安全的。** 图片回退不得作为视频源提供，视频字节也不得作为图片回退提供。分类必须使用完整的最终文件后缀，并且不区分大小写。如果复制路径无法安全地归类某个 Astryx 拥有的夹具，它必须带着该夹具路径和不支持的格式报错，而不是猜测或留下仅用于预览的引用。
+- **FR10 — 混合静态媒体各自独立转换。** 同时包含图片海报和视频源的模板必须按各自的媒体类型分别转换每个引用。一个不支持的引用不得导致另一个引用收到错误的回退。
+- **FR11 — 复制回执披露替换情况。** 成功的复制操作必须告知使用方 Astryx 演示媒体在何时被替换，并指出他们需要自定义的生成文件或替换点。回执不得暗示已安装可直接用于生产的媒体。
+- **FR13 — 演示内容元素在复制时被替换。** 在动作或手势示例中，真实的 Astryx 组件可以包裹仅用于文档的演示内容，例如 `<Card><PlayingCardContents /></Card>`。演示内容元素是仅存在于本仓库、用来代替这些内容的元素。每次复制都必须把仅存在于仓库的演示资产（FR7–FR10）以及每个演示内容元素替换为通用占位符，同时保留外层组件及其 props，且复制后的源码不得引用定义演示内容元素的仅仓库代码。只为真实组件增加仅用于文档的呈现（例如用法提示）的演示内容包裹层会被移除而不是替换：复制结果保留被包裹的组件及其 props，就如同该包裹层不存在一样，而 `demoContentReplaced` 只统计占位符，因为只有它们需要使用方自己的内容。执行复制的界面是 `template copy` 与文档站点的 shadcn Install 项，后者会把示例写入使用方的项目。复制回执（FR11）必须把被替换的元素计入 `demoContentReplaced`。在下一个 minor 之前，持久化的 `.astryx/<item>.json` 回执保持其 v2 形状（已发布的读取器会严格校验它），因此替换计数会出现在 `template copy` 与 `template show` 所报告的复制响应中。`template show` 返回的源码与复制所写出的相同，并且必须在其响应中报告 `demoContentReplaced`，一如它报告 `demoMediaReplaced`。对于输出不受 Astryx 控制的 shadcn Install 项，FR11 的披露由占位符本身（每个被替换的元素和媒体引用都是其替换点上清晰标记的占位符）以及注册表条目的描述承载。在 0.8.0（下一个 minor）中，持久化的计数迁移到 v3 回执，并附迁移说明（CLN-0027）。除这些复制动作与 `template show` 之外，只把示例源码交出而不写入项目中的界面，仅替换演示内容元素并保留其夹具媒体：打印组件 showcase 源码的 `astryx component <Name> --showcase`，以及 `spec:AST-033` FR23 的文档站点界面。实时预览渲染原始内容（FR4）。当被复制、被展示或被交出的输出仍然引用演示内容元素或定义它的代码时，检查必须失败。演示内容元素如何标记与替换属于 `architecture:template-authoring`。
 
 ### Boundary with icons
 
-- **FR12 — Icons are excluded by role, not file extension.** Component icons,
-  registry icons, imported SVG icon components, and application icons MUST NOT be
-  classified as static template fixtures under this contract merely because
-  their source representation is an image format. Any copying, import rewriting,
-  registry conversion, or fallback behavior for icons requires its own accepted
-  contract.
+- **FR12 — 图标按角色排除，而非按文件扩展名排除。** 组件图标、注册表图标、导入的 SVG 图标组件和应用图标，不得仅仅因为其源码表示是一种图片格式，就被本规格归类为静态模板夹具。图标的任何复制、导入改写、注册表转换或回退行为，都需要其自身已接受的规格。
 
 ## Current-state impact
 
-Astryx templates currently use repository-local `/template-assets/*` references
-for representative images and video. The docsite and sandbox own those files for
-preview, and deployed previews can rewrite only the executable bundle to a shared
-published location. The portable source keeps the root-relative fixture path.
+Astryx 模板目前使用仓库本地的 `/template-assets/*` 引用指向具代表性的图片和视频。文档站点和沙箱以预览为目拥有这些文件，已部署的预览只能把可执行 bundle 改写为共享的已发布位置。可移植的源码保留根相对的夹具路径。
 
-The CLI copy path currently recognizes Astryx's fixture namespace and replaces
-images with a self-contained SVG placeholder. It strips recognized video sources
-to an empty string rather than place image data in a video element.
+CLI 复制路径目前能识别 Astryx 的夹具命名空间，并把图片替换为自包含的 SVG 占位符。它把识别到的视频源剥离为空字符串，而不是把图片数据放进 video 元素。
 
-`template copy` and `template show` replace each demo-content element (FR13)
-with a `<Text>Card content</Text>` placeholder, import Astryx's `Text` for it
-when the source does not already import it, and remove the demo-content import.
-They remove a docs-only presentation wrapper, such as a usage hint, and keep
-the component it wraps. Both responses report the placeholder count as
-`demoContentReplaced`.
-`astryx template <name> --skeleton` outlines that replaced source and lists
-its components. `astryx component <Name> --showcase` prints the showcase source
-with each demo-content element replaced and its fixture media kept. The shadcn
-Install item installs block and page source with demo-content elements and
-fixture media both replaced, each as a visibly marked placeholder, and its
-registry item description says how many were replaced. Its
-`.astryx/<item>.json` receipt keeps the v2 shape until CLN-0027.
+`template copy` 与 `template show` 把每个演示内容元素（FR13）替换为 `<Text>Card content</Text>` 占位符，在源码尚未导入 Astryx 的 `Text` 时为它添加导入，并移除演示内容的导入。它们会移除仅用于文档的呈现包裹层（例如用法提示），并保留它所包裹的组件。两个响应都以 `demoContentReplaced` 报告占位符数量。`astryx template <name> --skeleton` 勾勒出替换后的源码并列出其组件。`astryx component <Name> --showcase` 打印 showcase 源码，其中每个演示内容元素已被替换，其夹具媒体被保留。shadcn Install 项在安装区块和页面源码时同时替换演示内容元素与夹具媒体，二者都是清晰标记的占位符，其注册表条目描述会说明替换了多少个。在 CLN-0027 之前，它的 `.astryx/<item>.json` 回执保持 v2 形状。
 
 ## Verification
 
-| Contract | Verification                                                                                       | Representative cases                                                                                                                                                                                                                                                                                                                             | Failure expectation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| -------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1–FR3  | Template-source and copy-boundary tests                                                            | built-in page, block, integration template; Astryx fixture; consumer path; third-party URL                                                                                                                                                                                                                                                       | Copied source retains a preview runtime dependency or rewrites consumer-owned content                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| FR4–FR6  | Real preview request and rendered-media checks                                                     | local, docsite, main sandbox, PR preview; image and video; missing fixture                                                                                                                                                                                                                                                                       | Representative media 404s, resolves to another file, or silently uses the wrong kind                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| FR7–FR8  | End-to-end CLI copy tests                                                                          | image-only, video-only, and no-media template                                                                                                                                                                                                                                                                                                    | Generated source retains `/template-assets/` or does not parse/render without setup                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| FR9–FR10 | Classifier and mixed-source mutation tests                                                         | upper/lower case; multi-dot filename; image poster plus video; unknown suffix                                                                                                                                                                                                                                                                    | Last suffix is misread, image data enters video, or an unsupported kind is guessed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| FR11     | Human and structured copy-receipt tests                                                            | no replacement; one image; mixed media                                                                                                                                                                                                                                                                                                           | The consumer is not told what must be replaced or is told assets were installed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| FR12     | Scope guard tests and review                                                                       | Icon prop, registry icon, imported SVG component, static hero image                                                                                                                                                                                                                                                                              | Icon behavior is silently folded into the static-fixture transformer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| FR13     | End-to-end CLI copy, show, and `--showcase` tests, a shadcn install test, and a real preview check | a motion or gesture example whose `Card` wraps one demo-content element; one with two; one whose `Card` sits in a docs-only hint wrapper; an example with none; its `template show` response; its `--showcase` output; its shadcn install into a project, its registry item description, and its `.astryx/<item>.json` receipt; its live preview | Copied, shown, or installed output still references a demo-content element or keeps a docs-only wrapper or its hint text (a hinted example copies to exactly the `Card` plus its placeholder), the code that defines it, or `/template-assets/`; `--showcase` output references a demo-content element or changes its fixture media; the outer component or its props change; the copy receipt or the `template show` response omits or miscounts `demoContentReplaced`; a shadcn install leaves a replaced element or media reference without a visibly marked placeholder, or its registry item description does not disclose the replacement; the installed `.astryx/<item>.json` receipt gains a field or fails the released strict v2 reader before CLN-0027; or the live preview stops rendering the original |
+| 规格条目 | 验证                                                                                  | 代表性用例                                                                                                                                                                                                                                                                          | 失败预期                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| -------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1–FR3  | 模板源码与复制边界测试                                                                | 内置页面、区块、集成模板；Astryx 夹具；使用方路径；第三方 URL                                                                                                                                                                                                                       | 复制后的源码保留预览运行时依赖，或改写了使用方拥有的内容                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| FR4–FR6  | 真实预览请求与渲染媒体检查                                                            | 本地、文档站点、主沙箱、PR 预览；图片与视频；缺失的夹具                                                                                                                                                                                                                             | 具代表性的媒体返回 404、解析到另一个文件，或静默使用错误的类型                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| FR7–FR8  | 端到端 CLI 复制测试                                                                   | 仅图片、仅视频和无媒体的模板                                                                                                                                                                                                                                                        | 生成的源码保留 `/template-assets/`，或无法在无需额外配置的情况下解析和渲染                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| FR9–FR10 | 分类器与混合源码变更测试                                                              | 大写/小写；含多个点的文件名；图片海报加视频；未知后缀                                                                                                                                                                                                                               | 最后一个后缀被误读、图片数据进入视频，或对不支持的媒体类型进行猜测                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| FR11     | 人类可读与结构化复制回执测试                                                          | 无替换；一张图片；混合媒体                                                                                                                                                                                                                                                          | 未告知使用方需要替换什么，或告知其资产已安装                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| FR12     | 范围守卫测试与审查                                                                    | 图标 prop、注册表图标、导入的 SVG 组件、静态主视觉图                                                                                                                                                                                                                                | 图标行为被静默并入静态夹具转换器                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| FR13     | 端到端 CLI 复制、展示与 `--showcase` 测试，一次 shadcn 安装测试，以及一次真实预览检查 | 一个动作或手势示例，其 `Card` 包裹一个演示内容元素；一个包裹两个；一个的 `Card` 位于仅用于文档的提示包裹层中；一个不含任何演示内容元素；其 `template show` 响应；其 `--showcase` 输出；其安装到项目中的 shadcn install、其注册表条目描述及其 `.astryx/<item>.json` 回执；其实时预览 | 被复制、被展示或被安装的输出仍然引用演示内容元素，或保留仅用于文档的包裹层或其提示文本（带提示的示例复制后恰好是 `Card` 加其占位符）、定义它的代码，或 `/template-assets/`；`--showcase` 输出引用演示内容元素或改动了其夹具媒体；外层组件或其 props 发生变化；复制回执或 `template show` 响应遗漏或错误统计 `demoContentReplaced`；一次 shadcn 安装留下被替换的元素或媒体引用却没有清晰标记的占位符，或其注册表条目描述未披露替换；在 CLN-0027 之前，安装后的 `.astryx/<item>.json` 回执新增了字段或无法通过已发布的严格 v2 读取器；或实时预览不再渲染原始内容 |
 
 ### Completion criteria
 
-This spec moves from `accepted` to `shipped` only when:
+本规格只有满足以下条件，才会从 `accepted` 转为 `shipped`：
 
-- preview environments render the same canonical static fixtures without private
-  network access or per-preview duplication requirements;
-- copied templates retain no Astryx preview-only media reference;
-- image, poster, and video fallbacks are kind-safe and covered end to end;
-- unsupported static fixture formats fail with an actionable reference;
-- copy receipts identify replaced demonstration media;
-- copied and installed templates retain no demo-content element or reference
-  to the code that defines it, and the receipt counts the replaced elements; and
-- icon sources are proven outside this transform and linked to a separate
-  contract before any icon conversion is introduced.
+- 预览环境在无需访问私有网络、也无需为每个预览重复媒体的前提下，渲染同一套规范静态夹具；
+- 复制出的模板不保留任何仅用于 Astryx 预览的媒体引用；
+- 图片、海报和视频回退在媒体类型上是安全的，并且有端到端覆盖；
+- 不支持的静态夹具格式以可操作的引用报错；
+- 复制回执标明被替换的演示媒体；
+- 被复制和被安装的模板不保留任何演示内容元素，也不保留对定义它的代码的引用，并且回执统计了被替换的元素；以及
+- 在引入任何图标转换之前，已证明图标来源在本转换之外，并链接到单独的规格。
 
 ## Decision log
 
@@ -220,13 +106,9 @@ This spec moves from `accepted` to `shipped` only when:
 
 **Decider:** `cixzhang`, `2026-09-04`
 
-Images and videos in Astryx templates are local fixtures for showing the
-intended composition. A copied template is consumer-owned editable source, not a
-channel for distributing production media or preserving an Astryx preview
-runtime dependency.
+Astryx 模板中的图片和视频是用于展示预期构图的本地夹具。复制出的模板是使用方拥有的可编辑源码，而不是分发生产媒体或保留 Astryx 预览运行时依赖的渠道。
 
-Rejected: treating the checked-in demonstration files as a supported consumer
-asset library or copying them by default into every project.
+已否决：把签入仓库的演示文件当作受支持的使用方资产库，或默认把它们复制到每个项目中。
 
 ### DEC-2 — Preview and copy have different obligations
 
@@ -234,12 +116,9 @@ asset library or copying them by default into every project.
 
 **Decider:** `cixzhang`, `2026-09-04`
 
-Maintainer previews show the real fixture so the template can be judged. Copied
-source removes the preview dependency and substitutes a media-kind-safe,
-portable replacement point so the consumer can customize it.
+维护者预览显示真实夹具，以便评判该模板。复制后的源码移除预览依赖，替换为媒体类型安全、可移植的替换点，供使用方自定义。
 
-Rejected: showing placeholders in every maintainer preview, and leaving
-repository-only fixture URLs in generated projects.
+已否决：在每个维护者预览中都显示占位符，以及在生成的项目中保留仅存在于仓库的夹具 URL。
 
 ### DEC-3 — Icons require a separate contract
 
@@ -247,12 +126,9 @@ repository-only fixture URLs in generated projects.
 
 **Decider:** `cixzhang`, `2026-09-04`
 
-This contract covers static image and video fixtures and the demo-content
-elements of DEC-4; it does not cover icons. Icons have distinct
-semantic, import, registry, and conversion concerns; grouping them with demo
-media would silently decide another public boundary.
+本规格涵盖静态图片与视频夹具，以及 DEC-4 的演示内容元素；它不涵盖图标。图标有其独立的语义、导入、注册表和转换关切；把它们与演示媒体归为一类，会在无意中决定另一个公共边界。
 
-Rejected: classifying every SVG or image-like source as a template fixture.
+已否决：把每个 SVG 或类似图片的源码都归类为模板夹具。
 
 ### DEC-4 — Demo-content elements are fixtures that copy replaces
 
@@ -260,34 +136,22 @@ Rejected: classifying every SVG or image-like source as a template fixture.
 
 **Decider:** `cixzhang`, `2026-11-01`
 
-Motion and gesture examples can show docs-only demo contents, such as a
-playing-card face, inside a real Astryx component without a second copy of each
-example to maintain. Those contents are fixtures in the DEC-1 sense: copy
-replaces each demo-content element with a generic placeholder and keeps the
-outer component, removes a wrapper that only adds docs-only presentation (such
-as a usage hint) and keeps what it wraps, and previews render the originals
-(DEC-2). The shadcn Install
-item writes the example into the consumer's project, so it is a copy and
-replaces fixture media and demo-content elements as `template copy` does.
-`template show` returns the same source a copy writes; other surfaces that
-only hand out source replace demo-content elements alone. Examples without
-demo-content elements keep their source, except that their shadcn install
-replaces fixture media like any copy (FR7).
+动作和手势示例可以在真实的 Astryx 组件内展示仅用于文档的演示内容（例如扑克牌牌面），而无需为每个示例维护第二份副本。这些内容就是 DEC-1 意义上的夹具：复制把每个演示内容元素替换为通用占位符并保留外层组件，移除只增加仅用于文档的呈现（例如用法提示）的包裹层并保留其所包裹的内容，预览则渲染原始内容（DEC-2）。shadcn Install 项会把示例写入使用方的项目，因此它也是一次复制，会像 `template copy` 一样替换夹具媒体和演示内容元素。`template show` 返回与复制所写出的相同源码；其他只交出源码的界面仅替换演示内容元素。不含演示内容元素的示例保留其源码，只是它们的 shadcn 安装会像任何复制一样替换夹具媒体（FR7）。
 
-Rejected: a docs-only duplicate of each example, which adds documents to keep in sync.
+已否决：为每个示例维护一份仅用于文档的副本，这会增加需要保持同步的文档。
 
 ## Deprecation and cleanup records
 
 ### CLN-0027 — The installed receipt counts what the copy replaced
 
-| Field     | Value                                                                                                                                                                                                                                                                                                                                         |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| id        | `CLN-0027`                                                                                                                                                                                                                                                                                                                                    |
-| lifecycle | No deprecation: the staged `[breaking]` change for FR13 (`spec:AST-017` FR28)                                                                                                                                                                                                                                                                 |
-| delta     | The shadcn Install item writes a v3 `.astryx/<item>.json` receipt that adds `demoMediaReplaced` and `demoContentReplaced`. `astryx upgrade` reads v1, v2, and v3 receipts; a CLI released before 0.8.0 cannot read a v3 receipt, so the migration note tells consumers to upgrade the CLI before they upgrade an item installed from 0.8.0 on |
-| rollback  | Restore the v2 receipt writer from the final-patch baseline                                                                                                                                                                                                                                                                                   |
-| state     | `pending` — lands in 0.8.0, the next minor, with its `[breaking]` Changeset                                                                                                                                                                                                                                                                   |
+| Field     | Value                                                                                                                                                                                                                                                     |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| id        | `CLN-0027`                                                                                                                                                                                                                                                |
+| lifecycle | 没有弃用：这是为 FR13 分阶段实施的 `[breaking]` 变更（`spec:AST-017` FR28）                                                                                                                                                                               |
+| delta     | shadcn Install 项写出 v3 `.astryx/<item>.json` 回执，新增 `demoMediaReplaced` 与 `demoContentReplaced`。`astryx upgrade` 可读取 v1、v2 和 v3 回执；0.8.0 之前发布的 CLI 无法读取 v3 回执，因此迁移说明要求使用方在升级从 0.8.0 起安装的条目之前先升级 CLI |
+| rollback  | 从最终补丁基线恢复 v2 回执写入器                                                                                                                                                                                                                          |
+| state     | `pending` —— 随其 `[breaking]` Changeset 在 0.8.0（下一个 minor）落地                                                                                                                                                                                     |
 
 ## Open questions
 
-None.
+无。

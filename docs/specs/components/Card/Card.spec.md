@@ -36,125 +36,102 @@ system_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                 |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | A container with sizing props, `padding` on the spacing scale, a theme-extensible `variant`, and a resting `elevation`.                                                                                  |
-| Behavior                | Card paints a rounded surface, publishes its padding to descendants through the container-padding protocol, and only the `default` variant draws a border.                                               |
-| End-user impact         | Readers see grouped content on a consistent surface; with the default border and theme border width, content insets stay on the spacing scale whether or not a border is drawn, except at zero padding.  |
-| Builder impact          | None; the record describes shipped behavior.                                                                                                                                                             |
-| Compatibility/readiness | Released behavior recorded as current; no API, default, or output changes. One implementation gap is listed under Current-state impact.                                                                  |
-| Review checks           | Reject a card that holds its track at min-content width, a variant that falls through to another variant, a lost padding publication, or a published inset that drifts further from the applied padding. |
-| Governing rules         | `architecture:container-padding` (container publisher); `architecture:component-theming-surface/INV6,INV14`; `architecture:public-component-api/INV5,INV6,INV8`.                                         |
+| Area                    | Contract                                                                                                                                                  |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public contract         | 一个容器，带有尺寸属性、按间距刻度取值的 `padding`、可由主题扩展的 `variant`，以及静止状态的 `elevation`。                                                |
+| Behavior                | Card 绘制圆角表面，通过 container-padding 协议把自身的内边距发布给后代，并且只有 `default` 变体绘制边框。                                                 |
+| End-user impact         | 读者在一致的表面上看到被分组的内容；在默认边框与主题边框宽度下，无论是否绘制边框，内容内缩量都落在间距刻度上，但零内边距时例外。                          |
+| Builder impact          | 无；该记录描述的是已发布的行为。                                                                                                                          |
+| Compatibility/readiness | 已发布的行为被记录为 current；没有 API、默认值或输出方面的变更。有一处实现缺口列在 Current-state impact 下。                                              |
+| Review checks           | 拒绝这样的卡片：在 min-content 宽度上占住自己的轨道、某个变体落到另一个变体、丢失内边距发布、或发布的内缩量与应用的内边距进一步偏离。                     |
+| Governing rules         | `architecture:container-padding`（容器发布方）；`architecture:component-theming-surface/INV6,INV14`；`architecture:public-component-api/INV5,INV6,INV8`。 |
 
-This table is a review projection; the body below is authoritative.
+该表是审查用的投影；下文正文具有权威性。
 
 ## Intent
 
-Card groups related content on a contained surface. It owns the surface's
-paint, border, radius, and elevation, its sizing, and the padding it publishes
-so Layout and other descendants align to it.
+Card 把一个受限表面上的相关内容分组。它拥有该表面的绘制、边框、圆角和高度，拥有其尺寸设定，以及它发布的内边距，好让 Layout 及其他后代与之对齐。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public prop, default, DOM,
-  or styling output changes
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 保留已发布的默认值：`yes`
+- 兼容性类别：记录已发布的行为；公共 prop、默认值、DOM 或样式输出均无变更
+- 受控/非受控行为：不适用
+- 迁移决定：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明应放在使用方文档与发布说明中。
 
 ## Current-state impact
 
-- **Published inset exceeds applied padding (FR3).** At nonzero padding a
-  `default` card applies padding reduced by its border width but publishes
-  border plus padding (at `padding={0}` the two match). Every child that bleeds
-  to the published inset, on any edge — a full-bleed Divider, a Layout, or a
-  List `outset` or `bleed` box — overshoots the padding edge by the border
-  width. A fixed-height card holding such a child scrolls by that amount on
-  each axis the child bleeds on (both for a Layout) and becomes an unnamed tab
-  stop even when its content fits: in Chromium when it holds nothing
-  focusable, in Firefox even when it holds a focusable child. `architecture:container-padding` INV11
-  has a host publish its applied padding, and `component:List` FR8 counts a
-  Card's content area as such a host, so a `default` card at nonzero padding
-  does not yet meet List FR8: List `outset` and `bleed` lists cross its padding edge by the border width, and `bleed` rows with them.
+- **已发布的内缩量超出应用的内边距（FR3）。** 在非零内边距下，`default` 卡应用的内边距按其边框宽度缩减，但发布的是边框加内边距（在 `padding={0}` 时两者一致）。任何延伸到已发布内缩量处的子元素，在任意一条边上——整幅出血的 Divider、一个 Layout，或 List 的 `outset` 或 `bleed` 盒子——都会超出内边距边缘一个边框宽度。固定高度且持有此类子元素的卡片，会在子元素出血的每条轴上滚动该宽度（Layout 情况下两条轴都滚），并且即使内容放得下也会变成一个未命名的 tab 停靠点：在 Chromium 中当其内不含任何可聚焦元素时如此，在 Firefox 中即使含有一个可聚焦子元素也如此。`architecture:container-padding` INV11 要求宿主发布其应用的内边距，而 `component:List` FR8 把 Card 的内容区域计为这样的宿主，所以在非零内边距下的 `default` 卡尚未满足 List FR8：List 的 `outset` 与 `bleed` 列表会越过其内边距边缘一个边框宽度，`bleed` 各行也随之如此。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The Container: surface paint, border, radius, elevation, sizing, and
-  clipping.
-- Resolving and publishing card padding as a container publisher.
+- Container：表面绘制、边框、圆角、高度、尺寸设定与裁剪。
+- 作为容器发布方解析并发布卡片内边距。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Content structure inside the card — owned by the caller and Layout.
-- Interaction — owned by `component:ClickableCard` and
-  `component:SelectableCard`, which compose Card.
-- The padding protocol itself — owned by `architecture:container-padding`.
+- 卡片内部的内容结构——由调用方和 Layout 拥有。
+- 交互——由 `component:ClickableCard` 与 `component:SelectableCard` 拥有，它们组合使用 Card。
+- 内边距协议本身——由 `architecture:container-padding` 拥有。
 
 ## Public concepts
 
-| Concept   | Closed values or states                                                                                                                  | Meaning                                                 | Availability by variant/orientation/state | Default            | Owner            | Stability | Invalid-value behavior                                                                              |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ----------------------------------------- | ------------------ | ---------------- | --------- | --------------------------------------------------------------------------------------------------- |
-| Variant   | `default`, `transparent`, `muted`, `blue`, `cyan`, `gray`, `green`, `orange`, `pink`, `purple`, `red`, `teal`, `yellow`; theme additions | Surface paint; only `default` draws a border.           | Always                                    | `default`          | `component:Card` | Stable    | A theme-added value is reflected on `card` and renders the base surface with no fill and no border. |
-| Elevation | `none`, `low`, `med`, `high`                                                                                                             | Resting shadow from the shadow token scale.             | Always                                    | `none`             | `component:Card` | Stable    | TypeScript rejects other values.                                                                    |
-| Padding   | Spacing steps 0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10; omitted                                                                              | Uniform padding; omitted uses the theme's card padding. | Always                                    | theme card padding | `component:Card` | Stable    | TypeScript rejects other values.                                                                    |
-| Sizing    | `width`, `height`, `maxWidth`, `minHeight`: numbers in pixels or CSS strings                                                             | The card's box size.                                    | Always                                    | unset              | `component:Card` | Stable    | Strings pass through as CSS.                                                                        |
+| Concept   | Closed values or states                                                                                                             | Meaning                                  | Availability by variant/orientation/state | Default        | Owner            | Stability | Invalid-value behavior                                               |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ----------------------------------------- | -------------- | ---------------- | --------- | -------------------------------------------------------------------- |
+| Variant   | `default`、`transparent`、`muted`、`blue`、`cyan`、`gray`、`green`、`orange`、`pink`、`purple`、`red`、`teal`、`yellow`；主题新增值 | 表面绘制；只有 `default` 绘制边框。      | 始终                                      | `default`      | `component:Card` | 稳定      | 主题新增的值会反映在 `card` 上，并渲染基础表面，不带填充也不带边框。 |
+| Elevation | `none`、`low`、`med`、`high`                                                                                                        | 取自阴影 token 刻度的静止阴影。          | 始终                                      | `none`         | `component:Card` | 稳定      | TypeScript 拒绝其他值。                                              |
+| Padding   | 间距步长 0、0.5、1、1.5、2、3、4、5、6、8、10；省略                                                                                 | 均匀内边距；省略时使用主题的卡片内边距。 | 始终                                      | 主题卡片内边距 | `component:Card` | 稳定      | TypeScript 拒绝其他值。                                              |
+| Sizing    | `width`、`height`、`maxWidth`、`minHeight`：以像素为单位的数字或 CSS 字符串                                                         | 卡片的盒尺寸。                           | 始终                                      | 未设置         | `component:Card` | 稳定      | 字符串按 CSS 原样传递。                                              |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Basis                    |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| FR1 | Card renders one `div` carrying the `card` target, which reflects `variant` and `elevation`, with `--radius-container` corners and a box shadow composed of the selection ring and the elevation shadow.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Current source and tests |
-| FR2 | `default` paints `--color-background-card` with a `--border-width` solid `--color-border` border; `transparent` paints nothing; `muted` paints `--color-background-muted`; each palette variant paints its `--color-background-<name>` tint. A theme-added variant falls through to the base surface, never to another variant.                                                                                                                                                                                                                                                                                                                                                                                                                                            | Current source and tests |
-| FR3 | Card resolves padding as a container publisher: an omitted `padding` uses the theme's card padding (spacing step 4 with no theme), and a step applies uniformly to every edge. With the `default` border, each edge's padding is reduced by the global `--border-width` token (stopping at zero), so border plus padding matches the borderless inset. The published inset matches the padding the card applies (`architecture:container-padding` INV11). Implementation gap: at nonzero padding a `default` card publishes border plus padding, one border width more than its applied padding, so a full-bleed child overshoots the padding edge, a fixed-height card scrolls by that width, and the card does not yet meet `component:List` FR8 (Current-state impact). | Current source and tests |
-| FR4 | Card has zero minimum width, so it yields to its track instead of holding it at its min-content width, and clips overflow without becoming a scroll container. A `height` other than `auto` makes it scroll. `width`, `height`, `maxWidth`, and `minHeight` apply as given, and a caller minimum can win over `width`.                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Current source and tests |
-| FR5 | `elevation` sets the elevation shadow to none or the low, medium, or high shadow token.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Current source and tests |
-| FR6 | `ref` reaches the `div`. Supported DOM, ARIA, data, and event props reach the element carrying the target; `xstyle`, `className`, and `style` merge in that order after component styles, and a caller `className` joins the target class rather than replacing it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Current source and tests |
+| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Basis          |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| FR1 | Card 渲染一个携带 `card` 目标的 `div`，该目标反映 `variant` 与 `elevation`，带 `--radius-container` 圆角，以及由选择环与高度阴影组合而成的盒阴影。                                                                                                                                                                                                                                                                                                                                                                                                   | 当前源码与测试 |
+| FR2 | `default` 用 `--border-width` 的实线 `--color-border` 边框绘制 `--color-background-card`；`transparent` 不绘制任何内容；`muted` 绘制 `--color-background-muted`；每个调色板变体绘制其 `--color-background-<name>` 色调。主题新增的变体会落到基础表面，绝不落到另一个变体。                                                                                                                                                                                                                                                                           | 当前源码与测试 |
+| FR3 | Card 作为容器发布方解析内边距：省略 `padding` 时使用主题的卡片内边距（无主题时为间距步长 4），步长对每条边均匀应用。带 `default` 边框时，每条边的内边距按全局 `--border-width` token 缩减（以零为下限），好让边框加内边距与无边框时的内缩量一致。发布的内缩量与应用的内边距一致（`architecture:container-padding` INV11）。实现缺口：在非零内边距下，`default` 卡发布边框加内边距，比其应用的内边距多一个边框宽度，于是整幅出血的子元素会超出内边距边缘，固定高度的卡片会滚动该宽度，且该卡片尚未满足 `component:List` FR8（Current-state impact）。 | 当前源码与测试 |
+| FR4 | Card 的最小宽度为零，因此它在自己的轨道中让步，而不是以 min-content 宽度占住轨道，并且裁剪溢出而不成为滚动容器。`height` 不为 `auto` 时它会滚动。`width`、`height`、`maxWidth` 与 `minHeight` 按给定值应用，调用方设置的最小值可以胜过 `width`。                                                                                                                                                                                                                                                                                                     | 当前源码与测试 |
+| FR5 | `elevation` 把高度阴影设为无，或设为 low、medium、high 阴影 token。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | 当前源码与测试 |
+| FR6 | `ref` 到达该 `div`。受支持的 DOM、ARIA、data 与事件 prop 到达携带该目标的元素；`xstyle`、`className` 与 `style` 按此顺序在组件样式之后合并，调用方的 `className` 会与该目标类名合并，而不是替换它。                                                                                                                                                                                                                                                                                                                                                  | 当前源码与测试 |
 
 ### Allowed variation
 
-- **AV1 — Theme paint and padding.** A theme may restyle `card` per `variant`
-  and `elevation`, including border width and color, and set the card padding.
-- **AV2 — Content.** Any content may fill the card.
+- **AV1 — 主题绘制与内边距。** 主题可以按 `variant` 与 `elevation` 重新设定 `card` 的样式，包括边框宽度与颜色，并设定卡片内边距。
+- **AV2 — 内容。** 任何内容都可以填充卡片。
 
 ### Representative states
 
-| State               | Required invariant                                                                                 | Allowed variation |
-| ------------------- | -------------------------------------------------------------------------------------------------- | ----------------- |
-| Default             | Card surface with border; inset equals the theme card padding.                                     | Content.          |
-| Borderless variant  | No border; same inset as `default` except at `padding={0}`, where `default` adds its border width. | Variant.          |
-| Theme-added variant | Base surface; `data-variant` names the added value.                                                | Theme paint.      |
-| Fixed height        | Scrolls its content; still yields in its track.                                                    | Height.           |
-| Elevated            | Elevation shadow alongside any ring.                                                               | Elevation.        |
+| State               | Required invariant                                                                                   | Allowed variation |
+| ------------------- | ---------------------------------------------------------------------------------------------------- | ----------------- |
+| Default             | 带边框的卡片表面；内缩量等于主题卡片内边距。                                                         | 内容。            |
+| Borderless variant  | 无边框；除 `padding={0}` 外内缩量与 `default` 相同，在 `padding={0}` 处 `default` 会加上其边框宽度。 | 变体。            |
+| Theme-added variant | 基础表面；`data-variant` 指出新增的值。                                                              | 主题绘制。        |
+| Fixed height        | 滚动其内容；仍在轨道中让步。                                                                         | 高度。            |
+| Elevated            | 高度阴影与任何环并存。                                                                               | 高度。            |
 
 ### Transformation and precedence order
 
-- **ORD1 — Padding.** `padding` step → theme card padding → spacing step 4;
-  then subtract the border width per edge for `default`, stopping at zero.
-- **ORD2 — Shadow.** Ring and elevation compose in one shadow list; neither
-  replaces the other.
+- **ORD1 — 内边距。** `padding` 步长 → 主题卡片内边距 → 间距步长 4；然后对 `default` 按边减去边框宽度，以零为下限。
+- **ORD2 — 阴影。** 环与高度在一个阴影列表中组合；两者互不替换。
 
 ### Performance and resources
 
-- **PR1 — Static render.** Card holds no state and uses no hooks.
+- **PR1 — 静态渲染。** Card 不持有状态，也不使用 hook。
 
 ## Accessibility contract
 
-- **AR1 — No semantics added.** Card adds no role, name, or tab stop of its own;
-  its content's semantics pass through. Exception: a fixed-height card whose
-  content overflows is a scroll container (FR4), and browsers may make it an
-  unnamed tab stop so keyboard users can scroll it (Chromium when it holds
-  nothing focusable; Firefox even when it holds a focusable child).
+- **AR1 — 不添加语义。** Card 不自行添加角色、名称或 tab 停靠点；其内容的语义原样传递。例外：内容溢出的固定高度卡片是滚动容器（FR4），浏览器可能把它变成未命名的 tab 停靠点，以便键盘用户可以滚动它（Chromium 在其内不含可聚焦元素时如此；Firefox 即使其内含有可聚焦子元素也如此）。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                           | Representation authority | Hierarchy role | Component contract |
-| ---------------- | ------------------------------------------------------------ | ------------------------ | -------------- | ------------------ |
-| Container        | A rounded surface with background, optional border, padding. | Current source and docs  | Supporting     | FR1–FR5            |
-| Content          | Caller content inside the published inset.                   | Current source and docs  | Prominent      | FR3, AR1           |
+| Anatomy or state | Design requirement                   | Representation authority | Hierarchy role | Component contract |
+| ---------------- | ------------------------------------ | ------------------------ | -------------- | ------------------ |
+| Container        | 带背景、可选边框、内边距的圆角表面。 | 当前源码与文档           | 支撑性         | FR1–FR5            |
+| Content          | 已发布内缩量之内的调用方内容。       | 当前源码与文档           | 突出           | FR3, AR1           |
 
 ### Theming anatomy
 
@@ -173,33 +150,29 @@ Consumer migration instructions belong in consumer docs and release notes.
 
 ## Family and system relationships
 
-- `architecture:container-padding` names Card a container publisher; FR3 records
-  how Card resolves and publishes its padding.
-- `component:ClickableCard` and `component:SelectableCard` compose Card; a
-  selection ring composes with Card's elevation shadow (ORD2).
-- `architecture:component-theming-surface` sets the rules the `card` target
-  follows (INV6) and qualifies `variant` as a theme-extensible axis (INV14).
+- `architecture:container-padding` 把 Card 定为容器发布方；FR3 记录 Card 如何解析并发布其内边距。
+- `component:ClickableCard` 与 `component:SelectableCard` 组合使用 Card；选择环与 Card 的高度阴影组合（ORD2）。
+- `architecture:component-theming-surface` 设定 `card` 目标遵循的规则（INV6），并把 `variant` 定为可由主题扩展的轴（INV14）。
 
 ## Verification map
 
-| Contract            | Verification                                                                                                                                                                            | Representative states                                         | Mutation or failure expectation                                                                                                                                                                                                                                                                                                                                                                                  | Audit section         |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| FR1, FR2, FR5, ORD2 | `Card.test.tsx` reflection, built-in variant, elevation, and theme-added variant tests; stable visual baselines `core-card--default` and `core-card--theme-added-variant` (probe theme) | Every built-in variant; elevations; added value; default card | A lost reflection, an elevation without its own class, or a theme-added value falling through to another variant fails; a changed default surface, border, radius, or rest shadow, or a theme-added card that loses its theme paint, comes back changed for review. Gap: the palette tints, the elevation shadow values, and the ring-and-shadow composition have no automated check beyond those two baselines. | `audit:Card/theming`  |
-| FR3                 | `Card.stories.tsx` in a browser                                                                                                                                                         | Default and borderless variants; padding steps                | Gap: no unit test asserts padding publication or the border subtraction; an inset mismatch is visible only in the rendered fixture. The full-bleed overshoot in a default card has no automated check.                                                                                                                                                                                                           | `audit:Card/layout`   |
-| FR4                 | `Card.test.tsx` sizing suite                                                                                                                                                            | Every variant; fixed height; caller minimum                   | A held min-content width, a scroll container without fixed height, or a lost caller minimum fails.                                                                                                                                                                                                                                                                                                               | `audit:Card/layout`   |
-| FR6                 | `Card.test.tsx` ref, passthrough, and className tests                                                                                                                                   | Ref; extra props; className                                   | A ref on another element, a prop on an element other than the target, or a replaced target class fails. Gap: no test asserts the `xstyle`, `className`, `style` merge order.                                                                                                                                                                                                                                     | `audit:Card/behavior` |
-| Theming anatomy map | `scripts/check-knowledge.mjs`                                                                                                                                                           | Consumer anatomy and current target                           | Missing, extra, or stale mappings fail repository validation.                                                                                                                                                                                                                                                                                                                                                    | `audit:Card/theming`  |
-| AR1, PR1            | Source review                                                                                                                                                                           | Every variant                                                 | Gap: no automated check fails if Card adds a role, tab stop, state, or hook. No test covers the fixed-height overflow tab stop, with or without focusable content. No test covers the tab stop a fixed-height default card gains from a bleeding child's overshoot.                                                                                                                                              | `audit:Card/behavior` |
+| Contract            | Verification                                                                                                                                  | Representative states                  | Mutation or failure expectation                                                                                                                                                                                                                              | Audit section         |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
+| FR1, FR2, FR5, ORD2 | `Card.test.tsx` 的反映、内置变体、高度与主题新增变体测试；稳定的视觉基线 `core-card--default` 与 `core-card--theme-added-variant`（探针主题） | 每个内置变体；各高度；新增值；默认卡片 | 反映丢失、高度没有自己的类名、或主题新增的值落到另一个变体，都会失败；默认表面、边框、圆角或静止阴影发生变化，或主题新增的卡片丢失其主题绘制，会以已变更的形式返回以供审查。缺口：调色板色调、高度阴影值，以及环与阴影的组合，除这两条基线外没有自动化检查。 | `audit:Card/theming`  |
+| FR3                 | 浏览器中的 `Card.stories.tsx`                                                                                                                 | 默认与无边框变体；各内边距步长         | 缺口：没有单元测试断言内边距发布或边框扣减；内缩量不一致只能在渲染出的测试夹具中看到。默认卡片中的整幅出血超出没有自动化检查。                                                                                                                               | `audit:Card/layout`   |
+| FR4                 | `Card.test.tsx` 的尺寸套件                                                                                                                    | 每个变体；固定高度；调用方最小值       | 占住 min-content 宽度、没有固定高度的滚动容器、或丢失的调用方最小值，都会失败。                                                                                                                                                                              | `audit:Card/layout`   |
+| FR6                 | `Card.test.tsx` 的 ref、透传与 className 测试                                                                                                 | Ref；额外 prop；className              | ref 落在另一个元素上、prop 落在目标以外的元素上、或目标类名被替换，都会失败。缺口：没有测试断言 `xstyle`、`className`、`style` 的合并顺序。                                                                                                                  | `audit:Card/behavior` |
+| Theming anatomy map | `scripts/check-knowledge.mjs`                                                                                                                 | 使用方解剖结构与当前目标               | 缺失、多余或过时的映射会使仓库校验失败。                                                                                                                                                                                                                     | `audit:Card/theming`  |
+| AR1, PR1            | 源码审查                                                                                                                                      | 每个变体                               | 缺口：如果 Card 添加了角色、tab 停靠点、状态或 hook，没有自动化检查会失败。没有测试覆盖固定高度溢出时的 tab 停靠点，无论其内是否含有可聚焦内容。没有测试覆盖固定高度的默认卡片因出血子元素的超出而获得的 tab 停靠点。                                        | `audit:Card/behavior` |
 
 ## Decision log
 
-None recorded. The record describes shipped behavior.
+未记录。该记录描述的是已发布的行为。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不重复使用方的 prop 表/示例、当前审查结果、实现步骤或 family/系统规则。它链接到这些内容的拥有者。

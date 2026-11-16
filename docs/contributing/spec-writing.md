@@ -1,54 +1,30 @@
-# Writing specification records
+# 编写规范记录
 
-A specification record describes the system as it is meant to be. It is read by
-someone deciding whether an implementation conforms, long after the pull
-requests that shaped it are closed. Every sentence in a record has to survive
-that reader.
+规范记录描述系统应当成为的样子。它的读者是在塑造它的那些拉取请求关闭很久之后，决定某个实现是否符合规范的人。记录中的每一句话都必须经得起这样的读者。
 
-This guide applies to every knowledge record that states what the system does,
-wherever it lives in the repository and in any package added later:
-`docs/specs/<id>/spec.md`, family, design, theme, and architecture records,
-package records under a package's `specs/` directory, and the component and
-module contracts under `docs/specs/components/` for Core, Lab, the flat
-component packages (Charts, RichText, Vega), and platform implementations. Every spec must be a valid knowledge record; one that is not fails
-the knowledge check (`architecture:knowledge-contracts` INV27). An implementation
-plan (`plan.md`) tracks work and is outside it. It projects
-`architecture:knowledge-contracts` (INV2 and INV10) and the templates under
-`docs/templates/knowledge/` into a pass an author runs and a reviewer checks. It
-does not create policy; when it disagrees with a current record, the record wins
-and the guide needs fixing.
+本指南适用于每一条陈述系统做什么的知识记录，无论它位于仓库中的何处，也无论它位于日后添加的任何包中：`docs/specs/<id>/spec.md`、family、design、theme 和 architecture 记录、包 `specs/` 目录下的包记录，以及 `docs/specs/components/` 下针对 Core、Lab、扁平组件包（Charts、RichText、Vega）和平台实现的组件与模块契约。每份规范都必须是有效的知识记录；无效的规范会使知识检查失败（`architecture:knowledge-contracts` INV27）。实现计划（`plan.md`）跟踪工作，不在此列。它将 `architecture:knowledge-contracts`（INV2 和 INV10）以及 `docs/templates/knowledge/` 下的模板投影为作者运行、审查者检查的一遍流程。它不创建策略；当它与当前记录不一致时，以记录为准，并且需要修正本指南。
 
-## The test
+## 检验
 
-> In six months, when every pull request mentioned in this record is closed and
-> forgotten, does this sentence still say something true about the system?
+> 六个月后，当本记录中提到的每个拉取请求都已关闭并被遗忘，这句话是否仍然在陈述关于系统的某个真实事实？
 
-A sentence that passes describes behavior, a boundary, a default, an owner, or a
-piece of evidence. A sentence that fails describes the project: what a change
-proposed, what the team considered, what the owner ruled against, what used to
-be the case, what is built so far, or what goes first. That is narration. It was
-true the day it was written and it ages into noise that a future reader has to
-step around to find the rule.
+通过测试的句子描述行为、边界、默认值、所有者或一项证据。未通过测试的句子描述项目：某个变更提出了什么、团队考虑了什么、所有者否决了什么、过去是什么情况、目前为止构建了什么，或者什么先做。那是叙述。它在写下的当天是真实的，之后会老化为噪音，未来的读者必须绕过它才能找到规则。
 
-## The rubric
+## 评分准则
 
-Run the items in order. The order is how often each one goes wrong, not where it
-sits in the template. Each item is a question with a yes-or-no answer that a
-reviewer can check by reading the record; a `no` is a pass. Report what the pass
-found, not a tick.
+按顺序运行这些条目。顺序依据的是每一项出错的频率，而不是它在模板中的位置。每一项都是一个可用是或否回答的问题，审查者可以通过阅读记录来检查；`no` 即为通过。报告这一遍发现了什么，而不是打勾。
 
-| ID  | Question                                                                                                                                                                                                        | When the answer is yes                                                                                                                                                                                                                                         |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| R1  | Does any sentence describe what a change proposed, decided, replaced, ported, or used to do, rather than what the system does? (Scan for `proposes`, `we decided`, `previously`, `a port of`, `now`.)           | Rewrite it in the present tense as a statement about the system, or delete it.                                                                                                                                                                                 |
-| R2  | Does the record contain research: a survey of other systems, an options comparison, a benchmark run, or a test's design and scores?                                                                             | Delete it from the record. Publish it as an artifact linked from the pull request. Keep the conclusion it supports as one or two sentences inside the decision resting on it.                                                                                  |
-| R3  | Does any evidence, basis, or verification cell name a pull request, issue, or commit instead of the fact it established?                                                                                        | Replace the reference with the fact: `real-device touch feedback`, `current source`, `WAI-ARIA 1.2 combobox pattern`.                                                                                                                                          |
-| R4  | Is any rejected alternative longer than one line, or recorded anywhere other than inside the decision that rejects it?                                                                                          | Collapse it to one `Rejected:` line in that decision. Keep the line only when naming the alternative prevents the mistake recurring; otherwise delete it.                                                                                                      |
-| R5  | Searching for `#` followed by digits, `/pull/`, and `/issues/`: does any pull request or issue remain as standing content?                                                                                      | Delete it, or replace it with a link to the record that owns the fact. Links to other records are encouraged; they are canonical owners.                                                                                                                       |
-| R6  | Does any open question whose answer is already recorded still list its options?                                                                                                                                 | Collapse the options into the decision. Only an unanswered question keeps its options side by side.                                                                                                                                                            |
-| R7  | Does any sentence report project status: what is written, built, or shipped so far, or what goes first? (Scan for `yet`, `not built`, `follow-up`, `first consumer`, `first adopter`, `phase`, `lands before`.) | Delete it, or restate it as a requirement gap: `<FR or INV id> gap: <observable mismatch>`. One line such as `Status: in progress` may say the record is still in progress. Lifecycle fields a template requires (`phase`, `Released default preserved`) stay. |
+| ID  | 问题                                                                                                                                                                           | 答案为 yes 时                                                                                                                                                                                             |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | 是否有任何句子描述某个变更提议、决定、替换、移植或过去做了什么，而不是系统做什么？（扫描 `proposes`、`we decided`、`previously`、`a port of`、`now`。）                        | 用现在时将其重写为关于系统的陈述，或删除它。                                                                                                                                                              |
+| R2  | 记录是否包含研究：对其他系统的调查、选项比较、基准运行，或测试的设计与得分？                                                                                                   | 将其从记录中删除。将其作为从拉取请求链接的工件发布。将其支持的结论保留为依托该结论的决策中的一两句话。                                                                                                    |
+| R3  | 是否有任何证据、依据或验证单元格命名的是拉取请求、issue 或 commit，而不是它确立的事实？                                                                                        | 将引用替换为事实：`real-device touch feedback`、`current source`、`WAI-ARIA 1.2 combobox pattern`。                                                                                                       |
+| R4  | 是否有任何被拒绝的替代方案超过一行，或被记录在拒绝它的决策之外的任何地方？                                                                                                     | 将其压缩为该决策中的一行 `Rejected:`。只有当命名该替代方案能防止错误再次发生时，才保留该行；否则删除它。                                                                                                  |
+| R5  | 搜索 `#` 后跟数字、`/pull/` 和 `/issues/`：是否有任何拉取请求或 issue 仍作为常设内容存在？                                                                                     | 删除它，或将其替换为指向拥有该事实的记录的链接。鼓励链接到其他记录；它们是规范所有者。                                                                                                                    |
+| R6  | 是否有任何答案已被记录的开放问题仍然列出其选项？                                                                                                                               | 将选项压缩进决策。只有未回答的问题才将选项并排列出。                                                                                                                                                      |
+| R7  | 是否有任何句子报告项目状态：目前为止编写、构建或发布了什么，或什么先做？（扫描 `yet`、`not built`、`follow-up`、`first consumer`、`first adopter`、`phase`、`lands before`。） | 删除它，或将其重述为需求差距：`<FR or INV id> gap: <observable mismatch>`。诸如 `Status: in progress` 的一行可以说明记录仍在进行中。模板要求的生命周期字段（`phase`、`Released default preserved`）保留。 |
 
-Report one line per item in the pull request description, under
-`## Writing rubric results`. State what was found and what was done with it:
+在拉取请求描述的 `## Writing rubric results` 下，为每一项报告一行。说明发现了什么以及如何处理：
 
 ```text
 R1 narration: Intent opened with the proposal history; rewritten as two present-tense sentences.
@@ -60,180 +36,94 @@ R6 open questions: OQ1 is unanswered and keeps its two options.
 R7 project status: "no module exists yet" restated as "INV1 gap: Selector renders every option when it opens".
 ```
 
-A finding is not a defect in the author. "Two found, moved into DEC-3 as one
-line" is a clean result. A record whose results all read `none` on the first
-pass is rarer than one that found something, and a reviewer reads it with that
-in mind.
+发现不是作者的缺陷。“发现两处，已作为一行移入 DEC-3”是一个干净的结果。首遍结果全部为 `none` 的记录，比发现了某些内容的记录更罕见，审查者阅读时会考虑到这一点。
 
-## Why each item
+## 每一项的理由
 
-### R1 — State the system, not the project
+### R1 — 陈述系统，而不是项目
 
-A record is a description of behavior that happens to have a history, not a
-history that happens to describe behavior. Present tense, declarative, what the
-thing does. "The pull request proposes", "we decided to change", "previously
-this was", and "a port of" all describe the project. They tell the reader how
-the sentence came to exist and nothing about what the system does.
+记录是对行为的描述，只是恰好有一段历史，而不是恰好描述了行为的历史。现在时、陈述式、事物做什么。“The pull request proposes”“we decided to change”“previously this was”和“a port of”都在描述项目。它们告诉读者这句话是如何产生的，却丝毫不说明系统做什么。
 
-Narration is the most common failure because it is the natural way to write
-while the decision is fresh. The fix is mechanical: find the behavior the
-sentence is circling and state it.
+叙述是最常见的失败，因为在决策尚新时，它是自然的写法。修复是机械的：找到句子所围绕的行为，并把它陈述出来。
 
-Narration:
+叙述：
 
-> An open pull request proposed revealing row actions on hover. The owner ruled
-> against it, so this record settles that actions are always visible.
+> 一个开放的拉取请求提议在悬停时显示行操作。所有者否决了它，因此本记录确定操作始终可见。
 
-The same fact as a record sentence:
+同一事实作为记录句子：
 
-> Row actions are always visible. They do not depend on hover or focus.
+> 行操作始终可见。它们不依赖于悬停或焦点。
 
-The second version is shorter, needs no context, and is still true when the pull
-request is forgotten.
+第二个版本更短，不需要上下文，并且当拉取请求被遗忘时仍然为真。
 
-### R2 — Research is an artifact
+### R2 — 研究是工件
 
-A competitive survey, an options comparison, a benchmark, or the design and
-scores of a test are how a decision was reached. They are valuable and they
-belong somewhere durable, which is an artifact linked from the pull request. A
-record states the conclusion the research supports, in a sentence or two inside
-the decision that rests on it, with a citation only where a reader might
-reasonably doubt the claim.
+竞品调查、选项比较、基准，或测试的设计与得分，是达成决策的方式。它们很有价值，应当放在某个持久的地方，也就是从拉取请求链接过去的工件。记录陈述研究支持的结论，用一两句话放在依托它的决策中，只有在读者可能合理怀疑该主张时才引用。
 
-Research in a record fails the six-month test twice. The comparison stops being
-true as the surveyed systems change, and the reader has to find the decision
-inside a table of alternatives the decision already closed. A record also reads
-as though the decision was always the decision; a survey reads as a debate.
+记录中的研究会两次通不过六个月测试。随着被调查的系统变化，比较不再为真；读者还必须在决策已经了结的替代方案表中寻找决策。记录读起来应当像这个决策一直是既定决策；调查读起来则像一场辩论。
 
-The template's own line about audit data is the same rule applied to
-measurements: "Current measurements belong in the audit record; this subsection
-owns only durable constraints and their verification target."
+模板中关于审计数据的那一行，是将同一规则应用于测量：“当前的测量数据属于审计记录；本小节只拥有持久约束及其验证目标。”
 
-### R3 — Evidence cites facts, not changes
+### R3 — 证据引用事实，而不是变更
 
-An evidence cell answers "how do we know?" A pull request number does not
-answer it; it points at a place where the answer once lived. "#NNNN's device
-test" tells a future reader nothing once the pull request is closed, and tells
-the present reader only that someone tested something somewhere. "Real-device
-touch feedback" says what the evidence is.
+证据单元格回答的是“我们怎么知道？”一个拉取请求编号不能回答它；它指向答案曾经所在的地方。“#NNNN 的设备测试”在拉取请求关闭后对未来的读者毫无意义，对当前的读者也只说明某人在某处测试了某物。“Real-device touch feedback”说明了证据是什么。
 
-The same applies to a basis column in a draft requirement table. `proposal` is a
-valid basis while a row is unsettled; a pull request number in its place is not,
-because the basis of a rule is a reason, and a change is not a reason.
+这同样适用于草稿需求表中的依据列。当某一行尚未确定时，`proposal` 是有效依据；用拉取请求编号代替它则不是，因为规则的依据是一个理由，而变更不是理由。
 
-### R4 — Rejected alternatives: one line, inside the decision
+### R4 — 被拒绝的替代方案：一行，放在决策内
 
-The record describes the specific behavior wanted, not every option considered.
-A rejected alternative earns one line, inside the decision that rejects it, when
-naming it prevents the same mistake from being proposed again. That is a
-guardrail, not a history.
+记录描述想要的具体行为，而不是考虑过的每个选项。被拒绝的替代方案只有在命名它能防止同样的错误再次被提出时，才在拒绝它的决策内获得一行。那是护栏，不是历史。
 
-A rejected alternative that takes a paragraph is research (R2). A rejected
-alternative in the Intent section is narration (R1). A rejected alternative that
-no one would propose again is noise; delete it.
+占用一段文字的被拒绝替代方案是研究（R2）。意图部分中的被拒绝替代方案是叙述（R1）。没有人会再次提出的被拒绝替代方案是噪音；删除它。
 
-> **DEC-2 — Actions are caller-rendered nodes.** The caller supplies the control
-> and owns its handler; the component places it and never inspects it.
-> Rejected: a declared `{label, icon, onClick}` object, because the component
-> would then render a control it does not own.
+> **DEC-2 — 操作是由调用方渲染的节点。** 调用方提供控件并拥有其 handler；组件放置它，但从不检查它。已拒绝：一个声明的 `{label, icon, onClick}` 对象，因为那样组件就会渲染一个它不拥有的控件。
 
-### R5 — No pull request or issue as standing content
+### R5 — 不将拉取请求或 issue 作为常设内容
 
-A record outlives every change that touched it. A pull request referenced in
-the body is a dependency on something that will close, merge, or be superseded,
-and the sentence that references it fails the six-month test by construction.
-`architecture:knowledge-contracts` INV10 states the rule: pull requests and
-issues are not standing content, a record states the fact a change established
-rather than the change, and it never exists to approve, reject, classify, or
-authorize one.
+记录比每一个接触过它的变更活得更久。正文中引用的拉取请求是对某个将会关闭、合并或被取代的事物的依赖，引用它的句子从构造上就通不过六个月测试。`architecture:knowledge-contracts` INV10 陈述了该规则：拉取请求和 issue 不是常设内容，记录陈述变更所确立的事实，而不是变更本身，它的存在从不是为了批准、拒绝、分类或授权某个变更。
 
-Links to other records are the opposite case and are encouraged. A record is a
-canonical owner; linking `component:Selector/FR3` or `spec:AST-002/DEC-1`
-delegates a fact to the place that owns it, which is exactly what INV2 asks for.
+指向其他记录的链接是相反的情况，并且受到鼓励。记录是规范所有者；链接 `component:Selector/FR3` 或 `spec:AST-002/DEC-1` 将事实委托给它所属的地方，这正是 INV2 所要求的。
 
-Checking this item is a text search, which is why it is phrased as one.
+检查此项是一次文本搜索，这就是它被如此措辞的原因。
 
-### R6 — Open questions are the exception
+### R6 — 开放问题是例外
 
-An unanswered question genuinely has options, and the owner needs them side by
-side to rule. An open question may therefore list its alternatives, with the
-consequence of each. Once ruled, the alternatives collapse: the chosen one
-becomes the behavior, and the rejected ones become at most one line inside the
-decision (R4). A ruled question that still carries its options is a record
-describing a debate that is over.
+未回答的问题确实拥有选项，所有者需要将它们并排放在一起才能裁决。因此开放问题可以列出其替代方案，以及每个方案的后果。一旦裁决，替代方案就会坍缩：被选中的成为行为，被拒绝的至多在决策内成为一行（R4）。一个已裁决却仍带着选项的问题，是一份描述已经结束的辩论的记录。
 
-### R7 — No project status
+### R7 — 不写项目状态
 
-A record states what the system must do, not how far the work has got.
-"No module exists yet", "the hook is not built", "Table adopts it first, then
-Selector", and "phase 1 places the CLI's docs" are true on the day they are
-written and false soon after, and nothing in the sentence tells a later reader
-which day that was. `architecture:knowledge-contracts` INV32 states the rule.
-It applies in every section, a gap or current-state section included.
+记录陈述系统必须做什么，而不是工作进展到什么程度。“No module exists yet”“the hook is not built”“Table adopts it first, then Selector”和“phase 1 places the CLI's docs”在写下的当天为真，不久后便为假，而句子中没有任何东西告诉后来的读者那是哪一天。`architecture:knowledge-contracts` INV32 陈述了该规则。它适用于每个部分，包括差距或当前状态部分。
 
-Three forms stay:
+三种形式保留：
 
-- A requirement gap names what the system does today that a requirement
-  forbids, in the form `<FR or INV id> gap: <observable mismatch>`. It stays
-  true until the system changes, and the fix deletes it. A gap line that says
-  "not built" or "follow-up work" is still build status.
-- One status line, such as `Status: in progress`, may say that the record is
-  still in progress. It does not list which parts are done.
-- Lifecycle fields the templates require (`phase`,
-  `Released default preserved`) state the record's own lifecycle, not build
-  progress, and stay.
+- 需求差距指出系统今天做了某项需求所禁止的事情，形式为 `<FR or INV id> gap: <observable mismatch>`。它在系统改变之前一直为真，修复后会删除它。说“not built”或“follow-up work”的差距行仍然是构建状态。
+- 一行状态，例如 `Status: in progress`，可以说明记录仍在进行中。它不列出哪些部分已完成。
+- 模板要求的生命周期字段（`phase`、`Released default preserved`）陈述记录自身的生命周期，而不是构建进度，予以保留。
 
-An order the system itself follows is behavior, not sequencing: a release rule
-that a deprecation ships before a removal stays. Work order, such as which
-consumer adopts first or which change lands before another, belongs in the
-implementation plan (`plan.md`) or the pull request.
+系统自身遵循的顺序属于行为，而不是工作顺序：规定“先弃用、后移除”的发布规则予以保留。工作顺序，例如哪个使用方先采用，或哪个变更先于另一个落地，属于实现计划（`plan.md`）或拉取请求。
 
-Status:
+状态：
 
-> Spec only: no module exists yet. Table virtualization is its first consumer,
-> then Selector, then Chat.
+> 仅规范：尚无模块。Table 虚拟化是它的第一个使用方，然后是 Selector，然后是 Chat。
 
-The same facts as record sentences:
+同样的记录句：
 
-> Table, Selector, and Chat window long lists through the shared module.
+> Table、Selector 和 Chat 通过共享模块对长列表进行窗口化。
 >
-> INV1 gap: Selector renders every option when it opens.
+> INV1 gap: Selector 打开时渲染每个选项。
 
-## Where the pass happens
+## 这一遍在哪里进行
 
-The author runs the rubric before requesting review and reports the results in
-the pull request description. The reviewer reads the record against the
-results: an item reported `none` with a finding still in the record is a review
-comment, and a record pull request with no results section is incomplete before
-review starts. This applies to any pull request that creates or changes a
-record, under whichever pull request template it uses; `specification.md`
-carries the results section, and other templates add it when they touch a
-record.
+作者在请求审查之前运行评分准则，并在拉取请求描述中报告结果。审查者对照结果阅读记录：某项报告为 `none` 但记录中仍有发现，就是一个审查意见；针对记录的拉取请求如果没有结果部分，在审查开始前就是不完整的。这适用于任何创建或更改记录的拉取请求，无论使用哪个拉取请求模板；`specification.md` 带有结果部分，其他模板在触及记录时会添加它。
 
-The templates under `docs/templates/knowledge/` carry a one-line reminder at the
-sections where these failures usually land (Intent, evidence, decision log, open
-questions) and point here. The reminder reaches an author editing the file; the
-results section reaches the reviewer. Neither replaces the other.
+`docs/templates/knowledge/` 下的模板在这些失败通常出现的部分（意图、证据、决策日志、开放问题）携带一行提醒，并指向这里。提醒面向正在编辑文件的作者；结果部分面向审查者。两者不能互相替代。
 
-## What is checked mechanically
+## 机械检查的内容
 
-`pnpm check:knowledge` validates record structure: frontmatter, required
-sections, schema and template versions, relationship links, and metadata blocks.
-It fails on no rubric item, by design:
+`pnpm check:knowledge` 验证记录结构：frontmatter、必需部分、schema 和模板版本、关系链接以及元数据块。按设计，它不会因任何评分准则条目而失败：
 
-- Whether a sentence is narration (R1), research (R2), or a ruled question (R6)
-  is a judgement about meaning, and a check that guesses at it would be argued
-  with and then ignored.
-- For project status (R7), `pnpm check:knowledge` prints an advisory warning
-  for each build-status or sequencing phrase in a spec or architecture record
-  (`architecture:knowledge-contracts` INV32). It never fails, because the same
-  words can also describe behavior (DEC-20). The reviewer still decides R7.
-- A pull request reference (R3, R5) is detectable, but records approved before
-  this rule carry references that were permitted when they were written, and
-  the file cannot tell which of those a future edit is responsible for. A hard
-  check would fail every one of them; a grandfather list would drift, which is
-  the failure this guide exists to stop. The reviewer's text search is the
-  honest check, and the rubric applies to the records a pull request touches.
+- 一个句子是叙述（R1）、研究（R2）还是已裁决问题（R6），是关于含义的判断，靠猜测的检查会引发争论，然后被忽视。
+- 对于项目状态（R7），`pnpm check:knowledge` 会为规范或架构记录中的每个构建状态或时序短语打印一条建议性警告（`architecture:knowledge-contracts` INV32）。它从不失败，因为同样的词也可以描述行为（DEC-20）。R7 仍由审查者决定。
+- 拉取请求引用（R3、R5）是可检测的，但在此规则之前批准的记录携带了当时允许的引用，而文件无法分辨未来的编辑应对其中哪些负责。硬性检查会让它们全部失败；祖父条款清单会漂移，而漂移正是本指南要阻止的失败。审查者的文本搜索是诚实的检查，评分准则适用于拉取请求触及的记录。
 
-Rubric results in the pull request description are a convention backed by
-review, not a status check.
+拉取请求描述中的评分准则结果是靠审查支撑的约定，而不是状态检查。

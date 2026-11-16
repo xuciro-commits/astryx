@@ -32,137 +32,120 @@ system_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                  |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `children`, `isHeaderRow`, `xstyle` (a list of StyleX styles), root `BaseProps`, and a `ref`.                                                                             |
-| Behavior                | A native `tr` carrying the `table-row` target that takes the enclosing Table's striping and hover treatment and holds its cells' divider during a glide.                  |
-| End-user impact         | People can follow a row across the table by its stripe or hover highlight, and assistive technology reads it as a row.                                                    |
-| Builder impact          | A theme styles a selected row through the `table-row` target's `selected` state (FR5).                                                                                    |
-| Compatibility/readiness | Additive: a selected row gains `data-selected="selected"` and the `table-row` target gains the `selected` theme state (FR5); no prop, default, or styling output changes. |
-| Review checks           | Reject striping that counts an expansion panel, hover or striping on a header row, a lost target, or caller props that miss the row.                                      |
-| Governing rules         | `architecture:public-component-api` INV5–INV8; `architecture:component-theming-surface`.                                                                                  |
+| 领域          | 合约                                                                                                                                         |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| 公共合约      | `children`、`isHeaderRow`、`xstyle`（一组 StyleX 样式）、根 `BaseProps` 以及 `ref`。                                                         |
+| 行为          | 一个原生 `tr`，承载 `table-row` 目标，接受外层 Table 的条纹与悬停处理，并在滑动期间保持其单元格的分隔线。                                    |
+| 最终用户影响  | 用户可以借助条纹或悬停高亮在表格中追踪某一行，辅助技术会将其读作一行。                                                                       |
+| 构建者影响    | 主题通过 `table-row` 目标的 `selected` 状态为选中的行设置样式（FR5）。                                                                       |
+| 兼容性/就绪度 | 新增式：选中的行会获得 `data-selected="selected"`，且 `table-row` 目标会获得 `selected` 主题状态（FR5）；不改变任何 prop、默认值或样式输出。 |
+| 评审检查      | 拒绝把展开面板计入条纹、拒绝在表头行上应用悬停或条纹、拒绝目标丢失、拒绝调用方 prop 未到达该行。                                             |
+| 管辖规则      | `architecture:public-component-api` INV5–INV8；`architecture:component-theming-surface`。                                                    |
 
-This table is a review projection; the body below is authoritative.
+此表是一份评审投影；以下正文具有权威性。
 
 ## Intent
 
-TableRow is the row a caller composes inside a children-mode Table, and the row
-Table renders in data mode. It owns the `tr` and the row treatment the Table
-asks for; the caller owns the cells.
+TableRow 是调用方在 children 模式的 Table 中组合出来的行，也是 Table 在数据模式下渲染的行。它拥有 `tr` 以及 Table 所要求的行处理；单元格由调用方拥有。
 
-Consumer syntax and examples belong in `TableRow.doc.mjs`.
+使用方语法与示例应放在 `TableRow.doc.mjs` 中。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes` — a body row.
-- Compatibility class: additive; a selected row gains `data-selected="selected"`
-  and the `table-row` target gains the `selected` theme state (FR5); no prop,
-  default, or styling output changes.
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 保留已发布的默认值：`yes`——正文行。
+- 兼容类别：新增式；选中的行会获得 `data-selected="selected"`，且 `table-row` 目标会获得 `selected` 主题状态（FR5）；不改变任何 prop、默认值或样式输出。
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明应放在使用方文档与发布说明中。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The `tr` element, which carries the `table-row` target that `component:Table`
-  owns and maps.
-- Applying the Table's striping and hover treatment to the row, and holding its
-  cells' stand-in divider while a glide moves it.
+- `tr` 元素，它承载 `table-row` 目标，该目标由 `component:Table` 拥有并映射。
+- 把 Table 的条纹与悬停处理应用到该行，并在滑动移动该行时为其单元格的替代分隔线提供承载。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Whether the Table is striped, hoverable, or divided — owned by
-  `component:Table`.
-- Cells, which draw the row divider — owned by `component:TableCell`,
-  `component:TableHeaderCell`, and the caller.
+- Table 是否带条纹、是否可悬停或是否带分隔线——由 `component:Table` 拥有。
+- 单元格——它们绘制行分隔线——由 `component:TableCell`、`component:TableHeaderCell` 与调用方拥有。
 
 ## Public concepts
 
-| Concept  | Closed values or states | Meaning                                                                                          | Availability by variant/orientation/state | Default      | Owner                | Stability | Invalid-value behavior |
-| -------- | ----------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------- | ------------ | -------------------- | --------- | ---------------------- |
-| Row kind | body; header            | Header rows skip striping and hover.                                                             | Inside a Table                            | body         | `component:TableRow` | Stable    | —                      |
-| Content  | ReactNode (cells)       | The row's cells.                                                                                 | Always                                    | —            | caller               | Stable    | —                      |
-| Selected | selected                | A row the selection plugin has selected carries the `table-row` target's `selected` theme state. | Inside a Table with `useTableSelection`   | not selected | `component:TableRow` | Stable    | —                      |
+| 概念   | 封闭取值或状态    | 含义                                                              | 按变体/方向/状态的可用性                 | 默认   | 所有者               | 稳定性 | 无效值行为 |
+| ------ | ----------------- | ----------------------------------------------------------------- | ---------------------------------------- | ------ | -------------------- | ------ | ---------- |
+| 行类型 | body; header      | 表头行跳过条纹与悬停。                                            | 位于 Table 内                            | body   | `component:TableRow` | 稳定   | —          |
+| 内容   | ReactNode (cells) | 该行的单元格。                                                    | 始终                                     | —      | 调用方               | 稳定   | —          |
+| 选中   | selected          | 被选择插件选中的行会承载 `table-row` 目标的 `selected` 主题状态。 | 位于使用 `useTableSelection` 的 Table 内 | 未选中 | `component:TableRow` | 稳定   | —          |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Basis                                                                   |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| FR1 | TableRow renders one `tr` carrying the `table-row` target and holding its children. Outside a Table it adds no row treatment.                                                                                                                                                                                                                                                                                                                                                                                                                                       | Current source and tests                                                |
-| FR2 | Inside a Table, a body row takes the Table's treatment: with striping, every even body row paints `--color-background-muted`, counting body rows only, so an expansion panel row does not shift the stripes; with hover, a hover-capable pointer paints `--color-overlay-hover`; with both, the hover color replaces the stripe; a row with `aria-disabled="true"` takes no hover. A header row (`isHeaderRow`) takes neither.                                                                                                                                      | Current source and tests                                                |
-| FR3 | Inside a Table with `rows` or `grid` dividers, every row, header rows included, is the containing block for its cells' stand-in divider while a glide moves it; the cells draw the divider (`component:Table` FR14).                                                                                                                                                                                                                                                                                                                                                | Current source and tests; `component:Table` FR14                        |
-| FR4 | `ref` reaches the `tr`; supported DOM, data, ARIA, and event props reach it before the component's target and styles; `xstyle`, `className`, and `style` compose on it.                                                                                                                                                                                                                                                                                                                                                                                             | Current source and tests; `architecture:public-component-api` INV5–INV8 |
-| FR5 | A row `useTableSelection` selects carries the `table-row` target's `selected` theme state (`data-selected="selected"`, written as every theme state is) beside `aria-selected`, and loses it when it is unselected, whatever `hasRowHighlight` is. The state is public theme surface (`architecture:public-component-api` DEC-2): it is how a theme styles a selected row, because the selection wash is an inline style a theme rule cannot replace; a theme recolors the wash by setting `--color-accent-muted` in that state, which the inline background reads. | Current source and tests; `component:Table` FR6                         |
+| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                       | Basis                                                         |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| FR1 | TableRow 渲染一个 `tr`，承载 `table-row` 目标并容纳其子级。在 Table 之外，它不添加任何行处理。                                                                                                                                                                                                                                                                                                                                                  | 当前源码与测试                                                |
+| FR2 | 在 Table 内，正文行接受 Table 的处理：开启条纹时，每个偶数正文行绘制 `--color-background-muted`，且只计正文行，因此展开面板行不会使条纹错位；开启悬停时，支持悬停的指针会绘制 `--color-overlay-hover`；两者都开启时，悬停颜色取代条纹；带 `aria-disabled="true"` 的行不响应悬停。表头行（`isHeaderRow`）两者都不接受。                                                                                                                          | 当前源码与测试                                                |
+| FR3 | 在带 `rows` 或 `grid` 分隔线的 Table 内，每一行（包括表头行）在其单元格的替代分隔线随滑动移动时，都是该分隔线的包含块；分隔线由单元格绘制（`component:Table` FR14）。                                                                                                                                                                                                                                                                           | 当前源码与测试；`component:Table` FR14                        |
+| FR4 | `ref` 到达该 `tr`；受支持的 DOM、data、ARIA 与事件 prop 在组件的目标与样式之前到达它；`xstyle`、`className` 与 `style` 在其上组合。                                                                                                                                                                                                                                                                                                             | 当前源码与测试；`architecture:public-component-api` INV5–INV8 |
+| FR5 | 被 `useTableSelection` 选中的行会在 `aria-selected` 之外承载 `table-row` 目标的 `selected` 主题状态（`data-selected="selected"`，与其他主题状态的写法一致），并在取消选中时失去它，无论 `hasRowHighlight` 为何值。该状态是公共主题表面（`architecture:public-component-api` DEC-2）：主题正是通过它来为选中的行设置样式，因为选中底色是内联样式，主题规则无法替换；主题在该状态中设置 `--color-accent-muted` 来重新着色底色，内联背景会读取它。 | 当前源码与测试；`component:Table` FR6                         |
 
 ### Allowed variation
 
-- **AV1 — Cells.** Any cells may fill the row.
+- **AV1 — Cells.** 任意单元格都可以填充该行。
 
 ### Representative states
 
-| State            | Required invariant                                  | Allowed variation |
-| ---------------- | --------------------------------------------------- | ----------------- |
-| Standalone       | A `tr` with the target and no treatment.            | —                 |
-| Striped body row | Even body rows muted; expansion panels not counted. | —                 |
-| Hover body row   | Hover overlay under a hover-capable pointer.        | —                 |
-| Header row       | No striping or hover.                               | —                 |
+| 状态       | 必需的不变式                             | 允许的变化 |
+| ---------- | ---------------------------------------- | ---------- |
+| 独立       | 一个带目标且无任何处理的 `tr`。          | —          |
+| 条纹正文行 | 偶数正文行使用弱化底色；展开面板不计入。 | —          |
+| 悬停正文行 | 在支持悬停的指针下显示悬停覆盖层。       | —          |
+| 表头行     | 无条纹或悬停。                           | —          |
 
 ### Transformation and precedence order
 
-- **ORD1 — Treatment.** Header row → no striping or hover; otherwise striping,
-  then hover, from the Table; every row → the glide's containing block for its
-  cells' divider; then the caller's `xstyle`, `className`, and `style`.
+- **ORD1 — Treatment.** 表头行 → 无条纹或悬停；其他行 → 来自 Table 的条纹，然后是悬停；每一行 → 作为其单元格分隔线在滑动期间的包含块；然后是调用方的 `xstyle`、`className` 与 `style`。
 
 ### Performance and resources
 
-- **PR1 — No resources.** TableRow reads the Table's appearance and holds no
-  state.
+- **PR1 — No resources.** TableRow 只读取 Table 的外观，不持有任何状态。
 
 ## Accessibility contract
 
-- **AR1 — Native row semantics.** The `tr` keeps its native row role; striping
-  and hover are visual only.
+- **AR1 — Native row semantics.** `tr` 保持其原生行角色；条纹与悬停仅为视觉效果。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                          | Representation authority | Hierarchy role | Component contract |
-| ---------------- | ------------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Row              | A table row with optional stripe and hover. | Current source and docs  | Supporting     | FR1–FR3            |
+| 解剖结构或状态 | 设计要求                         | 表示权威       | 层级角色 | 组件合约 |
+| -------------- | -------------------------------- | -------------- | -------- | -------- |
+| 行             | 一行可带可选条纹与悬停的表格行。 | 当前源码与文档 | 支撑性   | FR1–FR3  |
 
-Theming: the `tr` carries the `table-row` target, which `Table.doc.mjs` maps as
-the Row part of `component:Table`. `TableRow.doc.mjs` declares no anatomy of
-its own, so no anatomy-theming block is declared here.
+主题化：`tr` 承载 `table-row` 目标，`Table.doc.mjs` 将其映射为 `component:Table` 的 Row 部分。`TableRow.doc.mjs` 未声明自己的解剖结构，因此此处不声明任何解剖-主题化块。
 
 ## Family and system relationships
 
-- `component:Table` owns striping, hover, and divider settings and the target
-  mapping.
-- `architecture:public-component-api` owns caller-input routing; FR4 applies
-  it.
+- `component:Table` 拥有条纹、悬停与分隔线设置以及目标映射。
+- `architecture:public-component-api` 拥有调用方输入的路由；FR4 应用它。
 
 ## Verification map
 
-| Contract  | Verification                                                                                  | Representative states                                                | Mutation or failure expectation                                                                                                                                                                                                                                                                        | Audit section             |
-| --------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------- |
-| FR1, AR1  | `Table.test.tsx` row-count, row-class, and standalone-row tests; `themingTargets.test.ts`     | Data mode; standalone                                                | A missing row or lost `table-row` class fails. `themingTargets.test.ts` catches only a renamed or undocumented target; no check fails if a standalone row stops carrying its target.                                                                                                                   | `audit:TableRow/anatomy`  |
-| FR2, ORD1 | `Table.test.tsx` header-hover and striped tests                                               | Hover on; striped                                                    | A header row that takes hover styling fails. Gap: the striped test asserts only that rows render, and no test covers stripe parity around an expansion panel or the stripe and hover colors. No test covers the hover color replacing the stripe or a row with `aria-disabled="true"` taking no hover. | `audit:TableRow/visual`   |
-| FR3       | `TableRowGlide.a11y.browser.spec.ts`; `useTableRowExpansion.glide.test.tsx`                   | Mid-glide; pinned cells; themed and overridden dividers              | A divider that does not move with its gliding row, or the line on the wrong cell, fails. Gap: no check isolates a header row as the containing block during a glide.                                                                                                                                   | `audit:TableRow/visual`   |
-| FR4       | `Table.test.tsx` row className and style tests, and the TableRow ref and HTML-attribute tests | Inside a Table; standalone; `ref`; `aria-label`, `data-testid`       | A caller class, style, ref, or DOM attribute that misses the row fails. Gap: no test covers `xstyle` or the order in which caller styles follow the Table's treatment.                                                                                                                                 | `audit:TableRow/api`      |
-| FR5       | `plugins/selection/useTableSelection.test.tsx` selected-state tests                           | Select; unselect; `hasRowHighlight={false}`; a theme `selected` rule | A row that keeps the state after it is unselected, an unselected row that carries it, a row without it while `hasRowHighlight` is false, or a theme `selected` rule that does not match a selected row fails.                                                                                          | `audit:TableRow/api`      |
-| PR1       | Source review                                                                                 | Every state                                                          | Gap: no automated check fails if TableRow adds state or a listener.                                                                                                                                                                                                                                    | `audit:TableRow/behavior` |
+| 合约      | 验证                                                                                 | 代表性状态                                                        | 变异或失败预期                                                                                                                                                                                         | 审计小节                  |
+| --------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------- |
+| FR1, AR1  | `Table.test.tsx` 的行数、行 class 与独立行测试；`themingTargets.test.ts`             | 数据模式；独立                                                    | 缺失的行或丢失 `table-row` class 会失败。`themingTargets.test.ts` 只能捕获被重命名或未记录的目标；若独立行不再承载其目标，则没有检查会失败。                                                           | `audit:TableRow/anatomy`  |
+| FR2, ORD1 | `Table.test.tsx` 的表头悬停与条纹测试                                                | 悬停开启；条纹开启                                                | 接受悬停样式的表头行会失败。缺口：条纹测试只断言行渲染，没有测试覆盖展开面板周围的条纹奇偶，也没有测试覆盖条纹与悬停的颜色。没有测试覆盖悬停颜色取代条纹，或带 `aria-disabled="true"` 的行不响应悬停。 | `audit:TableRow/visual`   |
+| FR3       | `TableRowGlide.a11y.browser.spec.ts`；`useTableRowExpansion.glide.test.tsx`          | 滑动中；固定单元格；主题化与被覆盖的分隔线                        | 不随其滑动行移动的分隔线，或画在错误单元格上的线，会失败。缺口：没有检查把表头行单独作为滑动期间的包含块来验证。                                                                                       | `audit:TableRow/visual`   |
+| FR4       | `Table.test.tsx` 的行 className 与 style 测试，以及 TableRow 的 ref 与 HTML 属性测试 | 位于 Table 内；独立；`ref`；`aria-label`、`data-testid`           | 未到达该行的调用方 class、style、ref 或 DOM 属性会失败。缺口：没有测试覆盖 `xstyle`，也没有覆盖调用方样式在 Table 处理之后应用的顺序。                                                                 | `audit:TableRow/api`      |
+| FR5       | `plugins/selection/useTableSelection.test.tsx` 的选中状态测试                        | 选中；取消选中；`hasRowHighlight={false}`；主题的 `selected` 规则 | 取消选中后仍保留该状态的行、未选中却承载该状态的行、在 `hasRowHighlight` 为 false 时不带该状态的行，或不匹配选中行的主题 `selected` 规则，会失败。                                                     | `audit:TableRow/api`      |
+| PR1       | 源码审查                                                                             | 每种状态                                                          | 缺口：若 TableRow 增添状态或监听器，没有自动化检查会失败。                                                                                                                                             | `audit:TableRow/behavior` |
 
 ## Decision log
 
-None recorded. The record describes shipped behavior.
+未记录。该记录描述已发布的行为。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or Table rules. It links to their owners.
+本文件不重复使用方的 prop 表/示例、当前审计结果、实现步骤或 Table 规则。它链接到各自的所有者。

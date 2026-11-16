@@ -38,166 +38,151 @@ system_specs: [spec:AST-002, spec:AST-020, spec:AST-029]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                           |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `ChatTokenizedText` with required string `children`, optional `tokens` (the `ChatComposerToken` shapes), `ref`, `xstyle`, `className`, `style`, and root span props; target `chat-tokenized-text`. |
-| Behavior                | Unmatched text is preserved. Non-empty token values match literally from left to right. Structured tokens delegate to Badge and custom tokens to callers.                                          |
-| End-user impact         | Readers see mentions and other tokens in a sent message as the same chips they saw in the composer, in place, with the rest of the text unchanged.                                                 |
-| Builder impact          | None.                                                                                                                                                                                              |
-| Compatibility/readiness | Records shipped behavior; no public change. One owner question stays open; evidence is pending for the claims listed as read from source.                                                          |
-| Review checks           | Reject zero-width matching, lost unmatched text, execution of custom renderers without a match, dropped root inputs, or claims about caller-owned content.                                         |
-| Governing rules         | `architecture:public-component-api/INV1, INV5–INV6, INV8–INV9`; `architecture:component-test-sufficiency/INV1–INV7`; ECMAScript RegExp progress semantics.                                         |
+| Area                    | Contract                                                                                                                                                                              |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public contract         | `ChatTokenizedText`，具有必填的字符串 `children`、可选的 `tokens`（`ChatComposerToken` 形状）、`ref`、`xstyle`、`className`、`style` 以及根 span 属性；目标为 `chat-tokenized-text`。 |
+| Behavior                | 未匹配的文本会被保留。非空 token 值按从左到右的顺序逐字面匹配。结构化 token 委托给 Badge，自定义 token 委托给调用方。                                                                 |
+| End-user impact         | 读者在已发送的消息中看到的提及和其他 token，与他们在输入区看到的是同样的 chip，位置不变，消息的其余文本保持原样。                                                                     |
+| Builder impact          | 无。                                                                                                                                                                                  |
+| Compatibility/readiness | 记录已发布的行为；没有公共变更。一个所有者问题仍未解决；对于标注为从源码读取的声明，证据尚待补充。                                                                                    |
+| Review checks           | 拒绝零宽匹配、丢失未匹配文本、在没有匹配的情况下执行自定义渲染器、丢弃根输入，或对调用方拥有的内容作出声明。                                                                          |
+| Governing rules         | `architecture:public-component-api/INV1, INV5–INV6, INV8–INV9`；`architecture:component-test-sufficiency/INV1–INV7`；ECMAScript RegExp 的推进语义。                                   |
 
-This table is a review projection; the body below is authoritative.
+此表是一份审查投影；下方正文具有权威性。
 
 ## Intent
 
-ChatTokenizedText projects serialized token values embedded in a plain chat message
-into inline structured Badge content or caller-rendered content while preserving the
-surrounding text.
+ChatTokenizedText 将嵌入纯聊天消息中的已序列化 token 值投射为行内结构化 Badge 内容或调用方渲染的内容，同时保留其周围的文本。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; no public change
-- Controlled/uncontrolled behavior: not applicable; the component owns no state
-- Migration decision: none
+- 保留的已发布默认值：`yes`
+- 兼容类别：记录已发布的行为；没有公共变更
+- 受控/非受控行为：不适用；该组件不拥有任何状态
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方的迁移说明应放在使用方文档与发布说明中。
 
 ## Current-state impact
 
-- **A shorter token can split a longer one.** When one token's value is a
-  prefix of another's and is listed first, the shorter value wins: with tokens
-  `@u1` then `@u12`, the text `@u12` renders the `@u1` chip followed by a
-  stray `2`. When two tokens share a value, the later definition renders
-  (OQ1).
+- **较短的 token 可能拆分较长的 token。** 当一个 token 的值是另一个 token 值的前缀，且排在前面时，较短的值会胜出：在 token 为 `@u1` 然后 `@u12` 的情况下，文本 `@u12` 会渲染出 `@u1` chip 后跟一个多余的 `2`。当两个 token 拥有相同的值时，渲染较晚定义的那个（OQ1）。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- Literal matching of serialized token values against the supplied message text.
-- Preserving unmatched text and source order.
-- Choosing the existing structured Badge or custom-render branch for each match.
-- The root span, its `chat-tokenized-text` target, accepted BaseProps composition, and ref.
+- 将已序列化的 token 值与所提供的消息文本进行字面匹配。
+- 保留未匹配的文本与源顺序。
+- 为每个匹配选择现有的结构化 Badge 分支或自定义渲染分支。
+- 根 span、其 `chat-tokenized-text` 目标、可接受的 BaseProps 组合，以及 ref。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Token value grammar, identity, validation, or product semantics.
-- Badge color, iconography, sizing, or accessibility semantics.
-- Semantics and interaction inside caller-provided custom token content.
-- Composer insertion, serialization, deletion, selection, or token-element alignment.
+- token 值语法、标识、校验或产品语义。
+- Badge 的颜色、图标、尺寸或无障碍语义。
+- 调用方提供的自定义 token 内容内部的语义与交互。
+- 输入区的插入、序列化、删除、选择，或 token 元素对齐。
 
 ## Public concepts
 
-| Concept      | Closed values or states                         | Meaning                                                                   | Availability by variant/orientation/state | Default  | Owner                               | Stability | Invalid-value behavior               |
-| ------------ | ----------------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------- | -------- | ----------------------------------- | --------- | ------------------------------------ |
-| Message text | any string                                      | Plain text whose literal token values may be projected inline.            | Every render                              | required | `component:ChatTokenizedText`       | Stable    | Empty text renders an empty span.    |
-| Token set    | omitted; empty; non-empty                       | Candidate serialized values and their structured or custom presentations. | Every render                              | omitted  | caller and component                | Stable    | Empty token values are ignored.      |
-| Token form   | structured Badge config; custom render function | Selects delegated Badge content or caller-rendered content.               | Matching non-empty values                 | none     | caller and delegated component      | Stable    | Type-invalid forms are rejected.     |
-| Root surface | ref; supported DOM/data/ARIA/class/style/xstyle | Extends the inline root without replacing its owned target.               | Every render                              | omitted  | `architecture:public-component-api` | Stable    | Unsupported inputs stay unsupported. |
+| Concept    | Closed values or states                        | Meaning                                     | Availability by variant/orientation/state | Default | Owner                               | Stability | Invalid-value behavior       |
+| ---------- | ---------------------------------------------- | ------------------------------------------- | ----------------------------------------- | ------- | ----------------------------------- | --------- | ---------------------------- |
+| 消息文本   | 任意字符串                                     | 纯文本，其字面 token 值可被行内投射。       | 每次渲染                                  | 必填    | `component:ChatTokenizedText`       | 稳定      | 空文本渲染出一个空 span。    |
+| token 集合 | 省略；空；非空                                 | 候选的已序列化值及其结构化或自定义呈现。    | 每次渲染                                  | 省略    | 调用方与组件                        | 稳定      | 空 token 值会被忽略。        |
+| token 形式 | 结构化 Badge 配置；自定义渲染函数              | 选择委托给 Badge 的内容或调用方渲染的内容。 | 匹配的非空值                              | 无      | 调用方与受委托组件                  | 稳定      | 类型无效的形式会被拒绝。     |
+| 根表面     | ref；受支持的 DOM/data/ARIA/class/style/xstyle | 扩展行内根，而不替换其拥有的目标。          | 每次渲染                                  | 省略    | `architecture:public-component-api` | 稳定      | 不受支持的输入仍然不受支持。 |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                          | Basis                                               |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| FR1 | The component MUST preserve unmatched text exactly and replace each matched non-empty serialized value at its original reading-order position. How overlapping or duplicate values resolve is OQ1. | Current source, tests, and docs                     |
-| FR2 | Empty token values MUST be ignored so the renderer always makes progress and never enters a zero-width global-match loop.                                                                          | Current source and tests                            |
-| FR3 | Structured matches MUST delegate label, variant, and icon rendering to Badge; custom matches MUST invoke the caller renderer only for an actual match.                                             | Current source, tests, and docs                     |
-| FR4 | Supported ref, DOM/data/ARIA, className, style, and xstyle inputs MUST reach or compose on the root span while the `chat-tokenized-text` target remains intact.                                    | `architecture:public-component-api/INV5–INV6, INV8` |
-| FR5 | The component MUST remain render-only, with no state, Effect, listener, observer, timer, or owned asynchronous resource.                                                                           | Current source                                      |
+| ID  | Invariant                                                                                                                           | Basis                                               |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| FR1 | 组件必须原样保留未匹配的文本，并在每个匹配的非空已序列化值的原始阅读顺序位置替换它。重叠或重复的值如何解析属于 OQ1。                | 当前源码、测试与文档                                |
+| FR2 | 空 token 值必须被忽略，以便渲染器总能取得进展，永不进入零宽的全局匹配循环。                                                         | 当前源码与测试                                      |
+| FR3 | 结构化匹配必须将标签、变体与图标的渲染委托给 Badge；自定义匹配必须仅在真实匹配时调用调用方的渲染器。                                | 当前源码、测试与文档                                |
+| FR4 | 受支持的 ref、DOM/data/ARIA、className、style 与 xstyle 输入必须到达根 span 或在其上组合，同时 `chat-tokenized-text` 目标保持完好。 | `architecture:public-component-api/INV5–INV6, INV8` |
+| FR5 | 组件必须保持仅渲染，不拥有任何状态、Effect、监听器、观察器、定时器或自有异步资源。                                                  | 当前源码                                            |
 
 ### Allowed variation
 
-- **AV1 — Caller tokens.** Labels, variants, icons, custom content, and serialized values remain caller supplied.
-- **AV2 — Caller styling.** Supported root styling inputs may extend the component without replacing its public target.
-- **AV3 — Unmatched input.** Text with no matching non-empty value remains unchanged.
+- **AV1 — 调用方 token。** 标签、变体、图标、自定义内容与已序列化值仍由调用方提供。
+- **AV2 — 调用方样式。** 受支持的根样式输入可扩展该组件，而不替换其公共目标。
+- **AV3 — 未匹配输入。** 不含任何匹配非空值的文本保持原样。
 
 ### Representative states
 
-| State                | Required invariant                                                      | Allowed variation                     |
-| -------------------- | ----------------------------------------------------------------------- | ------------------------------------- |
-| Plain text           | Exact text remains visible.                                             | Any string content.                   |
-| Structured match     | Matching text is replaced by delegated Badge content.                   | Label, variant, and icon.             |
-| Custom match         | Matching text is replaced by caller-rendered content.                   | Any caller-owned React node.          |
-| Repeated match       | Every occurrence is replaced in reading order.                          | Number and position of occurrences.   |
-| Empty token value    | The value is ignored and rendering terminates with text preserved.      | Presence beside valid tokens.         |
-| Narrow / RTL context | Inline content remains readable and follows surrounding text direction. | Theme, direction, and message length. |
+| State             | Required invariant                       | Allowed variation             |
+| ----------------- | ---------------------------------------- | ----------------------------- |
+| 纯文本            | 精确文本仍然可见。                       | 任意字符串内容。              |
+| 结构化匹配        | 匹配的文本被替换为受委托的 Badge 内容。  | 标签、变体与图标。            |
+| 自定义匹配        | 匹配的文本被替换为调用方渲染的内容。     | 调用方拥有的任意 React 节点。 |
+| 重复匹配          | 每次出现都按阅读顺序被替换。             | 出现的数量与位置。            |
+| 空 token 值       | 该值被忽略，渲染终止且文本得到保留。     | 与有效 token 并存的情况。     |
+| 窄屏 / RTL 上下文 | 行内内容保持可读，并遵循周围文本的方向。 | 主题、方向与消息长度。        |
 
 ### Transformation and precedence order
 
-- **ORD1 — Normalize candidates.** Remove empty serialized values while preserving caller order.
-- **ORD2 — Match literally.** Escape values for RegExp syntax and scan the message from left to right.
-- **ORD3 — Render.** Preserve unmatched slices and delegate each matched token to Badge or the caller renderer.
-- **ORD4 — Compose root.** Apply the component target and styles, then combine accepted consumer styling and root props.
+- **ORD1 — 规范化候选。** 移除空的已序列化值，同时保留调用方顺序。
+- **ORD2 — 字面匹配。** 为 RegExp 语法转义各个值，并从左到右扫描消息。
+- **ORD3 — 渲染。** 保留未匹配的片段，并将每个匹配的 token 委托给 Badge 或调用方渲染器。
+- **ORD4 — 组合根。** 应用组件目标与样式，然后组合可接受的使用方样式与根属性。
 
 ### Performance and resources
 
-- **PR1 — Finite progress.** Every successful match consumes at least one UTF-16 code unit; empty values cannot enter the matcher.
-- **PR2 — Render-only projection.** Matching allocates one candidate list, lookup map, and result list per render and owns no persistent resource.
+- **PR1 — 有限进展。** 每次成功匹配至少消耗一个 UTF-16 码元；空值无法进入匹配器。
+- **PR2 — 仅渲染的投射。** 匹配在每次渲染时分配一个候选列表、一个查找映射和一个结果列表，且不拥有任何持久资源。
 
 ## Accessibility contract
 
-- **AR1 — Reading order.** Unmatched text and token content remain in source reading order inside one inline text wrapper.
-- **AR2 — Delegated content.** Structured token semantics remain owned by Badge; custom token semantics remain caller owned.
-- **AR3 — Noninteractive root.** The component introduces no role, focus target, keyboard command, pointer action, or live-region behavior.
+- **AR1 — 阅读顺序。** 未匹配的文本与 token 内容在一个行内文本包装器内保持源阅读顺序。
+- **AR2 — 受委托内容。** 结构化 token 的语义仍由 Badge 拥有；自定义 token 的语义仍由调用方拥有。
+- **AR3 — 非交互根。** 该组件不引入任何 role、焦点目标、键盘命令、指针操作或实时区域行为。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                           | Representation authority         | Hierarchy role | Component contract |
-| ---------------- | -------------------------------------------- | -------------------------------- | -------------- | ------------------ |
-| Tokenized text   | Inline root preserves surrounding text flow. | Current source and released docs | supporting     | FR1, FR5           |
-| Rendered token   | Delegates paint to Badge or caller content.  | `component:Badge` or caller      | supporting     | FR4, AR2           |
+| Anatomy or state | Design requirement                | Representation authority   | Hierarchy role | Component contract |
+| ---------------- | --------------------------------- | -------------------------- | -------------- | ------------------ |
+| token 化文本     | 行内根保留周围的文本流。          | 当前源码与已发布文档       | 辅助           | FR1, FR5           |
+| 渲染出的 token   | 将绘制委托给 Badge 或调用方内容。 | `component:Badge` 或调用方 | 辅助           | FR4, AR2           |
 
-No component-local design decision is recorded.
+未记录任何组件本地的设计决策。
 
 ### Theme ownership
 
-The Chat family document owns the shared anatomy and target inventory inherited by
-this subcomponent. The existing `chat-tokenized-text` target remains on the inline
-root. Structured token paint delegates to Badge, while custom rendered token content
-remains caller owned. No anatomy-theming map is recorded yet; the block is
-optional during migration, so the map is deferred.
+Chat family 文档拥有此子组件所继承的共享解剖结构与目标清单。现有的 `chat-tokenized-text` 目标仍位于行内根上。结构化 token 的绘制委托给 Badge，而自定义渲染的 token 内容仍由调用方拥有。尚未记录任何解剖结构与主题的映射；该区块在迁移期间是可选的，因此映射暂时推迟。
 
 ## Family and system relationships
 
-- `component:Badge` owns structured token paint, variants, iconography, and label semantics.
-- `component:ChatComposerInput` owns token insertion, serialization, deletion, and composer selection behavior.
-- `architecture:public-component-api` owns released exports, BaseProps reachability, styling composition, and refs.
-- `architecture:component-theming-surface` owns the target/anatomy mapping.
-- `architecture:component-test-sufficiency` owns bounded, mutation-sensitive evidence.
-- `spec:AST-029` owns the audit evidence inventory this record's verification
-  map follows.
+- `component:Badge` 拥有结构化 token 的绘制、变体、图标与标签语义。
+- `component:ChatComposerInput` 拥有 token 的插入、序列化、删除以及输入区选择行为。
+- `architecture:public-component-api` 拥有已发布的导出、BaseProps 可达性、样式组合与 ref。
+- `architecture:component-theming-surface` 拥有目标/解剖结构映射。
+- `architecture:component-test-sufficiency` 拥有有界的、对变异敏感的证据。
+- `spec:AST-029` 拥有本记录的验证映射所遵循的审计证据清单。
 
 ## Verification map
 
-| Contract     | Verification                                                                                                                             | Representative states                      | Mutation or failure expectation                                  | Audit section                        |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------ |
-| FR1–FR3, PR1 | `ChatTokenizedText.test.tsx` plain, single, multiple, repeated, special-character, surrounding-text, empty-value, and custom-match tests | plain, structured, custom, repeated, empty | Lost text, zero-width nontermination, or the wrong branch fails. | `audit:ChatTokenizedText/behavior`   |
-| FR4          | `ChatTokenizedText.test.tsx` ref and rest-prop tests                                                                                     | plain and tokenized roots                  | A dropped ref or prop fails.                                     | `audit:ChatTokenizedText/public-api` |
-| FR1–FR4      | `ChatTokenizedText.a11y.chromium.spec.ts` rendered states                                                                                | plain, structured, custom                  | A missing or duplicated `chat-tokenized-text` target fails.      | `audit:ChatTokenizedText/theming`    |
-| RTL relation | `apps/storybook/rtl-audit/verified-not-applicable.json`                                                                                  | all stories                                | —                                                                | `audit:ChatTokenizedText/i18n-rtl`   |
+| Contract     | Verification                                                                                      | Representative states              | Mutation or failure expectation                     | Audit section                        |
+| ------------ | ------------------------------------------------------------------------------------------------- | ---------------------------------- | --------------------------------------------------- | ------------------------------------ |
+| FR1–FR3, PR1 | `ChatTokenizedText.test.tsx` 的纯文本、单个、多个、重复、特殊字符、周围文本、空值与自定义匹配测试 | 纯文本、结构化、自定义、重复、空值 | 丢失文本、零宽不终止，或错误的分支导致失败。        | `audit:ChatTokenizedText/behavior`   |
+| FR4          | `ChatTokenizedText.test.tsx` 的 ref 与其余属性测试                                                | 纯文本根与 token 化根              | 丢弃的 ref 或属性会导致失败。                       | `audit:ChatTokenizedText/public-api` |
+| FR1–FR4      | `ChatTokenizedText.a11y.chromium.spec.ts` 的渲染状态                                              | 纯文本、结构化、自定义             | 缺失或重复的 `chat-tokenized-text` 目标会导致失败。 | `audit:ChatTokenizedText/theming`    |
+| RTL 关系     | `apps/storybook/rtl-audit/verified-not-applicable.json`                                           | 所有故事                           | —                                                   | `audit:ChatTokenizedText/i18n-rtl`   |
 
-Read from source, with no focused test yet:
+从源码读取，尚无针对性测试：
 
-- ORD2: values containing RegExp metacharacters matching literally.
-- FR3: `variant` and `icon` reaching the Badge.
-- FR4: `className`, `style`, and `xstyle` composition.
-- FR5, AR3: no state, Effect, or interaction of the component's own.
+- ORD2：包含 RegExp 元字符的值按字面匹配。
+- FR3：`variant` 与 `icon` 到达 Badge。
+- FR4：`className`、`style` 与 `xstyle` 的组合。
+- FR5、AR3：该组件自身没有状态、Effect 或交互。
 
 ## Decision log
 
-No component-local decision is recorded.
+未记录任何组件本地的决策。
 
 ## Open questions
 
-- **OQ1 — How should overlapping or duplicate token values resolve?**
-  (`human-api`) Today the first-listed value wins at a position, so a shorter
-  prefix splits a longer value, and the later of two identical values renders.
-  Whether matching should prefer the longest value, and how duplicates resolve,
-  changes what readers see.
+- **OQ1 — 重叠或重复的 token 值应如何解析？** （`human-api`）目前在某一位置上，最先列出的值胜出，因此较短的前缀会拆分较长的值，而两个相同值中较晚的那个会被渲染。匹配是否应优先选择最长的值，以及重复值如何解析，会改变读者所看到的内容。
 
 ## Content boundary
 
-This file does not duplicate consumer examples, Badge policy, token grammar, or composer editing behavior.
+本文件不重复使用方示例、Badge 策略、token 语法或输入区编辑行为。

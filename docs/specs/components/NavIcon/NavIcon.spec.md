@@ -30,90 +30,83 @@ system_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                             |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Public contract         | `NavIcon` with a required `icon`; target `nav-icon`.                                                                                 |
-| Behavior                | A display-only circular accent container, one medium element size square, that shows the caller's icon.                              |
-| End-user impact         | Users see a consistent product mark in navigation headings; NavIcon adds nothing to the accessibility tree beyond the caller's icon. |
-| Builder impact          | None.                                                                                                                                |
-| Compatibility/readiness | Records shipped behavior; no public change.                                                                                          |
-| Review checks           | Reject emitting any target besides `nav-icon`, or adding interaction semantics to the container.                                     |
-| Governing rules         | `architecture:component-theming-surface`; `architecture:public-component-api`.                                                       |
+| Area                    | Contract                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------ |
+| Public contract         | `NavIcon`，必需的 `icon`；目标 `nav-icon`。                                                |
+| Behavior                | 一个仅用于显示的圆形强调色容器，尺寸为一个中等元素尺寸的正方形，用于展示调用方提供的图标。 |
+| End-user impact         | 用户在导航标题中看到一致的产品标记；除调用方的图标之外，NavIcon 不向无障碍树添加任何内容。 |
+| Builder impact          | 无。                                                                                       |
+| Compatibility/readiness | 记录已发布的行为；无公共变更。                                                             |
+| Review checks           | 拒绝发出 `nav-icon` 之外的任何目标，或向容器添加交互语义。                                 |
+| Governing rules         | `architecture:component-theming-surface`；`architecture:public-component-api`。            |
 
-This table is a review projection; the body below is authoritative.
+此表是评审投影；下文正文具有权威性。
 
 ## Intent
 
-NavIcon renders caller-supplied icon content inside a circular navigation
-container, typically as the logo of TopNavHeading or SideNavHeading. Consumer
-usage lives in `NavIcon.doc.mjs`.
+NavIcon 在圆形导航容器内渲染调用方提供的图标内容，通常作为 TopNavHeading 或 SideNavHeading 的标志。使用方用法见 `NavIcon.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`
-- Compatibility class: records shipped behavior; the container emits only the
-  canonical `nav-icon` target
-- Controlled/uncontrolled behavior: not applicable
-- Migration decision: none
+- 保留的已发布默认值：`yes`
+- 兼容性类别：记录已发布的行为；容器只发出规范的 `nav-icon` 目标
+- 受控/非受控行为：不适用
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The circular container and its current `nav-icon` theming target.
+- 圆形容器及其当前 `nav-icon` 主题化目标。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- The artwork or component supplied through `icon` — owned by the caller,
-  including its accessible name or decorative status.
-- Interaction semantics — NavIcon remains a display-only container.
-- Spacing the heading applies around a NavIcon — owned by
-  `component:TopNavHeading` and `component:SideNavHeading`.
+- 通过 `icon` 提供的图形素材或组件——由调用方拥有，包括其无障碍名称或装饰性状态。
+- 交互语义——NavIcon 保持为仅用于显示的容器。
+- 标题在 NavIcon 周围施加的间距——由 `component:TopNavHeading` 与 `component:SideNavHeading` 拥有。
 
 ## Public concepts
 
-No component-local concept beyond the consumer props.
+除使用方 props 之外，没有组件本地概念。
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                           | Basis                           |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| FR1 | NavIcon renders one `<span>` circular container, centered, sized to `--size-element-md` on both axes, painted with the accent color and on-accent foreground, that contains `icon`. | Current source, docs, and tests |
-| FR2 | The container carries only the canonical `nav-icon` target.                                                                                                                         | Current source, docs, and tests |
-| FR3 | The container forwards its `ref`, `data-testid`, and other DOM props, and merges `className`, `style`, and `xstyle` after component styles. It adds no role, name, or focus stop.   | Current source and tests        |
+| ID  | Invariant                                                                                                                                   | Basis                |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| FR1 | NavIcon 渲染一个 `<span>` 圆形容器，居中，两个轴向均按 `--size-element-md` 设定尺寸，使用强调色与强调色上的前景色绘制，其中包含 `icon`。    | 当前源码、文档与测试 |
+| FR2 | 容器只携带规范的 `nav-icon` 目标。                                                                                                          | 当前源码、文档与测试 |
+| FR3 | 容器转发其 `ref`、`data-testid` 与其他 DOM props，并在组件样式之后合并 `className`、`style` 与 `xstyle`。它不添加 role、name 或焦点停靠点。 | 当前源码与测试       |
 
 ### Allowed variation
 
-- **AV1 — Artwork.** Caller-supplied icon artwork and implementation may vary
-  without becoming NavIcon-owned anatomy.
+- **AV1 — 图形素材。** 调用方提供的图标图形与实现可以变化，而不会成为 NavIcon 拥有的解剖结构。
 
 ### Representative states
 
-| State    | Required invariant                  | Allowed variation |
-| -------- | ----------------------------------- | ----------------- |
-| Any icon | Same circular container and target. | Artwork.          |
+| State    | Required invariant     | Allowed variation |
+| -------- | ---------------------- | ----------------- |
+| 任意图标 | 相同的圆形容器与目标。 | 图形素材。        |
 
 ### Transformation and precedence order
 
-- No precedence rule.
+- 无优先级规则。
 
 ### Performance and resources
 
-- No resource rule.
+- 无资源规则。
 
 ## Accessibility contract
 
-- **AR1 — Transparent container.** NavIcon contributes no semantics; the
-  caller's icon decides what assistive technology perceives (FR3).
+- **AR1 — 透明容器。** NavIcon 不贡献任何语义；调用方的图标决定辅助技术感知到什么（FR3）。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                            | Representation authority       | Hierarchy role    | Component contract |
-| ---------------- | --------------------------------------------- | ------------------------------ | ----------------- | ------------------ |
-| Container        | Presents the circular accent painted surface. | Current source and public docs | Supporting        | FR1, FR2           |
-| Icon             | Presents caller-supplied visual content.      | Caller-supplied content        | Context-dependent | FR1                |
+| Anatomy or state | Design requirement         | Representation authority | Hierarchy role | Component contract |
+| ---------------- | -------------------------- | ------------------------ | -------------- | ------------------ |
+| 容器             | 呈现圆形强调色绘制的表面。 | 当前源码与公共文档       | 支撑性         | FR1, FR2           |
+| 图标             | 呈现调用方提供的视觉内容。 | 调用方提供的内容         | 依上下文而定   | FR1                |
 
 ### Theming anatomy
 
@@ -128,31 +121,27 @@ No component-local concept beyond the consumer props.
 
 ## Family and system relationships
 
-- `architecture:component-theming-surface` owns the target and its
-  qualification.
-- `architecture:public-component-api` owns how the forwarded inputs compose.
+- `architecture:component-theming-surface` 拥有该目标及其限定条件。
+- `architecture:public-component-api` 拥有被转发输入的组合方式。
 
 ## Verification map
 
-| Contract            | Verification                                                   | Representative states                | Mutation or failure expectation                                                                                                                    | Audit section           |
-| ------------------- | -------------------------------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| FR1, FR3            | `NavIcon.test.tsx` content, ref, and test-id suites            | Caller-supplied icon                 | Removing the container, content, ref, or test id fails.                                                                                            | `audit:NavIcon/anatomy` |
-| FR2                 | `NavIcon.test.tsx` target-name suite; `themingTargets.test.ts` | Canonical target class               | A missing or renamed canonical target, or the removed `navicon` alias, fails the target assertion; an extra target fails `themingTargets.test.ts`. | `audit:NavIcon/theming` |
-| Theming anatomy map | `scripts/check-knowledge.mjs`                                  | Canonical anatomy and current target | Missing, extra, prefixed, stale, or alias-backed mappings fail repository validation.                                                              | `audit:NavIcon/theming` |
+| Contract            | Verification                                              | Representative states  | Mutation or failure expectation                                                                                         | Audit section           |
+| ------------------- | --------------------------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| FR1, FR3            | `NavIcon.test.tsx` 内容、ref 与 test-id 套件              | 调用方提供的图标       | 移除容器、内容、ref 或 test id 会失败。                                                                                 | `audit:NavIcon/anatomy` |
+| FR2                 | `NavIcon.test.tsx` 目标名称套件；`themingTargets.test.ts` | 规范目标类             | 规范目标缺失或被重命名，或被移除的 `navicon` 别名，都会使目标断言失败；多出额外目标会使 `themingTargets.test.ts` 失败。 | `audit:NavIcon/theming` |
+| Theming anatomy map | `scripts/check-knowledge.mjs`                             | 规范解剖结构与当前目标 | 缺失、多余、带前缀、陈旧或由别名支撑的映射会使仓库校验失败。                                                            | `audit:NavIcon/theming` |
 
-Read from source, with no focused test yet: the container's circular shape, size, and accent colors (FR1); and other DOM props, the `className`,
-`style`, and `xstyle` merge, and the absence of a role, name, or focus stop
-(FR3).
+从源码读取、尚无针对性测试：容器的圆形形状、尺寸与强调色（FR1）；以及其他 DOM props、`className`、`style` 与 `xstyle` 的合并，以及 role、name 或焦点停靠点的缺失（FR3）。
 
 ## Decision log
 
-No component-local decision is recorded.
+未记录组件本地决策。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables, examples, implementation
-steps, or system rules. It links to their owners.
+本文件不重复使用方 props 表、示例、实现步骤或系统规则。它链接到其拥有者。

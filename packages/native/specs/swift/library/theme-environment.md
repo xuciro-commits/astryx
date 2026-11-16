@@ -1,98 +1,65 @@
-# Theme environment (Swift)
+# 主题环境（Swift）
 
 - Status: draft
-- Relation: extends AST-093 FR4 and AST-082 FR10, FR11; builds on
-  `packages/native/specs/swift/library/theme-generator.md` (the `Theme` and
-  `Tokens` it generates, and its font family reader) and
-  `packages/native/specs/swift/library/component-api.md` (names).
+- Relation: 扩展 AST-093 FR4 和 AST-082 FR10、FR11；基于
+  `packages/native/specs/swift/library/theme-generator.md`（它生成的 `Theme` 和
+  `Tokens`，以及它的字体族读取器）和
+  `packages/native/specs/swift/library/component-api.md`（名称）。
 
-## Summary
+## 摘要
 
-In an app built with Astryx, the system's own controls and Astryx components
-match, and the person's system settings are honored everywhere: dark mode,
-Increase Contrast, text size, Reduce Motion, Reduce Transparency, Bold Text,
-and right-to-left all come from SwiftUI's own environment. Inside an Astryx
-theme, stock SwiftUI controls take the theme's accent as their tint wherever
-it stays readable, and otherwise keep their own colors. Astryx adds no second
-settings system for an app to keep in step.
+在使用 Astryx 构建的应用中，系统自带的控件与 Astryx 组件保持一致，用户的系统设置处处得到遵循：深色模式、增强对比度、文字大小、减弱动态效果、降低透明度、粗体文本以及从右到左布局，全部来自 SwiftUI 自己的环境。在 Astryx 主题内，原生 SwiftUI 控件在可读的情况下以主题的强调色作为 tint，否则保留自己的颜色。Astryx 不会为应用额外增加一套需要保持同步的设置系统。
 
-## Requirements
+## 要求
 
-- **E1 — Settings are read from SwiftUI, never duplicated.** Components and the
-  theme read these environment values and Astryx offers no API of its own for
-  any of them:
+- **E1 — 设置从 SwiftUI 读取，绝不重复。** 组件和主题读取这些环境值，Astryx 不为其中任何一项提供自己的 API：
 
-  | SwiftUI value                     | What Astryx does with it                                                                                                                                                                                                                                                                                  |
-  | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `colorScheme`                     | Chooses the theme's light or dark tokens, so `.preferredColorScheme(_:)` and the system setting drive the mode, except inside a single-mode theme, which sets its subtree's `colorScheme` (E2)                                                                                                            |
-  | `colorSchemeContrast`             | When increased, borders and separators use `color.borderEmphasized` instead of `color.border`                                                                                                                                                                                                             |
-  | `dynamicTypeSize`                 | Scales text, through text-style-relative fonts, and the metrics beside text, through `@ScaledMetric`                                                                                                                                                                                                      |
-  | `accessibilityReduceMotion`       | Movement becomes a cross-fade or no animation                                                                                                                                                                                                                                                             |
-  | `accessibilityReduceTransparency` | Translucent surfaces become opaque                                                                                                                                                                                                                                                                        |
-  | `layoutDirection`                 | Leading and trailing follow it                                                                                                                                                                                                                                                                            |
-  | `legibilityWeight`                | Bold Text: system and text-style fonts follow it by themselves; a custom face from the theme's family list is drawn heavier when it is `.bold`: ultra light → thin, thin → light, light → regular, regular → semibold, medium → semibold, semibold → bold, bold → heavy, heavy → black, black stays black |
+  | SwiftUI 值                        | Astryx 用它做什么                                                                                                                                                                                                                                     |
+  | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `colorScheme`                     | 选择主题的浅色或深色令牌，因此 `.preferredColorScheme(_:)` 和系统设置驱动模式；单一模式主题除外，它在自己的子树中设置 `colorScheme`（E2）                                                                                                             |
+  | `colorSchemeContrast`             | 当对比度增强时，边框和分隔线使用 `color.borderEmphasized` 而不是 `color.border`                                                                                                                                                                       |
+  | `dynamicTypeSize`                 | 通过相对于文字样式的字体缩放文字，并通过 `@ScaledMetric` 缩放文字旁边的度量                                                                                                                                                                           |
+  | `accessibilityReduceMotion`       | 运动变为交叉淡化或无动画                                                                                                                                                                                                                              |
+  | `accessibilityReduceTransparency` | 半透明表面变为不透明                                                                                                                                                                                                                                  |
+  | `layoutDirection`                 | 前缘和后缘跟随它                                                                                                                                                                                                                                      |
+  | `legibilityWeight`                | 粗体文本：系统和文字样式字体自行跟随；来自主题字体族列表的自定义字面在 `.bold` 时绘制得更重：ultra light → thin，thin → light，light → regular，regular → semibold，medium → semibold，semibold → bold，bold → heavy，heavy → black，black 保持 black |
 
-- **E2 — The theme writes SwiftUI's own values where a native equivalent
-  exists.** `.astryxTheme(_:)` sets, for the subtree, in the current mode:
+- **E2 — 主题在存在原生等价物的地方写入 SwiftUI 自己的值。** `.astryxTheme(_:)` 在当前模式下为子树设置：
 
-  | SwiftUI value | From the theme                                                                                                                                 |
-  | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `.tint(_:)`   | `color.accent`, in a mode where white meets 3:1 against it, because stock controls draw white on their tint; the system tint in any other mode |
+  | SwiftUI 值  | 来自主题                                                                                                                   |
+  | ----------- | -------------------------------------------------------------------------------------------------------------------------- |
+  | `.tint(_:)` | `color.accent`，但仅限于白色与它的对比度达到 3:1 的模式，因为原生控件会在其 tint 上绘制白色；在任何其他模式下使用系统 tint |
 
-  A theme whose page ground, card ground, primary text, and accent are the same
-  in light and dark (a single-mode theme, such as Gothic) also sets its subtree's `colorScheme` to the mode its page ground
-  belongs to, dark for a dark ground, so stock controls inside draw that
-  appearance on its grounds.
+  如果一个主题的页面底色、卡片底色、主文本和强调色在浅色与深色下相同（即单一模式主题，例如 Gothic），它还会把子树的 `colorScheme` 设置为其页面底色所属的模式——深色底对应深色——以便其中的原生控件在其底色上绘制该外观。
 
-  So stock SwiftUI controls (`Toggle`, `Picker`, `ProgressView`, `Menu`,
-  `List`, `Slider`, `Link`) draw with the brand's accent wherever it stays
-  legible. The theme affects stock SwiftUI controls only through the tint and
-  writes no foreground style: an inherited one would override stock controls'
-  own label colors, turning a link into plain text and a prominent button's
-  white label dark. Plain stock text keeps the system's primary color;
-  Astryx's own text uses the theme's. (Decided by cixzhang, 2026-10-25.)
-  Whether the theme also sets the default font is OQ1. Theme values with no SwiftUI environment equivalent are read by
-  Astryx components and Astryx's SwiftUI styles (corner radius, spacing,
-  element heights, borders, and backgrounds), and an app reads spacing for its
-  own SwiftUI stacks from the typed tokens (`theme.space.s4`). Control size has no clean mapping: Astryx sizes are a per-
-  component prop, so the theme sets no `controlSize`.
+  因此，原生 SwiftUI 控件（`Toggle`、`Picker`、`ProgressView`、`Menu`、`List`、`Slider`、`Link`）在任何仍然清晰可读的地方使用品牌的强调色绘制。主题只通过 tint 影响原生 SwiftUI 控件，不写入任何前景样式：继承的前景样式会覆盖原生控件自己的标签颜色，把链接变成普通文本，并把 prominent 按钮的白色标签变成深色。原生纯文本保留系统的主色；Astryx 自己的文本使用主题的颜色。（由 cixzhang 决定，2026-10-25。）
+  主题是否还设置默认字体是 OQ1。没有 SwiftUI 环境等价物的主题值由 Astryx 组件和 Astryx 的 SwiftUI 样式读取（圆角、间距、元素高度、边框和背景），应用也可以从带类型的令牌（`theme.space.s4`）为自己的 SwiftUI 堆栈读取间距。控件尺寸没有干净的映射：Astryx 的尺寸是逐组件的 prop，因此主题不设置 `controlSize`。
 
-- **E3 — The mode always follows SwiftUI.** A token value is chosen from the
-  environment's `colorScheme` where it is read, so a subtree with its own
-  `.preferredColorScheme` or `.environment(\.colorScheme, …)` gets that mode's
-  tokens.
-- **E4 — No modifier still means the platform's settings.** Without
-  `.astryxTheme(_:)`, components use core's default theme and still follow
-  `colorScheme` and every E1 value; only E2's writes are absent.
-- **E5 — Subtrees can change theme.** `.astryxTheme(_:)` on a subtree replaces
-  the theme for that subtree only, including E2's writes.
-- **E6 — The theme is one environment value.** The theme travels as a single
-  environment value declared with `@Entry`; components read it with
-  `@Environment` and never through a singleton.
+- **E3 — 模式始终跟随 SwiftUI。** 令牌值在读取它的地方根据环境的 `colorScheme` 选择，因此带有自己的 `.preferredColorScheme` 或 `.environment(\.colorScheme, …)` 的子树会获得该模式的令牌。
+- **E4 — 没有修饰符仍然意味着使用平台的设置。** 没有 `.astryxTheme(_:)` 时，组件使用核心的默认主题，并且仍然跟随 `colorScheme` 和每一个 E1 值；只是缺少 E2 的写入。
+- **E5 — 子树可以更改主题。** 子树上的 `.astryxTheme(_:)` 只替换该子树的主题，包括 E2 的写入。
+- **E6 — 主题是一个环境值。** 主题作为单个用 `@Entry` 声明的环境值传递；组件用 `@Environment` 读取它，从不通过单例。
 
-## Acceptance checks
+## 验收检查
 
-| Requirement | Check                                                                                                                                                                                                                                                                                                                                                                              |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| E1, E3      | A view test with only `.preferredColorScheme(.dark)` (no other Astryx setting) draws an Astryx component with dark tokens; with `colorSchemeContrast` increased, a Card draws `color.borderEmphasized`. With `legibilityWeight` set to `.bold`, an Astryx Text in butter's registered body face at regular weight resolves to semibold, and at bold to heavy.                      |
-| E2          | A stock SwiftUI `Toggle` inside `.astryxTheme(.butter)` in light draws butter's accent, and in dark, where butter's pale accent fails 3:1 against white, the system tint; a stock `Link` and a borderless `Button` draw their labels in the tint, and a prominent `Button` keeps its white label; under `.astryxTheme(.gothic)` in a light appearance, a stock surface draws dark. |
-| E4          | With no `.astryxTheme(_:)`, an Astryx component under `.preferredColorScheme(.dark)` draws core's default dark tokens.                                                                                                                                                                                                                                                             |
-| E5          | A subtree with `.astryxTheme(.neutral)` inside `.astryxTheme(.butter)` draws neutral's accent, and its stock `Toggle` does too.                                                                                                                                                                                                                                                    |
-| E6          | A source check finds no static or singleton theme state; the environment key is declared with `@Entry`.                                                                                                                                                                                                                                                                            |
+| 要求   | 检查                                                                                                                                                                                                                                                                                                                        |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| E1、E3 | 一个只设置 `.preferredColorScheme(.dark)`（没有任何其他 Astryx 设置）的视图测试会用深色令牌绘制 Astryx 组件；在 `colorSchemeContrast` 增强时，Card 绘制 `color.borderEmphasized`。在 `legibilityWeight` 设为 `.bold` 时，使用 butter 注册的正文字面、regular 字重的 Astryx Text 解析为 semibold，而 bold 字重解析为 heavy。 |
+| E2     | 在浅色下，`.astryxTheme(.butter)` 内的原生 SwiftUI `Toggle` 绘制 butter 的强调色；在深色下，butter 的浅色强调色与白色的对比度低于 3:1，因此使用系统 tint；原生 `Link` 和无边框 `Button` 用 tint 绘制标签，prominent `Button` 保持其白色标签；在浅色外观下，`.astryxTheme(.gothic)` 内的原生表面绘制为深色。                 |
+| E4     | 没有 `.astryxTheme(_:)` 时，`.preferredColorScheme(.dark)` 下的 Astryx 组件绘制核心的默认深色令牌。                                                                                                                                                                                                                         |
+| E5     | 在 `.astryxTheme(.butter)` 内，一个使用 `.astryxTheme(.neutral)` 的子树绘制 neutral 的强调色，其中的原生 `Toggle` 也是如此。                                                                                                                                                                                                |
+| E6     | 源码检查找不到静态或单例的主题状态；环境键用 `@Entry` 声明。                                                                                                                                                                                                                                                                |
 
-## Current state
+## 当前状态
 
-- `packages/native/apple` has the `Astryx` product: the `Theme` and `Tokens`
-  types, the `.astryxTheme(_:)` modifier, which sets the tint and a
-  single-mode theme's color scheme, and SwiftUI components that read the theme
-  from the `astryx` environment value. Components choose light or dark tokens from
-  `colorScheme`, with or without the modifier, scale text with
-  `dynamicTypeSize`, and draw a custom face one weight step heavier under Bold
-  Text.
+- `packages/native/apple` 包含 `Astryx` 产品：`Theme` 和 `Tokens`
+  类型、`.astryxTheme(_:)` 修饰符（它设置 tint 和单一模式主题的
+  colorScheme），以及从 `astryx` 环境值读取主题的 SwiftUI 组件。组件从
+  `colorScheme` 选择浅色或深色令牌，无论有没有修饰符；它们用
+  `dynamicTypeSize` 缩放文字，并在粗体文本下把自定义字面绘制得重一个字重。
 
-## Open questions
+## 开放问题
 
-- **OQ1 — Should the theme set the default font for all text in its subtree?**
-  It brands stock SwiftUI text, and it also changes text an app draws itself.
-  Recommendation: set it, because a theme's typeface is part of its identity
-  and an app can still set its own `.font(_:)` on any view.
+- **OQ1 — 主题是否应该为其子树中的所有文本设置默认字体？**
+  这会给原生 SwiftUI 文本打上品牌，也会改变应用自己绘制的文本。
+  建议：设置，因为主题的字体是其身份的一部分，而且应用仍然可以在任何视图上设置自己的 `.font(_:)`。

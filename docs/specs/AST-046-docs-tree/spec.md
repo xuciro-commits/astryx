@@ -22,455 +22,166 @@ affects_consumer_docs: [authoring, guides, foundations]
 
 ## Intent
 
-A reader who opens the Astryx docs should find every doc in one tree and move
-through it one level at a time: `astryx docs cli` lists the CLI's guides and
-reference, `astryx docs cli/api` lists the API's functions, schemas, and enums,
-and `astryx docs cli/api/functions/search` prints one function. Each doc keeps
-its own file and becomes one node with one route. The compiler builds the tree
-from the typed docs that already exist; no one keeps a list of children by hand.
-Search leads into the same tree: a hit names the smallest part that answers, so
-a reader never reads a whole guide to find one fact.
+打开 Astryx 文档的读者应当能在一棵树中找到每一篇文档，并逐层向下浏览：`astryx docs cli` 列出 CLI 的指南与参考，`astryx docs cli/api` 列出 API 的函数、schema 与 enum，`astryx docs cli/api/functions/search` 打印一个函数。每篇文档保留自己的文件，并成为一个节点、对应一条路由。编译器从已经存在的类型化文档构建这棵树；没有人手工维护子节点列表。搜索通向同一棵树：一条命中会指出能回答问题的最小部分，因此读者从不需要为了找一个事实而读完整个指南。
 
-The tree is the backbone of one docs graph. Every provider's docs are its nodes,
-each with one home in the tree; the links between docs (a command and its API
-function, a token reference, a replacement) are its other edges, named by doc
-identity. Phase 1 builds the backbone for the CLI's own docs and each
-integration's, and `spec:AST-047` turns the edges into moves a reader can
-follow.
+这棵树是一个文档图的骨架。每个提供方的文档都是它的节点，各在树中有一个归属；文档之间的链接（一个命令与其 API 函数、一个 token 引用、一次替换）是它的其他边，以文档身份命名。第 1 阶段为 CLI 自身的文档和每个集成的文档构建骨架，`spec:AST-047` 则把这些边变成读者可以跟随的移动。
 
-This record owns how a doc gets its one home in the tree, how a route is formed,
-how `astryx docs` reads the tree, and what `astryx doctor` checks. It rolls out
-in phases: phase 1 places the CLI's own docs and the namespace docs and guides
-each integration ships, and gives every other doc a home in a generated
-level named for its category, Guides or Foundations; later phases may move
-those docs into real sections.
+本记录规定一篇文档如何在树中获得其唯一归属、路由如何形成、`astryx docs` 如何读取这棵树，以及 `astryx doctor` 检查什么。它按阶段推出：第 1 阶段放置 CLI 自身的文档，以及每个集成随包提供的命名空间文档与指南，并让其他每篇文档在以其类别（Guides 或 Foundations）命名的生成层级中有一个归属；后续阶段可以把这些文档移入真正的分区。
 
-A long flat topic can become a namespace of short guides, so a reader loads only
-the guide that answers. The split keeps the unambiguous reads a released
-command makes inside the topic's own package: the name, each section read by
-its key or by a title only one guide matches, each reference, and each address
-on the docsite still lead to the same content (FR13, FR6, FR14). A title
-fragment that matches sections in two guides asks instead of guessing (FR6),
-and references from other packages are an open question (OQ2).
+一个冗长的扁平主题可以变成一个由短指南组成的命名空间，这样读者只需加载能回答问题的那个指南。这种拆分保留了已发布命令在该主题自己的包内进行的无歧义读取：名称、按 key 或按只有一个指南能匹配的标题进行的每次小节读取、每个引用，以及 docsite 上的每个地址，仍都指向同样的内容（FR13、FR6、FR14）。同时匹配两个指南中小节的标题片段会改为询问而不是猜测（FR6），来自其他包的引用则是一个开放问题（OQ2）。
 
 ## Non-goals
 
-- How a docsite page looks, and how the docsite shows flat topics. FR14 states
-  which page holds a namespace's content and where each of its addresses leads;
-  the page design is the docsite's.
-- A top-level browse of every provider. It is a later phase.
-- Aliases and audiences. `aliases` and `audience` stay reserved fields that a
-  doc may not set.
-- Rendering `collection` blocks. A topic that uses one fails to load.
-- Equivalent internal implementations remain valid when they satisfy this
-  contract. The compiler's modules, the docsite's build scripts, and the files
-  a split creates are implementation.
+- 一篇 docsite 页面看起来如何，以及 docsite 如何展示扁平主题。FR14 规定哪个页面承载某个命名空间的内容，以及它的每个地址指向哪里；页面设计归 docsite 所有。
+- 对每个提供方的顶层浏览。那属于后续阶段。
+- 别名与受众。`aliases` 与 `audience` 保持为文档不得设置的保留字段。
+- 渲染 `collection` 块。使用它的主题会加载失败。
+- 等价的内部分实现在满足本契约时仍然有效。编译器的模块、docsite 的构建脚本，以及拆分所创建的文件都属于实现。
 
 ## Requirements
 
-- **FR1 — Identity is separate from the route.** A node with an authored doc
-  MUST be identified by that doc's identity: its DocId, as the provider-identity
-  contract defines it, built from its provider's ProviderId (which can differ from its
-  package name), its kind, and its name. The identity MUST NOT change when the node
-  moves. A generated level has no authored doc and no identity: its `id` is
-  `null`. A node's route is its parent's route, `/`, and its own segment; a
-  top-level namespace's route is its name, and a flat topic keeps its own name
-  (FR12). A segment is the node's name as
-  lowercase letters and digits joined by single hyphens. The route is the
-  readable name; `docs.node` carries both.
-- **FR2 — Each doc has one home, decided in a fixed order.** A doc's home MUST
-  be decided once, in this order: its explicit `placement`; otherwise the one
-  adoption rule in its own package that matches its discovery group and kind;
-  otherwise, for a reference topic, the generated level for its category (FR12). A placement MUST name a namespace of the doc's own package
-  (`namespace:<name>`), a slot that namespace declares, and a slot that accepts
-  the doc's kind. A placement that fails MUST withdraw the doc with a
-  diagnostic; it MUST NOT fall back to adoption. A doc that two rules adopt MUST
-  be withdrawn with a diagnostic that names both namespaces.
-  The one exception is a CLI namespace marked `stability: 'experimental'`,
-  which MAY adopt a doc group from every package with `source.packages: 'all'`
-  (`spec:AST-084/DEC-7`); it applies only to the experimental icon sets behind
-  the project's opt-in, and every stable namespace keeps one adoption rule per
-  package with unchanged output.
-- **FR3 — Namespaces never list or scan their children.** A namespace doc
-  declares its slots and its adoption rules. It MUST NOT enumerate its
-  children, and the compiler MUST NOT infer a parent from a folder. A child
-  names its parent with `placement`, or a namespace adopts a discovery group: a
-  CLI typed doc's group is the `namespace` it declares (`cli/commands`,
-  `cli/api`). An adoption rule with `groupBy: 'kind'` MUST add one generated
-  namespace per kind (`functions`, `schemas`, `enums`), in the order the rule
-  lists the kinds.
-- **FR4 — Routes are unique.** Two nodes MUST NOT share a route. When they
-  would, the compiler MUST keep one by a deterministic order and withdraw the
-  other with a diagnostic that names both. The same inputs MUST build the same
-  tree, whatever order they arrive in. Children sort by `placement.order`, then
-  title, then identity.
-- **FR5 — `astryx docs` reads the tree one level at a time.** `astryx docs
-<route>` MUST resolve a flat topic first, then a tree route, except that a
-  topic whose route the tree gives to another doc (FR11) opens that doc. A namespace MUST
-  print its title, its summary, and each slot's children one level down, each
-  with its summary and the command to open it; it MUST NOT inline its
-  grandchildren. When a child's title is not its route name
-  (`assertResponse()`, `search()`), the text view MUST show the title before
-  the summary. A typed doc MUST print its content. Both MUST end with the way
-  back up. A guide the tree places MUST read like a topic, by
-  its route (`spec:AST-047` FR3). `--json` MUST return `docs.node` for a
-  namespace or typed doc: its identity, route, kind, package, title, summary,
-  breadcrumb, and either its slots with their children or its content.
-- **FR6 — A section read names one section.** A section argument on a typed
-  doc MUST fail with `ERR_UNKNOWN_SECTION` and name the doc. On a namespace,
-  the read `astryx docs <namespace> <section>` MUST take, from each guide below
-  the namespace at any depth, the section that guide's own section read
-  returns for the query; within one guide, that read decides between the
-  guide's sections, as it does on any topic. Across guides the read MUST then
-  decide in two steps: when the section returned by exactly one guide has the
-  query as its key (its `id`, or the key its title derives), that section
-  answers, even when other guides return a section too; otherwise, when
-  exactly one guide returns a section, that section answers. The response MUST
-  be the one a section read of that guide returns (`docs.detail.section`), so
-  an unambiguous section read that worked on a topic before it became a
-  namespace (FR13) returns the same section in the same shape. When no guide
-  returns a section, or more than one does at the step that decides, the read
-  MUST fail with `ERR_UNKNOWN_SECTION`, the error a topic's unknown section
-  gives; its suggestions MUST name the route of each guide that returned a
-  section, or of every guide below the namespace when none did. An unknown
-  route MUST fail with `ERR_UNKNOWN_TOPIC` and suggest the children of the
-  deepest namespace the route reaches.
-- **FR7 — The topic list names the tree.** `astryx docs --json` MUST list each
-  top-level namespace in `meta.namespaces`, so `data` stays the topic list, and
-  every entry in it reads as a topic. The text view MUST show the namespaces first,
-  under their own heading, because that is where the CLI's own docs start. A
-  package whose docs did not load MUST be named, in `meta.notLoaded` and under
-  its own heading in text, so its author knows why its docs are missing. A list
-  read with a depth (FR6) MUST carry the tree below each namespace: each entry
-  in `meta.namespaces` gains a `children` array of the docs one level below it,
-  each shaped as a child of a namespace read (its route, name, package, kind,
-  title, summary, and its experimental mark), with the `topic` and
-  `description` every list entry carries, and its own `children` while the
-  depth goes deeper. Where the depth stops on a doc that has docs below it,
-  that row MUST carry their count, as a namespace read's child does. The text
-  view MUST list those docs under the same Docs tree heading, each by the route
-  that opens it, and MUST mark an experimental one as every other listing marks
-  it. A list read without a depth carries none of this, so the reader who asks
-  for the topics still gets the topics.
-- **FR8 — Doctor proves the tree.** `astryx doctor` MUST warn when the tree has
-  an error diagnostic, when a CLI typed doc whose group the tree reads has no
-  route, and when a link between docs names no doc (`spec:AST-047` FR9). These
-  checks warn, so a project that passed without them keeps passing. The progressive-disclosure check MUST hold each guide the tree
-  places to the same size budget as every topic.
-- **FR9 — Phase 1 places the CLI's own docs.** The CLI MUST ship the `cli`
-  namespace with the `commands` and `api` namespaces under it, and the
-  `authoring` namespace, the one home for integration authors. Every command
-  doc MUST have a route under `cli/commands`, and every function, schema, and
-  enum doc in the `cli/api` group a route under `cli/api/<kind>s`. The
-  integration guides MUST live under `authoring`, one short guide per task,
-  beside the field reference whose sections `astryx docs authoring <name>`
-  reads, and no flat topic is named `cli-integrations` or `authoring`. An old
-  `cli/integrations` route MUST stay unknown, and its not-found error MUST name
-  the guide's new route under `authoring`. Under `spec:AST-017/FR45`, a CLI route or name MAY
-  change like this when every reference changes with it: links name docs by
-  identity (`spec:AST-047` FR9), and the graph walk fails on a reference
-  left behind (`spec:AST-047` FR11, FR12).
-- **FR10 — Search finds the smallest part that answers.** `astryx search` MUST
-  index each section of each topic and placed guide, and each namespace and
-  typed doc of the tree. A section result MUST carry `section`, and its command
-  MUST read only that section. A tree result's command MUST read its route. A
-  topic result's command MUST list the topic's sections when it has more than
-  one. A typed doc MUST also match by its own name, and a doc part by each
-  identifier it defines or names in code (`assertResponse`,
-  `ERR_UNKNOWN_SECTION`). A docs-only search (`--type doc`) MUST NOT need
-  `@astryxdesign/core`, because `astryx docs` does not.
-- **FR11 — Integrations join the tree.** A configured integration MAY ship
-  namespace docs, and guides with `placement`, in its docs directory. The tree
-  MUST read them beside the CLI's own, identify each node by the integration's
-  provider id (FR1) and name its `package` by the integration's npm name, and
-  hold them to FR2–FR8. A placed guide MUST NOT also `replaces` or `extends` a
-  topic. A flat topic MAY name a placed guide by its route, or by a route it
-  moved from, in `replaces` or `extends`; this claims no route, so the guide
-  keeps its place and route, and a read of a moved route still fails as FR9
-  states. A replacement MUST be read at that route as its own package's doc,
-  and an extension's sections MUST merge onto the guide as they merge onto a
-  topic; docs that name one guide by its old and its new route apply in
-  configured order. An extension's section MAY set `before` or `after` to the
-  key of a section of the doc it extends, and MUST be placed there, in
-  authored order; with neither, or with a key that names no section, it MUST
-  be added at the end, and neither field is read back. A replaced topic or
-  guide MUST name the package it replaced as `replacedPackage`, beside
-  `replaces`. A `replaces` or `extends` that names no topic and no guide,
-  such as a namespace, changes nothing.
-  When two providers claim one route, the CLI's own docs MUST keep it,
-  including its flat topics' names and the generated topic levels, then integrations
-  in configured order; between integrations a namespace keeps its route over a
-  topic, and a name a topic answers to through `replaces` is that topic's route.
-  The claim that loses MUST be a `duplicate_route` diagnostic filed against the
-  provider that lost it, and the topic list, reads, and search MUST agree with
-  the tree. `astryx doctor integration docs` MUST run the
-  same tree and link checks on one integration's docs, so an author finds a
-  broken placement or link before the package ships. It MUST fail on a tree
-  error diagnostic filed against the package, since that hides a doc, and warn
-  on a link that names no doc; `astryx doctor` keeps FR8's warnings. And
-  `astryx integration add doc <name> --parent <namespace>` MUST write a guide
-  placed in that namespace, found by its name, and the namespace doc when the
-  package has none. A CLI release that does not read the docs tree can hide every doc topic of a
-  package that ships a namespace doc or a placed guide, with nothing saying
-  why, so such a package MUST declare a `@astryxdesign/cli` peer
-  range that admits only CLIs that read it: `integration add doc --parent` MUST declare it,
-  and `astryx integration verify` MUST fail without it. The same check
-  covers a template that sets `replaces` (`spec:AST-035`), a doc section that
-  sets `id`, and a theme, whose typed descriptor an older CLI rejects along
-  with the package's doc topics; `integration add theme` declares the peer.
-  A doc section that sets `before` or `after` needs the same range from the
-  CLI that reads those fields; `integration verify` warns without it. A topic
-  or placed guide whose text writes a doc token (`{@command …}`, `{@pm …}`,
-  `{@pm-only …}`; an escaped `{@@…}` is not one) needs the range from the
-  first CLI that renders tokens, since an older one shows them as written;
-  `integration verify` warns without it (`doc_tokens_need_cli`). Component
-  docs, template docs and `agentDocs.append` lines are not yet covered by
-  that warning.
-- **FR12 — Every doc has a named home.** Every flat topic, the CLI's and
-  each integration's, MUST sit in the generated level for its category, in the
-  order the topic list reads: `foundations` (Foundations) for a foundations
-  topic, and `guides` (Guides) for any other. A level has no authored doc, so
-  its `id` is `null`, and it lists its topics one level down with the command
-  that opens each. A topic keeps its own name as its route, so no name
-  changes; a read of it offers Up to its level and Previous and Next among its
-  level's topics, as any tree node does. Placing a topic in a real section
-  takes it out of its level. Every flat topic the CLI ships MUST declare the
-  `guide` or `foundations` category, and the repository's tests MUST fail on
-  one that does not.
-- **FR13 — A flat topic becomes a namespace without breaking an unambiguous
-  read.** A
-  provider's flat topic MAY become a namespace of guides only when every rule
-  below holds for the result:
-  - The namespace takes the topic's name, so its route and `astryx docs <name>`
-    are unchanged, and no flat topic keeps the name, so the name has one owner
-    (FR4).
-  - Every section of the topic lands in exactly one guide, with its title, its
-    `id`, and the key a reader addresses it by unchanged; when regrouping would
-    change a section's derived key, the section's `id` pins the old key. No
-    section is dropped, merged into another, or copied into two guides. No
-    guide below the namespace shares a key with one of the topic's own
-    sections, so every section read that worked on the topic still names one
-    guide (FR6). Guides placed below the namespace from elsewhere MAY share
-    other keys with each other; a namespace read of such a key fails as FR6
-    states and names those guides.
-  - Each guide answers one task or one decision a reader brings, and its title
-    and summary name it. A guide is not a fragment cut at a size, and each
-    meets the size budget of FR8.
-  - Every link, `{@link}` target, and token reference the provider's docs make
-    to the topic still resolves: each names the namespace, or the guide that
-    holds what it pointed at, and the graph walk fails on one left behind
-    (`spec:AST-047` FR11). A token reference that names the namespace reads its
-    guides as one topic, their sections in tree order.
-  - A read in another language (`--dense`, `--zh`) of a guide, or of one of its
-    sections, returns the text the topic's read in that language returned for
-    each section the guide holds.
-  - Each piece of content appears once: the topic list names the namespace in
-    `meta.namespaces` and no topic in `data` by that name (FR7), search returns
-    each section once, from the guide that holds it (FR10), and no flat topic
-    keeps a copy of guide content for references or pages to read.
-- **FR14 — The docsite shows a root namespace as one page.** The docsite MUST
-  read the tree through the CLI's public docs API. A root namespace with a
-  guide below it MUST be one page at the namespace's slug: the namespace's own
-  content, then every guide below it in tree order, as the read
-  `astryx docs <namespace> --depth all --detail full` returns it. A nested
-  namespace's own content opens its guides on that page, and typed docs below
-  the namespace open only in `astryx docs`. A topic that becomes a namespace (FR13) therefore keeps its
-  address, its sidebar group, and its text. The slug of each guide and nested
-  namespace below it (its route with `/` as `-`) MUST be a temporary redirect
-  to where its text starts on the page. The docsite MAY give a nested
-  namespace that it names a page of its own instead: one page at that
-  namespace's slug, with its own content and every guide below it, which the
-  root page leaves out. Its sidebar entry MUST sit under the root page's
-  entry, and the slug of each guide below it MUST redirect into it. A root
-  namespace whose slug is a
-  package's page (`cli` is the CLI package's page) keeps one page per guide,
-  at the guide's slug, and has no namespace page. A namespace page's sidebar
-  group MUST be the namespace's own `category`; without one, `foundations`
-  when every guide below it is a foundations doc, and `guide` otherwise. The
-  docsite MAY name a sidebar parent page for any page: the page keeps its
-  slug and its `category`, and its sidebar entry sits under the parent's
-  entry, in the parent's group. Sidebar nesting is one level deep. A
-  namespace with no guide below it, such as a generated topic level (FR12), has
-  no page. The docsite build MUST fail when a slug is both a page and a
-  redirect, or both a flat topic and a namespace page.
+- **FR1 — 身份与路由相互分离。** 带有撰写文档的节点必须以该文档的身份来标识：即其 DocId，按提供方身份契约的定义，由其提供方的 ProviderId（可以与它的包名不同）、其 kind 与其 name 构成。节点移动时该身份不得改变。生成的层级没有撰写文档，也没有身份：其 `id` 为 `null`。节点的路由是其父节点的路由、`/` 与其自身的段；顶层命名空间的路由就是它的名称，扁平主题保留自己的名称（FR12）。段是节点名称以小写字母和数字、用单个连字符连接而成。路由是可读名称；`docs.node` 同时携带两者。
+- **FR2 — 每篇文档只有一个归属，按固定顺序决定。** 一篇文档的归属必须一次性决定，顺序如下：其显式的 `placement`；否则是其自己包中唯一匹配其发现组与 kind 的那条采用规则；再否则，对于参考主题，是其类别对应的生成层级（FR12）。`placement` 必须指明文档自己包中的某个命名空间（`namespace:<name>`）、该命名空间声明的一个槽位，以及一个接受该文档 kind 的槽位。失败的 `placement` 必须以一条诊断撤回该文档；它绝不能回退到采用。被两条规则采用的文档必须以指明这两个命名空间的诊断撤回。唯一的例外是标记为 `stability: 'experimental'` 的 CLI 命名空间，它可以采用每个包中 `source.packages: 'all'` 的某个文档组（`spec:AST-084/DEC-7`）；它只适用于位于项目选择启用之后的实验性图标集，且每个稳定命名空间对每个包保留一条采用规则，输出不变。
+- **FR3 — 命名空间从不列出或扫描其子节点。** 命名空间文档声明其槽位与采用规则。它不得枚举其子节点，编译器也不得从文件夹推断父节点。子节点用 `placement` 指明其父节点，或者由命名空间采用一个发现组：CLI 类型化文档的组就是它声明的 `namespace`（`cli/commands`、`cli/api`）。带 `groupBy: 'kind'` 的采用规则必须为每个 kind 各添加一个生成的命名空间（`functions`、`schemas`、`enums`），按该规则列出 kind 的顺序。
+- **FR4 — 路由唯一。** 两个节点不得共享同一路由。当会共享时，编译器必须按确定性的顺序保留其中一个，并以指明两者的诊断撤回另一个。相同的输入必须构建出相同的树，无论它们以什么顺序到达。子节点按 `placement.order`、然后标题、然后身份排序。
+- **FR5 — `astryx docs` 逐层读取这棵树。** `astryx docs <route>` 必须先解析扁平主题，然后解析树路由，但主题的路由被树分配给另一篇文档时（FR11）则打开那篇文档。命名空间必须打印其标题、其摘要，以及每个槽位的子节点（向下一个层级），每个都带其摘要和打开它的命令；它不得内联孙节点。当子节点的标题不是其路由名时（`assertResponse()`、`search()`），文本视图必须在摘要之前显示标题。类型化文档必须打印其内容。两者都必须以返回上一层的路径结尾。树放置的指南必须按主题来读，通过其路由（`spec:AST-047` FR3）。`--json` 必须为命名空间或类型化文档返回 `docs.node`：其身份、路由、kind、包、标题、摘要、面包屑，以及其槽位及其子节点或内容。
+- **FR6 — 小节读取只指名一个小节。** 类型化文档上的小节参数必须以 `ERR_UNKNOWN_SECTION` 失败并指名该文档。在命名空间上，读取 `astryx docs <namespace> <section>` 必须从该命名空间之下任意深度的每个指南中，取出该指南自己的小节读取为该查询返回的小节；在一个指南内部，该读取在该指南的各小节之间决定，如同在任何主题上一样。跨指南时，该读取必须再分两步决定：当恰好只有一个指南返回的小节以该查询作为其 key（其 `id`，或其标题派生出的 key）时，该小节即作答，即使还有别的指南也返回了某个小节；否则，当恰好只有一个指南返回小节时，该小节作答。响应必须是该指南的小节读取所返回的那一个（`docs.detail.section`），因此在其主题变成命名空间之前（FR13）在主题上成功的无歧义小节读取，会以相同的形状返回相同的小节。当没有指南返回小节，或在作出决定的那一步上有不止一个返回时，读取必须以 `ERR_UNKNOWN_SECTION` 失败，即主题的未知小节所给出的那个错误；其建议必须指出每个返回了小节的指南的路由，或在没有任何指南返回时指出该命名空间之下每个指南的路由。未知路由必须以 `ERR_UNKNOWN_TOPIC` 失败，并建议该路由所能到达的最深命名空间的子节点。
+- **FR7 — 主题列表指名这棵树。** `astryx docs --json` 必须在 `meta.namespaces` 中列出每个顶层命名空间，使 `data` 保持为主题列表，并且其中的每个条目都按主题来读。文本视图必须首先在自己的标题下显示命名空间，因为 CLI 自己的文档就从那里开始。文档未加载的包必须被指名，在 `meta.notLoaded` 中以及文本中各自的标题下，以便其作者知道文档为何缺失。带深度读取的列表（FR6）必须携带每个命名空间之下的树：`meta.namespaces` 中的每个条目获得一个 `children` 数组，包含其下一层级的文档，每个形状如同命名空间读取的子节点（其路由、名称、包、kind、标题、摘要及其实验性标记），并带上每个列表条目都携带的 `topic` 与 `description`，在深度更深时还带上其自己的 `children`。当深度停在某篇其下有文档的文档上时，该行必须携带它们的数量，如同命名空间读取的子节点那样。文本视图必须在同一个 Docs tree 标题下列出这些文档，每个都以其打开它的路由呈现，并且必须以其他每个列表标记实验性项的方式标记实验性的那一项。不带深度的列表读取不携带这些内容，因此请求主题的读者仍然只得到主题。
+- **FR8 — Doctor 证明这棵树。** 当树有错误诊断、当树读取其组的某个 CLI 类型化文档没有路由、以及当文档之间的某个链接没有指名任何文档（`spec:AST-047` FR9）时，`astryx doctor` 必须发出警告。这些检查是警告，因此此前没有它们也能通过的项目继续通过。渐进式披露检查必须让树放置的每个指南与每个主题遵守同样的篇幅预算。
+- **FR9 — 第 1 阶段放置 CLI 自己的文档。** CLI 必须随包提供 `cli` 命名空间，及其下的 `commands` 与 `api` 命名空间，以及 `authoring` 命名空间，即集成作者的唯一归属。每个命令文档必须在 `cli/commands` 下有条路由，`cli/api` 组中的每个函数、schema 与 enum 文档必须在 `cli/api/<kind>s` 下有条路由。集成指南必须位于 `authoring` 之下，每个任务一篇短指南，紧邻字段参考——其小节由 `astryx docs authoring <name>` 读取——并且不得有扁平主题被命名为 `cli-integrations` 或 `authoring`。旧的 `cli/integrations` 路由必须保持未知，其未找到错误必须指出该指南在 `authoring` 下的新路由。在 `spec:AST-017/FR45` 之下，当每个引用随之改变时，CLI 路由或名称可以像这样改变：链接以身份指名文档（`spec:AST-047` FR9），而图遍历会在被遗留的引用上失败（`spec:AST-047` FR11、FR12）。
+- **FR10 — 搜索找到能作答的最小部分。** `astryx search` 必须为每个主题和已放置指南的每个小节，以及树中的每个命名空间和类型化文档建立索引。小节结果必须携带 `section`，其命令必须只读取该小节。树结果的命令必须读取其路由。主题结果的命令必须在该主题有多个小节时列出这些小节。类型化文档还必须能按其自身名称匹配，文档的部分还必须能按其定义或在代码中指名的每个标识符匹配（`assertResponse`、`ERR_UNKNOWN_SECTION`）。仅限文档的搜索（`--type doc`）不得需要 `@astryxdesign/core`，因为 `astryx docs` 也不需要它。
+- **FR11 — 集成加入这棵树。** 已配置的集成可以在其文档目录中随包提供命名空间文档，以及带 `placement` 的指南。树必须在 CLI 自身文档旁边读取它们，以集成的提供方 id 标识每个节点（FR1），并以其 npm 名称命名其 `package`，且让它们遵守 FR2–FR8。已放置指南不得同时 `replaces` 或 `extends` 某个主题。扁平主题可以通过其路由，或通过它迁移自的路由，在 `replaces` 或 `extends` 中指名某个已放置指南；这并不主张任何路由，因此该指南保留其位置和路由，而对已迁移路由的读取仍如 FR9 所述失败。替换必须在该路由上被读作其自己包的文档，扩展的小节必须像合并到主题上那样合并到该指南上；通过旧路由和新路由指名同一指南的文档按配置顺序应用。扩展的小节可以设置 `before` 或 `after` 为其所扩展文档的某小节的 key，并且必须按撰写顺序放在那里；两者都不设置，或设置的 key 没有指名任何小节时，它必须被追加到末尾，且这两个字段都不会被回读。被替换的主题或指南必须在 `replaces` 旁以其替换掉的包命名为 `replacedPackage`。未指名任何主题和指南的 `replaces` 或 `extends`，例如指名命名空间的，不改变任何东西。当两个提供方主张同一路由时，CLI 自己的文档必须保留它，包括其扁平主题的名称和生成的层级主题，然后是配置顺序中的集成；在集成之间，命名空间对主题保留其路由，而某个主题通过 `replaces` 应答的名称就是该主题的路由。失败的主张必须是一条针对失去它的一方记录的 `duplicate_route` 诊断，主题列表、读取与搜索必须与树一致。`astryx doctor integration docs` 必须对单个集成的文档运行同样的树检查与链接检查，以便作者在包发布之前发现错误的放置或链接。它必须在有针对该包记录的树错误诊断时失败，因为那会隐藏一篇文档，并在链接未指名任何文档时警告；`astryx doctor` 保留 FR8 的警告。并且 `astryx integration add doc <name> --parent <namespace>` 必须写入一篇放置在该命名空间中的指南，该指南按其名称被找到，并在该包没有命名空间文档时写入该命名空间文档。不读取文档树的 CLI 发行版会隐藏一个随包提供命名空间文档或已放置指南的包的所有文档主题，且不说明原因，因此这样的包必须声明一个只接纳读取它的 CLI 的 `@astryxdesign/cli` peer 范围：`integration add doc --parent` 必须声明它，`astryx integration verify` 在没有它时必须失败。同样的检查覆盖设置 `replaces` 的模板（`spec:AST-035`）、设置 `id` 的文档小节，以及主题——其类型化描述符会被较旧的 CLI 连同该包的文档主题一起拒绝；`integration add theme` 声明该 peer。设置 `before` 或 `after` 的文档小节需要读取这些字段的 CLI 提供同样的范围；`integration verify` 在没有它时警告。文本中写出文档 token（`{@command …}`、`{@pm …}`、`{@pm-only …}`；转义的 `{@@…}` 不算）的主题或已放置指南，需要从第一个渲染 token 的 CLI 起的范围，因为较旧的 CLI 会把它们按原样显示；`integration verify` 在没有它时警告（`doc_tokens_need_cli`）。组件文档、模板文档与 `agentDocs.append` 行目前尚未被该警告覆盖。
+- **FR12 — 每篇文档都有具名的归属。** 每个扁平主题——CLI 的和每个集成的——必须位于其类别对应的生成层级中，按主题列表读取的顺序：基础主题放在 `foundations`（Foundations），其他放在 `guides`（Guides）。层级没有撰写文档，因此其 `id` 为 `null`，它向下一个层级列出其主题，并给出打开每个主题的命令。主题保留自己的名称作为路由，因此没有名称改变；对它的读取提供到其层级的 Up，以及在其层级主题之间的 Previous 和 Next，如同任何树节点一样。把主题放入真正的分区就会让它离开其层级。CLI 随包提供的每个扁平主题必须声明 `guide` 或 `foundations` 类别，仓库的测试必须对未声明者失败。
+- **FR13 — 扁平主题变成命名空间而不破坏无歧义的读取。** 提供方的扁平主题只有在下列每条规则对结果都成立时，才可以变成一个由指南组成的命名空间：
+  - 命名空间采用该主题的名称，因此其路由与 `astryx docs <name>` 不变，且没有扁平主题保留该名称，因此该名称只有一个所有者（FR4）。
+  - 主题的每个小节都恰好落入一个指南，其标题、其 `id` 以及读者用于寻址它的 key 保持不变；当重新分组会改变小节派生出的 key 时，该小节的 `id` 钉住旧 key。没有小节被丢弃、合并进另一个，或被复制到两个指南中。命名空间之下的任何指南都不得与主题自身小节之一共享 key，因此在该主题上有效的每次小节读取仍只指名一个指南（FR6）。从别处放置到该命名空间之下的指南可以相互共享其他 key；对此类 key 的命名空间读取如 FR6 所述失败，并指名那些指南。
+  - 每个指南回答读者带来的一个任务或一个决策，其标题与摘要则指名它。指南不是按篇幅裁出的片段，每个都满足 FR8 的篇幅预算。
+  - 提供方文档对该主题所作的每个链接、`{@link}` 目标与 token 引用仍然可解析：每个都指名该命名空间，或指名持有它所指向内容的指南，而图遍历会在被遗留的那一个上失败（`spec:AST-047` FR11）。指名该命名空间的 token 引用把它的指南当作一个主题来读，其小节按树顺序排列。
+  - 对某个指南或其某个小节以另一种语言进行的读取（`--dense`、`--zh`）返回该主题在该语言下的读取对该指南所持每个小节返回的文本。
+  - 每份内容只出现一次：主题列表在 `meta.namespaces` 中指名该命名空间，且 `data` 中没有以该名称指名的主题（FR7）；搜索从持有它的指南中每个小节只返回一次（FR10）；并且没有扁平主题保留指南内容的副本供引用或页面读取。
+- **FR14 — docsite 把一个根命名空间展示为一页。** docsite 必须通过 CLI 的公共文档 API 读取这棵树。其下有指南的根命名空间必须是在该命名空间 slug 上的一页：先是命名空间自身的内容，然后按树顺序是它下面的每个指南，正如读取 `astryx docs <namespace> --depth all --detail full` 所返回的。嵌套命名空间自身的内容在同一页上打开它的指南，而命名空间之下的类型化文档只在 `astryx docs` 中打开。因此，一个变成命名空间的主题（FR13）保留其地址、其侧边栏分组与其文本。其下每个指南与嵌套命名空间的 slug（其路由以 `/` 作 `-`）必须是对其文本在页面上开始处的临时重定向。docsite 可以改为给由它指名的嵌套命名空间一个自己的页面：该命名空间 slug 上的一页，带其自身内容与其下每个指南，而根页面则不包含它们。它的侧边栏条目必须位于根页面的条目之下，其下每个指南的 slug 必须重定向进它。slug 是某个包的页面（`cli` 是 CLI 包的页面）的根命名空间为每个指南保留一页，位于该指南的 slug，且没有命名空间页面。命名空间页面的侧边栏分组必须是命名空间自身的 `category`；没有它时，若其下每个指南都是基础文档则为 `foundations`，否则为 `guide`。docsite 可以为任何页面指名侧边栏父页面：该页面保留其 slug 与 `category`，其侧边栏条目位于父页面的条目之下、在父页面的分组中。侧边栏嵌套只有一层。其下没有指南的命名空间，例如生成的层级主题（FR12），没有页面。当某个 slug 既是页面又是重定向，或既是扁平主题又是命名空间页面时，docsite 构建必须失败。
 
 ### Platform support
 
-- Supported feature/engine floor: every supported CLI runtime.
-- Unsupported behavior: none.
-- Browser evidence: none beyond the docsite's page and redirect tests (FR14);
-  the record makes no browser-specific claim.
+- 支持的特性/引擎下限：每个受支持的 CLI 运行时。
+- 不支持的行为：无。
+- 浏览器证据：除 docsite 的页面与重定向测试（FR14）之外没有；本记录不作任何特定于浏览器的断言。
 
 ## Current-state impact
 
-Phase 1 changes these surfaces:
+第 1 阶段改变这些表面：
 
-- the CLI ships its namespace docs and the guides they place in
-  `assets/docs/tree/`, each named after its doc; the flat topic list does not
-  read that directory;
-- the compiler builds the tree from those files and the CLI's typed docs, and
-  `collectDocInputs` lists the tree files as a `tree` root;
-- the four tree diagnostics (`invalid_namespace`, `invalid_placement`,
-  `overlapping_adoption`, `duplicate_route`) join the compiler's codes;
-- `astryx docs`, `docs()`, and `astryx doctor` read the tree as FR5–FR8 state,
-  and a section read on a namespace resolves through its guides (FR6);
-- `astryx search` finds sections and tree nodes, as FR10 states;
-- an integration's namespace docs and placed guides join the tree, and
-  `astryx doctor integration docs` checks them, as FR11 states;
-- `cli-integrations` moves to `cli/integrations`, and every reference moves
-  with it;
-- the integration guides then move from `cli/integrations` to `authoring`,
-  beside the field reference, and every reference moves with them; an old
-  route's not-found error names its new one (FR9);
-- every flat topic sits in the generated level for its category, Guides or
-  Foundations, as FR12 states;
-- a flat topic that becomes a namespace keeps its unambiguous reads inside
-  its own package, as FR13 and FR6 state;
-- the docsite reads the tree through `docs()`: each root namespace is one page
-  and its guides' slugs redirect into it (FR14); the `cli` namespace's guides
-  keep their own pages, and `/docs/cli-integrations`, every
-  `/docs/cli-integrations-…` guide slug, and `/docs/cli-writing-docs` redirect
-  into `/docs/authoring`.
+- CLI 随包提供其命名空间文档以及它们放置在 `assets/docs/tree/` 中的指南，每个都以它的文档命名；扁平主题列表不读取该目录；
+- 编译器从这些文件与 CLI 的类型化文档构建树，`collectDocInputs` 把树文件列为 `tree` 根；
+- 四项树诊断（`invalid_namespace`、`invalid_placement`、`overlapping_adoption`、`duplicate_route`）加入编译器的代码集；
+- `astryx docs`、`docs()` 与 `astryx doctor` 按 FR5–FR8 所述读取树，并且在命名空间上的小节读取通过其指南解析（FR6）；
+- `astryx search` 按 FR10 所述找到小节与树节点；
+- 集成的命名空间文档与已放置指南按 FR11 所述加入树，`astryx doctor integration docs` 检查它们；
+- `cli-integrations` 移到 `cli/integrations`，每个引用随之移动；
+- 集成指南随后从 `cli/integrations` 移到 `authoring`，紧邻字段参考，每个引用随之移动；旧路由的未找到错误指出其新路由（FR9）；
+- 每个扁平主题按 FR12 所述位于其类别（Guides 或 Foundations）对应的生成层级中；
+- 变成命名空间的扁平主题按 FR13 与 FR6 所述，在其自己的包内保留其无歧义读取；
+- docsite 通过 `docs()` 读取树：每个根命名空间是一页，其指南的 slug 重定向进它（FR14）；`cli` 命名空间的指南保留各自的页面，并且 `/docs/cli-integrations`、每个 `/docs/cli-integrations-…` 指南 slug 及 `/docs/cli-writing-docs` 都重定向到 `/docs/authoring`。
 
-`architecture:cli-surface` INV25 and INV26 carry this record into the code.
+`architecture:cli-surface` INV25 与 INV26 把本记录带入代码。
 
 ## Verification
 
-| Contract      | Verification                                                                  | Representative states                                                                                                                                                                                                                                             | Mutation or failure expectation                                                                                                                                                                                                                                     |
-| ------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR1, FR3, FR4 | Tree builder fixture tests                                                    | three authored levels; adoption with and without `groupBy`; reversed input order; order and title sort                                                                                                                                                            | A route that ignores the parent, a folder that implies a parent, or a tree that depends on input order                                                                                                                                                              |
-| FR2           | Tree builder failure fixtures                                                 | no slot; unknown slot; a slot that refuses the kind; another package's parent; not a reference; two adopters; a cycle                                                                                                                                             | A failed placement that falls back to adoption, or a failure without a diagnostic                                                                                                                                                                                   |
-| FR5, FR6, FR7 | `docs()` dispatcher tests and CLI runs                                        | `cli`, `cli/api`, one function, the placed guide and its sections, the old name, a typo route; a section on a namespace that one guide, no guide, and two guides hold; the topic list read with and without a depth, and a guide one integration replaces         | A namespace that inlines grandchildren, a lost section read, a section read that picks one of two guides, a wrong error code, a listed doc attributed to the package whose route it took, or an experimental doc listed unmarked                                    |
-| FR8           | Doctor tests                                                                  | this repo; a fixture tree with a broken placement                                                                                                                                                                                                                 | A broken tree or an unplaced CLI doc that passes                                                                                                                                                                                                                    |
-| FR9           | Real-tree tests and the route inventory                                       | every command, function, schema, and enum doc; every exported API function                                                                                                                                                                                        | A CLI typed doc without its route, or a route inventory row the tree contradicts                                                                                                                                                                                    |
-| FR10          | Search tests and CLI runs                                                     | a guide section; a typed doc by its own name; an error code; a topic hit; no core installed                                                                                                                                                                       | A section hit whose command reads the whole topic, or a docs-only search that needs core                                                                                                                                                                            |
-| FR11          | Integration tree tests; guide route target tests                              | a namespace and two placed guides from a package whose provider id differs from its name; a broken link; a claim on the `cli` route; a flat topic that replaces or extends a CLI guide by its route, with `before` and `after`                                    | A node named by the package name, a broken link that passes either doctor, an integration that takes a CLI route, a replaced guide or added section that names the wrong package, or a section out of place                                                         |
-| FR12          | `docs()` tests, the graph walk, and search tests                              | the level and its children in list order; a topic's Up, Previous, and Next; a flat topic hit's parent; an integration's flat topic                                                                                                                                | A flat topic without a home, a topic whose name changes, or a level that lists a placed guide                                                                                                                                                                       |
-| FR13          | Split tests over the topic before and after, the graph walk, and search tests | each old section key read through the namespace; a link and a token reference to the old topic; a `--dense` read; the topic list and a search for one section                                                                                                     | A dropped, merged, or copied section; a changed title or `id`; a reference left on the old identity; a name listed twice; a section found twice                                                                                                                     |
-| FR14          | Docsite page-generation and route-resolution tests                            | a split namespace; a nested namespace; a nested namespace with its own page; a page with a named sidebar parent in another group; a package-page namespace; a namespace with a `category`, and one whose guides are all foundations docs; a generated topic level | An old address that stops resolving or lands in a sidebar group other than its own or its named parent's, a permanent guide redirect, a guide page on a non-package namespace, a nested page its root page also holds, or a slug that is both a page and a redirect |
+| 契约          | 验证                                             | 代表性状态                                                                                                                                                                                         | 变更或失败预期                                                                                                                                           |
+| ------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR1, FR3, FR4 | 树构建器夹具测试                                 | 三个撰写层级；带与不带 `groupBy` 的采用；反转的输入顺序；顺序与标题排序                                                                                                                            | 忽略父节点的路由、由文件夹暗示的父节点，或依赖输入顺序的树                                                                                               |
+| FR2           | 树构建器失败夹具                                 | 无槽位；未知槽位；拒绝该 kind 的槽位；另一个包的父节点；不是参考；两个采用者；一个环                                                                                                               | 回退到采用的失败放置，或没有诊断的失败                                                                                                                   |
+| FR5, FR6, FR7 | `docs()` 分发器测试与 CLI 运行                   | `cli`、`cli/api`、一个函数、已放置指南及其小节、旧名称、拼错的路由；在由一个指南、没有指南和两个指南持有的命名空间上的小节；带与不带深度读取的主题列表，以及一个集成替换的指南                     | 内联孙节点的命名空间、丢失的小节读取、在两个指南中挑选一个的小节读取、错误的错误代码、被归属到其取得的那个路由所属包的列出文档，或未标记列出的实验性文档 |
+| FR8           | Doctor 测试                                      | 本仓库；一个放置损坏的夹具树                                                                                                                                                                       | 损坏的树或未放置的 CLI 文档通过                                                                                                                          |
+| FR9           | 真实树测试与路由清单                             | 每个命令、函数、schema 与 enum 文档；每个导出的 API 函数                                                                                                                                           | 没有其路由的 CLI 类型化文档，或与树矛盾的路由清单行                                                                                                      |
+| FR10          | 搜索测试与 CLI 运行                              | 一个指南小节；按其自身名称的类型化文档；一个错误代码；一个主题命中；未安装 core                                                                                                                    | 命令读取整个主题的小节命中，或需要 core 的仅文档搜索                                                                                                     |
+| FR11          | 集成树测试；指南路由目标测试                     | 来自 provider id 与其名称不同的包的命名空间与两个已放置指南；一个损坏的链接；对 `cli` 路由的主张；通过其路由替换或扩展某个 CLI 指南的扁平主题，带 `before` 与 `after`                              | 以包名指名的节点、通过两个 doctor 之一仍通过的损坏链接、取得 CLI 路由的集成、指名错误包的被替换指南或新增小节，或位置不对的小节                          |
+| FR12          | `docs()` 测试、图遍历与搜索测试                  | 层级及其子节点按列表顺序；一个主题的 Up、Previous 与 Next；扁平主题命中的父节点；集成的扁平主题                                                                                                    | 没有归属的扁平主题、名称改变的主题，或列出已放置指南的层级                                                                                               |
+| FR13          | 对拆分前与拆分后主题的拆分测试、图遍历与搜索测试 | 通过命名空间读取的每个旧小节 key；指向旧主题的链接与 token 引用；`--dense` 读取；主题列表与对一个小节的搜索                                                                                        | 被丢弃、合并或复制的小节；改变的标题或 `id`；遗留在旧身份上的引用；被列出两次的名称；被找到两次的小节                                                    |
+| FR14          | docsite 页面生成与路由解析测试                   | 一个拆分命名空间；一个嵌套命名空间；一个拥有自己页面的嵌套命名空间；一个侧边栏父页面在另一组的页面；包页面命名空间；带 `category` 的命名空间，以及其指南都是基础文档的命名空间；一个生成的层级主题 | 停止解析或落入非其自身或非其指名父页面分组的旧地址、永久的指南重定向、非包命名空间上的指南页面、其根页面也包含的嵌套页面，或既是页面又是重定向的 slug    |
 
 ## Decision log
 
 ### DEC-1 — Roll out the tree in phases, CLI first
 
 **Reference:** `spec:AST-046/DEC-1`
+
 **Decider:** `josephfarina`, `2026-09-22`
 
-The compiler, the CLI reader, and Doctor come first; the docsite follows the
-tree only as far as FR14 states, and every current docsite address keeps
-working. Starting with the CLI's own docs tests the contract on docs one team owns.
+编译器、CLI 读取器与 Doctor 先行；docsite 只在 FR14 所述的范围内跟随这棵树，且每个当前 docsite 地址继续有效。从 CLI 自己的文档开始，是在一个团队拥有的文档上检验该契约。
 
-Rejected: one change that moves every doc and the docsite at once. It is too
-large to review, and every route changes before the contract is proven.
+已否决：一次改动同时迁移每一篇文档与 docsite。它太大而无法审查，而且在契约得到证明之前每条路由都会改变。
 
 ### DEC-2 — A CLI typed doc's `namespace` is its adoption group
 
 **Reference:** `spec:AST-046/DEC-2`
+
 **Decider:** `josephfarina`, `2026-09-24`
 
-Every CLI typed doc already declares the `namespace` that reads it, and Doctor
-already enforces it. The tree adopts by that group, so a new command or
-function appears in the tree with no other edit.
+每个 CLI 类型化文档已经声明读取它的 `namespace`，Doctor 已经在强制这一点。树按该组采用，因此新的命令或函数无需其他改动就出现在树中。
 
-Rejected: a second field for the tree, and a list of children in each namespace.
-Both repeat what the doc already says and drift from it.
+已否决：为树增加第二个字段，以及在每个命名空间中维护子节点列表。两者都重复文档已经说过的话，并会与之漂移。
 
 ### DEC-3 — Rename, and move every reference with it
 
 **Reference:** `spec:AST-046/DEC-3`
+
 **Decider:** `josephfarina`, `2026-09-28`
 
-`cli-integrations` becomes `cli/integrations`, with no alias. A CLI name or
-route may change when every reference changes with it: links name docs by
-identity, so they follow the doc, and the graph walk fails on any reference
-left behind. An alias would keep a second name for one doc.
+`cli-integrations` 变成 `cli/integrations`，不带别名。当每个引用随之改变时，CLI 名称或路由可以改变：链接以身份指名文档，因此它们跟随文档，而图遍历会在任何被遗留的引用上失败。别名会为一篇文档保留第二个名称。
 
-Rejected: keeping `cli-integrations` as an alias, and removing it before typed
-links and the graph walk could prove no reference was left.
+已否决：把 `cli-integrations` 保留为别名，以及在类型化链接与图遍历能够证明没有引用被遗留之前就移除它。
 
 ### DEC-4 — Integrations join the tree in the first phase
 
 **Reference:** `spec:AST-046/DEC-4`
+
 **Decider:** `josephfarina`, `2026-09-28`
 
-The tree, its moves, and its checks work the same for every provider. Holding
-integrations back would leave their docs on a weaker path and delay the checks
-their authors need, so an integration's namespace docs and placed guides join
-the tree in the same change as the CLI's.
+树、它的移动与它的检查对每个提供方都以同样方式工作。把集成押后会让它们的文档留在一条更弱的路径上，并推迟其作者需要的检查，因此集成的命名空间文档与已放置指南在同一次改动中与 CLI 的一起加入树。
 
-Rejected: a later phase for integration namespaces.
+已否决：为集成命名空间安排后续阶段。
 
 ### DEC-5 — A split keeps the topic's name and its unambiguous reads
 
 **Reference:** `spec:AST-046/DEC-5`
+
 **Decider:** `josephfarina`, `2026-10-08`
 
-A long topic gets short guides without a breaking change. The `docs` command's
-response schemas are a contract (`spec:AST-017/FR45`), and a split moves no
-content, so it keeps the topic's unambiguous released reads working inside its
-own package, even where FR45 would let a route stop resolving. The one
-deliberate exception is a title fragment that matches sections in two guides,
-which asks instead of guessing (DEC-6); references from other packages are an
-open question (OQ2). The namespace takes the topic's name, so its
-route and every command that opens it stay the same;
-sections keep their titles and ids, so section reads and links keep resolving;
-each piece of content appears once, so a reader never weighs two copies. A
-guide is shaped by the task or decision it answers, which is what search and a
-reader's next step look for.
+冗长的主题得到短指南，而不产生破坏性变更。`docs` 命令的响应 schema 是一项契约（`spec:AST-017/FR45`），而拆分不移动任何内容，因此它让主题在自身包内已发布的那些无歧义读取继续有效，即使在 FR45 会让某条路由停止解析的地方也是如此。唯一刻意保留的例外是同时匹配两个指南中小节的标题片段，它会改为询问而不是猜测（DEC-6）；来自其他包的引用是一个开放问题（OQ2）。命名空间采用主题的名称，因此其路由与打开它的每条命令保持不变；小节保留其标题与 id，因此小节读取与链接继续可解析；每份内容只出现一次，因此读者从不需要权衡两个副本。指南由它所回答的任务或决策来塑形，而搜索与读者的下一步正是在找这个。
 
-Rejected: keeping the flat topic beside the namespace, as an alias or a data
-copy; the name has two owners and lists and search show the content twice.
+已否决：把扁平主题以别名或数据副本的形式保留在命名空间旁边；那样名称有两个所有者，列表与搜索会把内容显示两次。
 
 ### DEC-6 — A section read on a namespace resolves through its guides
 
 **Reference:** `spec:AST-046/DEC-6`
+
 **Decider:** `josephfarina`, `2026-10-08`
 
-A released `astryx docs <topic> <section>` command keeps working after its
-topic becomes a namespace when its section is unambiguous: its exact key, or a
-title fragment that only one guide's read matches. Each guide's own read
-decides between that guide's sections, as a topic's read does. Any other case fails with the error an unknown section already
-gives, naming the guides, so the reader is one step from the answer.
+已发布的 `astryx docs <topic> <section>` 命令在其主题变成命名空间之后，只要其小节是无歧义的便继续有效：其精确的 key，或只有一个指南的读取能匹配的标题片段。每个指南自己的读取在该指南的各小节之间决定，如同主题的读取一样。任何其他情况都以未知小节已经给出的错误失败，并指名那些指南，因此读者距答案只有一步。
 
-Rejected: failing every section argument on a namespace; it breaks released
-section reads of each split topic.
-Rejected: the first match in tree order; it picks a guide silently when two
-match.
+已否决：在命名空间上让每个小节参数都失败；那会破坏每个拆分主题已发布的小节读取。已否决：按树顺序取第一个匹配；它在两个都匹配时会静默地挑一个指南。
 
 ### DEC-7 — The docsite shows a root namespace as one page
 
 **Reference:** `spec:AST-046/DEC-7`
+
 **Decider:** `josephfarina`, `2026-10-08`
 
-A person reading the docsite keeps one full page per topic, at the same address
-and in the same sidebar group, however the CLI splits it; an agent reads the
-guides one at a time. Guide addresses redirect temporarily, so a later site
-version can give guides their own pages without breaking a saved link. A
-namespace whose slug is a package's page keeps one page per guide, because that
-slug already belongs to the package.
+阅读 docsite 的人无论 CLI 如何拆分，都仍然每个主题一整个页面，地址相同、侧边栏分组相同；而 agent 一次读一个指南。指南地址临时重定向，因此后续的站点版本可以给指南各自的页面而不破坏已保存的链接。slug 是某个包的页面的命名空间为每个指南保留一页，因为该 slug 已经属于那个包。
 
-Rejected: one docsite page per guide; it moves each split topic's address and
-thins its page.
+已否决：每个指南一页 docsite 页面；那会移动每个拆分主题的地址并稀释其页面。
 
 ### DEC-8 — Authoring owns integration authoring, and every doc has a named home
 
 **Reference:** `spec:AST-046/DEC-8`
+
 **Decider:** `josephfarina`, `2026-10-21`
 
-Maintainer decision: everything an integration author reads lives under one
-top-level home, `authoring`, which holds the integration guides and the field
-reference. No doc sits in a catch-all:
-a flat topic's home is named for what it is, Guides or Foundations, after the
-docsite's sidebar groups. Routes move with every reference, as DEC-3 allows,
-and topic names do not change.
+维护者决定：集成作者所读的一切都位于同一个顶层归属之下，即 `authoring`，它持有集成指南与字段参考。没有文档放在兜底容器里：扁平主题的归属按其本质命名，Guides 或 Foundations，与 docsite 的侧边栏分组一致。按 DEC-3 所允许的，路由随每个引用一起移动，而主题名称不变。
 
-Rejected: keeping the integration guides under `cli` beside a separate
-reference, which gave authors two top-level homes; and a generated level a
-reader sees as "Unorganized".
+已否决：把集成指南留在 `cli` 之下、与一份单独参考并列，那会给作者两个顶层归属；以及让读者看到被视作 “Unorganized” 的生成层级。
 
 ## Open questions
 
-- **OQ2 — What another provider's doc reads when it links to, extends, or
-  replaces a topic that becomes a namespace.** (`human-api`) FR13 moves every
-  reference inside the topic's own provider; a reference in another package
-  cannot move with it.
+- **OQ2 — 当另一个提供方的文档链接到、扩展或替换一个变成命名空间的主题时，它读到什么。**（`human-api`）FR13 移动主题自身提供方内的每个引用；另一个包中的引用无法随之移动。

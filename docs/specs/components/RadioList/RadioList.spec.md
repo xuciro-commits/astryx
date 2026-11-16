@@ -47,181 +47,148 @@ system_specs: [spec:AST-085]
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                                   |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | None changes. RadioList takes `label`, `value`, `onChange`, `orientation`, `size`, `isDisabled`, `disabledMessage`, `isRequired`, `isOptional`, `status`, `htmlName`, Field props, part props, and RadioListItem children. |
-| Behavior                | A Field-labelled `role="radiogroup"` of native radios sharing one name. Selecting an option calls `onChange(value)`. The group sets the item size, the disabled state, and required semantics.                             |
-| End-user impact         | People choose one option by pointer, touch, or the browser's arrow keys, with a predictable first Tab stop. A group disabled without a reason leaves the tab order, so keyboard users cannot find it.                      |
-| Builder impact          | None.                                                                                                                                                                                                                      |
-| Compatibility/readiness | Records shipped behavior; no API, default, or DOM change. Native `disabled` on disabled radios conflicts with `spec:AST-085` FR1 and FR7; listed under Current-state impact.                                               |
-| Review checks           | Reject a group without a name, radios that lose their shared name, a selection while disabled, a first Tab stop that lands mid-group with an empty value, or root styling props.                                           |
-| Governing rules         | `family:input-fields` FR10, DEC-7; `spec:AST-085` FR1–FR7; `design:user-states` DR1, DR2 (through RadioListItem); WAI-ARIA radio group pattern.                                                                            |
+| 区域          | 契约                                                                                                                                                                                                                     |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 公共契约      | 无变更。RadioList 接受 `label`、`value`、`onChange`、`orientation`、`size`、`isDisabled`、`disabledMessage`、`isRequired`、`isOptional`、`status`、`htmlName`、Field 的 props、part 的 props 以及 RadioListItem 子元素。 |
+| 行为          | 一个由 Field 提供标签、`role="radiogroup"`、共享同一 name 的原生单选按钮组。选中某个选项会调用 `onChange(value)`。组设置每个选项的尺寸、禁用状态以及必填语义。                                                           |
+| 最终用户影响  | 用户可以通过指针、触摸或浏览器的方向键选择一个选项，且第一个 Tab 停靠点可预期。未给出原因的禁用组会脱离 Tab 顺序，因此键盘用户无法找到它。                                                                               |
+| 构建者影响    | 无。                                                                                                                                                                                                                     |
+| 兼容性/就绪度 | 记录已发布行为；无 API、默认值或 DOM 变更。禁用单选按钮上的原生 `disabled` 与 `spec:AST-085` FR1 和 FR7 冲突；列于“当前状态影响”下。                                                                                     |
+| 审查检查      | 拒绝以下情况：组没有 name；单选按钮丢失共享 name；禁用状态下仍可选中；空值下第一个 Tab 停靠点落在组中间；使用根级样式 props。                                                                                            |
+| 管辖规则      | `family:input-fields` FR10、DEC-7；`spec:AST-085` FR1–FR7；`design:user-states` DR1、DR2（经由 RadioListItem）；WAI-ARIA 单选组模式。                                                                                    |
 
-This table is a review projection; the body below is authoritative.
+本表是审查视角的投影；以下正文具有权威性。
 
 ## Intent
 
-RadioList presents a small set of mutually exclusive options as one labelled
-radio group. It owns the group's name, selection value, shared radio name,
-group-level disabled, required, and status semantics, and the entry Tab stop.
-Each option is `component:RadioListItem`. Consumer usage lives in
-`RadioList.doc.mjs`.
+RadioList 将一小组互斥选项呈现为一个带标签的单选组。它拥有组的 name、选中值、共享的单选 name、组级禁用、必填与状态语义，以及入口 Tab 停靠点。每个选项都是 `component:RadioListItem`。使用方用法见 `RadioList.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `yes`; `orientation="vertical"`, `size="md"`,
-  not disabled
-- Compatibility class: records shipped behavior; no public prop, default,
-  export, or DOM change
-- Controlled/uncontrolled behavior: controlled only; `value` is required and
-  `''` means nothing is selected
-- Migration decision: none
+- 保留的已发布默认值：`yes`；`orientation="vertical"`、`size="md"`、未禁用
+- 兼容性类别：记录已发布行为；无公共 prop、默认值、导出或 DOM 变更
+- 受控/非受控行为：仅受控；`value` 为必填，`''` 表示未选中任何项
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The group Field and the `role="radiogroup"` element, its name, description,
-  status, invalid and required state, and the `radio-list` target.
-- The shared radio name, the selected value, and `onChange`.
-- Group disabled and the group disabled-reason tooltip.
-- The entry Tab stop when nothing is selected.
-- Where base, `container*`, and `control*` props land.
+- 组的 Field 与 `role="radiogroup"` 元素、其 name、描述、状态、无效与必填状态，以及 `radio-list` 目标。
+- 共享的单选 name、选中值以及 `onChange`。
+- 组禁用以及组禁用原因提示框。
+- 未选中任何项时的入口 Tab 停靠点。
+- base、`container*` 与 `control*` props 落在何处。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- Each option's radio, naming, description, row, disabled item state, and the
-  `radio-list-item` target — owned by `component:RadioListItem`.
-- Arrow-key movement and selection between radios — the browser's native radio
-  group behavior.
-- The radio indicator — owned by the Indicator registry's radio indicator.
-- Group-label and status-message presentation — owned by Field under `family:input-fields` (shared owner section) and
-  `component:FieldStatus`.
+- 每个选项的单选按钮、命名、描述、行、禁用项状态，以及 `radio-list-item` 目标——由 `component:RadioListItem` 拥有。
+- 单选按钮之间的方向键移动与选中——由浏览器的原生单选组行为负责。
+- 单选指示器——由 Indicator 注册表的单选指示器拥有。
+- 组标签与状态消息的呈现——由 `family:input-fields`（共享所有者章节）下的 Field 以及 `component:FieldStatus` 拥有。
 
 ## Public concepts
 
-| Concept     | Closed values or states                         | Meaning                                      | Availability by variant/orientation/state | Default      | Owner                 | Stability | Invalid-value behavior                         |
-| ----------- | ----------------------------------------------- | -------------------------------------------- | ----------------------------------------- | ------------ | --------------------- | --------- | ---------------------------------------------- |
-| Value       | string; `''` for none                           | The selected option's value.                 | Always.                                   | required     | `component:RadioList` | Stable    | A value no item carries selects nothing.       |
-| Orientation | `vertical`, `horizontal`                        | Layout of the options.                       | Always.                                   | `vertical`   | `component:RadioList` | Stable    | TypeScript rejects other values.               |
-| Size        | `sm`, `md`                                      | Radio circle size for every item.            | Always.                                   | `md`         | `component:RadioList` | Stable    | TypeScript rejects other values.               |
-| Disabled    | off, on, on with reason                         | Blocks selection on every item.              | A reason applies only with `isDisabled`.  | off          | `component:RadioList` | Stable    | A reason without `isDisabled` renders nothing. |
-| Status      | `error`, `warning`, `success`, optional message | Group validation state.                      | Always; the message is detached.          | none         | `family:input-fields` | Stable    | TypeScript rejects other types.                |
-| Name        | string                                          | The shared radio `name` and form field name. | Always.                                   | generated id | `component:RadioList` | Stable    | Not applicable.                                |
+| 概念 | 封闭取值或状态                          | 含义                             | 按变体/方向/状态的可用性       | 默认值     | 所有者                | 稳定性 | 无效值行为                                 |
+| ---- | --------------------------------------- | -------------------------------- | ------------------------------ | ---------- | --------------------- | ------ | ------------------------------------------ |
+| 值   | string；无选中时为 `''`                 | 选中选项的值。                   | 始终可用。                     | 必填       | `component:RadioList` | 稳定   | 没有任何选项携带的值等于未选中任何项。     |
+| 方向 | `vertical`、`horizontal`                | 选项的布局。                     | 始终可用。                     | `vertical` | `component:RadioList` | 稳定   | TypeScript 拒绝其他取值。                  |
+| 尺寸 | `sm`、`md`                              | 每个选项的单选圆圈尺寸。         | 始终可用。                     | `md`       | `component:RadioList` | 稳定   | TypeScript 拒绝其他取值。                  |
+| 禁用 | 关、开、开并带原因                      | 阻止每个选项被选中。             | 原因仅在 `isDisabled` 时生效。 | 关         | `component:RadioList` | 稳定   | 没有 `isDisabled` 时，原因不渲染任何内容。 |
+| 状态 | `error`、`warning`、`success`、可选消息 | 组的校验状态。                   | 始终可用；消息为分离式。       | 无         | `family:input-fields` | 稳定   | TypeScript 拒绝其他类型。                  |
+| 名称 | string                                  | 共享的单选 `name` 与表单字段名。 | 始终可用。                     | 生成的 id  | `component:RadioList` | 稳定   | 不适用。                                   |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Basis                                                   |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| FR1 | RadioList renders a Field in group-label mode (label rendered as a span, visible unless `isLabelHidden`, description, optional or required marker, label tooltip, detached status) around one `role="radiogroup"` element. The radiogroup is labelled by the group label plus any caller `aria-labelledby`, and described by any caller description, then the description, status message, and disabled reason that exist.                                                                                                                                                                                                                                                                                                                                                               | WAI-ARIA radio group pattern; current tests             |
-| FR2 | Every item's radio shares one `name`: `htmlName` when supplied, otherwise a generated id, so the radios form one native group. The checked radio is the one whose `value` equals the group `value`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Current tests                                           |
-| FR3 | Selecting an enabled option calls `onChange(value)` once; RadioList holds no selection of its own.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Current tests                                           |
-| FR4 | With an empty `value`, keyboard focus entering the group lands on the first radio that is not natively disabled (in a group disabled with a reason, that is its first `aria-disabled` radio, keeping the enabled focus order under `spec:AST-085` FR1), or stays on the last one when entering backward. Focus moving between radios inside the group is not redirected. With a selection, the selected radio is the Tab stop. Arrow keys follow the browser's native radio behavior, which stops on `aria-disabled` radios.                                                                                                                                                                                                                                                             | WAI-ARIA radio group pattern; current tests             |
-| FR5 | `isDisabled` MUST disable every item: each radio stays focusable with `aria-disabled="true"`, is detached from the form so it does not submit, and refuses selection (`spec:AST-085` FR1–FR3, FR7). The `radiogroup` element MUST carry `aria-disabled="true"`, as `component:ButtonGroup` FR1 does. With `disabledMessage`, a reason tooltip also opens on group hover and keyboard focus, and the reason MUST describe each focusable radio (`spec:AST-085` FR5, FR7). Implementation gap: the reason describes only the radiogroup, so a focused radio is not described by it; and without a `disabledMessage`, each radio gets native `disabled` instead, which removes it from the tab order, and a radio focused when the group becomes disabled loses focus (`spec:AST-085` FR4). | `spec:AST-085` FR1–FR5, FR7; current tests              |
-| FR6 | `status.type === 'error'` sets `aria-invalid` on the radiogroup. The radiogroup exposes the effective required state (including a form-level default) with `aria-required`, while each radio's native `required` follows only the explicit `isRequired`; a natively required radio's `aria-invalid` follows the same status, so the browser's own invalid state never shows before an error.                                                                                                                                                                                                                                                                                                                                                                                             | Current source and tests                                |
-| FR7 | The radiogroup lays options in a column with a small gap, or a row with a wider gap when horizontal, and passes `size` to every item.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Current source and tests                                |
-| FR8 | Base props (`ref`, `id`, `aria-*`, `data-*`, `hidden`, `inert`, `dir`, DOM handlers) reach the radiogroup; a caller `onFocus` runs after FR4's entry handling. `container*` reaches the Field box where one renders (in a `horizontal-labels` FormLayout none renders, and `container*` has no effect and warns), and `control*` the radiogroup; root `xstyle`, `className`, and `style` are not accepted.                                                                                                                                                                                                                                                                                                                                                                               | `family:input-fields` FR10; current tests               |
-| FR9 | The radiogroup carries `astryx-radio-list` and reflects `data-orientation` and `data-size`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | `architecture:component-theming-surface`; current tests |
+| ID  | 不变式                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | 依据                                               |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| FR1 | RadioList 以组标签模式渲染一个 Field（标签渲染为 span，除非 `isLabelHidden` 否则可见；描述、可选或必填标记、标签提示框、分离式状态），并将其包裹在一个 `role="radiogroup"` 元素外。radiogroup 的可访问名称由组标签加上调用方提供的任何 `aria-labelledby` 组成，其描述依次来自调用方提供的任何描述，以及实际存在的描述、状态消息与禁用原因。                                                                                                                                                                                                                                                                                          | WAI-ARIA 单选组模式；当前测试                      |
+| FR2 | 每个选项的单选按钮共享同一个 `name`：提供了 `htmlName` 时用它，否则用生成的 id，从而让这些单选按钮构成一个原生组。被选中的单选按钮是其 `value` 等于组 `value` 的那一个。                                                                                                                                                                                                                                                                                                                                                                                                                                                             | 当前测试                                           |
+| FR3 | 选中一个已启用的选项会调用一次 `onChange(value)`；RadioList 自身不保存选中状态。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | 当前测试                                           |
+| FR4 | 当 `value` 为空时，进入该组的键盘焦点落在第一个未被原生禁用的单选按钮上（对于带原因禁用的组，即其第一个 `aria-disabled` 的单选按钮，从而在 `spec:AST-085` FR1 下保持可用的焦点顺序），反向进入时停留在最后一个上。焦点在组内单选按钮之间移动不会被重定向。存在选中项时，被选中的单选按钮就是 Tab 停靠点。方向键遵循浏览器的原生单选行为，该行为会停在 `aria-disabled` 的单选按钮上。                                                                                                                                                                                                                                                 | WAI-ARIA 单选组模式；当前测试                      |
+| FR5 | `isDisabled` 必须禁用每个选项：每个单选按钮保持可聚焦且带有 `aria-disabled="true"`，与表单脱离从而不会提交，并拒绝被选中（`spec:AST-085` FR1–FR3、FR7）。`radiogroup` 元素必须带有 `aria-disabled="true"`，与 `component:ButtonGroup` FR1 的做法一致。存在 `disabledMessage` 时，在组上悬停与键盘聚焦还会打开原因提示框，且该原因必须描述每一个可聚焦的单选按钮（`spec:AST-085` FR5、FR7）。实现缺口：该原因只描述 radiogroup，因此被聚焦的单选按钮不会由它描述；而在没有 `disabledMessage` 时，每个单选按钮改为获得原生 `disabled`，这会将它们移出 Tab 顺序，且在组变为禁用时正处于焦点的单选按钮会失去焦点（`spec:AST-085` FR4）。 | `spec:AST-085` FR1–FR5、FR7；当前测试              |
+| FR6 | `status.type === 'error'` 会在 radiogroup 上设置 `aria-invalid`。radiogroup 通过 `aria-required` 暴露生效的必填状态（包括表单级默认值），而每个单选按钮的原生 `required` 只遵循显式的 `isRequired`；原生为必填的单选按钮的 `aria-invalid` 遵循同一状态，因此浏览器自身的无效状态绝不会在错误出现之前显示。                                                                                                                                                                                                                                                                                                                           | 当前源码与测试                                     |
+| FR7 | radiogroup 将选项排成一列并使用较小的间距，或在水平方向时排成一行并使用较大的间距，并把 `size` 传给每个选项。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | 当前源码与测试                                     |
+| FR8 | 基础 props（`ref`、`id`、`aria-*`、`data-*`、`hidden`、`inert`、`dir`、DOM 事件处理器）落到 radiogroup 上；调用方的 `onFocus` 在 FR4 的进入处理之后运行。`container*` 落到为其渲染出来的 Field 盒子上（在 `horizontal-labels` FormLayout 中不渲染该盒子，此时 `container*` 无效并发出警告），`control*` 落到 radiogroup 上；根级 `xstyle`、`className` 与 `style` 不被接受。                                                                                                                                                                                                                                                         | `family:input-fields` FR10；当前测试               |
+| FR9 | radiogroup 带有 `astryx-radio-list`，并反映 `data-orientation` 与 `data-size`。                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | `architecture:component-theming-surface`；当前测试 |
 
 ### Allowed variation
 
-- **AV1 — Options.** Item content varies under `component:RadioListItem`.
-- **AV2 — Theme paint.** Themes may restyle the group through `radio-list`.
+- **AV1 — 选项。** 条目内容在 `component:RadioListItem` 下变化。
+- **AV2 — 主题绘制。** 主题可以通过 `radio-list` 重新设定该组样式。
 
 ### Representative states
 
-| State                | Required invariant                                                                                                                        | Allowed variation |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
-| Empty value          | Forward Tab enters on the first radio that is not natively disabled.                                                                      | Orientation.      |
-| One selected         | The selected radio is checked and is the Tab stop.                                                                                        | Size.             |
-| Error status         | `aria-invalid`; detached message describes the group.                                                                                     | Message.          |
-| Disabled with reason | Radios focusable, refuse selection, not submitted; reason tooltip. Implementation gap: a caller `onClick` still runs (RadioListItem FR6). | —                 |
-| Disabled, no reason  | Same as with a reason, without the tooltip. Implementation gap: native `disabled` (FR5).                                                  | —                 |
+| 状态         | 必需不变式                                                                                                       | 允许的变化 |
+| ------------ | ---------------------------------------------------------------------------------------------------------------- | ---------- |
+| 空值         | 正向 Tab 进入时落在第一个未被原生禁用的单选按钮上。                                                              | 方向。     |
+| 已选中一项   | 被选中的单选按钮为勾选状态，且是 Tab 停靠点。                                                                    | 尺寸。     |
+| 错误状态     | 带 `aria-invalid`；分离式消息描述该组。                                                                          | 消息。     |
+| 带原因禁用   | 单选按钮可聚焦、拒绝被选中、不提交；显示原因提示框。实现缺口：调用方的 `onClick` 仍会运行（RadioListItem FR6）。 | —          |
+| 禁用、无原因 | 与带原因时相同，但没有提示框。实现缺口：原生 `disabled`（FR5）。                                                 | —          |
 
 ### Transformation and precedence order
 
-- **ORD1 — Item availability.** Group disabled or item disabled; the group
-  reason keeps only group-disabled radios focusable.
-- **ORD2 — Required.** Effective required on the radiogroup; explicit required
-  on each radio.
+- **ORD1 — 条目可用性。** 组被禁用或条目被禁用；组原因只让因组禁用而禁用的单选按钮保持可聚焦。
+- **ORD2 — 必填。** radiogroup 上是生效的必填状态；每个单选按钮上是显式必填。
 
 ### Performance and resources
 
-- **PR1 — Entry handling.** FR4 runs only on focus events with an empty `value`
-  and adds no global listener.
+- **PR1 — 进入处理。** FR4 仅在 `value` 为空的 focus 事件上运行，且不添加任何全局监听器。
 
 ## Accessibility contract
 
-- **AR1 — Group semantics.** `role="radiogroup"` with a name, description,
-  invalid and required state (FR1, FR6).
-- **AR2 — Keyboard.** Tab reaches the group once (FR4); arrow keys move and
-  select through native radio behavior.
-- **AR3 — Disabled reason.** A group reason stays reachable by keyboard focus
-  and assistive technology (FR5).
+- **AR1 — 组语义。** 带 name、描述、无效与必填状态的 `role="radiogroup"`（FR1、FR6）。
+- **AR2 — 键盘。** Tab 只到达该组一次（FR4）；方向键通过原生单选行为移动与选中。
+- **AR3 — 禁用原因。** 组原因仍可通过键盘焦点与辅助技术访问（FR5）。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                   | Representation authority | Hierarchy role | Component contract |
-| ---------------- | ------------------------------------ | ------------------------ | -------------- | ------------------ |
-| Group label      | Field group label above the options. | Current source           | Prominent      | FR1                |
-| Options          | Column or row of RadioListItem rows. | Current source           | Prominent      | FR7                |
-| Status message   | Detached message after the group.    | Current source           | Supporting     | FR1, FR6           |
+| 结构或状态 | 设计要求                        | 表现形式权威 | 层级角色 | 组件契约 |
+| ---------- | ------------------------------- | ------------ | -------- | -------- |
+| 组标签     | 选项上方的 Field 组标签。       | 当前源码     | 主要     | FR1      |
+| 选项       | 一列或一行的 RadioListItem 行。 | 当前源码     | 主要     | FR7      |
+| 状态消息   | 组之后的分离式消息。            | 当前源码     | 辅助     | FR1, FR6 |
 
-`design:user-states` governs the pressed overlay its options paint
-(`component:RadioListItem` FR8); no other design record governs RadioList. The radiogroup carries `radio-list`.
+`design:user-states` 管辖其选项所绘制的按下覆盖层（`component:RadioListItem` FR8）；没有其他设计记录管辖 RadioList。radiogroup 带有 `radio-list`。
 
 ## Family and system relationships
 
-- `spec:AST-085` owns disabled reasons and `family:input-fields` FR10 and DEC-7
-  own prop targets; RadioList
-  meets FR10.
-- `spec:AST-085` owns disabled focusability; FR5 records the gap.
-- `component:RadioListItem` owns each option and reads the group through
-  context.
+- `spec:AST-085` 拥有禁用原因，`family:input-fields` FR10 与 DEC-7 拥有 prop 目标；RadioList 满足 FR10。
+- `spec:AST-085` 拥有禁用状态下的可聚焦性；FR5 记录了这一缺口。
+- `component:RadioListItem` 拥有每个选项，并通过 context 读取该组。
 
 ## Verification map
 
-| Contract       | Verification                                                                                                                                                                                                                                                                                                     | Representative states                                                 | Mutation or failure expectation                                                                                                                                                                                                                                                                                                                                            | Audit section                   |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| FR1, AR1       | `RadioList.test.tsx` label, span-label, hidden-label, required and optional marker, status, and group-description cases; `RadioGroup.a11y.test.tsx` and `RadioGroup.a11y.chromium.spec.ts`                                                                                                                       | Visible and hidden label; each status; description                    | A missing group name or description fails. Evidence gap: no test asserts the caller description first or the disabled reason last, or the label tooltip.                                                                                                                                                                                                                   | `audit:RadioList/accessibility` |
-| FR2, FR3       | `RadioList.test.tsx` selection and form cases                                                                                                                                                                                                                                                                    | Radio, label, and description clicks; `htmlName`; no name             | A wrong value, lost grouping, wrong form value, or a second `onChange` on a radio click fails. Evidence gap: no test counts `onChange` calls on delegated label and description clicks.                                                                                                                                                                                    | `audit:RadioList/behavior`      |
-| FR4, AR2, PR1  | `RadioList.test.tsx` focus-management cases; `RadioGroup.a11y.chromium.spec.ts` `radio-group.focus.entry-and-exit` rule on every `radio-list-group-*` state                                                                                                                                                      | Backward entry; intra-group movement; disabled radios                 | A redirected intra-group move, entry on a natively disabled radio, or Tab entry off the selected or first option fails. Evidence gap: no test enters an empty group disabled with a reason, or asserts a caller `onFocus` after entry handling or the absence of global listeners.                                                                                         | `audit:RadioList/accessibility` |
-| FR5, ORD1, AR3 | `RadioList.test.tsx` disabled (including the radiogroup's `aria-disabled`), disabledMessage, and form cases; `ListGroupDisabled.a11y.chromium.spec.ts`; `RadioGroup.a11y.test.tsx` and `RadioGroup.a11y.chromium.spec.ts` `radio-list-group-disabled-with-message` and `radio-list-option-group-disabled` states | Group and item disabled; with reason                                  | A selection while disabled, or a submitted value from a group disabled with a reason, fails; the binding expects `tabReachable: false` for `radio-list-option-group-disabled`, which fails when that gap closes. Evidence gap: no form case submits an item-disabled option or a group disabled without a reason, and no test disables the group while a radio is focused. | `audit:RadioList/accessibility` |
-| FR6, ORD2      | `RadioGroup.a11y.test.tsx` and `RadioGroup.a11y.chromium.spec.ts` `radio-list-group-required-invalid-described` state                                                                                                                                                                                            | Required, invalid, described group                                    | A missing required or invalid state on the group fails. Evidence gap: no test asserts that a form-level required default reaches only `aria-required`.                                                                                                                                                                                                                     | `audit:RadioList/accessibility` |
-| FR7, FR9       | `RadioList.test.tsx` theme-target case                                                                                                                                                                                                                                                                           | `size="sm"`                                                           | A missing row size fails. Evidence gap: the orientation case asserts only rendering; no test asserts the gaps, horizontal layout, `data-orientation`, `data-size`, or `astryx-radio-list` on the radiogroup.                                                                                                                                                               | `audit:RadioList/layout`        |
-| FR8            | `RadioList.fr10.test.tsx`; `RadioList.test.tsx` data-testid case                                                                                                                                                                                                                                                 | Caller labelledby; hidden, inert, dir; `horizontal-labels` FormLayout | A base prop off the radiogroup, or `container*` off the Field box, fails. Evidence gap: no test asserts a caller `onFocus` runs after entry handling.                                                                                                                                                                                                                      | `audit:RadioList/api`           |
+| 契约           | 验证                                                                                                                                                                                                                                                                                              | 代表性状态                                                            | 变更或失败预期                                                                                                                                                                                                                                                 | 审查章节                        |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| FR1, AR1       | `RadioList.test.tsx` 的 label、span-label、hidden-label、必填与可选标记、状态以及组描述用例；`RadioGroup.a11y.test.tsx` 与 `RadioGroup.a11y.chromium.spec.ts`                                                                                                                                     | 可见与隐藏标签；每种状态；描述                                        | 缺失组 name 或描述会失败。证据缺口：没有测试断言调用方描述排在最前、禁用原因排在最后，或标签提示框。                                                                                                                                                           | `audit:RadioList/accessibility` |
+| FR2, FR3       | `RadioList.test.tsx` 的选中与表单用例                                                                                                                                                                                                                                                             | 单选按钮、标签与描述的点击；`htmlName`；无 name                       | 值错误、分组丢失、表单值错误，或在点击单选按钮时出现第二次 `onChange`，均会失败。证据缺口：没有测试统计经由标签与描述点击所触发的 `onChange` 调用次数。                                                                                                        | `audit:RadioList/behavior`      |
+| FR4, AR2, PR1  | `RadioList.test.tsx` 的焦点管理用例；`RadioGroup.a11y.chromium.spec.ts` 中 `radio-group.focus.entry-and-exit` 规则对每个 `radio-list-group-*` 状态的检查                                                                                                                                          | 反向进入；组内移动；禁用的单选按钮                                    | 组内移动被重定向、进入落在被原生禁用的单选按钮上，或 Tab 进入偏离选中项或第一个选项，均会失败。证据缺口：没有测试进入一个带原因禁用的空组，也没有测试断言调用方 `onFocus` 在进入处理之后运行，或断言不存在全局监听器。                                         | `audit:RadioList/accessibility` |
+| FR5, ORD1, AR3 | `RadioList.test.tsx` 的禁用（包括 radiogroup 的 `aria-disabled`）、disabledMessage 与表单用例；`ListGroupDisabled.a11y.chromium.spec.ts`；`RadioGroup.a11y.test.tsx` 与 `RadioGroup.a11y.chromium.spec.ts` 的 `radio-list-group-disabled-with-message` 和 `radio-list-option-group-disabled` 状态 | 组与条目禁用；带原因                                                  | 禁用状态下仍被选中，或从带原因禁用的组提交值，会失败；该绑定对 `radio-list-option-group-disabled` 期望 `tabReachable: false`，当该缺口被填补时它会失败。证据缺口：没有表单用例提交被条目禁用的选项或未带原因禁用的组，也没有测试在单选按钮获得焦点时禁用该组。 | `audit:RadioList/accessibility` |
+| FR6, ORD2      | `RadioGroup.a11y.test.tsx` 与 `RadioGroup.a11y.chromium.spec.ts` 的 `radio-list-group-required-invalid-described` 状态                                                                                                                                                                            | 必填、无效、带描述的组                                                | 组上缺失必填或无效状态会失败。证据缺口：没有测试断言表单级必填默认值只到达 `aria-required`。                                                                                                                                                                   | `audit:RadioList/accessibility` |
+| FR7, FR9       | `RadioList.test.tsx` 的主题目标用例                                                                                                                                                                                                                                                               | `size="sm"`                                                           | 缺失行尺寸会失败。证据缺口：方向用例只断言渲染；没有测试断言间距、水平布局、`data-orientation`、`data-size`，或 radiogroup 上的 `astryx-radio-list`。                                                                                                          | `audit:RadioList/layout`        |
+| FR8            | `RadioList.fr10.test.tsx`；`RadioList.test.tsx` 的 data-testid 用例                                                                                                                                                                                                                               | 调用方 labelledby；hidden、inert、dir；`horizontal-labels` FormLayout | 基础 prop 落在 radiogroup 之外，或 `container*` 落在 Field 盒子之外，会失败。证据缺口：没有测试断言调用方 `onFocus` 在进入处理之后运行。                                                                                                                       | `audit:RadioList/api`           |
 
 ## Current-state impact
 
-- **Group reason (FR5).** A group `disabledMessage` describes only the
-  radiogroup, so a focused disabled radio is not described by it, against
-  `spec:AST-085` FR5 and FR7.
-- **Caller onClick while disabled (FR5).** A radio kept focusable by a group
-  reason still runs a caller's `onClick` on a click or an arrow key onto it,
-  against `spec:AST-085` FR2.
-- **Disabled focusability (FR5).** A group disabled without a reason gives its
-  radios native `disabled`, so they leave the tab order, against `spec:AST-085`
-  FR1 and FR7.
-- **Consumer docs.** `RadioList.doc.mjs` anatomy lists Header, Children, and
-  Label/Value parts; RadioList renders a group label, options, and a status
-  message, and has no header.
+- **组原因（FR5）。** 组的 `disabledMessage` 只描述 radiogroup，因此获得焦点的禁用单选按钮不会由它描述，这违反了 `spec:AST-085` FR5 与 FR7。
+- **禁用状态下的调用方 onClick（FR5）。** 因组原因而保持可聚焦的单选按钮，在点击或用方向键移到其上时仍会运行调用方的 `onClick`，这违反了 `spec:AST-085` FR2。
+- **禁用可聚焦性（FR5）。** 未给出原因而禁用的组会给其单选按钮原生 `disabled`，因此它们脱离 Tab 顺序，这违反了 `spec:AST-085` FR1 与 FR7。
+- **使用方文档。** `RadioList.doc.mjs` 的结构清单列出了 Header、Children 与 Label/Value 部件；RadioList 渲染的是组标签、选项与状态消息，并没有 header。
 
 ## Decision log
 
-- **Keyboard model (FR4).** RadioList keeps the browser's native radio arrow
-  keys and its shipped Tab entry rule; `spec:AST-085` leaves which radios a
-  composite's arrow keys visit to the composite.
+- **键盘模型（FR4）。** RadioList 保留浏览器的原生单选方向键行为及其已发布的 Tab 进入规则；`spec:AST-085` 将组合件的方向键访问哪些单选按钮交由该组合件决定。
 
-RadioList otherwise applies `family:input-fields` FR10 and the WAI-ARIA radio
-group pattern.
+除此之外，RadioList 遵循 `family:input-fields` FR10 与 WAI-ARIA 单选组模式。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不重复使用方 prop 表格/示例、当前审查结果、实现步骤或 family/系统规则。它链接到这些内容的所有者。

@@ -28,147 +28,131 @@ system_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                                                |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | `SelectorOption` is exported beside Selector and takes `label` (required), `icon`, `description`, `layout` (`stacked` by default, or `inline`), `endContent`, `xstyle`, `className`, and `style`.       |
-| Behavior                | Renders one Item row of an optional icon, the label, an optional description, and optional end content, with the row's own padding and corner radius removed so its host row lays it out.               |
-| End-user impact         | People see custom Selector options and the selected value in the same row shape as built-in options, and a long string label ellipsizes instead of overflowing a narrow popover.                        |
-| Builder impact          | Builders return it from `renderOption` or `renderValue` to keep the `selector-option` target and the shared row layout while choosing the content.                                                      |
-| Compatibility/readiness | Records shipped behavior; no API, default, or DOM change. The missing `ref` and DOM props are listed under Current-state impact.                                                                        |
-| Review checks           | Reject a dropped icon, description, or end content, a layout that ignores the caller outside an InputGroup or stays stacked as a Selector trigger value inside one, or a lost `selector-option` target. |
-| Governing rules         | `architecture:component-theming-surface`; `architecture:public-component-api` INV5, INV8; `component:Item` for the row it composes.                                                                     |
+| Area                    | Contract                                                                                                                                                                      |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public contract         | `SelectorOption` 与 Selector 一同导出，接受 `label`（必需）、`icon`、`description`、`layout`（默认 `stacked`，或 `inline`）、`endContent`、`xstyle`、`className` 与 `style`。 |
+| Behavior                | 渲染一个 Item 行：可选图标、标签、可选描述与可选末尾内容，并去掉该行自身的 padding 与圆角，以便其宿主行对它进行布局。                                                         |
+| End-user impact         | 用户看到自定义 Selector 选项与选中值，其行形状与内置选项一致；长字符串标签会以省略号截断，而不会溢出狭窄的 popover。                                                          |
+| Builder impact          | 构建者从 `renderOption` 或 `renderValue` 返回它，以便在选择内容的同时保留 `selector-option` 目标与共享的行布局。                                                              |
+| Compatibility/readiness | 记录已发布行为；无 API、默认值或 DOM 变更。缺失的 `ref` 与 DOM props 列于 Current-state impact 之下。                                                                         |
+| Review checks           | 拒绝丢失的图标、描述或末尾内容，拒绝在 InputGroup 之外忽略调用方的布局、或在其中作为 Selector 触发器值却仍保持 stacked 的布局，或拒绝丢失的 `selector-option` 目标。          |
+| Governing rules         | `architecture:component-theming-surface`；`architecture:public-component-api` INV5、INV8；`component:Item`（针对它所组合的行）。                                              |
 
-This table is a review projection; the body below is authoritative.
+本表是审查用的投影；下文正文具有权威性。
 
 ## Intent
 
-Give custom Selector option and value rendering the same row layout and theming
-target as the built-in options, without owning option semantics or selection.
+让自定义 Selector 选项与值的渲染获得与内置选项相同的行布局和主题化目标，同时不拥有选项语义或选择行为。
 
 ## Compatibility and migration
 
-- Released default preserved: yes
-- Compatibility class: records shipped behavior; no public prop, default,
-  export, or DOM change
-- Controlled/uncontrolled behavior: not applicable; SelectorOption holds no
-  state
-- Migration decision: none
+- 已发布默认值保持不变：是
+- 兼容性类别：记录已发布行为；无公共 prop、默认值、导出或 DOM 变更
+- 受控/非受控行为：不适用；SelectorOption 不持有状态
+- 迁移决策：无
 
-Consumer migration instructions belong in consumer docs and release notes.
+使用方迁移说明属于使用方文档与发布说明。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- The content row it renders through `component:Item`: the icon slot, label,
-  description, layout choice, and end content.
-- The `selector-option` target on that row, and the removal of the row's own
-  padding, corner radius, and minimum width.
-- Folding to `inline` when its host pins the row height.
+- 它通过 `component:Item` 渲染的内容行：图标槽位、标签、描述、布局选择与末尾内容。
+- 该行上的 `selector-option` 目标，以及去掉该行自身的 padding、圆角与最小宽度。
+- 当其宿主固定行高时折叠为 `inline`。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- The option row's role, name, selected and highlighted state, and selection —
-  owned by `component:Selector`.
-- The trigger's sizing around a rendered value — owned by `component:Selector`.
-- Item's layout, density, and targets — owned by `component:Item`.
+- 选项行的 role、name、selected 与 highlighted 状态，以及选择行为 —— 由 `component:Selector` 拥有。
+- 触发器围绕所渲染值的尺寸 —— 由 `component:Selector` 拥有。
+- Item 的布局、密度与目标 —— 由 `component:Item` 拥有。
 
 ## Public concepts
 
-| Concept     | Closed values or states | Meaning                                                                                                                              | Availability by variant/orientation                                                  |
-| ----------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| layout      | `stacked`, `inline`     | `stacked` puts the description on its own line; `inline` keeps label and description on one line.                                    | Caller's choice, except as a Selector trigger value inside an InputGroup (`inline`). |
-| icon        | absent, present         | A semantic icon name or icon component renders as a small secondary Icon before the label; other ReactNode content renders as given. | Every layout.                                                                        |
-| end content | absent, present         | Caller content after the label and description.                                                                                      | Every layout.                                                                        |
+| Concept     | Closed values or states | Meaning                                                                                        | Availability by variant/orientation                                        |
+| ----------- | ----------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| layout      | `stacked`、`inline`     | `stacked` 让描述单独占一行；`inline` 让标签与描述处于同一行。                                  | 由调用方选择，但在 InputGroup 内作为 Selector 触发器值时例外（`inline`）。 |
+| icon        | 缺失、存在              | 语义图标名或图标组件会渲染为标签之前的一个小的 secondary Icon；其他 ReactNode 内容按原样渲染。 | 每种布局。                                                                 |
+| end content | 缺失、存在              | 标签与描述之后的调用方内容。                                                                   | 每种布局。                                                                 |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                                                                                                                                         | Basis                                                          |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| FR1 | SelectorOption renders one `component:Item` row: `icon` in the start slot when present (a semantic icon name or icon component as a small secondary Icon, other ReactNode content as given), `label`, `description` when present, and `endContent` when present. Selector's default option renderer draws each option through SelectorOption too. | Current source and tests                                       |
-| FR2 | The row uses the caller's `layout` (`stacked` by default). When its host pins the row height (a Selector trigger inside an InputGroup), the row is `inline` whatever the caller passed.                                                                                                                                                           | Current source and tests                                       |
-| FR3 | The row carries the `selector-option` target. Its own block and inline padding and corner radius are zero and its minimum width is zero, so a long string label ellipsizes inside a narrow host (a ReactNode label wraps). Caller `xstyle` merges after these base styles; `className` and `style` reach the row.                                 | `architecture:component-theming-surface`; current source       |
-| FR4 | SelectorOption MUST accept a `ref` connected to its row and pass supported DOM props to it (`architecture:public-component-api` INV5, INV8). Implementation gap: it accepts neither a `ref` nor other DOM props.                                                                                                                                  | `architecture:public-component-api` INV5, INV8; current source |
+| ID  | Invariant                                                                                                                                                                                                                                                                  | Basis                                                    |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| FR1 | SelectorOption 渲染一个 `component:Item` 行：`icon` 存在时放在起始槽位（语义图标名或图标组件渲染为小的 secondary Icon，其他 ReactNode 内容按原样），`label`，`description` 存在时，以及 `endContent` 存在时。Selector 的默认选项渲染器也通过 SelectorOption 绘制每个选项。 | 当前源码与测试                                           |
+| FR2 | 该行使用调用方的 `layout`（默认 `stacked`）。当其宿主固定行高时（InputGroup 内的 Selector 触发器），无论调用方传入什么，该行都是 `inline`。                                                                                                                                | 当前源码与测试                                           |
+| FR3 | 该行携带 `selector-option` 目标。它自身的块级与行内 padding、圆角均为零，最小宽度为零，因此长字符串标签会在狭窄宿主内以省略号截断（ReactNode 标签则换行）。调用方 `xstyle` 在这些基础样式之后合并；`className` 与 `style` 会到达该行。                                     | `architecture:component-theming-surface`；当前源码       |
+| FR4 | SelectorOption 必须接受连接到其行的 `ref`，并把受支持的 DOM props 传递给它（`architecture:public-component-api` INV5、INV8）。实现缺口：它既不接受 `ref`，也不接受其他 DOM props。                                                                                         | `architecture:public-component-api` INV5、INV8；当前源码 |
 
 ### Allowed variation
 
-- **AV1 — Content.** Label, description, icon, and end content are caller
-  content.
-- **AV2 — Theme paint.** Themes may restyle the `selector-option` target.
+- **AV1 — 内容。** 标签、描述、图标与末尾内容都是调用方内容。
+- **AV2 — 主题绘制。** 主题可以重新样式化 `selector-option` 目标。
 
 ### Representative states
 
-| State                          | Required invariant                           | Allowed variation |
-| ------------------------------ | -------------------------------------------- | ----------------- |
-| Option, stacked                | Description below the label.                 | Content.          |
-| Option, inline                 | Label and description on one line.           | Content.          |
-| Trigger value in an InputGroup | `inline`, whatever the caller passed.        | Content.          |
-| With end content               | End content after the label and description. | Content.          |
+| State                   | Required invariant             | Allowed variation |
+| ----------------------- | ------------------------------ | ----------------- |
+| 选项，stacked           | 描述位于标签下方。             | 内容。            |
+| 选项，inline            | 标签与描述在同一行。           | 内容。            |
+| InputGroup 中的触发器值 | `inline`，无论调用方传入什么。 | 内容。            |
+| 带末尾内容              | 末尾内容位于标签与描述之后。   | 内容。            |
 
 ### Transformation and precedence order
 
-- **ORD1 — Layout.** Host-pinned `inline` → caller `layout` → `stacked`.
-- **ORD2 — Styling.** Base row reset → caller `xstyle` → `className` and
-  `style`.
+- **ORD1 — 布局。** 宿主固定的 `inline` → 调用方 `layout` → `stacked`。
+- **ORD2 — 样式。** 基础行重置 → 调用方 `xstyle` → `className` 与 `style`。
 
 ### Performance and resources
 
-- **PR1 — Pure render.** SelectorOption owns no state, effect, listener,
-  observer, or timer.
+- **PR1 — 纯渲染。** SelectorOption 不持有任何状态、effect、监听器、观察器或定时器。
 
 ## Accessibility contract
 
-- **AR1 — Content only.** SelectorOption adds no role, name, or state; the
-  Selector option row it sits in owns them. A semantic name or icon component is
-  decorative; other ReactNode content keeps the semantics its caller gives it.
+- **AR1 — 仅内容。** SelectorOption 不添加 role、name 或 state；它所在的 Selector 选项行拥有这些。语义名称或图标组件是装饰性的；其他 ReactNode 内容保留其调用方赋予的语义。
 
 ## Design relationships
 
-| Anatomy or state | Design requirement                                  | Representation authority | Hierarchy role | Component contract |
-| ---------------- | --------------------------------------------------- | ------------------------ | -------------- | ------------------ |
-| Row              | Lays out the option content like a built-in option. | Current source           | Supporting     | FR1, FR3           |
-| Icon             | Identifies the option at a glance.                  | Current source           | Supporting     | FR1                |
-| Label            | Names the option.                                   | Current source           | Prominent      | FR1, FR3           |
-| Description      | Adds secondary detail.                              | Current source           | Supporting     | FR1, FR2           |
-| End content      | Holds caller content after the text.                | Current source           | Supporting     | FR1                |
+| Anatomy or state | Design requirement           | Representation authority | Hierarchy role | Component contract |
+| ---------------- | ---------------------------- | ------------------------ | -------------- | ------------------ |
+| 行               | 像内置选项一样布局选项内容。 | 当前源码                 | 支撑           | FR1、FR3           |
+| 图标             | 一眼识别该选项。             | 当前源码                 | 支撑           | FR1                |
+| 标签             | 为选项命名。                 | 当前源码                 | 主要           | FR1、FR3           |
+| 描述             | 添加次要细节。               | 当前源码                 | 支撑           | FR1、FR2           |
+| 末尾内容         | 在文本之后承载调用方内容。   | 当前源码                 | 支撑           | FR1                |
 
-`Selector.spec.md` maps the `selector-option` target in its theming anatomy as
-"SelectorOption-rendered content", so this record carries no anatomy-theming
-map.
+`Selector.spec.md` 在其主题化解剖中把 `selector-option` 目标映射为“SelectorOption-rendered content”，因此本记录不携带解剖与主题的映射。
 
 ## Family and system relationships
 
-- `component:Selector` owns the option rows, the trigger, and the
-  `selector-option` mapping in its theming anatomy.
-- `component:Item` owns the row layout SelectorOption composes.
-- `architecture:component-theming-surface` owns target placement.
-- `architecture:public-component-api` owns styling composition.
+- `component:Selector` 拥有选项行、触发器，以及其主题化解剖中的 `selector-option` 映射。
+- `component:Item` 拥有 SelectorOption 所组合的行布局。
+- `architecture:component-theming-surface` 拥有目标放置。
+- `architecture:public-component-api` 拥有样式组合。
 
 ## Verification map
 
-| Contract             | Verification                                                                                                    | Representative states                                    | Mutation or failure expectation                                                                                                                                                 | Audit section                   |
-| -------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| FR1                  | `Selector.test.tsx` "renders custom option endContent" and "renders the selected option through renderValue"    | Option with end content; value with icon and description | A dropped end content, label, description, or icon fails. Evidence gap: no test asserts the small secondary presentation of a semantic icon name or icon component.             | `audit:SelectorOption/anatomy`  |
-| FR2                  | `Selector.test.tsx` "follows the caller's SelectorOption layout, but folds inline in a group"                   | Standalone trigger; trigger in an InputGroup             | A stacked row in an InputGroup, or an inline row standalone by default, fails. Evidence gap: no test passes `layout="inline"` outside an InputGroup.                            | `audit:SelectorOption/layout`   |
-| FR3                  | `Selector.test.tsx` "lets a narrow list shrink an option so its label can ellipsize"                            | Default option in a narrow list                          | A missing `selector-option` row or a nonzero minimum width fails. Evidence gap: no test asserts the padding and radius reset, or `xstyle`, `className`, and `style` on the row. | `audit:SelectorOption/theming`  |
-| ORD1, ORD2, PR1, AR1 | ORD1 is covered by the FR2 row. Evidence gap: no test asserts ORD2, PR1, or the decorative icon                 | —                                                        | —                                                                                                                                                                               | `audit:SelectorOption/behavior` |
-| FR4                  | Evidence gap: no test, matching the FR4 gap                                                                     | —                                                        | —                                                                                                                                                                               | `audit:SelectorOption/api`      |
-| RTL relation         | RTL audit curated D2 target (`apps/storybook/rtl-audit/targets.json`) on `Selector / With icons` (popup opened) | Icon and label in an open option; LTR and RTL            | An option icon that is not at the inline start of its label fails D2.                                                                                                           | `audit:SelectorOption/i18n-rtl` |
+| Contract             | Verification                                                                                                    | Representative states              | Mutation or failure expectation                                                                                                         | Audit section                   |
+| -------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| FR1                  | `Selector.test.tsx` 的“renders custom option endContent”与“renders the selected option through renderValue”     | 带末尾内容的选项；带图标与描述的值 | 丢失末尾内容、标签、描述或图标即失败。证据缺口：没有测试断言语义图标名或图标组件的“小的 secondary”呈现。                                | `audit:SelectorOption/anatomy`  |
+| FR2                  | `Selector.test.tsx` 的“follows the caller's SelectorOption layout, but folds inline in a group”                 | 独立触发器；InputGroup 中的触发器  | InputGroup 中的 stacked 行，或默认情况下独立的 inline 行，即失败。证据缺口：没有测试在 InputGroup 之外传入 `layout="inline"`。          | `audit:SelectorOption/layout`   |
+| FR3                  | `Selector.test.tsx` 的“lets a narrow list shrink an option so its label can ellipsize”                          | 狭窄列表中的默认选项               | 缺少 `selector-option` 行或最小宽度非零，即失败。证据缺口：没有测试断言 padding 与圆角重置，或行上的 `xstyle`、`className` 与 `style`。 | `audit:SelectorOption/theming`  |
+| ORD1, ORD2, PR1, AR1 | ORD1 由 FR2 行覆盖。证据缺口：没有测试断言 ORD2、PR1 或装饰性图标                                               | —                                  | —                                                                                                                                       | `audit:SelectorOption/behavior` |
+| FR4                  | 证据缺口：没有测试，与 FR4 的缺口一致                                                                           | —                                  | —                                                                                                                                       | `audit:SelectorOption/api`      |
+| RTL relation         | RTL 审计策划的 D2 目标（`apps/storybook/rtl-audit/targets.json`），位于 `Selector / With icons`（popup 已打开） | 打开选项中的图标与标签；LTR 与 RTL | 不在其标签行内起始处的选项图标会使 D2 失败。                                                                                            | `audit:SelectorOption/i18n-rtl` |
 
 ## Current-state impact
 
-- **No ref or DOM props (FR4).** SelectorOption accepts neither a `ref` nor
-  other DOM props, against `architecture:public-component-api` INV5 and INV8.
+- **无 ref 或 DOM props（FR4）。** SelectorOption 既不接受 `ref`，也不接受其他 DOM props，这违反 `architecture:public-component-api` INV5 与 INV8。
 
 ## Decision log
 
-No component-local decision.
+无组件本地决策。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不重复使用方的 prop 表与示例、当前审计结果、实现步骤或 family/system 规则。它链接到它们的拥有者。

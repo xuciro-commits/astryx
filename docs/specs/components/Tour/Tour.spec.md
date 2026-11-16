@@ -27,96 +27,92 @@ system_specs: []
 
 ## Contract at a glance
 
-| Area                    | Contract                                                                                                                                                                        |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public contract         | Unchanged by this record.                                                                                                                                                       |
-| Behavior                | Without a backdrop, a press on the page or on the target leaves the tour running. With a backdrop, a press outside the callout, the target included, ends it with `'backdrop'`. |
-| End-user impact         | A person can use the control a step introduces, or the rest of the page, while a plain tour stays open; a dimmed tour ends on a press outside it.                               |
-| Builder impact          | An app that needs a press on the page or the target to end the tour passes `hasBackdrop`, which also dims the page and reports `'backdrop'` (DEC-1).                            |
-| Compatibility/readiness | Lab.                                                                                                                                                                            |
-| Review checks           | Reject a press on the page or the target that ends a tour without a backdrop, or a press outside the callout under a backdrop that leaves the tour running.                     |
-| Governing rules         | None recorded.                                                                                                                                                                  |
+| Area                    | Contract                                                                                                                            |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Public contract         | 本记录未作改动。                                                                                                                    |
+| Behavior                | 没有背景遮罩时，在页面上或目标上按下会让 tour 继续运行。有背景遮罩时，在标注框之外按下（包括目标本身）会以 `'backdrop'` 结束 tour。 |
+| End-user impact         | 在普通 tour 保持打开时，用户可以使用某一步骤引入的控件，也可以使用页面其余部分；变暗的 tour 会因其外部的一次按下而结束。            |
+| Builder impact          | 若应用希望按下页面或目标即可结束 tour，则传入 `hasBackdrop`，它还会使页面变暗并报告 `'backdrop'`（DEC-1）。                         |
+| Compatibility/readiness | Lab。                                                                                                                               |
+| Review checks           | 拒绝以下情形：没有背景遮罩时一次按下页面或目标的操作结束了 tour；有背景遮罩时在标注框之外的一次按下却让 tour 继续运行。             |
+| Governing rules         | 未记录。                                                                                                                            |
 
-This table is a review projection; the body below is authoritative.
+本表是审查用的投影；以下正文具有权威性。
 
 ## Intent
 
-Tour is the lab's guided walkthrough: a sequence of steps, each a callout
-beside a highlighted target. This record states how a press outside the
-step's callout affects the tour, and whether keyboard focus can leave the
-callout. Consumer usage lives in `Tour.doc.mjs`.
+Tour 是 lab 的引导式漫游：由一系列步骤组成，每一步都是标注框紧邻一个被高亮的目标。本记录说明在步骤的标注框之外按下会如何影响 tour，以及键盘焦点能否离开标注框。使用方的用法见 `Tour.doc.mjs`。
 
 ## Compatibility and migration
 
-- Released default preserved: `no` for a tour without a backdrop: a press on the page or on the target leaves it running (FR1, DEC-1).
-- Compatibility class: behavioral, Lab.
-- Controlled/uncontrolled behavior: unchanged; `isActive` and `onDismiss` are the app's.
-- Migration decision: DEC-1. An app that needs an outside press to end a tour passes `hasBackdrop`, which also dims the page and reports `'backdrop'` instead of `'close'`.
+- 保留的已发布默认值：无背景遮罩的 tour 为 `no`，即在页面上或目标上按下会使其继续运行（FR1、DEC-1）。
+- 兼容性类别：行为性，Lab。
+- 受控/非受控行为：未变；`isActive` 与 `onDismiss` 归应用所有。
+- 迁移决策：DEC-1。若应用需要外部按下以结束 tour，则传入 `hasBackdrop`，它还会使页面变暗，并报告 `'backdrop'` 而不是 `'close'`。
 
 ## Ownership boundary
 
-**Owns**
+**拥有**
 
-- Whether a press outside the step's callout ends the tour.
-- Whether keyboard focus can leave the step's callout without a backdrop (AR1).
+- 步骤标注框之外的一次按下是否会结束 tour。
+- 在没有背景遮罩时，键盘焦点能否离开步骤的标注框（AR1）。
 
-**Does not own / non-goals**
+**不拥有 / 非目标**
 
-- The callout's placement, where focus goes when a step starts or the tour ends, and the step controls. Not recorded here.
-- Escape, which ends the tour through the shared layer dismissal stack (`family:overlay-dismissal`).
+- 标注框的放置位置、步骤开始或 tour 结束时焦点去哪里，以及步骤控件。未在此记录。
+- Escape，它通过共享的层关闭栈（`family:overlay-dismissal`）结束 tour。
 
 ## Public concepts
 
-| Concept  | Closed values or states | Meaning                                                                         | Availability by variant/orientation/state | Default | Owner            | Stability    | Invalid-value behavior |
-| -------- | ----------------------- | ------------------------------------------------------------------------------- | ----------------------------------------- | ------- | ---------------- | ------------ | ---------------------- |
-| Backdrop | on, off                 | Whether the step dims the page and ends the tour on a press outside the callout | Every step                                | off     | `component:Tour` | experimental | Not applicable         |
+| Concept  | Closed values or states | Meaning                                             | Availability by variant/orientation/state | Default | Owner            | Stability    | Invalid-value behavior |
+| -------- | ----------------------- | --------------------------------------------------- | ----------------------------------------- | ------- | ---------------- | ------------ | ---------------------- |
+| 背景遮罩 | on、off                 | 该步骤是否使页面变暗，并在标注框之外按下时结束 tour | 每个步骤                                  | off     | `component:Tour` | experimental | 不适用                 |
 
 ## Behavioral and layout contract
 
-| ID  | Invariant                                                                                                                                                                                                                             | Basis |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| FR1 | Without a backdrop, a press on the page or on the step's target MUST NOT end the tour. With a backdrop, a press anywhere outside the callout, the target included, MUST end the tour with `'backdrop'`. This holds for every pointer. | DEC-1 |
+| ID  | Invariant                                                                                                                                                            | Basis |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| FR1 | 没有背景遮罩时，在页面上或该步骤的目标上按下不得结束 tour。有背景遮罩时，在标注框之外的任何位置按下（包括目标）都必须以 `'backdrop'` 结束 tour。这适用于每一种指针。 | DEC-1 |
 
 ## Accessibility contract
 
-- **AR1 — the page stays usable.** Without a backdrop, keyboard focus can leave the callout for the page and the target, and a press there does not end the tour (FR1).
+- **AR1 — 页面保持可用。** 没有背景遮罩时，键盘焦点可以离开标注框进入页面与目标，并且在那里按下不会结束 tour（FR1）。
 
 ## Design relationships
 
 | Anatomy or state | Design requirement | Representation authority | Hierarchy role | Component contract |
 | ---------------- | ------------------ | ------------------------ | -------------- | ------------------ |
-| Backdrop         | None recorded      | Not applicable           | supporting     | FR1                |
+| 背景遮罩         | 未记录             | 不适用                   | supporting     | FR1                |
 
-The component implements design requirements without copying their rationale.
+组件实现设计要求，但不复制其理由。
 
 ## Family and system relationships
 
-- `family:overlay-dismissal` owns Escape through the shared dismissal stack. The step adopts it, and this record owns only the step's outside dismissal (FR1) and whether focus can leave the callout (AR1).
+- `family:overlay-dismissal` 通过共享的关闭栈拥有 Escape。该步骤采用它，而本记录只拥有该步骤的外部关闭（FR1）以及焦点能否离开标注框（AR1）。
 
 ## Verification map
 
-| Contract | Verification                                                                                                                                                                                                                                                                                | Representative states                   | Mutation or failure expectation                                           | Audit section |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------- | ------------- |
-| FR1      | "keeps the tour running when the target is pressed"; "keeps the tour running when the page is pressed"; "dismisses with \"backdrop\" when the backdrop is clicked"; "pressing the introduced control keeps the tour, and Escape ends it"; "a press on the dimmed page ends a backdrop tour" | No backdrop and backdrop; a card target | A press that ends a plain tour, or leaves a dimmed tour running, fails it | None          |
-| AR1      | "lets Tab move past the step into the page"; "Tab leaves the callout for the page"                                                                                                                                                                                                          | No backdrop                             | Focus kept in the callout fails it                                        | None          |
+| Contract | Verification                                                                                                                                                                                    | Representative states            | Mutation or failure expectation                                    | Audit section |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------ | ------------- |
+| FR1      | "在目标被按下时保持 tour 运行"；"在页面被按下时保持 tour 运行"；"点击背景遮罩时以 \"backdrop\" 结束"；"按下引入的控件会保持 tour，Escape 会结束它"；"在变暗的页面上按下会结束带背景遮罩的 tour" | 无背景遮罩与有背景遮罩；卡片目标 | 一次使普通 tour 结束、或使变暗的 tour 继续运行的按下，会判定为失败 | 无            |
+| AR1      | "让 Tab 越过该步骤进入页面"；"Tab 离开标注框进入页面"                                                                                                                                           | 无背景遮罩                       | 把焦点留在标注框内会判定为失败                                     | 无            |
 
 ## Decision log
 
 ### DEC-1 — A press does not end a tour without a backdrop
 
-**Decider:** `cixzhang`, 2026-11-04
+**决策者：** `cixzhang`，2026-11-04
 
-**Basis:** Lab-only behavior, under the owner's standing Lab grant: "Anything lab only gets an ok". Promoted to current under the standing Lab grant.
+**依据：** 仅限 lab 的行为，依据拥有者的长期 lab 授权：“仅限 lab 的任何内容都可以通过”。依据该长期 lab 授权提升为 current。
 
-**Decision:** A step is a non-modal layer with no light dismiss. Without a backdrop, a press on the page or on the target leaves the tour running, on every pointer. With a backdrop, the dimmed overlay catches every press, the target's included, and ends the tour with `'backdrop'`.
+**决策：** 步骤是一个非模态层，没有轻触关闭。没有背景遮罩时，在页面上或目标上按下都会让 tour 继续运行，适用于每一种指针。有背景遮罩时，变暗的遮罩会捕获每一次按下（包括目标上的），并以 `'backdrop'` 结束 tour。
 
-**Rejected:** ending a tour without a backdrop on any press, which ends it when a person uses the control the step introduces.
+**已否决：** 在没有背景遮罩时，任何按下都结束 tour，这会在用户使用该步骤引入的控件时结束 tour。
 
 ## Open questions
 
-None.
+无。
 
 ## Content boundary
 
-This file does not duplicate consumer prop tables/examples, current audit
-results, implementation steps, or family/system rules. It links to their owners.
+本文件不复制使用方的 prop 表/示例、当前审查结果、实现步骤或 family/system 规则。它链接到它们的所有者。

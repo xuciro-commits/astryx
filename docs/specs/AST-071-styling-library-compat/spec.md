@@ -34,78 +34,52 @@ affects_consumer_docs: []
 
 ## Intent
 
-A product styles Astryx components with whatever its codebase already uses:
-StyleX, class-name CSS (CSS modules, utility classes, global stylesheets), or
-inline styles. Every styling input a component accepts reaches its element from
-each of those systems, so no part of a component can be styled from StyleX
-alone.
+产品用其代码库已有的方式为 Astryx 组件设置样式：StyleX、类名 CSS（CSS modules、工具类、全局样式表）或内联样式。组件接受的每一种样式输入，都能从这些系统中的任意一种到达其元素，因此组件的任何部分都不能只靠 StyleX 来设置样式。
 
 ## Non-goals
 
-- Whether a component exposes styling for a part at all. A part input is a new
-  public prop and is admitted under `spec:AST-002/DEC-1`; this spec shapes a
-  part input once it is admitted.
-- The order in which styling inputs compose on one element, owned by
-  `architecture:public-component-api` INV6.
-- Theme tokens and theme targets, owned by `architecture:theme-tokens` and the
-  theming records.
-- Equivalent internal implementations remain valid when they satisfy this contract.
+- 组件究竟是否为某个部件暴露样式设置，不在本规格范围内。部件输入是一个新的公共 prop，须依据 `spec:AST-002/DEC-1` 接纳；本规格只在部件输入被接纳之后塑造它。
+- 多个样式输入在同一元素上组合的顺序，由 `architecture:public-component-api` INV6 拥有。
+- 主题 token 与主题目标，由 `architecture:theme-tokens` 和主题相关记录拥有。
+- 满足本契约的等效内部实现仍然有效。
 
 ## Requirements
 
-- **FR1 — A part's styling inputs come as a set.** A component that accepts a
-  styling input for an element other than its root MUST accept all three of
-  `<part>Xstyle`, `<part>ClassName`, and `<part>Style` for that element, with
-  the same `<part>` word in each. All three MUST reach the same element and
-  compose there as the root's `xstyle`, `className`, and `style` do.
-- **FR2 — No StyleX-only styling input.** A public prop that styles an element
-  MUST NOT accept StyleX styles unless the same element also accepts a class
-  name and inline styles through public props.
+- **FR1 — 部件的样式输入以一套的形式提供。** 一个组件如果为其根元素之外的元素接受样式输入，就必须为该元素同时接受 `<part>Xstyle`、`<part>ClassName` 和 `<part>Style` 三者，且三者使用相同的 `<part>` 词。三者都必须到达同一个元素，并在该元素上像根元素的 `xstyle`、`className` 和 `style` 那样组合。
+- **FR2 — 不允许仅支持 StyleX 的样式输入。** 为某个元素设置样式的公共 prop 不得接受 StyleX 样式，除非同一元素也通过公共 prop 接受类名和内联样式。
 
 ### Platform support
 
-- Supported feature/engine floor: unchanged; this contract adds no CSS feature.
-- Unsupported behavior: none; class names and inline styles work in every
-  supported engine.
-- Browser evidence: not required; FR1 and FR2 are proven at the declaration and
-  render layer.
+- 受支持的功能/引擎下限：不变；本契约不新增任何 CSS 功能。
+- 不支持的行为：无；类名和内联样式在所有受支持的引擎中都能工作。
+- 浏览器证据：不需要；FR1 与 FR2 在声明层与渲染层即可证明。
 
 ## Current-state impact
 
-- `architecture:public-component-api` gains an invariant that a part's styling
-  inputs come as a set, decided by `spec:AST-071/DEC-1`.
-- Released public props that do not conform to FR1 and FR2 are
-  `ComplexSelector.contentXstyle`, `ContextMenu.triggerXstyle`, and
-  `BaseTypeahead.inputXStyle`. They are known gaps, not precedent: no new part
-  input is admitted by citing them.
+- `architecture:public-component-api` 新增一条不变式：部件的样式输入以一套的形式提供，由 `spec:AST-071/DEC-1` 决定。
+- 已发布但不遵守 FR1 与 FR2 的公共 prop 为 `ComplexSelector.contentXstyle`、`ContextMenu.triggerXstyle` 和 `BaseTypeahead.inputXStyle`。它们是已知缺口，而非先例：不得通过引用它们来接纳新的部件输入。
 
 ## Verification
 
-| Contract | Verification                                                                     | Representative states                                     | Mutation or failure expectation                                                               |
-| -------- | -------------------------------------------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| FR1      | Public-API review of the generated declaration inventory; component render tests | A part input styled from StyleX, a class name, and inline | A `<part>Xstyle` without `<part>ClassName` and `<part>Style`, or one landing elsewhere, fails |
-| FR2      | Public-API review of every exported prop typed with StyleX styles                | Root and part inputs across exported components           | A StyleX-typed prop with no class-name and inline-style counterpart on its element fails      |
+| Contract | Verification                                            | Representative states                             | Mutation or failure expectation                                                   |
+| -------- | ------------------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------- |
+| FR1      | 对生成的声明清单做公共 API 审查；组件渲染测试           | 一个部件输入分别由 StyleX、类名和内联样式设置样式 | 缺少 `<part>ClassName` 与 `<part>Style` 的 `<part>Xstyle`，或落到别处的输入，失败 |
+| FR2      | 对每个以 StyleX 样式标注类型的导出 prop 做公共 API 审查 | 导出组件中的根输入与部件输入                      | 某个以 StyleX 标注类型的 prop 在其元素上没有类名与内联样式的对应项，失败          |
 
-Known verification gap: no automated check enforces FR1 or FR2; public-API
-review applies them.
+已知验证缺口：没有自动化检查强制 FR1 或 FR2；由公共 API 审查来应用它们。
 
 ## Decision log
 
 ### DEC-1 — Every styling input works from every styling system
 
 **Reference:** `spec:AST-071/DEC-1`
+
 **Decider:** `cixzhang`, 2026-10-09
 
-Astryx is adopted by products that do not use StyleX. A part reachable only
-through `xstyle` leaves a codebase that styles with class names or inline styles
-no way to reach that part, and each such prop is the precedent the next part
-copies. So a part's styling input is the full set the root already takes, or it
-is not admitted.
+Astryx 被那些不使用 StyleX 的产品所采用。若某个部件只能通过 `xstyle` 触达，那么用类名或内联样式来设置样式的代码库就无法触达该部件，而每个这样的 prop 都会成为下一个部件照抄的先例。因此，部件的样式输入要么是根元素已经接受的那一整套，要么就不予接纳。
 
-Rejected: admitting a part `xstyle` alone and adding its counterparts on request — non-StyleX callers stay locked out until someone asks.
+已否决：只接纳部件的 `xstyle`，再在有人请求时补上其对应项——非 StyleX 调用方会被挡在外面，直到有人提出请求。
 
 ## Open questions
 
-- **OQ1 — How the known non-conforming props reach conformance** (`human-api`):
-  `ComplexSelector.contentXstyle`, `ContextMenu.triggerXstyle`, and
-  `BaseTypeahead.inputXStyle`.
+- **OQ1 — 已知不合规的 prop 如何达到合规**（`human-api`）：`ComplexSelector.contentXstyle`、`ContextMenu.triggerXstyle` 和 `BaseTypeahead.inputXStyle`。
