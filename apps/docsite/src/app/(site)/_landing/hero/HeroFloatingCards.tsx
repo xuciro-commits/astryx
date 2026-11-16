@@ -396,7 +396,7 @@ export function HeroFloatingCards({
           size="md"
           isIconOnly
           icon={<Plus size={16} />}
-          label="Add attachment"
+          label="添加附件"
         />
       }
       sendButton={<ChatSendButton isDisabled={false} />}
@@ -540,7 +540,7 @@ export function HeroFloatingCards({
         <Button
           variant="secondary"
           size="md"
-          label="Add to cart"
+          label="加入购物车"
           xstyle={styles.fullWidth}
         />
       </VStack>

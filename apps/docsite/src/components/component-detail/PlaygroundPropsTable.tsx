@@ -198,7 +198,7 @@ function ThemeControl({
 
   return (
     <Selector
-      label="Theme"
+      label="主题"
       isLabelHidden
       value={selected}
       options={themeOptions.map(({value: optionValue, label}) => ({
@@ -234,7 +234,7 @@ function SyntaxThemeControl({
 
   return (
     <Selector
-      label="Syntax theme"
+      label="语法主题"
       isLabelHidden
       value={selected}
       options={syntaxThemeOptions.map(({value: optionValue, label}) => ({
@@ -285,7 +285,7 @@ function ElementControl({
     <Selector
       label={prop.name}
       isLabelHidden
-      placeholder="None"
+      placeholder="无"
       value={value != null ? selected : 'None'}
       options={['None', ...control.options.map(o => o.label)]}
       onChange={next => {
@@ -358,8 +358,8 @@ function SlotListControl({
       </Text>
       <HStack gap={1}>
         <IconButton
-          label="Remove item"
-          tooltip="Remove item"
+          label="移除项"
+          tooltip="移除项"
           icon={<Minus size={16} />}
           variant="ghost"
           size="sm"
@@ -367,8 +367,8 @@ function SlotListControl({
           onClick={removeItem}
         />
         <IconButton
-          label="Add item"
-          tooltip="Add item"
+          label="添加项"
+          tooltip="添加项"
           icon={<Plus size={16} />}
           variant="ghost"
           size="sm"
@@ -393,7 +393,7 @@ function NumberControl({
     <NumberInput
       label=""
       value={liveNumber.value}
-      placeholder={isRequired ? undefined : 'unset'}
+      placeholder={isRequired ? undefined : '未设置'}
       hasClear={!isRequired}
       onChange={liveNumber.handleChange}
       onFocus={liveNumber.handleFocus}
@@ -480,7 +480,7 @@ function InlineControl({
       return (
         <TextInput
           label=""
-          placeholder="value"
+          placeholder="值"
           value={typeof value === 'string' ? value : ''}
           onChange={next => onChange(next)}
         />
@@ -619,7 +619,7 @@ export function PlaygroundPropsTable({
       {required.length > 0 && (
         <>
           <Heading level={4} color="secondary">
-            Required
+            必填
           </Heading>
           {required
             .toSorted((a, b) => a.name.localeCompare(b.name))
@@ -641,7 +641,7 @@ export function PlaygroundPropsTable({
       {optional.length > 0 && (
         <>
           <Heading level={4} color="secondary" style={{marginTop: 8}}>
-            Optional
+            可选
           </Heading>
           {optional
             .toSorted((a, b) => a.name.localeCompare(b.name))

@@ -65,10 +65,10 @@ describe('getConcentricityWarning', () => {
 
   it('suggests changing the control it sits under', () => {
     expect(getConcentricityWarning('radius', 12, 8)?.description).toContain(
-      'Set radius to 8px',
+      '将圆角设为 8px',
     );
     expect(getConcentricityWarning('spacing', 12, 8)?.description).toContain(
-      'Set spacing to 12px',
+      '将间距设为 12px',
     );
   });
 

@@ -29,10 +29,10 @@ export function ElevationTokenTable({theme}: TokenTableProps) {
     <Table
       data={data as Record<string, unknown>[]}
       columns={[
-        {key: 'tokenName', header: 'Token', width: pixel(220)},
+        {key: 'tokenName', header: '令牌', width: pixel(220)},
         {
           key: 'preview',
-          header: 'Preview',
+          header: '预览',
           width: pixel(80),
           renderCell: (item: Record<string, unknown>) => (
             <div

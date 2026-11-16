@@ -195,7 +195,7 @@ export function ComponentTokensPanel({
                             value: o.value,
                             label: resolveOptionLabel(o, tokens),
                           })),
-                          {value: '__custom__', label: 'Custom...'},
+                          {value: '__custom__', label: '自定义...'},
                         ]}
                         value={currentValue || v.default}
                         onChange={(val: string) => {
@@ -218,9 +218,9 @@ export function ComponentTokensPanel({
       <Divider />
 
       <VStack gap={3}>
-        <Heading level={4}>Custom Overrides</Heading>
+        <Heading level={4}>自定义覆盖</Heading>
         <Text type="supporting" color="secondary">
-          Override any CSS property on any component.
+          覆盖任意组件的任意 CSS 属性。
         </Text>
 
         {customOverrides.map((override, i) => (
@@ -232,7 +232,7 @@ export function ComponentTokensPanel({
                 </Text>
               </StackItem>
               <Button
-                label="Remove"
+                label="移除"
                 variant="ghost"
                 size="sm"
                 onClick={() => handleRemoveCustom(i)}
@@ -250,28 +250,28 @@ export function ComponentTokensPanel({
 
         <VStack gap={2}>
           <Selector
-            label="Component"
+            label="组件"
             size="sm"
             value={newComponent}
             onChange={setNewComponent}
             options={ALL_COMPONENT_NAMES.map(n => ({value: n, label: n}))}
           />
           <TextInput
-            label="CSS property (camelCase)"
+            label="CSS 属性（驼峰式）"
             size="sm"
             value={newProperty}
-            placeholder="e.g. borderRadius"
+            placeholder="例如 borderRadius"
             onChange={setNewProperty}
           />
           <TextInput
-            label="CSS value"
+            label="CSS 值"
             size="sm"
             value={newValue}
-            placeholder="e.g. 9999px"
+            placeholder="例如 9999px"
             onChange={setNewValue}
           />
           <Button
-            label="Add Override"
+            label="添加覆盖"
             variant="secondary"
             size="sm"
             onClick={handleAddCustom}

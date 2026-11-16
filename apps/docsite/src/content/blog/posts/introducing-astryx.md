@@ -1,37 +1,37 @@
 ---
-title: 'Introducing Astryx by Meta: an open source design system built for how we build now'
-description: "Astryx is an open source design system that's AI-fluent and fully customizable without dependencies — now available in Beta."
+title: 'Meta 推出 Astryx：一个为当下构建方式而生的开源设计系统'
+description: 'Astryx 是一个对 AI 友好、无需依赖即可完全自定义的开源设计系统——现已进入 Beta。'
 date: '2026-06-18'
 type: 'update'
 authors:
   - 'team'
 tags:
-  - 'Release'
+  - '发布'
   - 'AI'
-  - 'Design systems'
+  - '设计系统'
 coverImage: '/images/Astryx-Banner.png'
-coverAlt: 'Introducing Astryx by Meta'
+coverAlt: 'Meta 推出 Astryx'
 relatedDocs:
-  - title: 'Getting started'
+  - title: '快速开始'
     href: '/docs/getting-started'
-  - title: 'Components'
+  - title: '组件'
     href: '/components'
 ---
 
-Open source is how the best ideas in our industry travel. The tools we reach for every day, like React, StyleX, PyTorch, got better because someone decided to share them, and a community made them stronger. Today, we're adding one more.
+开源是行业里最好的想法得以传播的方式。我们每天使用的工具，比如 React、StyleX、PyTorch，之所以变得更好，是因为有人决定把它们分享出来，而社区让它们变得更强大。今天，我们再添一个。
 
-We're excited to introduce Astryx by Meta, an open source design system that's AI fluent and fully customizable without dependencies. It's a complete, production-ready (and growing) toolkit with 150+ accessible components, brand-level theming, dark mode, ready-to-ship templates, and a CLI – all as one cohesive system, built on React and StyleX.
+我们很高兴推出 Meta 的 Astryx：一个对 AI 友好、无需依赖即可完全自定义的开源设计系统。它是一套完整、达到生产级标准（并且仍在成长）的工具包，包含 150 多个无障碍组件、品牌级主题、深色模式、开箱即用的模板和 CLI——全部整合为一个连贯的系统，构建在 React 和 StyleX 之上。
 
-Astryx has matured within Meta for the last eight years and powers over 13,000 apps. It's shaped by the designers, engineers, and product teams who depend on it every day and now, it's yours, too.
+过去八年，Astryx 在 Meta 内部不断成熟，为超过 13,000 个应用提供支持。它由每天依赖它的设计师、工程师和产品团队共同塑造。现在，它也属于你了。
 
-## Start anywhere, change anything, and ship faster
+## 随处起步，任意修改，更快交付
 
-Most design systems make you choose. Adopt a big company system and you inherit its brand – your app ends up looking like someone else's product. Reach for copy/paste component collections and you get freedom, but every project forks its own snippets with no shared coherence, no upstream fixes, no upgrade path, and accessibility quietly becomes your problem.
+大多数设计系统都逼你做选择。采用大公司的系统，你就继承了它的品牌——你的应用最终看起来像别人的产品。选择复制粘贴式的组件集合，你得到了自由，但每个项目都会 fork 出自己的代码片段，缺乏共享的一致性，没有上游修复，没有升级路径，无障碍也悄悄变成了你自己的问题。
 
-Astryx is built to end that trade-off. The system controls behavior, accessibility, and quality, while themes control how it looks. You customize at the token level (color, typography, radius, motion), so that you can make it unmistakably yours without starting from scratch and without rewrites. Builders can stop reinventing the basics and start shipping ideas faster.
+Astryx 就是为了终结这种取舍而构建的。系统负责行为、无障碍和质量，主题负责外观。你在 token 层面（颜色、字体、圆角、动效）进行定制，因此无需从零开始、也无需重写，就能让它一眼看出是你的作品。构建者可以不再重复造轮子，而是更快地把想法交付出去。
 
-## Built for people and the agents building alongside them
+## 为人和并肩构建的 agent 而生
 
-The way we build software is changing, and Astryx is designed for people and the agents building alongside them. Design systems have historically been designed for human consumption but as more code is written by agents, we have to rethink how design systems are structured and the role that they play. Astryx was built ground-up to be AI-operable, opposed to retrofitting existing design systems to play nicely with agent behaviors. It's an open source design system built for how we build in this new world.
+我们构建软件的方式正在改变，而 Astryx 就是为人和与他们并肩构建的 agent 设计的。设计系统历来是为人类使用而设计的，但随着越来越多代码由 agent 编写，我们必须重新思考设计系统的结构方式以及它扮演的角色。Astryx 从零开始就为 AI 可操作而构建，而不是把现有设计系统改造成能配合 agent 行为的样子。它是一个为我们在新世界中的构建方式而生的开源设计系统。
 
-Astryx is in Beta and ready for you to build with today. Check out the [components](/components), the [docs](/docs), and the project on [GitHub](https://github.com/meta/astryx) to get started.
+Astryx 目前处于 Beta 阶段，今天就可以开始构建。查看[组件](/components)、[文档](/docs)以及 [GitHub](https://github.com/meta/astryx) 上的项目，开始使用吧。

@@ -85,10 +85,10 @@ export function ColorTokenTable({theme}: TokenTableProps) {
       <Table
         data={data as Record<string, unknown>[]}
         columns={[
-          {key: 'tokenName', header: 'Token', width: pixel(260)},
+          {key: 'tokenName', header: '令牌', width: pixel(260)},
           {
             key: 'value',
-            header: 'Value',
+            header: '值',
             renderCell: (item: Record<string, unknown>) => {
               const light = item.light as string;
               const dark = item.dark as string;
@@ -118,10 +118,10 @@ export function ColorTokenTable({theme}: TokenTableProps) {
     <Table
       data={data as Record<string, unknown>[]}
       columns={[
-        {key: 'tokenName', header: 'Token', width: pixel(260)},
+        {key: 'tokenName', header: '令牌', width: pixel(260)},
         {
           key: 'light',
-          header: 'Value',
+          header: '值',
           renderCell: (item: Record<string, unknown>) => (
             <HStack gap={2} vAlign="center">
               <Swatch value={item.light as string} />

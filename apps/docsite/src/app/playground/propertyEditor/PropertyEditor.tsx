@@ -180,7 +180,7 @@ function PropRow({prop, instance, code, onCodeChange}: PropRowProps) {
   if (!editable) {
     controlEl = (
       <Text type="supporting" color={attr ? 'secondary' : 'disabled'}>
-        {attr ? 'set in code' : '—'}
+        {attr ? '在代码中设置' : '—'}
       </Text>
     );
   } else if (control.kind === 'boolean') {
@@ -215,7 +215,7 @@ function PropRow({prop, instance, code, onCodeChange}: PropRowProps) {
       <TextInput
         label={prop.name}
         isLabelHidden
-        placeholder="value"
+        placeholder="值"
         value={value}
         onChange={next => commit('string', next)}
         controlXstyle={s.inputControl}
@@ -307,8 +307,8 @@ export function PropertyEditor({
     return (
       <Center xstyle={s.emptyWrap}>
         <EmptyState
-          title="No components detected"
-          description="Add a component in the Code tab to view properties."
+          title="未检测到组件"
+          description="在代码标签页中添加组件后即可查看属性。"
           isCompact
         />
       </Center>
@@ -365,7 +365,7 @@ export function PropertyEditor({
       footer={
         <LayoutFooter hasDivider padding={3}>
           <Button
-            label="Apply"
+            label="应用"
             variant="primary"
             isDisabled={!isDirty}
             onClick={applyChanges}

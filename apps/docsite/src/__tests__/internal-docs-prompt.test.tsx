@@ -114,7 +114,7 @@ function showPrompt() {
 
 function prompt() {
   return screen.queryByRole('region', {
-    name: 'Documentation notice',
+    name: '文档提示',
   });
 }
 
@@ -162,9 +162,9 @@ describe('InternalDocsPrompt', () => {
     await mount();
     await act(async () => vi.advanceTimersByTime(5000));
     expect(document.querySelector('iframe')).toBeNull();
-    expect(prompt()?.textContent).toContain("You're viewing Canary docs");
+    expect(prompt()?.textContent).toContain('你正在查看 Canary 文档');
     expect(prompt()?.outerHTML).not.toMatch(
-      /Meta internal|Meta-specific components/,
+      /Meta 内部文档|Meta 专用组件/,
     );
   });
 
@@ -180,7 +180,7 @@ describe('InternalDocsPrompt', () => {
     showPrompt();
     expect(
       screen
-        .getByRole('link', {name: 'Meta internal docs'})
+        .getByRole('link', {name: 'Meta 内部文档'})
         .getAttribute('href'),
     ).toBe(`${internalOrigin}/components/Button?tab=props`);
   });
@@ -194,7 +194,7 @@ describe('InternalDocsPrompt', () => {
       await mount();
       expect(
         document.querySelector(
-          'iframe[title="Astryx documentation reachability check"]',
+          'iframe[title="Astryx 文档可达性检查"]',
         ),
       ).toBeNull();
       expect(prompt()).toBeNull();
@@ -223,12 +223,12 @@ describe('InternalDocsPrompt', () => {
     send(target);
     expect(prompt()).not.toBeNull();
     const link = screen.getByRole('link', {
-      name: /Meta internal docs/,
+      name: /Meta 内部文档/,
     });
-    expect(screen.getByText('Meta internal docs', {exact: true})).toBeTruthy();
+    expect(screen.getByText('Meta 内部文档', {exact: true})).toBeTruthy();
     expect(prompt()?.textContent).not.toContain("On Meta's network?");
     expect(prompt()?.textContent).toContain(
-      'Meta-specific components and guidance',
+      'Meta 专用组件与指南',
     );
     expect(prompt()?.querySelectorAll('a')).toHaveLength(1);
     expect(prompt()?.querySelectorAll('button')).toHaveLength(1);
@@ -382,7 +382,7 @@ describe('InternalDocsPrompt', () => {
       cookie: document.cookie,
     };
     const close = screen.getByRole('button', {
-      name: 'Dismiss documentation notice for this page view',
+      name: '关闭此页面的文档提示',
     });
     expect(close.getAttribute('tabindex')).not.toBe('-1');
     fireEvent.click(close);
@@ -414,7 +414,7 @@ describe('InternalDocsPrompt', () => {
     ]) {
       fireEvent.click(
         screen.getByRole('button', {
-          name: 'Dismiss documentation notice for this page view',
+          name: '关闭此页面的文档提示',
         }),
       );
       expect(prompt()).toBeNull();
@@ -449,22 +449,22 @@ describe('InternalDocsPrompt', () => {
     vi.stubEnv('NEXT_PUBLIC_DOCS_TARGET', 'canary');
     await loadPrompt();
     await mount();
-    expect(prompt()?.textContent).toContain("You're viewing Canary docs");
+    expect(prompt()?.textContent).toContain('你正在查看 Canary 文档');
     expect(
       prompt()?.querySelector('.astryx-banner')?.getAttribute('data-status'),
     ).toBe('warning');
     expect(prompt()?.textContent).toContain(
-      'These docs may include unreleased components and props. View production docs for the latest stable release.',
+      '这些文档可能包含尚未发布的组件与属性。请查看生产文档以获取最新稳定版本。',
     );
     expect(prompt()?.textContent).not.toMatch(
-      /Meta internal|Meta-specific components/,
+      /Meta 内部文档|Meta 专用组件/,
     );
     expect(
-      screen.getByRole('link', {name: 'View production'}).getAttribute('href'),
+      screen.getByRole('link', {name: '查看生产版本'}).getAttribute('href'),
     ).toBe('https://astryx.atmeta.com/components/Button?tab=props');
     expect(
       screen.queryByRole('link', {
-        name: 'Meta internal docs',
+        name: 'Meta 内部文档',
       }),
     ).toBeNull();
     await act(async () => vi.advanceTimersByTime(5000));
@@ -473,11 +473,11 @@ describe('InternalDocsPrompt', () => {
       prompt()?.querySelector('.astryx-banner')?.getAttribute('data-status'),
     ).toBe('warning');
     expect(prompt()?.outerHTML).not.toMatch(
-      /Meta internal|Meta-specific components/,
+      /Meta 内部文档|Meta 专用组件/,
     );
     expect(
       screen.queryByRole('link', {
-        name: 'Meta internal docs',
+        name: 'Meta 内部文档',
       }),
     ).toBeNull();
   });
@@ -495,11 +495,11 @@ describe('InternalDocsPrompt', () => {
         </module.InternalDocsReachabilityProvider>,
       );
       expect(html).toContain(
-        'These docs may include unreleased components and props. View production docs for the latest stable release.',
+        '这些文档可能包含尚未发布的组件与属性。请查看生产文档以获取最新稳定版本。',
       );
-      expect(html).toContain('View production');
+      expect(html).toContain('查看生产版本');
       expect(html).toContain('data-status="warning"');
-      expect(html).not.toMatch(/Meta internal|Meta-specific components/);
+      expect(html).not.toMatch(/Meta 内部文档|Meta 专用组件/);
     },
   );
 
@@ -508,31 +508,31 @@ describe('InternalDocsPrompt', () => {
     await loadPrompt();
     await mount();
     expect(prompt()?.textContent).not.toMatch(
-      /Meta internal|Meta-specific components/,
+      /Meta 内部文档|Meta 专用组件/,
     );
     showPrompt();
-    expect(prompt()?.textContent).toContain('Working on Meta internal tools?');
+    expect(prompt()?.textContent).toContain('正在开发 Meta 内部工具？');
     expect(
       prompt()?.querySelector('.astryx-banner')?.getAttribute('data-status'),
     ).toBe('info');
-    expect(prompt()?.textContent).not.toContain("You're viewing Canary docs");
+    expect(prompt()?.textContent).not.toContain('你正在查看 Canary 文档');
     expect(prompt()?.textContent).toContain(
-      'These docs may include unreleased components and props. View production docs for the latest stable release.',
+      '这些文档可能包含尚未发布的组件与属性。请查看生产文档以获取最新稳定版本。',
     );
     expect(prompt()?.textContent).toContain(
-      'Meta-specific components and guidance',
+      'Meta 专用组件与指南',
     );
     expect(
-      screen.getAllByRole('region', {name: 'Documentation notice'}),
+      screen.getAllByRole('region', {name: '文档提示'}),
     ).toHaveLength(1);
     expect(screen.getAllByRole('link')).toHaveLength(2);
     expect(
       screen
-        .getByRole('link', {name: 'Meta internal docs'})
+        .getByRole('link', {name: 'Meta 内部文档'})
         .getAttribute('href'),
     ).toBe(`${internalOrigin}/components/Button?tab=props`);
     expect(
-      screen.getByRole('link', {name: 'View production'}).getAttribute('href'),
+      screen.getByRole('link', {name: '查看生产版本'}).getAttribute('href'),
     ).toBe('https://astryx.atmeta.com/components/Button?tab=props');
   });
 
@@ -542,7 +542,7 @@ describe('InternalDocsPrompt', () => {
     const view = await mount();
     fireEvent.click(
       screen.getByRole('button', {
-        name: 'Dismiss documentation notice for this page view',
+        name: '关闭此页面的文档提示',
       }),
     );
     expect(prompt()).toBeNull();
@@ -557,7 +557,7 @@ describe('InternalDocsPrompt', () => {
     expect(prompt()).not.toBeNull();
     expect(
       screen
-        .getByRole('link', {name: 'Meta internal docs'})
+        .getByRole('link', {name: 'Meta 内部文档'})
         .getAttribute('href'),
     ).toBe(`${internalOrigin}/components/Button?tab=examples`);
   });
@@ -565,9 +565,9 @@ describe('InternalDocsPrompt', () => {
   it('offers only internal docs on a reachable production view', async () => {
     await mount();
     showPrompt();
-    expect(prompt()?.textContent).toContain('Working on Meta internal tools?');
+    expect(prompt()?.textContent).toContain('正在开发 Meta 内部工具？');
     expect(prompt()?.textContent).not.toContain('Canary');
-    expect(screen.queryByRole('link', {name: 'View production'})).toBeNull();
+    expect(screen.queryByRole('link', {name: '查看生产版本'})).toBeNull();
     expect(screen.getAllByRole('link')).toHaveLength(1);
   });
 
@@ -583,7 +583,7 @@ describe('InternalDocsPrompt', () => {
     );
     expect(
       screen
-        .getByRole('link', {name: /Meta internal docs/})
+        .getByRole('link', {name: /Meta 内部文档/})
         .getAttribute('href'),
     ).toBe(`${internalOrigin}/docs/tokens?mode=dark&query=a%26b`);
     expect(document.querySelector('iframe')).toBeNull();

@@ -122,7 +122,7 @@ const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
   ssr: false,
   loading: () => (
     <Center height="100%">
-      <Spinner label="Loading editor…" />
+      <Spinner label="正在加载编辑器…" />
     </Center>
   ),
 });
@@ -180,9 +180,9 @@ const BUILD_STATUS_META: Record<
   Exclude<BuildStatus, 'idle'>,
   {variant: 'warning' | 'success' | 'error'; label: string}
 > = {
-  building: {variant: 'warning', label: 'Building…'},
-  finished: {variant: 'success', label: 'Build finished'},
-  error: {variant: 'error', label: 'Build error'},
+  building: {variant: 'warning', label: '构建中…'},
+  finished: {variant: 'success', label: '构建完成'},
+  error: {variant: 'error', label: '构建失败'},
 };
 
 const s = stylex.create({
@@ -645,7 +645,7 @@ export function PlaygroundClient() {
   // buffer never lands here; Monaco's squiggles already cover that case.
   const handleFormatFailure = useCallback(() => {
     toast({
-      body: 'Could not format — the code formatter failed to load. Check your connection and try again.',
+      body: '无法格式化——代码格式化器加载失败。请检查网络连接后重试。',
       type: 'error',
       uniqueID: 'playground-format-failed',
     });
@@ -747,7 +747,7 @@ export function PlaygroundClient() {
   const templateMenuItems = useMemo(
     () => [
       {
-        label: 'Theme Showcase',
+        label: '主题展示',
         onClick: () => setPendingTemplateSource(THEME_SHOWCASE_SOURCE),
       },
       ...templates
@@ -813,7 +813,7 @@ export function PlaygroundClient() {
 
   const mobileTopNav = isMobile ? (
     <TopNav
-      label="Playground navigation"
+      label="演练场导航"
       heading={
         <TopNavHeading
           logo={
@@ -835,19 +835,19 @@ export function PlaygroundClient() {
           size="sm">
           <Tab
             value="preview"
-            label="Preview"
+            label="预览"
             icon={<Monitor size={14} />}
             isLabelHidden
           />
           <Tab
             value="code"
-            label="Code"
+            label="代码"
             icon={<Code2 size={14} />}
             isLabelHidden
           />
           <Tab
             value="theme"
-            label="Theme"
+            label="主题"
             icon={<Palette size={14} />}
             isLabelHidden
           />
@@ -855,7 +855,7 @@ export function PlaygroundClient() {
       }
       endContent={
         <Button
-          label={copied ? '✓ Copied' : 'Share'}
+          label={copied ? '✓ 已复制' : '分享'}
           variant="primary"
           size="md"
           onClick={handleShare}
@@ -877,16 +877,16 @@ export function PlaygroundClient() {
               style={{display: 'block', color: 'var(--color-brand)'}}
             />
           }
-          heading="Home"
+          heading="首页"
           headingHref="/"
           xstyle={s.sideNavHeading}
         />
       }
       collapsible={{isCollapsed: true, hasButton: false}}
       xstyle={s.desktopCollapsedSideNav}>
-      <SideNavSection title="Playground views" isHeaderHidden>
+      <SideNavSection title="演练场视图" isHeaderHidden>
         <SideNavItem
-          label="Code Editor"
+          label="代码编辑器"
           icon={Code2}
           isSelected={activeView === 'code'}
           onClick={() => {
@@ -895,7 +895,7 @@ export function PlaygroundClient() {
           }}
         />
         <SideNavItem
-          label="Theme Editor"
+          label="主题编辑器"
           icon={Palette}
           isSelected={activeView === 'theme'}
           onClick={() => {
@@ -941,10 +941,10 @@ export function PlaygroundClient() {
               justify={isMobile ? 'end' : 'between'}
               align="center"
               xstyle={s.leftPanelHeader}>
-              {!isMobile && <Heading level={3}>Playground</Heading>}
+              {!isMobile && <Heading level={3}>演练场</Heading>}
               <HStack gap={2} align="center">
                 <Button
-                  label="Format code"
+                  label="格式化代码"
                   tooltip={formatTooltip}
                   variant="secondary"
                   size="md"
@@ -956,7 +956,7 @@ export function PlaygroundClient() {
                 {!isMobile && (
                   <DropdownMenu
                     button={{
-                      label: 'Themes',
+                      label: '主题',
                       variant: 'secondary',
                       size: 'md',
                     }}
@@ -967,7 +967,7 @@ export function PlaygroundClient() {
                 {!isMobile && (
                   <DropdownMenu
                     button={{
-                      label: 'Templates',
+                      label: '模板',
                       variant: 'secondary',
                       size: 'md',
                     }}
@@ -1006,7 +1006,7 @@ export function PlaygroundClient() {
 
         {!isMobile && (
           <ResizeHandle
-            label="Resize editor panel"
+            label="调整编辑器面板大小"
             resizable={editorPanel.props}
             pillPlacement="center"
             hasDivider
@@ -1017,14 +1017,14 @@ export function PlaygroundClient() {
         <VStack xstyle={[s.rightPanel, !showPreviewPanel && s.hidden]}>
           {!isMobile && (
             <Toolbar
-              label="Preview controls"
+              label="预览控制"
               startContent={
                 <ToggleButton
-                  label="Target element"
+                  label="选择元素"
                   tooltip={
                     isTargeting
-                      ? 'Exit targeting (Esc)'
-                      : 'Click to select an element'
+                      ? '退出元素选择（Esc）'
+                      : '点击选择元素'
                   }
                   isPressed={isTargeting}
                   onPressedChange={toggleTargeting}
@@ -1041,9 +1041,9 @@ export function PlaygroundClient() {
                 <HStack gap={2} vAlign="center">
                   <Button
                     label={
-                      mode === 'light' ? 'Switch to dark' : 'Switch to light'
+                      mode === 'light' ? '切换到深色' : '切换到浅色'
                     }
-                    tooltip={mode === 'light' ? 'Dark mode' : 'Light mode'}
+                    tooltip={mode === 'light' ? '深色模式' : '浅色模式'}
                     variant="ghost"
                     size="md"
                     isIconOnly
@@ -1053,26 +1053,26 @@ export function PlaygroundClient() {
                     onClick={togglePreviewMode}
                   />
                   <SegmentedControl
-                    label="Viewport size"
+                    label="视口大小"
                     size="md"
                     value={viewport}
                     onChange={v => setViewport(v as Viewport)}>
                     <SegmentedControlItem
                       value="desktop"
-                      label="Desktop"
+                      label="桌面"
                       isLabelHidden
                       icon={<Monitor size={20} />}
                     />
                     <SegmentedControlItem
                       value="phone"
-                      label="Phone"
+                      label="手机"
                       isLabelHidden
                       icon={<Smartphone size={20} />}
                     />
                   </SegmentedControl>
                   <Button
-                    label="Expand"
-                    tooltip="Fullscreen preview"
+                    label="展开"
+                    tooltip="全屏预览"
                     variant="ghost"
                     size="md"
                     isIconOnly
@@ -1101,8 +1101,8 @@ export function PlaygroundClient() {
                       </Text>
                       {buildStatus === 'error' && (
                         <Button
-                          label="Rebuild"
-                          tooltip="Rebuild"
+                          label="重新构建"
+                          tooltip="重新构建"
                           variant="ghost"
                           size="sm"
                           isIconOnly
@@ -1113,7 +1113,7 @@ export function PlaygroundClient() {
                     </HStack>
                   )}
                   <Popover
-                    label="Share template"
+                    label="分享模板"
                     placement="below"
                     alignment="end"
                     xstyle={s.popoverPadding}
@@ -1129,11 +1129,11 @@ export function PlaygroundClient() {
                       <VStack gap={6}>
                         <VStack gap={2}>
                           <Text type="label" weight="semibold">
-                            Share Playground
+                            分享演练场
                           </Text>
                           <HStack gap={2} vAlign="center" width="100%">
                             <TextInput
-                              label="Share URL"
+                              label="分享链接"
                               isLabelHidden
                               isDisabled
                               value={shareUrl}
@@ -1141,8 +1141,8 @@ export function PlaygroundClient() {
                               controlXstyle={s.shareInput}
                             />
                             <Button
-                              label={copied ? 'Copied' : 'Copy URL'}
-                              tooltip={copied ? 'Copied' : 'Copy URL'}
+                              label={copied ? '已复制' : '复制链接'}
+                              tooltip={copied ? '已复制' : '复制链接'}
                               variant="secondary"
                               size="md"
                               isIconOnly
@@ -1159,13 +1159,13 @@ export function PlaygroundClient() {
                         </VStack>
                         <VStack gap={2}>
                           <Text type="label" weight="semibold">
-                            Export Theme File
+                            导出主题文件
                           </Text>
                           <HStack gap={2} vAlign="center" width="100%">
                             <TextInput
-                              label="Theme name"
+                              label="主题名称"
                               isLabelHidden
-                              placeholder="Enter theme name"
+                              placeholder="输入主题名称"
                               value={themeName}
                               onChange={v =>
                                 setThemeName(v.replace(/[\s-]/g, ''))
@@ -1173,8 +1173,8 @@ export function PlaygroundClient() {
                               controlXstyle={s.shareInput}
                             />
                             <Button
-                              label="Download theme"
-                              tooltip="Download theme"
+                              label="下载主题"
+                              tooltip="下载主题"
                               variant="secondary"
                               size="md"
                               isIconOnly
@@ -1190,18 +1190,18 @@ export function PlaygroundClient() {
                                 {...stylex.props(s.hidden)}
                                 aria-hidden="true"
                                 tabIndex={-1}>
-                                Download theme file
+                                下载主题文件
                               </a>
                             )}
                           </HStack>
                           <Link href="/docs/theme" hasUnderline>
-                            Learn about using themes
+                            了解如何使用主题
                           </Link>
                         </VStack>
                       </VStack>
                     }>
                     <Button
-                      label="Export"
+                      label="导出"
                       variant="primary"
                       size="md"
                       endContent={<ExternalLink size={16} />}
@@ -1213,9 +1213,8 @@ export function PlaygroundClient() {
           )}
           {process.env.NODE_ENV !== 'development' && (
             <Text type="supporting" color="secondary" xstyle={s.previewNotice}>
-              Ephemeral preview: no local storage or parent-page access.
-              Reloading or navigating the preview resets runtime state, then
-              restores your code and theme.
+              临时预览：无法访问本地存储或父页面。重新加载或导航预览会重置运行时
+              状态，随后恢复你的代码与主题。
             </Text>
           )}
           <PreviewStage
@@ -1233,8 +1232,8 @@ export function PlaygroundClient() {
 
       <ConfirmDialog
         isOpen={pendingExampleTheme != null}
-        title="Apply example theme"
-        message="Applying an example theme will overwrite your current theme. Any changes you've made in the Theme editor will be lost. Do you want to continue?"
+        title="应用示例主题"
+        message="应用示例主题会覆盖当前主题，你在主题编辑器中做的所有更改都会丢失。是否继续？"
         onCancel={() => setPendingExampleTheme(null)}
         onConfirm={() => {
           if (pendingExampleTheme != null) {
@@ -1245,8 +1244,8 @@ export function PlaygroundClient() {
       />
       <ConfirmDialog
         isOpen={pendingTemplateSource != null}
-        title="Load template"
-        message="Loading this template will replace the current contents of the code editor. Any changes you've made there will be lost. Do you want to continue?"
+        title="加载模板"
+        message="加载此模板会替换代码编辑器中的当前内容，你做的所有更改都会丢失。是否继续？"
         onCancel={() => setPendingTemplateSource(null)}
         onConfirm={() => {
           if (pendingTemplateSource != null) {

@@ -195,7 +195,7 @@ export function DocPageLayout({
         {showSelector ? (
           <div ref={selectorRef} {...stylex.props(styles.mobileOutline)}>
             <Selector
-              label="On this page"
+              label="本页内容"
               isLabelHidden
               options={selectorOptions}
               value={activeId}
@@ -229,7 +229,7 @@ export function DocPageLayout({
         <aside {...stylex.props(styles.aside)}>
           <Outline
             items={outline}
-            label="On this page"
+            label="本页内容"
             density="compact"
             onActiveIdChange={setActiveId}
           />

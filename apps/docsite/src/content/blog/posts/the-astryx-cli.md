@@ -1,6 +1,6 @@
 ---
-title: 'The best CLI is one you never run'
-description: 'What the Astryx CLI is, why it is docs-first, and a tour of every command.'
+title: '最好的 CLI，是你永远不用运行的 CLI'
+description: 'Astryx CLI 是什么、为什么以文档为先，以及所有命令的导览。'
 date: '2026-07-10'
 type: 'engineering'
 authors:
@@ -8,46 +8,46 @@ authors:
 tags:
   - 'CLI'
   - 'AI'
-  - 'Docs'
+  - '文档'
 coverImage: '/blog/the-astryx-cli/cover.gif'
-coverAlt: 'A terminal running astryx init'
+coverAlt: '一个正在运行 astryx init 的终端'
 relatedDocs:
-  - title: 'AI is a copycat, so we gave it good examples to copy'
+  - title: 'AI 是个模仿者，所以我们给了它好例子去模仿'
     href: '/blog/astryx-cli-build-command'
-  - title: 'How Astryx works'
+  - title: 'Astryx 是如何运作的'
     href: '/blog/how-astryx-works'
   - title: 'CLI'
     href: '/docs/cli'
 ---
 
-This is the first in a series on the Astryx CLI. It is the tool an agent uses to build with Astryx or as we like to think of it the interface for the machine. We put a lot of thought into getting it right.
+这是 Astryx CLI 系列的第一篇。它是 agent 用来构建 Astryx 应用的工具，或者按我们喜欢的说法，是“机器的界面”。我们为此花了很多心思，力求把它做对。
 
-## The CLI is the docs
+## CLI 就是文档
 
-Agents live in the terminal now. Give one a good tool and it uses it well. But most tools we hand agents are not good enough. So we made a call that the CLI is the docs. That is where every doc, example, and reference starts. The docs site you are reading is a consumer of the CLI and not the other way around. The CLI is the source of truth. An agent always reads the exact source we wrote and maintain. There is no second copy to fall out of sync. Nothing goes stale.
+Agent 现在就生活在终端里。给它一个好工具，它就能用好。但我们交给 agent 的大多数工具还不够好。于是我们做了一个决定：CLI 就是文档。每一份文档、每一个示例、每一处参考都从这里开始。你正在阅读的文档站是 CLI 的消费者，而不是反过来。CLI 是唯一的事实来源。Agent 读到的永远是我们亲自编写和维护的那份原文。没有第二份副本会不同步，也不会有内容过期。
 
-Docs are only part of it. The CLI also serves templates that show an agent how to build a real page. It builds themes. It searches across all of it. The best CLI is one you never run. The agent runs it. It is all open source so [have a look for yourself](https://github.com/meta/astryx/blob/main/apps/docsite/scripts/generate-data.mjs). Or do not read this post at all. Tell your agent to run `astryx blog` and it will read it for you.
+文档只是其中一部分。CLI 还会提供模板，向 agent 展示如何构建真实页面；它能构建主题；也能在全部内容中搜索。最好的 CLI，是你永远不用运行的 CLI——由 agent 来运行。所有代码都开源，你可以[亲自看看](https://github.com/meta/astryx/blob/main/apps/docsite/scripts/generate-data.mjs)。或者干脆别读这篇文章了，让你的 agent 运行 `astryx blog`，它会替你读。
 
-## The tour
+## 导览
 
-Here is the fun part. You do not really need any of it. Your agent will know it all. But in case you are curious, I will walk you through every part of the CLI you might reach for. We go from an empty folder to a shipped app. I am keeping it high level.
+接下来是有意思的部分。你其实并不需要这些，你的 agent 都会知道。不过如果你好奇，我就带你过一遍 CLI 中你可能用到的每个部分。我们从空文件夹一路走到上线应用，只讲大方向。
 
-**Set up.** `astryx init` installs the packages and writes your agent file. You do not even need to maintain that file. We do. You can still change it if you want. And `upgrade` keeps it current as the system changes.
+**初始化。** `astryx init` 安装所需的包，并写入你的 agent 文件。你甚至不需要维护这个文件——我们替你维护。你当然也可以按自己的意愿修改。而 `upgrade` 会让它在系统演进时保持最新。
 
-**Learn.** `astryx search` ranks results across components, hooks, docs, and templates at once. `astryx component` prints the props, examples, and source for a component. `astryx hook` does the same for hooks. `astryx docs` covers reference topics like tokens, color, type, motion, and our principles.
+**学习。** `astryx search` 会同时在组件、hooks、文档和模板中排序结果。`astryx component` 打印某个组件的 props、示例和源码，`astryx hook` 对 hooks 做同样的事。`astryx docs` 涵盖 tokens、颜色、字体、动效以及我们的设计原则等参考主题。
 
-**Compose.** `astryx build` is going to be your best friend. Tell it what you are making. It points your agent at the closest template, the right blocks, and the components to fill the gaps. `astryx template` drops a page template straight into your project. `astryx layout` sketches a page's structure from a short expression before you fill it in.
+**组合。** `astryx build` 会成为你最好的朋友。告诉它你要做什么，它会为你的 agent 指出最接近的模板、合适的区块，以及用来补齐缺口的组件。`astryx template` 可以把页面模板直接放进你的项目。`astryx layout` 则能根据一段简短描述勾勒出页面结构，供你进一步填充。
 
-**Make it yours.** `astryx theme build` compiles a theme to production CSS and JS. `astryx swizzle` ejects a component's full source when you want to own it.
+**定制。** `astryx theme build` 将主题编译为生产可用的 CSS 和 JS。`astryx swizzle` 会在你想完全掌控某个组件时，把它的完整源码弹出到你的项目中。
 
-**Keep it current.** `astryx upgrade` runs codemods that migrate your code between versions. It refreshes the agent docs too. `astryx doctor` finds problems and tells you the fix.
+**保持更新。** `astryx upgrade` 运行 codemods，在版本之间迁移你的代码，同时刷新 agent 文档。`astryx doctor` 会发现问题并告诉你如何修复。
 
-## One surface, many readers
+## 一个界面，多种读者
 
-We enforce a JSON interface across every command. We enforce stable error codes too. Agents can rely on both and work programmatically. A manifest describes the whole tool in one call if an agent needs it. Most commands describe themselves. An agent can find its way through on its own. And there is a dense mode for fewer tokens.
+我们让每条命令都遵循同一套 JSON 接口，也保证错误码稳定。Agent 可以依赖这两者进行程序化操作。如果 agent 需要，一个 manifest 能在一次调用中描述整个工具。大多数命令本身就能说明自己。Agent 可以自行摸索路径。此外还有 dense 模式，可以消耗更少的 token。
 
-## The whole point
+## 这一切的意义
 
-An agent building with Astryx should not have to guess. Everything is one command away.
+用 Astryx 构建应用的 agent 不该靠猜。无论要做什么，都只差一条命令。
 
-Read part two: [AI is a copycat, so we gave it good examples to copy](/blog/astryx-cli-build-command).
+阅读第二篇：[AI 是个模仿者，所以我们给了它好例子去模仿](/blog/astryx-cli-build-command)。

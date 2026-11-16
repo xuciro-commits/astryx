@@ -49,9 +49,9 @@ import {pageMetadata} from '../../../lib/pageMetadata';
 // param to preselect the picker, but every variant is the same surface, so the
 // canonical stays the bare /themes path to avoid duplicate-URL dilution.
 export const metadata: Metadata = pageMetadata({
-  title: 'Themes',
+  title: '主题',
   description:
-    'Browse and preview every Astryx theme and see how design tokens, type, and components restyle across the gallery.',
+    '浏览并预览所有 Astryx 主题，了解设计令牌、字体与组件如何在主题库中呈现不同风格。',
   path: '/themes',
 });
 
@@ -152,7 +152,7 @@ function ThemeActionsFallback({index = 1}: {index?: number}) {
 
 function ThemeExplorerFallback() {
   return (
-    <ThemeExplorerLayout statusLabel="Loading theme explorer">
+    <ThemeExplorerLayout statusLabel="正在加载主题浏览器">
       <ThemeExplorerSidebar>
         <ThemeExplorerSidebarSurface>
           <ThemeExplorerSidebarContent
@@ -185,7 +185,7 @@ function ThemeExplorerFallback() {
               gap={3}
               hasButtons={false}
               hasSnap
-              aria-label="Themes loading"
+              aria-label="主题加载中"
               xstyle={[mobileCarouselStyle, styles.loadingMobileCarousel]}>
               {Array.from({length: 4}, (_, index) => (
                 <ThemeExplorerMobileCarouselItem key={index}>

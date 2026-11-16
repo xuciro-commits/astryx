@@ -4,7 +4,7 @@
 
 import {usePathname} from 'next/navigation';
 import {Link} from '@astryxdesign/core/Link';
-import {CURRENT_TARGET, DOCS_VERSIONS, urlForTarget} from '../lib/docsVersions';
+import {CURRENT_TARGET, urlForTarget} from '../lib/docsVersions';
 import type {DocsTarget} from '../lib/docsVersions';
 
 /**
@@ -25,7 +25,7 @@ export function DocsVersionFooterLink() {
     return null;
   }
 
-  const label = `${DOCS_VERSIONS[other].label} docs`;
+  const label = other === 'latest' ? '最新文档' : 'Canary 文档';
 
   return (
     <Link href={href} type="supporting" color="secondary" isStandalone>

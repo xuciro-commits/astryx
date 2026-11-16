@@ -26,6 +26,36 @@
 export const GUIDE_PAGE_NAMESPACES = new Set(['cli']);
 
 /**
+ * Chinese titles for nested namespace headings in the docs tree. The CLI tree
+ * has no language overlay for namespace metadata, so the docs pipeline maps
+ * the generated English titles here before rendering a root page.
+ * @type {Record<string, string>}
+ */
+export const NESTED_NAMESPACE_TITLES = {
+  'authoring/building-blocks': '构建模块',
+  'authoring/building-blocks/components': '组件',
+  'authoring/building-blocks/components/describe-the-component': '描述组件',
+  'authoring/building-blocks/templates': '模板',
+  'authoring/building-blocks/templates/document-the-template': '编写模板文档',
+  'authoring/building-blocks/templates/build-the-template': '构建模板',
+  'authoring/building-blocks/templates/build-the-template/template-assets': '资源',
+  'authoring/building-blocks/templates/build-the-template/package-and-test': '打包与测试',
+  'authoring/building-blocks/templates/write-good-templates': '如何编写优秀模板',
+  'authoring/building-blocks/themes': '主题',
+  'authoring/building-blocks/docs': '文档',
+  'authoring/building-blocks/configuration': '配置',
+  'authoring/ship': '发布',
+  'authoring/help': '帮助',
+  'cli/experimental': '实验性功能',
+  'cli/experimental/icon-definitions': '图标定义',
+  'cli/commands': '命令',
+  'cli/api': 'API',
+  'cli/api/functions': '函数',
+  'cli/api/schemas': '数据结构',
+  'cli/api/enums': '枚举',
+};
+
+/**
  * The pages a root namespace in GUIDE_PAGE_NAMESPACES shows besides one page
  * per guide: each is one full page of the namespace at `route` (minus the
  * routes in `except`, which another page holds), at `slug`, so every guide
@@ -152,10 +182,10 @@ export function sectionAnchors(sections) {
     return count === 0 ? base : `${base}-${count + 1}`;
   };
   return sections.map(section => {
-    const id = unique(section.title, 'section');
+    const id = unique(section.id ?? section.title, 'section');
     for (const block of section.content ?? []) {
       if (block?.type === 'heading' && block.text) {
-        unique(`${section.title} ${block.text}`, `${id}-heading`);
+        unique(`${id} ${block.text}`, `${id}-heading`);
       }
     }
     return id;
@@ -262,7 +292,7 @@ export async function namespacePage(readDocs, route, options = {}) {
   const starts = [];
   const guideCategories = [];
   if (node.content?.length > 0) {
-    sections.push({title: 'Overview', content: node.content});
+    sections.push({title: '概览', content: node.content});
   }
   const walk = async slots => {
     for (const slot of slots ?? []) {
@@ -277,7 +307,10 @@ export async function namespacePage(readDocs, route, options = {}) {
         } else if (child.kind === 'namespace') {
           starts.push([routeSlug(child.route), sections.length]);
           if (child.content?.length > 0) {
-            sections.push({title: child.title, content: child.content});
+            sections.push({
+            title: NESTED_NAMESPACE_TITLES[child.route] || child.title,
+            content: child.content,
+          });
           }
           await walk(child.slots);
         }

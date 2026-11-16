@@ -105,7 +105,7 @@ function TargetsTable({targets, props}: TargetsTableProps) {
         columns={[
           {
             key: 'key',
-            header: 'Config key',
+            header: '配置键',
             width: pixel(180),
             renderCell: (item: Record<string, unknown>) => (
               <Text type="code" weight="bold" style={{whiteSpace: 'nowrap'}}>
@@ -115,7 +115,7 @@ function TargetsTable({targets, props}: TargetsTableProps) {
           },
           {
             key: 'className',
-            header: 'Class',
+            header: '类名',
             width: pixel(200),
             renderCell: (item: Record<string, unknown>) => (
               <Text
@@ -128,7 +128,7 @@ function TargetsTable({targets, props}: TargetsTableProps) {
           },
           {
             key: 'dataAttrs',
-            header: 'Data attributes',
+            header: '数据属性',
             width: pixel(220),
             renderCell: (item: Record<string, unknown>) => {
               const attrs = item.dataAttrs as string[];
@@ -143,7 +143,7 @@ function TargetsTable({targets, props}: TargetsTableProps) {
           },
           {
             key: 'props',
-            header: 'Props',
+            header: '属性',
             renderCell: (item: Record<string, unknown>) => {
               const values = item.props as string[];
               return values.length > 0 ? (
@@ -157,7 +157,7 @@ function TargetsTable({targets, props}: TargetsTableProps) {
           },
           {
             key: 'states',
-            header: 'States',
+            header: '状态',
             renderCell: (item: Record<string, unknown>) => {
               const values = item.states as string[];
               return values.length > 0 ? (
@@ -224,7 +224,7 @@ function CssVarsTable({vars}: CssVarsTableProps) {
         columns={[
           {
             key: 'name',
-            header: 'CSS variable',
+            header: 'CSS 变量',
             width: pixel(240),
             renderCell: (item: Record<string, unknown>) => (
               <Text type="code" weight="bold" style={{whiteSpace: 'nowrap'}}>
@@ -234,7 +234,7 @@ function CssVarsTable({vars}: CssVarsTableProps) {
           },
           {
             key: 'default',
-            header: 'Default',
+            header: '默认值',
             width: pixel(220),
             renderCell: (item: Record<string, unknown>) => (
               <Text type="code" color="secondary">
@@ -244,7 +244,7 @@ function CssVarsTable({vars}: CssVarsTableProps) {
           },
           {
             key: 'description',
-            header: 'Description',
+            header: '说明',
             renderCell: (item: Record<string, unknown>) => (
               <MarkdownText type="body">
                 {item.description as string}
@@ -287,26 +287,25 @@ export function Theming({theming, props}: ThemingProps) {
         <Banner
           container="card"
           status="warning"
-          title="Experimental"
-          description="The theming API is experimental and not yet guaranteed — targets, keys, and CSS variables may change while we harden the theme system."
+          title="实验性"
+          description="主题 API 仍处于实验阶段，尚未提供稳定保证——在完善主题系统的过程中，目标、键名和 CSS 变量可能发生变化。"
         />
         <Text type="large" weight="normal">
-          Restyle this component with a <Text type="code">defineTheme</Text>{' '}
-          config. Target the component through the keys below, or override the
-          CSS variables it exposes.
+          使用 <Text type="code">defineTheme</Text> 配置重新设置该组件的样式。
+          通过下方键名定位组件，或覆盖它暴露的 CSS 变量。
         </Text>
       </VStack>
 
       {hasTargets && (
         <VStack gap={4}>
           <Heading level={2} type="display-3">
-            Theme targets
+            主题目标
           </Heading>
           <Text color="secondary">
-            Each target is a key in the <Text type="code">components</Text> map
-            of <Text type="code">defineTheme</Text>. Scope styles to a prop or
-            state with a <Text type="code">prop:value</Text> or state key; use{' '}
-            <Text type="code">base</Text> for all instances.
+            每个目标都是 <Text type="code">defineTheme</Text> 的{' '}
+            <Text type="code">components</Text> 映射中的一个键。使用{' '}
+            <Text type="code">prop:value</Text> 或状态键将样式限定到某个属性或状态；
+            使用 <Text type="code">base</Text> 应用于所有实例。
           </Text>
           <TargetsTable targets={theming.targets} props={props} />
           {example && (
@@ -323,12 +322,12 @@ export function Theming({theming, props}: ThemingProps) {
       {hasVars && (
         <VStack gap={4}>
           <Heading level={2} type="display-3">
-            Themeable CSS variables
+            可主题化的 CSS 变量
           </Heading>
           <Text color="secondary">
-            Additional custom properties this component reads. Override them in
-            a <Text type="code">base</Text> block of the component's{' '}
-            <Text type="code">defineTheme</Text> config.
+            该组件读取的额外自定义属性。请在组件的{' '}
+            <Text type="code">defineTheme</Text> 配置的{' '}
+            <Text type="code">base</Text> 块中覆盖它们。
           </Text>
           <CssVarsTable vars={vars} />
         </VStack>

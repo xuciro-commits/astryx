@@ -117,7 +117,7 @@ describe('deprecation presentation', () => {
     );
     // The notice sits below the header and above the tabs.
     // The tab renders its label twice (one copy hidden, for width).
-    const [overviewTab] = screen.getAllByText('Overview');
+    const [overviewTab] = screen.getAllByText('概览');
     expect(
       headerLine.compareDocumentPosition(notice) &
         Node.DOCUMENT_POSITION_FOLLOWING,
@@ -149,7 +149,7 @@ describe('deprecation presentation', () => {
       selector: '.astryx-text, span, p, div',
     });
     const headerLine = title.nextElementSibling as HTMLElement;
-    const stability = within(headerLine).getByText('Experimental');
+    const stability = within(headerLine).getByText('实验性');
     const deprecated = within(headerLine).getByText(DEPRECATED_LABEL);
     expect(
       stability.compareDocumentPosition(deprecated) &

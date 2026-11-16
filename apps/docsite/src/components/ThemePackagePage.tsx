@@ -355,7 +355,7 @@ function ThemeActions({selectedPkgName, customizeHref}: ThemeActionsProps) {
     <ThemeExplorerActions>
       <Popover
         width={300}
-        label="Use this theme"
+        label="使用此主题"
         content={
           <VStack gap={2}>
             <Text type="body">
@@ -388,7 +388,7 @@ function ThemeActions({selectedPkgName, customizeHref}: ThemeActionsProps) {
             {...triggerProps}
             variant="primary"
             size="lg"
-            label="Use this theme"
+            label="使用此主题"
             xstyle={styles.actionButton}
           />
         )}
@@ -397,7 +397,7 @@ function ThemeActions({selectedPkgName, customizeHref}: ThemeActionsProps) {
       <Button
         variant="secondary"
         size="lg"
-        label="Try in Playground"
+        label="在演练场中试用"
         href={customizeHref}
         xstyle={styles.actionButton}
         onClick={() => {
@@ -556,8 +556,8 @@ export function ThemePackagePage({
   // placements stay byte-identical — adding a button updates both.
   const modeToggleLabel =
     mode === 'light'
-      ? 'Switch preview to dark mode'
-      : 'Switch preview to light mode';
+      ? '将预览切换到深色模式'
+      : '将预览切换到浅色模式';
   const modeToggleIcon =
     mode === 'light' ? <Moon size={16} /> : <Sun size={16} />;
 
@@ -608,7 +608,7 @@ export function ThemePackagePage({
                   return (
                     <SelectableCard
                       key={pkg.name}
-                      label={`Preview ${label} theme`}
+                      label={`预览 ${label} 主题`}
                       isSelected={isActive}
                       onChange={() => handleSelectPkg(pkg.name)}
                       padding={0}
@@ -663,7 +663,7 @@ export function ThemePackagePage({
           isVisible={showMobileBar}
           selector={
             <Selector
-              label="Theme"
+              label="主题"
               isLabelHidden
               size="sm"
               placement="above"
@@ -711,7 +711,7 @@ export function ThemePackagePage({
               gap={3}
               hasButtons={false}
               hasSnap
-              aria-label="Themes"
+              aria-label="主题"
               xstyle={mobileCarouselStyle}>
               {themePackages.map(pkg => {
                 const cardTheme = themeObjects[pkg.name];
@@ -721,7 +721,7 @@ export function ThemePackagePage({
                 return (
                   <ThemeExplorerMobileCarouselItem key={pkg.name}>
                     <SelectableCard
-                      label={`Preview ${label} theme`}
+                      label={`预览 ${label} 主题`}
                       isSelected={isActive}
                       onChange={() => handleSelectPkg(pkg.name)}
                       padding={0}

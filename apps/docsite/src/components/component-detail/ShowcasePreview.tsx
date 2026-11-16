@@ -67,7 +67,7 @@ export function ShowcasePreview({name}: ShowcasePreviewProps) {
     return (
       <Center style={placeholderStyle}>
         <Text type="supporting" color="secondary">
-          Preview not available
+          预览不可用
         </Text>
       </Center>
     );

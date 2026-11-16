@@ -30,7 +30,7 @@ export function Anatomy({elements}: AnatomyProps) {
     <Section>
       <VStack gap={4}>
         <Heading level={2} type="display-3">
-          Anatomy
+          结构
         </Heading>
         {/* Carded like the other tables on this page (BestPracticesBlock, the
             /docs TableBlock) rather than sitting bare on the page background. */}
@@ -40,7 +40,7 @@ export function Anatomy({elements}: AnatomyProps) {
             columns={[
               {
                 key: 'name',
-                header: 'Element',
+                header: '元素',
                 width: pixel(140),
                 renderCell: (item: Record<string, unknown>) =>
                   anatomyNameSegments(item.name as string).map(
@@ -54,7 +54,7 @@ export function Anatomy({elements}: AnatomyProps) {
               },
               {
                 key: 'description',
-                header: 'Description',
+                header: '说明',
                 renderCell: (item: Record<string, unknown>) => (
                   <MarkdownText type="body">
                     {item.description as string}

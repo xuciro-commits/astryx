@@ -94,12 +94,12 @@ describe('TemplatesGallery order', () => {
 
     expect(
       screen
-        .getAllByRole('button', {name: /^Preview /})
+        .getAllByRole('button', {name: /^预览 /})
         .map(button => button.getAttribute('aria-label')),
     ).toEqual([
-      'Preview AI chat',
-      'Preview Metrics dashboard',
-      'Preview Settings',
+      '预览 AI chat',
+      '预览 Metrics dashboard',
+      '预览 Settings',
     ]);
   });
 });

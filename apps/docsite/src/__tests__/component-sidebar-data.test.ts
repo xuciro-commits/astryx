@@ -62,7 +62,7 @@ describe('component sidebar data', () => {
     expect(chartEntries.every(entry => !entry.isReady)).toBe(true);
 
     const lab = canaryCategories.find(
-      category => category.displayName === 'Lab',
+      category => category.displayName === '实验室',
     );
     const threeD = lab?.componentItems.find(
       item => item.type === 'group' && item.label === '3D',

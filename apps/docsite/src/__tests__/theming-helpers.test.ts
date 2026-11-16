@@ -179,7 +179,7 @@ describe('theming section — canary gating', () => {
   });
 
   it('shows an experimental notice about the theming API', () => {
-    expect(source).toMatch(/theming API is experimental/i);
+    expect(source).toMatch(/主题 API 仍处于实验阶段/);
   });
 
   it('wraps both theming tables in a Card, like sibling doc tables', () => {
@@ -203,7 +203,7 @@ describe('theming tab — component detail wiring', () => {
   );
 
   it('renders a dedicated Theming tab', () => {
-    expect(source).toMatch(/<Tab value="theming" label="Theming" \/>/);
+    expect(source).toMatch(/<Tab value="theming" label="主题" \/>/);
   });
 
   it('only mounts the Theming tab when there is themeable content', () => {

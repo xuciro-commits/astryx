@@ -60,6 +60,7 @@ import {
   docs as readDocs,
   template as queryTemplates,
 } from '@astryxdesign/cli/api';
+import {loadComponentDoc} from '../../../packages/cli/foundation/discovery/component-loader.mjs';
 import {
   discoverAll,
   pkgOf,
@@ -96,6 +97,19 @@ const require = createRequire(import.meta.url);
 const DOCSITE_ROOT = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(DOCSITE_ROOT, '..', '..');
 const OUT_DIR = path.join(DOCSITE_ROOT, 'src', 'generated');
+const TEMPLATE_ZH_PATH = path.join(
+  DOCSITE_ROOT,
+  'src',
+  'content',
+  'templates-zh.json',
+);
+const TEMPLATE_ZH = fs.existsSync(TEMPLATE_ZH_PATH)
+  ? JSON.parse(fs.readFileSync(TEMPLATE_ZH_PATH, 'utf8'))
+  : {};
+const PACKAGE_META_ZH_PATH = path.join(REPO_ROOT, 'scripts', 'zh', 'package-meta.json');
+const PACKAGE_META_ZH = fs.existsSync(PACKAGE_META_ZH_PATH)
+  ? JSON.parse(fs.readFileSync(PACKAGE_META_ZH_PATH, 'utf8'))
+  : {};
 const CLI_BIN = path.join(
   REPO_ROOT,
   'packages',
@@ -105,6 +119,14 @@ const CLI_BIN = path.join(
   'bin',
   'astryx.mjs',
 );
+
+/** Read the CLI docs tree with Chinese overlays applied. */
+const readDocsZh = (route, section, options = {}) =>
+  readDocs(route, section, {
+    ...options,
+    cwd: options.cwd ?? CLI_ROOT,
+    lang: 'zh',
+  });
 
 // Which version of the packages supplies the documented DATA (component
 // .doc.mjs, package.json versions, READMEs). `canary` (and every PR preview)
@@ -472,16 +494,18 @@ function generatePackageRegistry() {
       const changelog = hasChangelog
         ? fs.readFileSync(path.join(CONTENT_ROOT, dir, 'CHANGELOG.md'), 'utf-8')
         : null;
+      const zhMeta = PACKAGE_META_ZH[raw.name];
       return {
         name: raw.name,
         displayName:
+          zhMeta?.displayName ||
           raw.displayName ||
           raw.name
             .replace('@astryxdesign/', '')
             .replace('theme-', 'Theme: ')
             .replace(/^\w/, c => c.toUpperCase()),
         version: raw.version,
-        description: raw.description || '',
+        description: zhMeta?.description || raw.description || '',
         packagePath: dir,
         canaryOnly,
         packageExports: raw.exports ?? null,
@@ -648,8 +672,7 @@ async function generateComponentRegistry() {
       for (const df of docFiles) {
         const dfPath = path.join(dirPath, df);
         try {
-          const mod = await import(pathToFileURL(dfPath).href);
-          const d = mod.docs;
+          const d = await loadComponentDoc(dfPath, {lang: 'zh'});
           if (
             d &&
             (d.components || d.props) &&
@@ -684,8 +707,7 @@ async function generateComponentRegistry() {
 
         let doc;
         try {
-          const mod = await import(pathToFileURL(docFile).href);
-          doc = mod.docs;
+          doc = await loadComponentDoc(docFile, {lang: 'zh'});
           if (!doc) continue;
           recordDocExampleOrder(doc);
         } catch (err) {
@@ -1788,12 +1810,13 @@ async function generateTemplateRegistry() {
     // hand out the demo-content replacement a copy applies, with fixture media.
     source = replaceDemoContent(source).source;
 
+    const templateZh = TEMPLATE_ZH[dir.name] ?? {};
     templates.push({
       slug: dir.name,
-      name: doc.name || dir.name,
-      description: doc.description || '',
+      name: templateZh.name || doc.name || dir.name,
+      description: templateZh.description || doc.description || '',
       isReady: doc.isReady ?? true,
-      category: doc.category || '',
+      category: templateZh.category || doc.category || '',
       isHiddenFromOverview: doc.isHiddenFromOverview ?? false,
       registry: doc.registry ? sanitizeForJson(doc.registry) : null,
       source,
@@ -1853,6 +1876,78 @@ export const templateMetadataCount = ${templateMetadata.length};
 
 // ── 5. Docs Registry ──────────────────────────────────────────────────
 
+/** Root docs-tree namespace titles and descriptions in Chinese. The CLI's
+ * tree reads namespace metadata from authored docs, which have no language
+ * overlay at the tree level yet; the docsite needs the same Chinese surface as
+ * every other page. */
+const ROOT_NAMESPACE_ZH = {
+  authoring: {
+    title: '扩展开发',
+    description:
+      '构建 npm 包，为 Astryx 应用添加组件、模板、主题、文档与代码修改，并查阅其中每个文件的全部字段。',
+  },
+  calendars: {
+    title: '日历',
+    description:
+      '以波斯历、希伯来历、伊斯兰历、佛历、日本历、中国农历、檀纪历等日历显示日期，同时保持值为公历 ISO 日期。',
+  },
+  cli: {
+    title: 'Astryx CLI',
+    description:
+      '命令、编程 API 与输出约定。构建集成请参阅 `astryx docs authoring`。',
+  },
+  foundations: {
+    title: '基础',
+    description:
+      '颜色、高度、图标、插画、动效、形状与间距：每个组件所依赖的视觉基础。每个主题保留自己的名称；按名称打开它。',
+  },
+  global: {
+    title: '全局模式',
+    description:
+      '在电脑上安装一次 Astryx，即可在任何文件夹中使用。每个项目仍运行自己的 Astryx 版本，因此全局安装永远不会改变项目获得的内容。',
+  },
+  guides: {
+    title: '指南',
+    description:
+      '独立成篇的指南：快速开始、原则、主题与 AI 协作。每个主题保留自己的名称；按名称打开它。',
+  },
+  internationalization: {
+    title: '国际化',
+    description:
+      '设置活动语言环境、加载消息目录、与你自己的 i18n 库共存、显示其他日历、处理 RTL 并测试翻译。',
+  },
+  layout: {
+    title: '布局',
+    description:
+      '由外而内构建应用布局：先搭建区域，再组织结构与内容，调整间距，最后适配不同宽度。',
+  },
+  migration: {
+    title: '迁移',
+    description:
+      '将现有 Tailwind、shadcn 或 Radix 应用逐步迁移到设计系统——设置、组件替换与验证。',
+  },
+  styling: {
+    title: '组件样式',
+    description:
+      '自定义组件外观：xstyle、Tailwind、className、其余 props、复合组件、数据属性选择器、令牌与 StyleX 设置。',
+  },
+  'styling-libraries': {
+    title: '其他样式库',
+    description:
+      '将 Tailwind、StyleX、Panda、Chakra、MUI、CSS-in-JS、CSS 模块及非 CSS 渲染器与系统令牌集成。',
+  },
+  tokens: {
+    title: '所有令牌',
+    description:
+      '颜色、数据可视化、语法、间距、尺寸、边框、焦点、圆角、阴影、动效与排版令牌的完整参考。',
+  },
+  typography: {
+    title: '排版',
+    description:
+      '字体家族、几何字体刻度、字重、行高与语义文本令牌，用于一致且无障碍的文本样式。',
+  },
+};
+
 /**
  * The docsite pages of the CLI's docs tree, read through the CLI's public docs
  * API. Every root namespace is one full page at its own slug (docs-pages.mjs),
@@ -1869,7 +1964,7 @@ async function docsTreePages() {
   // Every route the tree has. A reference to a route without a page of its
   // own (a command or API doc) still opens it in `astryx docs`.
   const routes = [];
-  const list = await readDocs();
+  const list = await readDocsZh();
   const pending = [];
   // Routes a page of a GUIDE_PAGE_NAMESPACES root holds, so their guides get
   // no page of their own.
@@ -1879,7 +1974,7 @@ async function docsTreePages() {
       pending.push(root);
       for (const spec of GUIDE_NAMESPACE_PAGES.get(root) ?? []) {
         for (const route of await treeRoutes(spec.route)) held.add(route);
-        const full = await namespacePage(readDocs, spec.route, spec);
+        const full = await namespacePage(readDocsZh, spec.route, spec);
         if (!full) continue;
         pages.push(full.page);
         Object.assign(redirects, full.redirects);
@@ -1887,7 +1982,7 @@ async function docsTreePages() {
       continue;
     }
     routes.push(...(await treeRoutes(root)));
-    const {root: full, nested} = await rootNamespacePages(readDocs, root, {
+    const {root: full, nested} = await rootNamespacePages(readDocsZh, root, {
       aliases: ROOT_PAGE_ALIASES.get(root) ?? [],
     });
     for (const page of nested) {
@@ -1895,6 +1990,11 @@ async function docsTreePages() {
       Object.assign(redirects, page.redirects);
     }
     if (!full) continue;
+    const rootZh = ROOT_NAMESPACE_ZH[root];
+    if (rootZh) {
+      full.page.title = rootZh.title;
+      full.page.description = rootZh.description;
+    }
     pages.push(full.page);
     Object.assign(
       redirects,
@@ -1905,7 +2005,7 @@ async function docsTreePages() {
   while (pending.length > 0) {
     const route = pending.shift();
     routes.push(route);
-    const read = await readDocs(route);
+    const read = await readDocsZh(route);
     if (read.type !== 'docs.node') continue;
     for (const slot of read.data.slots) {
       for (const child of slot.children) {
@@ -1917,7 +2017,7 @@ async function docsTreePages() {
           child.route.includes('/') &&
           !held.has(child.route)
         ) {
-          const doc = (await readDocs(child.route)).data;
+          const doc = (await readDocsZh(child.route)).data;
           pages.push({
             topic: routeSlug(child.route),
             title: doc.title || child.title,
@@ -1938,7 +2038,7 @@ async function docsTreePages() {
  * @returns {Promise<string[]>}
  */
 async function treeRoutes(route) {
-  const read = await readDocs(route, undefined, {depth: 'all'});
+  const read = await readDocsZh(route, undefined, {depth: 'all'});
   const routes = [route];
   const walk = slots => {
     for (const slot of slots ?? []) {
@@ -1999,7 +2099,13 @@ async function generateDocsRegistry() {
       // it does in `astryx docs`. Only the CLI's own topics are read here, so
       // the read runs from the CLI package. The docsite renders token tables
       // itself, so a resolved token reference is not copied into the registry.
-      const read = await readDocs(topic, undefined, {cwd: CLI_ROOT});
+      const read = await readDocs(topic, undefined, {
+        cwd: CLI_ROOT,
+        lang: 'zh',
+      });
+      title = read.data.title || title;
+      description = read.data.description || description;
+      category = read.data.category || category;
       sections = withoutResolvedTokens(read.data.sections);
     }
 

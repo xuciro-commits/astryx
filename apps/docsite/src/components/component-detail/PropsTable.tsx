@@ -47,7 +47,7 @@ export function PropsTable({props, heading}: PropsTableProps) {
           columns={[
             {
               key: 'name',
-              header: 'Prop',
+              header: '属性',
               width: pixel(180),
               renderCell: (item: Record<string, unknown>) => (
                 <HStack gap={1} vAlign="center">
@@ -55,14 +55,14 @@ export function PropsTable({props, heading}: PropsTableProps) {
                     {item.name as string}
                   </Text>
                   {item.required === true && (
-                    <Badge label="required" variant="info" />
+                    <Badge label="必填" variant="info" />
                   )}
                 </HStack>
               ),
             },
             {
               key: 'type',
-              header: 'Type',
+              header: '类型',
               width: pixel(240),
               renderCell: (item: Record<string, unknown>) => (
                 <Text type="code" color="secondary">
@@ -72,7 +72,7 @@ export function PropsTable({props, heading}: PropsTableProps) {
             },
             {
               key: 'description',
-              header: 'Description',
+              header: '说明',
               // Without a floor, a narrow screen squeezes this column to a
               // few characters and every row grows thousands of pixels tall.
               // The floor makes the table scroll sideways instead.

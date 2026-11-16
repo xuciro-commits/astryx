@@ -19,7 +19,7 @@ export function ListBlock({
       const isDo = item.startsWith('do:');
       return {
         _idx: i,
-        guidance: isDo ? 'Do' : "Don't",
+        guidance: isDo ? '应该' : '不应该',
         isDo,
         text: item.replace(/^(do|dont):/, ''),
       };
@@ -31,7 +31,7 @@ export function ListBlock({
         columns={[
           {
             key: 'guidance',
-            header: 'Guidance',
+            header: '指导',
             renderCell: (item: Record<string, unknown>) => (
               <Badge
                 label={item.guidance as string}
@@ -41,7 +41,7 @@ export function ListBlock({
           },
           {
             key: 'text',
-            header: 'Practice',
+            header: '实践',
             renderCell: (item: Record<string, unknown>) =>
               renderInlineMarkdown(item.text as string),
           },

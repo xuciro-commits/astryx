@@ -566,7 +566,7 @@ export function HeroReelDots() {
       <div {...stylex.props(styles.dots)}>
         <Pagination
           variant="dots"
-          label="Preview Astryx themes"
+          label="预览 Astryx 主题"
           page={index + 1}
           totalPages={slides.length}
           onChange={p => goTo(p - 1)}

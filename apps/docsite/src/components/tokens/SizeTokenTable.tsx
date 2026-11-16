@@ -29,10 +29,10 @@ export function SizeTokenTable({theme}: TokenTableProps) {
     <Table
       data={data as Record<string, unknown>[]}
       columns={[
-        {key: 'tokenName', header: 'Token', width: pixel(200)},
+        {key: 'tokenName', header: '令牌', width: pixel(200)},
         {
           key: 'value',
-          header: 'Value',
+          header: '值',
           renderCell: (item: Record<string, unknown>) => (
             <HStack gap={2} vAlign="center">
               <div

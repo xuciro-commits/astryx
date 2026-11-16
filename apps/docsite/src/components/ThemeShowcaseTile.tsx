@@ -593,14 +593,14 @@ export function ThemeShowcaseTile({
             cluster together at the tighter gap. */}
         <VStack gap={3}>
           <TextInput
-            label="Input"
+            label="输入"
             isLabelHidden
             size="sm"
-            placeholder="Type something..."
+            placeholder="请输入…"
             value=""
             onChange={() => {}}
           />
-          <ProgressBar label="Progress" value={75} isLabelHidden />
+          <ProgressBar label="进度" value={75} isLabelHidden />
         </VStack>
 
         {/* Compact 3-column table with two example rows — demos the
@@ -610,37 +610,37 @@ export function ThemeShowcaseTile({
         <Table density="compact" dividers="rows">
           <TableHeader>
             <TableRow>
-              <TableHeaderCell>Table</TableHeaderCell>
-              <TableHeaderCell>Status</TableHeaderCell>
-              <TableHeaderCell>Action</TableHeaderCell>
+              <TableHeaderCell>表格</TableHeaderCell>
+              <TableHeaderCell>状态</TableHeaderCell>
+              <TableHeaderCell>操作</TableHeaderCell>
             </TableRow>
           </TableHeader>
           <TableBody>
             <TableRow>
-              <TableCell>Example 1</TableCell>
+              <TableCell>示例 1</TableCell>
               <TableCell>
-                <Badge label="Badge" variant="info" />
+                <Badge label="徽章" variant="info" />
               </TableCell>
               <TableCell>
                 <Button
                   variant="ghost"
                   size="sm"
-                  label="Add"
+                  label="添加"
                   isIconOnly
                   icon={<Plus />}
                 />
               </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell>Example 2</TableCell>
+              <TableCell>示例 2</TableCell>
               <TableCell>
-                <Badge label="Badge" variant="success" />
+                <Badge label="徽章" variant="success" />
               </TableCell>
               <TableCell>
                 <Button
                   variant="ghost"
                   size="sm"
-                  label="Add"
+                  label="添加"
                   isIconOnly
                   icon={<Plus />}
                 />
@@ -657,15 +657,15 @@ export function ThemeShowcaseTile({
             so the neighboring RadioList + CheckboxInput
             also use their default sizes to stay visually matched. */}
         <HStack gap={4} wrap="wrap" vAlign="center">
-          <Switch label="Toggle" value={true} />
+          <Switch label="开关" value={true} />
           <RadioList
-            label="Radio"
+            label="单选"
             isLabelHidden
             value="radio"
             onChange={() => {}}>
-            <RadioListItem label="Radio Button" value="radio" />
+            <RadioListItem label="单选按钮" value="radio" />
           </RadioList>
-          <CheckboxInput label="Checkbox" value={false} />
+          <CheckboxInput label="复选框" value={false} />
         </HStack>
 
         {/* Action row — Primary / Secondary / Ghost button samples.
@@ -675,19 +675,19 @@ export function ThemeShowcaseTile({
             chrome (buttons) into compound chrome (banner stack). */}
         <div {...stylex.props(styles.actionRow)}>
           <HStack gap={2} wrap="wrap">
-            <Button variant="primary" size="sm" label="Primary" />
-            <Button variant="secondary" size="sm" label="Secondary" />
-            <Button variant="ghost" size="sm" label="Ghost" />
+            <Button variant="primary" size="sm" label="主要" />
+            <Button variant="secondary" size="sm" label="次要" />
+            <Button variant="ghost" size="sm" label="幽灵" />
           </HStack>
         </div>
 
         {/* Four banners stacked — demos the theme's info / success /
             warning / error chrome (icon, surface color, text color). */}
         <VStack gap={2}>
-          <Banner status="info" title="Banner Title" />
-          <Banner status="success" title="Banner Title" />
-          <Banner status="warning" title="Banner Title" />
-          <Banner status="error" title="Banner Title" />
+          <Banner status="info" title="横幅标题" />
+          <Banner status="success" title="横幅标题" />
+          <Banner status="warning" title="横幅标题" />
+          <Banner status="error" title="横幅标题" />
         </VStack>
       </div>
     </Card>

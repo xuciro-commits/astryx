@@ -66,23 +66,22 @@ export function BlogIndex({posts, availableTypes}: BlogIndexProps) {
       <VStack gap={10}>
         <VStack gap={2}>
           <Heading level={1} type="display-1" justify="center">
-            Blog
+            博客
           </Heading>
           <Text weight="normal" color="secondary" justify="center">
-            Releases, guides, and stories on building Astryx for humans and
-            agents.
+            关于为人类与智能体构建 Astryx 的版本发布、指南与故事。
           </Text>
         </VStack>
 
         {availableTypes.length > 1 ? (
           <ToggleButtonGroup
-            label="Filter posts by type"
+            label="按类型筛选文章"
             value={activeType}
             onChange={value =>
               setActiveType((value as 'all' | BlogPostType) ?? 'all')
             }
             xstyle={styles.typeFilter}>
-            <ToggleButton value="all" label={`All (${counts.all})`} />
+            <ToggleButton value="all" label={`全部（${counts.all}）`} />
             {availableTypes.map(t => (
               <ToggleButton
                 key={t}
@@ -95,8 +94,8 @@ export function BlogIndex({posts, availableTypes}: BlogIndexProps) {
 
         {filtered.length === 0 ? (
           <EmptyState
-            title="No posts yet"
-            description="Check back soon for releases, guides, and stories."
+            title="暂无文章"
+            description="版本发布、指南与故事即将上线，敬请期待。"
           />
         ) : (
           <VStack gap={10}>

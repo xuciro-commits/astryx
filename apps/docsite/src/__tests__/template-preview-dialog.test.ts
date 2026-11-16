@@ -193,9 +193,9 @@ describe('template preview selection', () => {
     }
     render(createElement(Gallery));
     for (const [label, oldSlug, nextSlug] of [
-      ['Next template', 'template-a', 'template-b'],
-      ['Previous template', 'template-b', 'template-a'],
-      ['Previous template', 'template-a', 'template-c'],
+      ['下一个模板', 'template-a', 'template-b'],
+      ['上一个模板', 'template-b', 'template-a'],
+      ['上一个模板', 'template-a', 'template-c'],
     ]) {
       commits.length = 0;
       fireEvent.click(screen.getByRole('button', {name: label}));
@@ -234,10 +234,10 @@ describe('template preview selection', () => {
       );
     }
     render(createElement(Gallery));
-    fireEvent.click(screen.getByRole('button', {name: 'Next template'}));
+    fireEvent.click(screen.getByRole('button', {name: '下一个模板'}));
     expect(screen.getByTestId('pending-preview')).not.toBeNull();
     expect(screen.getByTestId('preview').textContent).toBe('template-a');
-    fireEvent.click(screen.getByRole('button', {name: 'Close preview'}));
+    fireEvent.click(screen.getByRole('button', {name: '关闭预览'}));
     expect(screen.getByRole('dialog', {hidden: true}).hidden).toBe(true);
     expect(screen.queryByTestId('preview')).toBeNull();
     await act(async () => {
@@ -289,9 +289,9 @@ describe('template preview selection', () => {
       );
     }
     render(createElement(Gallery));
-    fireEvent.click(screen.getByRole('button', {name: 'Next template'}));
+    fireEvent.click(screen.getByRole('button', {name: '下一个模板'}));
     expect(screen.getByTestId('pending-preview')).not.toBeNull();
-    fireEvent.click(screen.getByRole('button', {name: 'Close preview'}));
+    fireEvent.click(screen.getByRole('button', {name: '关闭预览'}));
     commits.length = 0;
     fireEvent.click(screen.getByRole('button', {name: 'Open C'}));
     expectOnlyVisible('template-c');

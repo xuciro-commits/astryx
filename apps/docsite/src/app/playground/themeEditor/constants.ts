@@ -4,7 +4,7 @@ export const FONT_OPTIONS = [
   {
     value:
       '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-    label: 'System (Default)',
+    label: '系统（默认）',
   },
   {value: '"Inter", -apple-system, sans-serif', label: 'Inter'},
   {value: '"Roboto", -apple-system, sans-serif', label: 'Roboto'},
@@ -70,16 +70,16 @@ export const UNIFIED_PRESETS = {
 } as const;
 
 const RADIUS_OPTIONS = [
-  {value: 'var(--radius-none)', token: '--radius-none', label: 'None'},
-  {value: 'var(--radius-inner)', token: '--radius-inner', label: 'Inner'},
-  {value: 'var(--radius-element)', token: '--radius-element', label: 'Element'},
+  {value: 'var(--radius-none)', token: '--radius-none', label: '无'},
+  {value: 'var(--radius-inner)', token: '--radius-inner', label: '内部'},
+  {value: 'var(--radius-element)', token: '--radius-element', label: '元素'},
   {
     value: 'var(--radius-container)',
     token: '--radius-container',
-    label: 'Container',
+    label: '容器',
   },
-  {value: 'var(--radius-page)', token: '--radius-page', label: 'Page'},
-  {value: 'var(--radius-full)', token: '--radius-full', label: 'Full'},
+  {value: 'var(--radius-page)', token: '--radius-page', label: '页面'},
+  {value: 'var(--radius-full)', token: '--radius-full', label: '完整'},
 ];
 
 const SPACING_OPTIONS = [
@@ -118,152 +118,152 @@ export const COMPONENT_VARS: Record<
   {label: string; vars: ComponentVar[]}
 > = {
   button: {
-    label: 'Button',
+    label: '按钮',
     vars: [
       {
         name: '--button-radius',
         default: 'var(--radius-element)',
-        description: 'Border radius',
+        description: '圆角',
         options: RADIUS_OPTIONS,
       },
     ],
   },
   card: {
-    label: 'Card',
+    label: '卡片',
     vars: [
       {
         name: '--card-radius',
         default: 'var(--radius-container)',
-        description: 'Border radius',
+        description: '圆角',
         options: RADIUS_OPTIONS,
       },
       {
         name: '--card-padding',
         default: 'var(--spacing-4)',
-        description: 'Padding',
+        description: '内边距',
         options: SPACING_OPTIONS,
       },
     ],
   },
   field: {
-    label: 'Field / Input',
+    label: '字段 / 输入框',
     vars: [
       {
         name: '--input-radius',
         default: 'var(--radius-element)',
-        description: 'Border radius',
+        description: '圆角',
         options: RADIUS_OPTIONS,
       },
     ],
   },
   banner: {
-    label: 'Banner',
+    label: '横幅',
     vars: [
       {
         name: '--banner-radius',
         default: 'var(--radius-container)',
-        description: 'Border radius',
+        description: '圆角',
         options: RADIUS_OPTIONS,
       },
     ],
   },
   'segmented-control': {
-    label: 'Segmented Control',
+    label: '分段控件',
     vars: [
       {
         name: '--segmented-control-radius',
         default: 'var(--radius-element)',
-        description: 'Border radius',
+        description: '圆角',
         options: RADIUS_OPTIONS,
       },
       {
         name: '--segmented-control-padding',
         default: 'var(--spacing-0-5)',
-        description: 'Padding',
+        description: '内边距',
         options: SPACING_OPTIONS,
       },
     ],
   },
   dialog: {
-    label: 'Dialog',
+    label: '对话框',
     vars: [
       {
         name: '--dialog-radius',
         default: 'var(--radius-container)',
-        description: 'Border radius',
+        description: '圆角',
         options: RADIUS_OPTIONS,
       },
       {
         name: '--dialog-padding',
         default: 'var(--spacing-4)',
-        description: 'Padding',
+        description: '内边距',
         options: SPACING_OPTIONS,
       },
     ],
   },
   'dropdown-menu': {
-    label: 'Dropdown Menu',
+    label: '下拉菜单',
     vars: [
       {
         name: '--dropdown-radius',
         default: 'var(--radius-element)',
-        description: 'Border radius',
+        description: '圆角',
         options: RADIUS_OPTIONS,
       },
       {
         name: '--dropdown-padding',
         default: 'var(--spacing-1)',
-        description: 'Inner padding',
+        description: '内部间距',
         options: SPACING_OPTIONS,
       },
     ],
   },
   section: {
-    label: 'Section',
+    label: '区块',
     vars: [
       {
         name: '--section-padding',
         default: 'var(--spacing-4)',
-        description: 'Padding',
+        description: '内边距',
         options: SPACING_OPTIONS,
       },
     ],
   },
   popover: {
-    label: 'Popover',
+    label: '浮层',
     vars: [
       {
         name: '--popover-radius',
         default: 'var(--radius-element)',
-        description: 'Border radius',
+        description: '圆角',
         options: RADIUS_OPTIONS,
       },
     ],
   },
   hovercard: {
-    label: 'Hover Card',
+    label: '悬停卡片',
     vars: [
       {
         name: '--hovercard-radius',
         default: 'var(--radius-container)',
-        description: 'Border radius',
+        description: '圆角',
         options: RADIUS_OPTIONS,
       },
     ],
   },
   'chat-composer': {
-    label: 'Chat Composer',
+    label: '聊天输入框',
     vars: [
       {
         name: '--composer-radius',
         default: 'var(--radius-page)',
-        description: 'Border radius',
+        description: '圆角',
         options: RADIUS_OPTIONS,
       },
       {
         name: '--composer-padding',
         default: 'var(--spacing-3)',
-        description: 'Padding',
+        description: '内边距',
         options: SPACING_OPTIONS,
       },
     ],
@@ -367,7 +367,7 @@ export const ALL_COMPONENT_NAMES = [
 ] as const;
 
 export const COLOR_CATEGORIES = {
-  'Core Semantic': [
+  '核心语义': [
     '--color-accent',
     '--color-accent-muted',
     '--color-on-accent',
@@ -389,7 +389,7 @@ export const COLOR_CATEGORIES = {
     '--color-icon-secondary',
     '--color-icon-disabled',
   ],
-  'Surface Variants': [
+  '表面变体': [
     '--color-background-surface',
     '--color-background-body',
     '--color-background-muted',
@@ -398,7 +398,7 @@ export const COLOR_CATEGORIES = {
     '--color-background-inverted',
     '--color-background-error-inverted',
   ],
-  'Category Colors': [
+  '类别颜色': [
     '--color-background-blue',
     '--color-background-cyan',
     '--color-background-gray',
@@ -410,7 +410,7 @@ export const COLOR_CATEGORIES = {
     '--color-background-teal',
     '--color-background-yellow',
   ],
-  'Status/Sentiment': [
+  '状态/情感': [
     '--color-success',
     '--color-success-muted',
     '--color-error',
@@ -426,49 +426,49 @@ export const TYPOGRAPHY_CATEGORIES: Record<
   string,
   string[] | {description: string; tokens: string[]}
 > = {
-  'Font Families': [
+  '字体家族': [
     '--font-family-body',
     '--font-family-heading',
     '--font-family-code',
   ],
-  'Heading 1': {
-    description: 'Primary page title',
+  '标题 1': {
+    description: '页面主标题',
     tokens: [
       '--text-heading-1-size',
       '--text-heading-1-weight',
       '--text-heading-1-leading',
     ],
   },
-  'Heading 2': {
-    description: 'Section title',
+  '标题 2': {
+    description: '区块标题',
     tokens: [
       '--text-heading-2-size',
       '--text-heading-2-weight',
       '--text-heading-2-leading',
     ],
   },
-  'Heading 3': {
-    description: 'Subsection title',
+  '标题 3': {
+    description: '子区块标题',
     tokens: [
       '--text-heading-3-size',
       '--text-heading-3-weight',
       '--text-heading-3-leading',
     ],
   },
-  'Body Text': {
-    description: 'Default paragraph text',
+  '正文': {
+    description: '默认段落文本',
     tokens: ['--text-body-size', '--text-body-weight', '--text-body-leading'],
   },
-  'Label Text': {
-    description: 'Form labels, UI labels',
+  '标签文字': {
+    description: '表单标签、界面标签',
     tokens: [
       '--text-label-size',
       '--text-label-weight',
       '--text-label-leading',
     ],
   },
-  'Supporting Text': {
-    description: 'Captions, helper text',
+  '辅助文字': {
+    description: '说明文字、帮助文本',
     tokens: [
       '--text-supporting-size',
       '--text-supporting-weight',

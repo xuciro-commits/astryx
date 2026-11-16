@@ -50,15 +50,15 @@ export function CliPreview() {
   return (
     <VStack gap={3} align="stretch" xstyle={styles.root} inert>
       <Text type="supporting" color="secondary" xstyle={styles.helper}>
-        How can i help you today?
+        今天我能帮你做什么？
       </Text>
 
       <HStack gap={2} vAlign="center" hAlign="between" xstyle={styles.pill}>
         <Text type="body" color="primary" maxLines={1} xstyle={styles.message}>
-          Can you create me a table page
+          能帮我创建一个表格页面吗
         </Text>
         <IconButton
-          label="Send message"
+          label="发送消息"
           icon={<Send size={16} />}
           size="md"
           xstyle={styles.sendButton}

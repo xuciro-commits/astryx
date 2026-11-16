@@ -22,7 +22,7 @@ export function formatDate(iso: string): string {
   if (Number.isNaN(d.getTime())) {
     return iso;
   }
-  return d.toLocaleDateString('en-US', {
+  return d.toLocaleDateString('zh-CN', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -102,7 +102,7 @@ export function AuthorByline({
         <>
           <Divider orientation="vertical" xstyle={styles.divider} />
           <Text type={textType} color="secondary">
-            Updated {formatDate(updatedAt)}
+            更新于 {formatDate(updatedAt)}
           </Text>
         </>
       ) : null}
@@ -110,7 +110,7 @@ export function AuthorByline({
         <>
           <Divider orientation="vertical" xstyle={styles.divider} />
           <Text type={textType} color="secondary">
-            {readingTimeMinutes} min read
+            约 {readingTimeMinutes} 分钟阅读
           </Text>
         </>
       ) : null}

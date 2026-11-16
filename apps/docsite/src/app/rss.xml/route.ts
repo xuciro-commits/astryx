@@ -14,6 +14,7 @@
 
 import {blogPosts} from '../../generated/blogRegistry';
 import {SITE_URL, SITE_NAME, SITE_DESCRIPTION} from '../../lib/siteConfig';
+import {POST_TYPE_LABELS} from '../../lib/blog/schema';
 
 function abs(path: string): string {
   return new URL(path, SITE_URL).toString();
@@ -48,7 +49,7 @@ export async function GET() {
         `      <link>${link}</link>`,
         `      <guid isPermaLink="true">${link}</guid>`,
         `      <description>${escapeXml(post.description)}</description>`,
-        `      <category>${escapeXml(post.type)}</category>`,
+        `      <category>${escapeXml(POST_TYPE_LABELS[post.type] ?? post.type)}</category>`,
         ...post.authors.map(a => `      <author>${escapeXml(a)}</author>`),
       ];
       const pub = rfc822(post.date);
@@ -69,10 +70,10 @@ export async function GET() {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>${escapeXml(SITE_NAME)} Blog</title>
+    <title>${escapeXml(SITE_NAME)} 博客</title>
     <link>${escapeXml(blogUrl)}</link>
     <description>${escapeXml(SITE_DESCRIPTION)}</description>
-    <language>en</language>
+    <language>zh-CN</language>
     <lastBuildDate>${lastBuild}</lastBuildDate>
     <atom:link href="${escapeXml(feedUrl)}" rel="self" type="application/rss+xml" />
 ${items}

@@ -161,8 +161,8 @@ export function PreviewStage({
       {isFullscreen && (
         <Card padding={0} xstyle={s.exitButtonCard}>
           <Button
-            label="Exit fullscreen"
-            tooltip="Exit fullscreen"
+            label="退出全屏"
+            tooltip="退出全屏"
             variant="ghost"
             size="sm"
             isIconOnly
@@ -184,7 +184,7 @@ export function PreviewStage({
             frame={frame}
             frameRef={frameRef}
             onLoad={onFrameLoad ?? noop}
-            title="Preview"
+            title="预览"
             {...stylex.props(s.iframe, isInteractionDisabled && s.iframeInert)}
           />
         )}

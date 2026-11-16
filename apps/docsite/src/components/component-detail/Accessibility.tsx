@@ -35,6 +35,43 @@ const CATEGORY_ORDER = [
   'General',
 ] as const;
 
+const CATEGORY_LABELS: Record<string, string> = {
+  'Color contrast': '色彩对比',
+  Keyboard: '键盘',
+  Semantics: '语义',
+  Content: '内容',
+  General: '通用',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  Pass: '通过',
+  Fail: '未通过',
+  'Not tested': '未测试',
+};
+
+const APPLICABILITY_LABELS: Record<string, string> = {
+  Required: '必需',
+  Conditional: '条件性',
+  Supplemental: '补充性',
+  Decorative: '装饰性',
+};
+
+const MEASUREMENT_LABELS: Record<string, string> = {
+  Badges: '徽章',
+  Badge: '徽章',
+  Text: '文本',
+  'Non-text': '非文本',
+  'UI components': 'UI 组件',
+};
+
+function modeLabel(mode: string) {
+  return mode === 'light' ? '浅色' : mode === 'dark' ? '深色' : mode;
+}
+
+function measurementLabel(label: string) {
+  return MEASUREMENT_LABELS[label] ?? label;
+}
+
 const styles = stylex.create({
   measurement: {
     fontVariantNumeric: 'tabular-nums',
@@ -134,7 +171,7 @@ function MeasurementBreakdownPopover({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const isBadgeBreakdown = measurementLabel === 'Badges';
-  const breakdownName = isBadgeBreakdown ? 'Badge' : measurementLabel;
+  const breakdownName = isBadgeBreakdown ? '徽章' : measurementLabel;
   const triggerText = isBadgeBreakdown
     ? `${breakdown.length} badge results`
     : `${breakdown.length} results`;
@@ -145,16 +182,16 @@ function MeasurementBreakdownPopover({
       onOpenChange={setIsOpen}
       hasCloseButton={false}
       width="min(560px, calc(100vw - 32px))"
-      label={`${mode} mode ${variant} ${breakdownName} contrast details`}
+      label={`${modeLabel(mode)}模式 ${variant} ${breakdownName}对比度详情`}
       content={
         <VStack gap={3}>
           <VStack gap={1}>
             <HStack hAlign="between" vAlign="center" gap={3}>
               <Text weight="bold">
-                {mode} mode · {variant} {breakdownName} coverage
+                {modeLabel(mode)}模式 · {variant} {breakdownName}覆盖情况
               </Text>
               <IconButton
-                label="Close Badge coverage"
+                label="关闭徽章覆盖情况"
                 icon={<Icon icon="close" color="inherit" />}
                 variant="ghost"
                 size="sm"
@@ -163,8 +200,8 @@ function MeasurementBreakdownPopover({
             </HStack>
             <Text type="supporting" color="secondary">
               {isBadgeBreakdown
-                ? 'Lowest result for each built-in Badge across Rest, Hover, Pointer down, Page background, and Surface background combinations.'
-                : `Detailed results for ${measurementLabel}.`}
+                ? '每个内置徽章在默认、悬停、按下、页面背景与表面背景组合下的最低结果。'
+                : `${measurementLabel}的详细结果。`}
             </Text>
           </VStack>
           <div {...stylex.props(styles.breakdownGrid)}>
@@ -198,9 +235,9 @@ function MeasurementBreakdownPopover({
         <button
           type="button"
           {...triggerProps}
-          aria-label={`View all ${triggerText} for ${mode} mode ${variant}`}
+          aria-label={`查看 ${modeLabel(mode)}模式 ${variant} 的全部 ${triggerText}`}
           {...stylex.props(styles.breakdownTrigger)}>
-          View all {triggerText}
+          查看全部 {triggerText}
         </button>
       )}
     </Popover>
@@ -255,7 +292,7 @@ function RequirementsTable({items}: {items: AccessibilityRequirement[]}) {
         columns={[
           {
             key: 'name',
-            header: 'Requirement',
+            header: '要求',
             width: proportional(1.2, {minWidth: 0}),
             renderCell: (item: Record<string, unknown>) => (
               <Text weight="bold">{item.name as string}</Text>
@@ -263,7 +300,7 @@ function RequirementsTable({items}: {items: AccessibilityRequirement[]}) {
           },
           {
             key: 'requirement',
-            header: 'Ratio',
+            header: '比例',
             width: proportional(1, {minWidth: 0}),
             renderCell: (item: Record<string, unknown>) => (
               <Text>{item.requirement as string}</Text>
@@ -271,7 +308,7 @@ function RequirementsTable({items}: {items: AccessibilityRequirement[]}) {
           },
           {
             key: 'states',
-            header: 'Applies to',
+            header: '适用范围',
             width: proportional(1.1, {minWidth: 0}),
             renderCell: (item: Record<string, unknown>) => {
               const states = item.states as string[];
@@ -284,7 +321,7 @@ function RequirementsTable({items}: {items: AccessibilityRequirement[]}) {
           },
           {
             key: 'description',
-            header: 'Guidance',
+            header: '指南',
             width: proportional(4.5, {minWidth: 0}),
             renderCell: (item: Record<string, unknown>) => {
               const references = referencesFor(item.criterion as string);
@@ -328,7 +365,7 @@ function ThemeCoverageTable({
   mode: AccessibilityThemeMode;
   themeName: string;
 }) {
-  const accessibleName = `${componentName} ${themeName} theme ${mode.mode} mode contrast results`;
+  const accessibleName = `${componentName} ${themeName} 主题${modeLabel(mode.mode)}模式对比度结果`;
   const accessibilityLabelPlugin: TablePlugin<Record<string, unknown>> = {
     transformScrollWrapper: props => ({
       ...props,
@@ -360,7 +397,7 @@ function ThemeCoverageTable({
   return (
     <Card>
       <VStack gap={3}>
-        <Text weight="bold">{mode.mode} mode</Text>
+        <Text weight="bold">{modeLabel(mode.mode)}模式</Text>
         <Table
           aria-label={accessibleName}
           data={data}
@@ -368,7 +405,7 @@ function ThemeCoverageTable({
           columns={[
             {
               key: 'name',
-              header: 'Variant',
+              header: '变体',
               width: proportional(1.2, {minWidth: 0}),
               renderCell: (item: Record<string, unknown>) => (
                 <Text weight="bold">{item.name as string}</Text>
@@ -380,9 +417,10 @@ function ThemeCoverageTable({
               width: proportional(1.1, {minWidth: 0}),
               renderCell: (item: Record<string, unknown>) => {
                 const status = item.status as 'Pass' | 'Fail' | 'Not tested';
+                const statusLabel = STATUS_LABELS[status] ?? status;
                 return (
                   <Badge
-                    label={status}
+                    label={statusLabel}
                     variant={
                       status === 'Pass'
                         ? 'success'
@@ -396,7 +434,7 @@ function ThemeCoverageTable({
             },
             ...measurementLabels.map(label => ({
               key: label,
-              header: label,
+              header: measurementLabel(label),
               width: proportional(label === 'Badges' ? 1.6 : 1, {minWidth: 0}),
               renderCell: (item: Record<string, unknown>) => {
                 const failed = item[`${label}Status`] === 'Fail';
@@ -433,7 +471,7 @@ function ThemeCoverageTable({
                               ? {color: 'var(--color-text-red)'}
                               : undefined
                           }>
-                          {[applicability, detail].filter(Boolean).join(' · ')}
+                          {[applicability ? (APPLICABILITY_LABELS[applicability] ?? applicability) : undefined, detail].filter(Boolean).join(' · ')}
                         </Text>
                       )}
                       {breakdown && (
@@ -472,12 +510,11 @@ function ThemeCoverageSection({
         <VStack key={theme.theme} gap={4}>
           <VStack gap={2}>
             <Heading level={2} accessibilityLevel={3}>
-              {theme.theme} Theme
+              {theme.theme} 主题
             </Heading>
             <Text color="secondary" weight="normal">
-              These tables show the required contrast checks that were measured.
-              Pass means every measured value meets its WCAG AA ratio. Items
-              under Not measured do not affect Pass or Fail.
+              这些表格展示已测量的必需对比度检查。通过表示每个测量值都达到
+              WCAG AA 比例要求。未测量项不影响通过或未通过的判定。
             </Text>
           </VStack>
           {theme.tables.map((table, index) => (
@@ -504,7 +541,7 @@ function ThemeCoverageSection({
           ))}
           {(theme.notMeasured?.length ?? 0) > 0 && (
             <VStack gap={2}>
-              <Heading level={4}>Not measured</Heading>
+              <Heading level={4}>未测量</Heading>
               <List density="compact" listStyle="disc">
                 {theme.notMeasured?.map(item => (
                   <ListItem
@@ -528,9 +565,8 @@ function ThemeCoverageSection({
 function ColorContrastIntro() {
   return (
     <Text color="secondary" weight="normal">
-      Components must meet WCAG 2.2 Level AA across variants, states, and
-      themes. Measure foreground and background colors as they appear together
-      on screen.
+      组件必须在各变体、状态和主题下满足 WCAG 2.2 AA 级要求。测量前景色与
+      背景色在屏幕上同时呈现时的对比度。
     </Text>
   );
 }
@@ -554,7 +590,7 @@ export function Accessibility({
         <VStack key={category} gap={8}>
           <VStack gap={3}>
             <Heading level={2} type="display-3">
-              {category}
+              {CATEGORY_LABELS[category] ?? category}
             </Heading>
             {category === 'Color contrast' && <ColorContrastIntro />}
             <RequirementsTable items={items} />
@@ -571,7 +607,7 @@ export function Accessibility({
         <VStack gap={8}>
           <VStack gap={3}>
             <Heading level={2} type="display-3">
-              Color contrast
+              色彩对比
             </Heading>
             <ColorContrastIntro />
           </VStack>

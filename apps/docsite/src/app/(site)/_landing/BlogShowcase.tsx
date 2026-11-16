@@ -92,11 +92,11 @@ function BlogSection({children}: {children: ReactNode}) {
       <VStack gap={8} xstyle={styles.section}>
         <HStack xstyle={styles.header}>
           <Heading level={2} type="display-2" color="primary">
-            Stay in the know
+            了解最新动态
           </Heading>
           <Button
             variant="ghost"
-            label="View all posts"
+            label="查看全部文章"
             href="/blog"
             endContent={<Icon icon={ArrowRight} size="sm" />}
           />

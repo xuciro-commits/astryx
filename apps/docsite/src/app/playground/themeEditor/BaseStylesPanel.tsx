@@ -299,7 +299,7 @@ export function BaseStylesPanel({
       {/* Color */}
       <VStack gap={3}>
         <Text type="label" color="secondary">
-          Colors
+          颜色
         </Text>
         <VStack gap={0}>
           {[
@@ -325,7 +325,7 @@ export function BaseStylesPanel({
       {/* Presets */}
       <VStack gap={3}>
         <Text type="label" color="secondary">
-          Preset
+          预设
         </Text>
         <Grid columns={4} gap={2}>
           {Object.keys(UNIFIED_PRESETS).map(key => {
@@ -411,15 +411,15 @@ export function BaseStylesPanel({
       <VStack gap={4}>
         <VStack gap={3}>
           {[
-            {token: '--font-family-heading', label: 'Heading Font'},
-            {token: '--font-family-body', label: 'Body Font'},
+            {token: '--font-family-heading', label: '标题字体'},
+            {token: '--font-family-body', label: '正文字体'},
           ].map(({token, label}) => (
             <LabeledField key={token} label={label}>
               <Selector
                 label={label}
                 isLabelHidden
                 size="sm"
-                placeholder="Custom"
+                placeholder="自定义"
                 controlXstyle={styles.fullWidthField}
                 options={FONT_OPTIONS}
                 value={fontValue(token)}
@@ -427,12 +427,12 @@ export function BaseStylesPanel({
               />
             </LabeledField>
           ))}
-          <LabeledField label="Type Scale">
+          <LabeledField label="字号比例">
             <Selector
-              label="Type Scale"
+              label="字号比例"
               isLabelHidden
               size="sm"
-              placeholder="Default"
+              placeholder="默认"
               controlXstyle={styles.fullWidthField}
               options={[
                 ...RATIO_OPTIONS.map(opt => ({
@@ -464,9 +464,9 @@ export function BaseStylesPanel({
           </LabeledField>
         </VStack>
         <ScaleControl
-          label="Type Size"
+          label="字号"
           tooltip={`Geometric scale: size = round(base × ratio^step). Base = ${typeSizeMatch ?? typeScaleBase}px, ratio = ${typeScaleRatio.toFixed(3)}.`}
-          controlLabel="Type size"
+          controlLabel="字号"
           options={[
             {label: 'S', value: '12'},
             {label: 'M', value: '14'},
@@ -488,9 +488,9 @@ export function BaseStylesPanel({
       <VStack gap={4}>
         <VStack gap={2}>
           <ScaleControl
-            label="Corner Radius"
+            label="圆角"
             tooltip={`Linear scale: inner = ${shownRadius}px, element = ${shownRadius * 2}px, container = ${shownRadius * 3}px, page = ${Math.round(shownRadius * 7)}px.`}
-            controlLabel="Radius"
+            controlLabel="圆角"
             options={[
               {label: 'S', value: '2'},
               {label: 'M', value: '4'},
@@ -516,9 +516,9 @@ export function BaseStylesPanel({
         </VStack>
         <VStack gap={2}>
           <ScaleControl
-            label="Spacing"
+            label="间距"
             tooltip={`Linear scale: step N = ${shownSpacing}px × N.`}
-            controlLabel="Spacing"
+            controlLabel="间距"
             options={[
               {label: 'S', value: '2'},
               {label: 'M', value: '4'},
@@ -543,9 +543,9 @@ export function BaseStylesPanel({
           )}
         </VStack>
         <ScaleControl
-          label="Element Size"
+          label="元素尺寸"
           tooltip={`sm = ${(sizeMatch ?? sizeBase) - 4}px, md = ${sizeMatch ?? sizeBase}px, lg = ${(sizeMatch ?? sizeBase) + 4}px.`}
-          controlLabel="Element size"
+          controlLabel="元素尺寸"
           options={[
             {label: 'S', value: '28'},
             {label: 'M', value: '32'},
@@ -565,9 +565,9 @@ export function BaseStylesPanel({
 
       {/* Motion */}
       <ScaleControl
-        label="Duration"
-        tooltip={`Speed multiplier for all motion. Current: ${durationStep}× (e.g. medium = ${Math.round(410 / durationStep)}ms).`}
-        controlLabel="Duration"
+        label="时长"
+        tooltip={`所有动效的速度倍率。当前：${durationStep}×（例如中等 = ${Math.round(410 / durationStep)}ms）。`}
+        controlLabel="时长"
         options={[
           {label: '0.5×', value: '0.5'},
           {label: '1×', value: '1'},

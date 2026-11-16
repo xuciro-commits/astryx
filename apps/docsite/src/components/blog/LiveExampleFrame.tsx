@@ -77,7 +77,7 @@ export function LiveExampleFrame({code, post}: LiveExampleFrameProps) {
           frame={frame}
           frameRef={attachFrame}
           onLoad={handleFrameLoad}
-          title="Live example"
+          title="实时示例"
           className={css.iframe}
         />
       )}

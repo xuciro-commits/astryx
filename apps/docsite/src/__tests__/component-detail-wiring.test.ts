@@ -141,7 +141,7 @@ describe('component detail wiring', () => {
     });
     expect(button?.usage?.accessibility).toContainEqual(
       expect.objectContaining({
-        name: 'Badge text',
+        name: 'Badge 文本',
         requirement: '4.5:1',
       }),
     );
@@ -154,7 +154,7 @@ describe('component detail wiring', () => {
     );
 
     expect(source).toContain(
-      '<Tab value="accessibility" label="Accessibility" />',
+      '<Tab value="accessibility" label="无障碍" />',
     );
     expect(source).toContain('themeCoverage={accessibilityThemeCoverage}');
     expect(source).toContain('componentName={comp.name}');
@@ -164,7 +164,7 @@ describe('component detail wiring', () => {
       'utf8',
     );
     expect(accessibilitySource).toContain(
-      '`${componentName} ${themeName} theme ${mode.mode} mode contrast results`',
+      '`${componentName} ${themeName} 主题${modeLabel(mode.mode)}模式对比度结果`',
     );
     expect(accessibilitySource).not.toContain(
       'Neutral Button contrast results',
@@ -197,7 +197,7 @@ describe('component detail wiring', () => {
     ]) {
       const component = entries.find(entry => entry.name === name);
       expect(component?.usage?.accessibility).toContainEqual(
-        expect.objectContaining({name: 'Essential icon or spinner arc'}),
+        expect.objectContaining({name: '必要图标或加载弧线'}),
       );
     }
   });

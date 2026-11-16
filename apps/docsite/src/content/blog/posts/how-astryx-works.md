@@ -1,33 +1,33 @@
 ---
-title: 'How Astryx works'
-description: "A look under the hood of Astryx: the problem it was built to solve, the systems it's made of, and the principles behind how we build it."
+title: 'Astryx 是如何运作的'
+description: '深入了解 Astryx 的内部：它要解决的问题、由哪些系统构成，以及我们构建它时遵循的原则。'
 date: '2026-06-29'
 type: 'engineering'
 authors:
   - 'cvkxx'
   - 'cixzhang'
 tags:
-  - 'Architecture'
+  - '架构'
   - 'AI'
-  - 'Design systems'
+  - '设计系统'
 coverImage: '/blog/how-astryx-works/cover.png'
-coverAlt: 'Astracat, the Astryx mascot, in an astronaut helmet with an Astryx-branded jetpack, against a gradient backdrop of asterisk shapes'
+coverAlt: 'Astryx 吉祥物 Astracat 戴着宇航员头盔、背着印有 Astryx 标志的喷气背包，背景是布满星号图案的渐变'
 relatedDocs:
-  - title: 'Getting started'
+  - title: '快速开始'
     href: '/docs/getting-started'
-  - title: 'Theming'
+  - title: '主题'
     href: '/docs/theme'
   - title: 'CLI'
     href: '/docs/cli'
-  - title: 'Components'
+  - title: '组件'
     href: '/components'
 ---
 
-We [introduced Astryx](/blog/introducing-astryx) as an open-source design system that's AI-fluent and fully customizable without dependencies. This post is the technical story behind it – what Astryx actually is, the problem at Meta that produced it, the systems it's built from, and how we make and evaluate changes. We'll go deep on each system in posts of their own.
+我们曾[介绍 Astryx](/blog/introducing-astryx)，把它定位为一个 AI 友好、无需依赖即可完全自定义的开源设计系统。本文讲述它背后的技术故事——Astryx 究竟是什么、它在 Meta 解决了什么问题、它由哪些系统搭建而成，以及我们如何制定和评估变更。之后我们会用各自的文章深入介绍每个系统。
 
-## What is Astryx?
+## Astryx 是什么？
 
-Astryx is a component library that ships pre-compiled CSS and typed React components – 150+ accessible components, brand-level theming, dark mode, templates, and a CLI as one cohesive system, built on React and StyleX, currently in beta.
+Astryx 是一个组件库，提供预编译的 CSS 和带类型的 React 组件——150 多个可访问组件、品牌级主题、深色模式、模板，以及一个 CLI，它们构成一个统一的体系，基于 React 和 StyleX 构建，目前处于 beta 阶段。
 
 ```css
 @import '@astryxdesign/core/reset.css';
@@ -47,64 +47,64 @@ import {Card} from '@astryxdesign/core/Card';
 </Stack>;
 ```
 
-**A few things set it apart:**
+**它有几个与众不同之处：**
 
-- **Open internals.** Components are built to be composed at any level, not locked behind a closed top-level API. The building blocks you'd reach for are exported directly, and when you need to go deeper than that, swizzle ejects a component's full source – internal modules and all – into your project to own.
-- **Customize without wrapping.** A theme is a set of CSS custom property overrides and component style overrides generated from a config to be compatible with the system. A designer can own it; a developer never forks or wraps component source to change how things look.
-- **Ships ready-to-use or built from source.** Drop in the pre-built stylesheet and you're done, or build from the TypeScript + StyleX source so your bundler keeps only the components you actually use – a first-class path for the leanest possible output.
-- **Built for AI assistants too.** The API and docs are shaped by measuring how LLMs actually use the library, and the same reference an engineer reads is available to an AI assistant through the CLI.
+- **开放的内部实现。** 组件在设计上支持任意层级的组合，而不是被封闭的顶层 API 锁住。你需要的构建块会直接导出；如果需要更深入，swizzle 会把组件的完整源码——包括内部模块——弹出到你的项目中，由你掌控。
+- **无需包装即可自定义。** 主题是一组 CSS 自定义属性覆盖和组件样式覆盖，由配置生成并与系统兼容。设计师可以掌控它；开发者无需 fork 或包装组件源码，就能改变外观。
+- **开箱即用，也可从源码构建。** 引入预构建样式表即可完成，或者从 TypeScript + StyleX 源码构建，让打包器只保留你实际使用的组件——这是获得最精简产物的首选路径。
+- **也为 AI 助手而构建。** 我们通过度量 LLM 实际如何使用这个库来塑造 API 和文档，工程师阅读的同一份参考文档，AI 助手也能通过 CLI 获取。
 
-## The problem at Meta
+## Meta 的问题
 
-Meta runs on thousands of internal tools, spread across different orgs and built by the teams that need them; the company's culture actively encourages building your own tool when one doesn't exist. But the investment in any single tool is fragmented across orgs, so builders kept rebuilding the same components – the date picker, the table, the form – in tool after tool. Everyone paid for it: end users carried the cognitive load of every product working a little differently, builders lost time reinventing wheels, and the company maintained the same component over and over.
+Meta 运行着数千个内部工具，分布在不同部门，由需要它们的团队各自构建；公司文化也积极鼓励：没有现成工具时就自己造一个。但任何单个工具的投入都分散在不同部门，于是构建者不断重复实现同样的组件——日期选择器、表格、表单——在一个又一个工具里。所有人都为此付出代价：最终用户要承受每个产品用起来都不太一样的认知负担，构建者浪费时间重复造轮子，公司则要一遍遍维护同一个组件。
 
-We built the original system as a common UI framework teams could build from instead of starting over. The idea was simple – solve shared problems once, so builders could spend their time on what was actually unique to their product. It gave the company a shared UI language for internal tools, made collaboration and sharing across tools possible, and – because of the sheer range of problems internal tools have to solve – accumulated a large breadth of complex, battle-tested components across various use cases. Over eight years it became the most-used and largest design system at Meta, powering 13,000+ products, with roughly half of all updates contributed by the builder community itself. That breadth and real-world usage are the foundation Astryx is built on.
+我们最初把该系统构建为团队可以基于其开发的通用 UI 框架，而不是每次从零开始。想法很简单——把共性问题解决一次，让构建者能把时间花在产品真正独特的地方。它为公司内部工具提供了共享的 UI 语言，使跨工具协作和共享成为可能；而且由于内部工具要解决的问题范围极大，它积累了覆盖面广、经过实战检验的复杂组件，适用于各种使用场景。八年间，它成为 Meta 使用最广、规模最大的设计系统，支撑着 13,000 多个产品，约一半的更新来自构建者社区自身的贡献。这样的广度和真实场景的使用，正是 Astryx 的基础。
 
-AI changed the economics of building UIs. Assistants became dramatically more effective when working with in-distribution, open-source standards like TypeScript, popular OSS libraries, and modern browser primitives, and the internal system was none of those. At the same time, we wanted to modernize on the latest browser technology, open up far more customization, and make the system AI-fluent by design rather than retrofitting it. AI also changed what was possible for us: the same leverage that made building easier put a full rebuild, and open-sourcing it, within reach for a team our size.
+AI 改变了构建 UI 的成本结构。当助手使用 TypeScript、流行的开源库和现代浏览器原语这类处于训练分布内的开源标准时，效果会显著提升，而内部系统这些都不是。与此同时，我们希望在最新浏览器技术上实现现代化，开放更多自定义能力，并让系统在设计时就 AI 友好，而不是事后改造。AI 也改变了我们能够做到的事：让构建更轻松的同一种杠杆，使一次彻底重建并将其开源，对于像我们这样规模的团队来说也变得触手可及。
 
-Astryx is that internal system rebuilt on the open-source stack – modern browser features, the ability to customize without wrapping, and a built-in documentation system that powers both human and AI interaction with the library. It keeps the breadth, conventions and institutional knowledge that eight years of scale produced, and sheds the constraints that were holding it back.
+Astryx 就是在开源技术栈上重建的那套内部系统——现代浏览器特性、无需包装即可自定义的能力，以及一个同时服务于人类和 AI 与库交互的内置文档系统。它保留了八年规模化发展所形成的广度、约定和机构知识，同时摆脱了那些曾束缚它的限制。
 
-## The systems
+## 系统构成
 
-Astryx is a handful of systems that compose.
+Astryx 由若干相互组合的系统构成。
 
-**Distribution.** Astryx ships two ways. The simple path is a single pre-built stylesheet – import it and use components, no build setup at all. The advanced path builds from the TypeScript + StyleX source, so your bundler includes styles only for the components you import (roughly a third of the full stylesheet in our reference app) and gets precise control over how Astryx's styles layer against your own.
+**分发。** Astryx 有两种交付方式。简单路径是一份预构建的样式表——引入即可使用组件，完全不需要构建配置。进阶路径从 TypeScript + StyleX 源码构建，这样你的打包器只会包含你导入的组件对应的样式（在我们的参考应用中约为完整样式表的三分之一），并且能精确控制 Astryx 的样式如何与你自己的样式分层共存。
 
-**Theming system.** Theming is where a designer makes Astryx their own. A theme is a declarative config – colors, typography, motion, spacing, per-component tweaks – and changing a value updates every component at once. Beyond adjusting CSS variables, Astryx themes are able to customize components, component parts directly and introduce custom variants. Light and dark are handled together, themes can be switched live or compiled to a static file for production, and 7 ready-made themes ship today.
+**主题系统。** 主题是设计师让 Astryx 真正属于自己品牌的地方。主题是一份声明式配置——颜色、排版、动效、间距、各组件微调——修改一个值会同时更新所有组件。除了调整 CSS 变量，Astryx 主题还能自定义组件、直接自定义组件内部部件，并引入自定义变体。浅色和深色一起处理，主题可以实时切换，也可以编译成静态文件用于生产；目前内置 7 套现成主题。
 
-**A graduated customization path.** Control escalates one well-defined step at a time: use a component as-is → adjust theme tokens → apply your own styles via class names → reach in with your own CSS → or eject the source entirely and own it. Each step trades more control for more responsibility.
+**渐进式自定义路径。** 控制权按定义清晰的步骤逐级提升：直接使用组件 → 调整主题 token → 通过类名应用自己的样式 → 用自己的 CSS 深入 → 或完全弹出源码并自行掌控。每进一步，都用更多控制权换取更多责任。
 
-**A CLI companion.** The CLI is the operational interface – browsing docs, scaffolding, building themes, and running automated upgrades when something changes. It's also a more reliable way for AI assistants to learn the library than long docs or web search, so an assistant builds with the exact API a person does. We keep the human and AI experience of the system in sync. Documentation, examples, and templates you see in this docsite are available to AI via the CLI.
+**CLI 伙伴。** CLI 是操作界面——浏览文档、搭建脚手架、构建主题，以及在发生变更时运行自动升级。对于 AI 助手来说，它也比长篇文档或网页搜索更可靠地学习这个库，因此助手使用的 API 与人类完全一致。我们让人和 AI 对系统的体验保持同步。本文档站点中的文档、示例和模板，都可以通过 CLI 提供给 AI。
 
-**Vibe tests.** A built-in evaluation harness that measures how well people and AI can actually build with Astryx. It's how we catch when a change makes the system harder to use, and how we settle design debates with evidence instead of opinion.
+**Vibe 测试。** 一个内置的评估工具，衡量人和 AI 实际用 Astryx 构建的效果。我们用它在某次变更让系统更难使用时及时发现，也用证据而非观点来裁决设计争论。
 
-## Principles
+## 原则
 
-A few principles hold the whole system together. They're the promises Astryx makes to the people building on it.
+有几条原则支撑着整个系统。它们是 Astryx 对在其上构建的人作出的承诺。
 
-**Guidance over enforcement.** Components give you capability rather than guardrails that fight you. Design opinions live in docs and examples, so if you pass a value, the component renders it. The system steers; it doesn't police.
+**引导优于强制。** 组件给你的是能力，而不是与你作对的护栏。设计观点写在文档和示例中，因此你传入什么值，组件就渲染什么。系统负责引导，而不是管制。
 
-**Strong, documented conventions.** Every component follows the same naming, prop, and composition rules, and every one is thoroughly documented. Once you've learned a few, the rest feel familiar, and both people and AI can predict how an unfamiliar component will behave.
+**强有力且文档完备的约定。** 每个组件都遵循相同的命名、prop 和组合规则，而且每个组件都有详尽文档。学会几个之后，其余的也会感到熟悉，人和 AI 都能预测一个陌生组件的行为。
 
-**One system for humans and AI.** The API, conventions, docs, and CLI are designed together so a person and an AI assistant build the same way, working from the same reference. We found the two reinforce each other: every change that made Astryx easier for AI made it easier for people too.
+**人与 AI 共用一套系统。** API、约定、文档和 CLI 是一起设计的，因此人和 AI 助手以相同的方式构建，参考同一份资料。我们发现两者相辅相成：每一次让 Astryx 对 AI 更友好的改动，也让它对人更友好。
 
-**Earned by measurement.** We test conventions rather than assert them. We put competing approaches in front of both people and AI, measure what actually works, and let the data settle the debate – then hold the result loosely and revisit it when a new situation proves it wrong.
+**用度量赢得结论。** 我们检验约定，而不是直接断言。我们把相互竞争的做法交给人和 AI 双方，度量实际效果，让数据裁决争论——然后不把结论当成教条，当新情况证明它错误时再重新审视。
 
-We build and maintain Astryx with AI and with Astryx itself. Repo stewardship, documentation audits, and vibe test runs are all AI-assisted, and our own tools run on the components we ship. Any code to core including AI-assisted code is human-reviewed by our team.
+我们用 AI 和 Astryx 本身来构建和维护 Astryx。仓库管理、文档审计和 vibe 测试运行都有 AI 协助，我们自己的工具也运行在我们发布的组件上。任何进入核心的代码，包括 AI 协助编写的代码，都由我们的团队进行人工审查。
 
-## The name
+## 名字
 
-Astryx, pronounced asterisks, draws on _ad astra per aspera_ – "through hardship to the stars." The "X" is a nod to the origin: xDesign, the team where these ideas began. And an asterisk is the little symbol that stands in for everything – the footnote that turns out to matter, the placeholder that holds a system together.
+Astryx，读作 asterisks（星号），源自 _ad astra per aspera_——“历经艰险，抵达星辰”。其中的“X”是对起源的致意：xDesign，这些想法开始的团队。而星号是代表一切的小符号——那个最终变得重要的脚注，那个支撑起整个系统的占位符。
 
-We chose a name that carried the soul of why this effort started in the first place. We didn't want to fixate on what it does today but rather, what it could become in this ever-so, increasingly fast-paced and changing technological world.
+我们选择了一个承载这项事业最初灵魂的名字。我们不想执着于它今天能做什么，而是想看到它在这个节奏越来越快、不断变化的技术世界里可能成为什么。
 
-## Open source
+## 开源
 
-Astryx is open source under the MIT license, currently in beta.
+Astryx 以 MIT 许可证开源，目前处于 beta 阶段。
 
 ```bash
 npm install @astryxdesign/core @astryxdesign/theme-neutral
 npm install -D @astryxdesign/cli
 ```
 
-Astryx exists because of a community of builders inside Meta who contributed fixes, flagged edge cases, and shaped the system over eight years – much of what it knows, it learned from them. Now it's open to a wider community. We built it loosely, openly, and with a lot of care, and we intend to keep building it the same way. Welcome to Astryx.
+Astryx 的存在离不开 Meta 内部构建者社区——八年来，他们贡献修复、标记边缘情况、塑造系统；它所知的大部分，都是从他们身上学到的。现在它向更广大的社区开放。我们以灵活、开放且非常用心的方式构建它，并打算继续以同样的方式构建下去。欢迎来到 Astryx。

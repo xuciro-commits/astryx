@@ -116,9 +116,9 @@ vi.mock('../components/SearchPalette', () => ({
     return (
       <div data-testid="search-palette">
         {isOpen ? (
-          <button onClick={() => onOpenChange(false)}>Close Search</button>
+          <button onClick={() => onOpenChange(false)}>关闭搜索</button>
         ) : (
-          <span>Search closed</span>
+          <span>搜索已关闭</span>
         )}
       </div>
     );
@@ -140,7 +140,7 @@ describe('SharedTopNav search lifecycle', () => {
   it('starts the search server before the first keystroke, once', async () => {
     const user = userEvent.setup();
     render(<SharedTopNav />);
-    const trigger = screen.getByRole('button', {name: 'Search'});
+    const trigger = screen.getByRole('button', {name: '搜索'});
 
     await user.hover(trigger);
     expect(warmups()).toHaveLength(1);
@@ -161,14 +161,14 @@ describe('SharedTopNav search lifecycle', () => {
   it('keeps Search mounted through close so focus returns to its trigger', async () => {
     const user = userEvent.setup();
     render(<SharedTopNav />);
-    const trigger = screen.getByRole('button', {name: 'Search'});
+    const trigger = screen.getByRole('button', {name: '搜索'});
 
     await user.click(trigger);
-    await user.click(await screen.findByRole('button', {name: 'Close Search'}));
+    await user.click(await screen.findByRole('button', {name: '关闭搜索'}));
 
     await waitFor(() => expect(document.activeElement).toBe(trigger));
     expect(screen.getByTestId('search-palette').textContent).toContain(
-      'Search closed',
+      '搜索已关闭',
     );
   });
 });

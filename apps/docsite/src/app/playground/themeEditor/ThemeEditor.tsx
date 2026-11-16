@@ -231,9 +231,9 @@ export function ThemeEditor({
         hasDivider
         value={panelTab}
         onChange={v => setPanelTab(v as 'theme' | 'components' | 'tokens')}>
-        <Tab value="theme" label="Base Styles" />
-        <Tab value="components" label="Components" />
-        <Tab value="tokens" label="Advanced" />
+        <Tab value="theme" label="基础样式" />
+        <Tab value="components" label="组件" />
+        <Tab value="tokens" label="高级" />
       </TabList>
 
       <StackItem size="fill" xstyle={s.body}>

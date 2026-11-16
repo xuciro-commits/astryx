@@ -93,7 +93,7 @@ class ShowcaseErrorBoundary extends React.Component<
       return (
         <div {...stylex.props(styles.errorFallback)}>
           <Text type="supporting" color="secondary">
-            Preview unavailable
+            预览不可用
           </Text>
         </div>
       );

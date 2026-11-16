@@ -1,17 +1,17 @@
-# Storybook sample images
+# Storybook 示例图片
 
-Small SVG scenes that stories use in place of remote photos, so galleries
-render without the network.
+小型 SVG 场景，供 stories 替代远程照片使用，因此画廊
+无需网络即可渲染。
 
-**Source and license:** drawn for Astryx as plain SVG shapes and gradients,
-with no third-party artwork. Each file's width and height match the remote
-placeholder photo it replaces, so stories keep their aspect ratios and
-intrinsic sizes.
+**来源与许可：** 以纯 SVG 形状和渐变绘制，专为 Astryx 制作，
+不含第三方美术素材。每个文件的宽度和高度都与其替代的远程
+占位照片一致，因此 stories 能保持原有的宽高比和
+固有尺寸。
 
-Names follow `sample-<scene>-<width>x<height>.svg`. The Lightbox browser
-specs route requests by that pattern.
+命名遵循 `sample-<scene>-<width>x<height>.svg`。Lightbox
+的浏览器测试会按该模式路由请求。
 
-| File                         | Scene  | Size     |
+| 文件                         | 场景   | 尺寸     |
 | ---------------------------- | ------ | -------- |
 | `sample-beach-1200x800.svg`  | beach  | 1200x800 |
 | `sample-beach-200x120.svg`   | beach  | 200x120  |

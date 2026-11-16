@@ -83,7 +83,7 @@ export function SearchPalette({isOpen, onOpenChange}: SearchPaletteProps) {
           </HStack>
         );
       }}
-      label="Search docs, components, and templates"
+      label="搜索文档、组件和模板"
       value=""
       onValueChange={handleValueChange}
     />

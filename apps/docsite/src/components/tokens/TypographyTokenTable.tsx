@@ -33,37 +33,37 @@ const TEXT_TYPES: TextType[] = [
 ];
 
 const STYLE_LABEL: Record<string, string> = {
-  'display-1': 'Display 1',
-  'display-2': 'Display 2',
-  'display-3': 'Display 3',
+  'display-1': '展示 1',
+  'display-2': '展示 2',
+  'display-3': '展示 3',
   'heading-1': 'H1',
   'heading-2': 'H2',
   'heading-3': 'H3',
   'heading-4': 'H4',
   'heading-5': 'H5',
   'heading-6': 'H6',
-  body: 'Body',
-  large: 'Large',
-  label: 'Label',
-  code: 'Code',
-  supporting: 'Supporting',
+  body: '正文',
+  large: '大号',
+  label: '标签',
+  code: '代码',
+  supporting: '辅助',
 };
 
 const SAMPLE_TEXT: Record<string, string> = {
   'display-1': '$12,450',
   'display-2': '98.7%',
-  'display-3': 'Welcome',
-  'heading-1': 'Page Title',
-  'heading-2': 'Section Title',
-  'heading-3': 'Card Heading',
-  'heading-4': 'Subsection',
-  'heading-5': 'Group Label',
-  'heading-6': 'Overline',
-  body: 'Body text for reading',
-  large: 'Intro paragraph',
-  label: 'Form Label',
+  'display-3': '欢迎',
+  'heading-1': '页面标题',
+  'heading-2': '章节标题',
+  'heading-3': '卡片标题',
+  'heading-4': '小节标题',
+  'heading-5': '分组标签',
+  'heading-6': '上标文字',
+  body: '用于阅读的正文文本',
+  large: '引导段落',
+  label: '表单标签',
   code: 'const x = 42;',
-  supporting: 'Helper text',
+  supporting: '辅助文字',
 };
 
 const FONT_FAMILY_MAP: Record<string, string> = {
@@ -122,7 +122,7 @@ export function TypographyTokenTable({theme}: TokenTableProps) {
       columns={[
         {
           key: 'label',
-          header: 'Sample',
+          header: '示例',
           width: pixel(200),
           renderCell: (item: Record<string, unknown>) => (
             <span
@@ -139,7 +139,7 @@ export function TypographyTokenTable({theme}: TokenTableProps) {
         },
         {
           key: 'tokens',
-          header: 'Tokens',
+          header: '令牌',
           width: proportional(1, {minWidth: 280}),
           renderCell: (item: Record<string, unknown>) => (
             <VStack gap={1}>

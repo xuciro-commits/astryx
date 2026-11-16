@@ -83,11 +83,11 @@ describe('docs sidebar groups', () => {
         .find(({page: p}) => p.topic === topic)
         ?.children.map(c => [c.topic, c.title]);
     expect(childrenOf(groups.foundations, 'icons')).toEqual([
-      ['cli-experimental-icon-set-files', 'Icon set files'],
-      ['cli-experimental-icon-sets', 'Icon sets'],
+      ['cli-experimental-icon-sets', '图标集'],
+      ['cli-experimental-icon-set-files', '图标集文件'],
     ]);
     expect(childrenOf(groups.guide, 'styling-overview')).toEqual([
-      ['styling', 'Styling components'],
+      ['styling', '组件样式'],
     ]);
     const topLevel = groups.guide.map(({page: p}) => p.topic);
     expect(topLevel).not.toContain('styling');

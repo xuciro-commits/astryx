@@ -1,6 +1,6 @@
 ---
-title: 'Astryx now speaks multiple languages!'
-description: "How internationalization and RTL came to Astryx: surveying the modern i18n landscape and using automation to catch RTL bugs a linter can't see."
+title: 'Astryx 现在会说多种语言了！'
+description: '国际化与 RTL 如何来到 Astryx：梳理现代 i18n 格局，并用自动化捕捉 linter 看不到的 RTL bug。'
 date: '2026-08-11'
 type: 'engineering'
 draft: false
@@ -9,79 +9,79 @@ authors:
 tags:
   - 'i18n'
   - 'AI'
-  - 'Design systems'
+  - '设计系统'
 relatedDocs:
-  - title: 'Internationalization'
+  - title: '国际化'
     href: '/docs/internationalization'
-  - title: 'How Astryx works'
+  - title: 'Astryx 如何运作'
     href: '/blog/how-astryx-works'
 ---
 
-Astryx grew out of Meta's internal design system, and that heritage shows up in internationalization. Most internal tools shipped in English to an English-speaking workforce, so translation and right-to-left support were rarely priorities. Components carried hardcoded English strings and left-to-right assumptions because, internally, nobody was asking for anything else.
+Astryx 脱胎于 Meta 的内部设计系统，这一出身也体现在国际化上。大多数内部工具面向英语员工、以英文交付，因此翻译和从右到左（RTL）支持很少成为优先事项。组件硬编码英文字符串，并带有从左到右的假设，因为在内部没有人提出其他需求。
 
-Open-sourcing changed the audience. The trigger came from the community after release: a developer shipping an Arabic and Kurdish app filed a proposal pointing out that several components hardcoded user-facing and assistive strings in English with no way to override them. Table sort labels, pagination controls, Calendar month names. Their app was blocked, and the workaround was to fork the components to change a few words. They offered a fix, but we wanted to make sure we sat down and had a more comprehensive look.
+开源改变了受众。触发点来自发布后的社区：一位开发阿拉伯语和库尔德语应用的开发者提交了一份提案，指出多个组件将面向用户和辅助技术的字符串硬编码为英文，且无法覆盖。包括表格排序标签、分页控件、Calendar 的月份名称。他们的应用因此受阻，变通办法是 fork 组件来改几个词。他们提出了修复方案，但我们希望坐下来做一次更全面的审视。
 
-I'd spent a good chunk of my career on localization before this, so when the work came up I offered to take it. The rough edges were familiar to me: strings length changing between translations, assumptions about how to pluralize, and concatenated strings making translation difficult to languages with different word order. Right to left languages in particular can be a challenge, breaking layout assumptions. It's been a number of years since I've had to think about these problems, so I leaned on AI assistants to resurvey the modern i18n landscape – what the standards look like now, what the popular React libraries settled on – before committing to a design.
+在此之前，我职业生涯中相当一部分时间都在做本地化，所以这项工作出现时我主动接了下来。那些粗糙边缘对我来说很熟悉：翻译之间字符串长度会变化、复数形式的假设，以及字符串拼接让翻译成不同语序的语言变得困难。从右到左的语言尤其棘手，会打破布局假设。我已经有很多年不用思考这些问题了，因此在确定设计方案之前，我借助 AI 助手重新梳理了现代 i18n 格局——现在的标准是什么样、主流 React 库都选定了什么方案。
 
-## Why we didn't just adopt an i18n framework
+## 为什么我们没有直接采用 i18n 框架
 
-The obvious move was to wire in an established runtime such as `react-intl`, Lingui, or i18next. This would have been cheapest to build, but it means that now Astryx carries even more dependency baggage. A hard dependency on one runtime would add bundle weight and collide with teams that already standardized on something else, leaving them to run two systems side by side or replace their own.
+最显而易见的做法是接入一个成熟的运行时，比如 `react-intl`、Lingui 或 i18next。这样构建成本最低，但意味着 Astryx 要背负更多依赖包袱。硬依赖某一个运行时会增加打包体积，并与已经标准化用其他方案的团队冲突，迫使他们并行运行两套系统，或者替换掉自己的方案。
 
-So we separated format from framework. We adopted ICU MessageFormat – the modern string format for i18n – with `intl-messageformat` as the formatter (behind a small adapter). A consumer already running `react-intl` or a compatible stack can hand Astryx their strings instead. That kept the surface tiny: one provider carrying a locale, one hook to read translations, and English defaults baked in. Components render with no setup at all, and adoption stays incremental.
+于是我们把格式与框架分离。我们采用了 ICU MessageFormat——现代 i18n 的字符串格式——并以 `intl-messageformat` 作为格式化器（封装在一个小型适配器后面）。已经运行 `react-intl` 或兼容技术栈的使用者，可以直接把自己的字符串交给 Astryx。这样接口面保持极小：一个携带语言环境的 Provider、一个读取翻译的 Hook，以及内置的英文默认值。组件无需任何配置即可渲染，采用过程也保持渐进。
 
-We started [an RFC](https://github.com/meta/astryx/issues/3641) with some initial constraints and distilled them down as we iterated.  For example: we considered shipping each locale as a separate package, or even having per component string sets to allow code splitting.  After analysis we found that the amount of strings to ship ( approx. 2KB compressed ) didn't warrant the complexity and settled on a single en.json in core.  Other initial "requirements" were also removed or simplified as we found we just didn't need them.
+我们发起了[一个 RFC](https://github.com/meta/astryx/issues/3641)，列出一些初始约束，并在迭代中不断提炼。例如：我们考虑过把每种语言环境作为单独的包发布，甚至为每个组件维护字符串集以支持代码分割。分析后我们发现，需要发布的字符串量（压缩后约 2KB）不值得这样的复杂度，于是决定在 core 中使用单个 en.json。其他初始“要求”也在我们发现并不需要之后被删除或简化了。
 
-## Plurals are now a solved problem
+## 复数问题如今已经解决
 
-Plurals are deceptively easy to get wrong, because English lets you cheat. Often apps will use a label like `1 item(s)`, or code that tacks on an "s" whenever count is other than 1. It works well enough until it comes time to translate, because english plural forms aren't universal. Arabic has six. Russian and Polish have four. Japanese has one. The `one`/`other` assumption simply doesn't scale.
+复数问题看似简单，却很容易出错，因为英语允许你偷懒。应用常常使用像 `1 item(s)` 这样的标签，或者在数量不为 1 时由代码补上一个 “s”。这在需要翻译之前都还够用，因为英语的复数形式并不通用。阿拉伯语有六种，俄语和波兰语有四种，日语只有一种。`one`/`other` 的假设根本无法扩展。
 
-The good news (and this wasn't true not long ago) is that the platform handles this now. ICU MessageFormat lets a string declare its plural cases, and `Intl.PluralRules` (a widely-supported browser API backed by CLDR data) knows which form each number takes in each locale. So instead of hand-rolling pluralization and getting it wrong, a string just names its cases and lets the runtime pick:
+好消息是（这在不久前还不成立），平台现在能处理这件事了。ICU MessageFormat 允许字符串声明自己的复数类别，而 `Intl.PluralRules`（一个得到广泛支持、由 CLDR 数据支撑的浏览器 API）知道每个数字在每种语言环境中该采用哪种形式。因此，与其手写复数逻辑并出错，字符串只需写明自己的类别，让运行时来选择：
 
 ```text
 Go back {step, number} {step, plural, one {page} other {pages}}
 ```
 
-![A results-count string rendered in Russian at counts 1, 2, and 5. The naive version, using only English one/other rules, shows the same wrong ending ("результаты") for every count. The correct version, using Russian's one/few/many/other CLDR categories, shows three different endings: результат, результата, результатов.](/blog/internationalizing-astryx/russian-plurals.png)
+![一个结果计数（results-count）字符串在俄语下分别以 1、2 和 5 渲染。只使用英语 one/other 规则的朴素版本在每个数量下都显示相同的错误词尾（"результаты"）。使用俄语 one/few/many/other CLDR 类别的正确版本显示三种不同的词尾：результат、результата、результатов。](/blog/internationalizing-astryx/russian-plurals.png)
 
-There's a bonus to expressing plurals this way: because the cases are declared as data rather than baked into prose, a translation that's missing a form — or that quietly kept only the English ones — isn't just wrong, it's _detectable_. That mattered a lot once we started translating in bulk.
+用这种方式表达复数还有一个额外好处：由于类别以数据形式声明，而不是写死在散文里，缺少某个形式——或悄悄只保留了英语形式——的翻译不仅错误，而且_可以被检测到_。当我们开始批量翻译时，这一点非常重要。
 
-## Right-to-left, and the bugs that hide from your linter
+## 从右到左，以及躲过 linter 的 bug
 
-Translating everything into Arabic still leaves a broken UI if the layout stays left-to-right. Most RTL support is mechanical: use CSS logical properties such as `margin-inline-start` instead of `margin-left`, set `dir="rtl"`, and let the browser mirror the layout. A lint rule can enforce that, and ours does.
+即使把所有内容都翻译成阿拉伯语，只要布局仍然是从左到右，界面依然是坏的。大多数 RTL 支持是机械性的：使用 `margin-inline-start` 这样的 CSS 逻辑属性代替 `margin-left`，设置 `dir="rtl"`，让浏览器镜像布局。lint 规则可以强制这一点，我们的规则也确实如此。
 
-The bugs that actually escape are compositional. The example that pushed us to build dedicated tooling was this:
+真正漏网的 bug 是组合性的。促使我们构建专用工具的例子是这个：
 
 ```css
 inset-inline-start: 0;
 transform: translateX(-50%);
 ```
 
-Each line is valid on its own. A linter sees a logical inset and approves. But together they anchor an element to the logical start edge and then shift it with a physical transform that does not flip in RTL. Under `dir="rtl"`, the element lands on the wrong side by its own width. There is no bad token to grep for. The bug lives in the interaction.
+每一行单独看都合法。linter 看到逻辑 inset 就会放行。但两者合在一起，会把元素锚定到逻辑起始边缘，再用一个在 RTL 下不会翻转的物理 transform 平移它。在 `dir="rtl"` 下，元素会偏到自己宽度的另一侧。没有任何坏 token 可供 grep。bug 藏在交互之中。
 
-Icons fail the same way. You can mirror a chevron by swapping the glyph in JS or by flipping it in CSS. Either approach is fine. Do both on the same element and they cancel, so the arrow points the wrong way. Again, both decisions look reasonable in isolation.
+图标也会以同样的方式出错。你可以通过在 JS 中替换字形，或用 CSS 翻转来镜像一个 chevron。两种做法都没问题。但在同一个元素上两者都做，它们会相互抵消，箭头就指错了方向。同样，两个决定单独看都很合理。
 
-![Astryx Calendar showing a selected date range under RTL, before and after the fix. Before, the range highlight is a square-cornered rectangle because its physical corner-radius properties don't flip. After, it's a smoothly rounded pill whose caps sit on the correct reading-direction edges.](/blog/internationalizing-astryx/calendar-rtl-before-after.png)
+![Astryx Calendar 在 RTL 下展示一个已选日期范围，修复前与修复后对比。修复前，范围高亮是一个直角矩形，因为它的物理圆角属性不会翻转。修复后，它是一个平滑的圆角胶囊，两端位于正确的阅读方向边缘。](/blog/internationalizing-astryx/calendar-rtl-before-after.png)
 
-Static analysis is weak against this class of problem because every property can be individually correct. So we built an [RTL audit that renders every component story in both directions and compares geometry](https://github.com/meta/astryx/pull/4517). For each absolutely positioned element it measures center-X relative to the parent in LTR, renders again in RTL, and checks that the element mirrored to the opposite side within tolerance. Elements that should have flipped but did not show up immediately. So did double-flipped icons that stayed put when they should have moved.
+静态分析在这类问题面前很无力，因为每个属性单独看都可能是正确的。于是我们构建了[一个 RTL 审计，它在两个方向上渲染每个组件 story 并比较几何位置](https://github.com/meta/astryx/pull/4517)。对于每个绝对定位元素，它在 LTR 下测量相对父元素的中心 X 坐标，再在 RTL 下重新渲染，并检查元素是否在容差范围内镜像到相反一侧。应该翻转却没有翻转的元素会立即暴露。被双重翻转、本应移动却停在原地的图标也一样。
 
-The hard part was reducing false positives across roughly 1,300 positioned elements. Full-width strips have no meaningful left or right side. Elements that are already centered mirror to themselves. A naive geometry check flags both as failures. We iterated on those cases, adding guards for degenerate parents, full-span elements, and already-centered children until the audit was quiet except for real regressions. It now runs in CI and catches directional bugs that a linter cannot see.
+难点在于减少约 1,300 个定位元素中的误报。全宽条带没有有意义的左右侧。已经居中的元素镜像后还是自己。简单的几何检查会把这两类都标记为失败。我们针对这些情况反复迭代，为退化父元素、全跨度元素和已居中子元素添加保护，直到审计除了真实回归外不再报警。它现在运行在 CI 中，能捕捉 linter 看不到的方向性 bug。
 
-That is the lesson worth keeping: the RTL bugs that reach production are rarely a stray `left` – they are valid pieces that break in combination, so the reliable check is rendered geometry, not static rules.
+这就是值得记住的教训：进入生产环境的 RTL bug 很少是一个孤立的 `left`——它们是各自合法、组合起来却出问题的片段，因此可靠的检查是渲染后的几何位置，而不是静态规则。
 
-## Seeding 29 languages
+## 为 29 种语言播种
 
-With the machinery in place, we had about 250 strings and a [Crowdin](https://crowdin.com/project/astryx) project with 29 empty languages. In the past this is where you'd wait — translations trickle in as contributors volunteer their languages. LLMs let us jumpstart it instead: generate a solid first pass for all 29 now, and let the community refine from there.
+机制就位后，我们约有 250 个字符串，以及一个 [Crowdin 项目](https://crowdin.com/project/astryx)，其中包含 29 种空白语言。过去到了这一步就只能等——翻译会随着贡献者志愿提供各自语言而涓涓而来。LLM 让我们得以抢先启动：现在就为全部 29 种语言生成一个可靠的首版，再让社区在此基础上打磨。
 
-This is where a deliberate format choice paid off. We picked a catalog format that carries a `description` alongside every string — a note on where and how it's used — precisely because we expected the added context to produce better translations. The Dialog close button, for instance, notes that "Close" means dismiss the dialog, not nearby. That context was meant for human translators, and it turns out an AI translator leans on it just as heavily: both get the string _and_ the intent, rather than a bare word to guess at.
+这正是刻意选择格式带来回报的地方。我们选择了一种为每个字符串附带 `description` 的目录格式——说明它在何处、如何被使用——正是因为预期这些额外上下文能带来更好的翻译。例如，Dialog 的关闭按钮会注明 “Close” 指的是关闭对话框，而不是关闭附近的其他元素。这些上下文原本是给人类译者准备的，结果 AI 译者同样依赖它：两者都拿到字符串_以及_意图，而不是一个需要猜测的裸词。
 
-Then we played two models against each other. One generated; a deterministic validator ran every candidate through the same ICU parser Astryx uses at runtime, rejecting dropped placeholders or missing plural categories outright. But the validator only judges structure, so a second, different model reviewed the output for meaning, register, and idiom — and caught things rules can't, like button labels translated as nouns where the language needs an imperative ("closing" instead of "close"). Hebrew showed the pattern most clearly; fixing it surfaced more of the same.
+然后我们让两个模型相互对抗。一个负责生成；一个确定性校验器会把每个候选字符串送进 Astryx 运行时所用的同一个 ICU 解析器，直接拒绝丢失占位符或缺少复数类别的结果。但校验器只判断结构，因此第二个不同的模型会审查输出的含义、语域和习语——并捕捉规则无法发现的问题，比如按钮标签被翻译成名词，而该语言需要祈使语气（“closing” 而不是 “close”）。希伯来语最明显地展现了这一模式；修复它之后又暴露出更多同类问题。
 
-The result was all 29 languages seeded and rendering today. To be clear, we still expect a fluent human to beat the machine — so these are a starting point, not a verdict, and corrections and contributions are very welcome.
+结果是今天 29 种语言全部完成播种并可以渲染。需要说明的是，我们仍然认为流利的人类会胜过机器——所以这些只是起点，不是定论，非常欢迎修正和贡献。
 
-![The demo todo app running in Arabic, fully right-to-left: navigation on the right, a populated list of Arabic todos, controls and component internals localized.](/blog/internationalizing-astryx/todo-arabic.png)
+![演示用 todo 应用以阿拉伯语运行，完全从右到左：导航在右侧，列表中是阿拉伯语待办事项，控件和组件内部均已本地化。](/blog/internationalizing-astryx/todo-arabic.png)
 
-## What's still open
+## 仍然开放的问题
 
-Astryx is not "finished" with i18n. A few problems are still real. PowerSearch still assembles some phrases from consumer-supplied pieces, which limits how grammatical those phrases can be in every language. Our pseudo-locale does not yet inflate string length aggressively enough to flush out all narrow-layout failures. And on the platform side, server-rendered translation and the adapter for reusing a consumer's existing runtime are both still active design work. We also are hunting down a new class of errors with truncation and IME incompatibility.  A big thanks to our community which is helping us find and track down these issues.
+Astryx 的 i18n 还没有“完成”。有些问题仍然真实存在。PowerSearch 仍会用使用者提供的片段拼装一些短语，这限制了这些短语在每种语言中的语法程度。我们的伪语言环境还不够激进，无法通过拉长字符串来暴露所有窄布局下的失败。在平台层面，服务端渲染翻译，以及复用使用者现有运行时的适配器，都仍在积极设计之中。我们还在追查一类与截断和 IME 不兼容相关的新错误。非常感谢我们的社区帮助我们找到并追踪这些问题。
 
-Astryx now speaks 29 languages and reads in both directions. Set your locale, set your `dir`, and it works (see our [internationalization guide](https://astryx.atmeta.com/docs/internationalization) for more info). If you speak one of those languages and see a translation that could be better, [the Crowdin project](https://crowdin.com/project/astryx) is open.
+Astryx 现在会说 29 种语言，并且能双向阅读。设置好语言环境、设置好 `dir`，它就能工作（更多信息见我们的[国际化指南](https://astryx.atmeta.com/docs/internationalization)）。如果你会说其中某门语言，并发现某处翻译可以更好，[Crowdin 项目](https://crowdin.com/project/astryx)随时开放。

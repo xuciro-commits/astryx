@@ -74,6 +74,20 @@ const GROUP_ORDER = [
 
 const OTHER_GROUP = 'Other';
 
+const CATEGORY_LABELS: Record<string, string> = {
+  Dashboard: '仪表盘',
+  Table: '表格',
+  Form: '表单',
+  Settings: '设置',
+  Login: '登录',
+  Tools: '工具',
+  Content: '内容',
+  'AI Chat': 'AI 对话',
+  Gallery: '画廊',
+  Shell: '外壳',
+  Other: '其他',
+};
+
 /** Derive the group heading from a category string. The group is the text
  *  before the first ' - ' separator (e.g. 'Dashboard - Analytics' → 'Dashboard').
  *  Standalone categories without a separator (e.g. 'Settings') are their own
@@ -254,19 +268,19 @@ function TemplatesGallery() {
         <VStack gap={6} align="stretch">
           <VStack gap={2}>
             <Heading level={1} type="display-1" justify="center">
-              Templates
+              模板
             </Heading>
             <Text type="body" color="secondary" justify="center">
-              Ready-to-use page templates to kickstart your project.
+              开箱即用的页面模板，助你快速启动项目。
             </Text>
           </VStack>
           <ToggleButtonGroup
-            label="Filter templates by category"
+            label="按类别筛选模板"
             value={activeCategory}
             onChange={value => setActiveCategory(value ?? 'All')}
             xstyle={styles.categoryFilter}>
             {categories.map(category => (
-              <ToggleButton key={category} label={category} value={category} />
+              <ToggleButton key={category} label={category === 'All' ? '全部' : (CATEGORY_LABELS[category] ?? category)} value={category} />
             ))}
           </ToggleButtonGroup>
         </VStack>
@@ -291,7 +305,7 @@ function TemplatesGallery() {
                 padding={0}
                 width="100%"
                 maxWidth="100%"
-                label={`Preview ${item.name}`}
+                label={`预览 ${item.name}`}
                 onClick={() => openPreview(item.slug)}
                 style={CARD_STYLE}>
                 {isMobile ? (
@@ -316,12 +330,12 @@ function TemplatesGallery() {
                         </VStack>
                         <HStack gap={2}>
                           <Button
-                            label="Preview"
+                            label="预览"
                             variant="secondary"
                             onClick={() => openPreview(item.slug)}
                           />
                           <Button
-                            label="Open in Playground"
+                            label="在演练场中打开"
                             variant="secondary"
                             href={buildTemplatePlaygroundHref(item.slug)}
                             onClick={e => {

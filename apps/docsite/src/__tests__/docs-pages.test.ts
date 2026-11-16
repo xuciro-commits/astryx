@@ -285,7 +285,7 @@ describe('a nested namespace with a page of its own', () => {
     });
     const page = extrasPage.page as {sections: Array<{title: string}>};
     expect(page.sections.map(s => s.title)).toEqual([
-      'Overview',
+      '概览',
       'Fit an extra',
     ]);
     expect(extrasPage.redirects).toEqual({
@@ -461,7 +461,7 @@ describe('CLI commands on docsite pages', () => {
   it('shows the Authoring page a command that runs before any install', () => {
     const page = docTopics.find(topic => topic.topic === 'authoring');
     const section = page?.sections.find(
-      each => each.title === 'Verify the packed import',
+      each => each.title === '验证打包后的导入',
     );
     expect(section?.content).toContainEqual(
       expect.objectContaining({

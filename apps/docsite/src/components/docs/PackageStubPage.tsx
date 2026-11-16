@@ -159,7 +159,7 @@ export function PackageStubPage({
           </div>
         ) : (
           <Text type="body" color="secondary">
-            No README available.
+            暂无 README。
           </Text>
         )}
       </VStack>

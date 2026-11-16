@@ -220,10 +220,11 @@ function HeroContent({contentRef}: {contentRef: Ref<HTMLElement>}) {
         type="display-1"
         color={isDark ? 'inherit' : 'primary'}
         xstyle={styles.heroHeadline}>
-        An open source design system that's{' '}
+        一套{' '}
         <Text as="span" type="inherit" color="inherit" weight="semibold">
-          fully customizable and agent ready
-        </Text>
+          完全可定制、面向智能体
+        </Text>{' '}
+        的开源设计系统
       </Heading>
       <VStack gap={4} align="center">
         <DarkScope isDark={isDark}>
@@ -231,19 +232,19 @@ function HeroContent({contentRef}: {contentRef: Ref<HTMLElement>}) {
             <Button
               variant="primary"
               size="lg"
-              label="Get started"
+              label="开始使用"
               href="/docs/getting-started"
             />
             <Button
               variant="secondary"
               size="lg"
-              label="Browse components"
+              label="浏览组件"
               href="/components"
             />
           </Grid>
         </DarkScope>
         <Text display="block" color={isDark ? 'inherit' : 'secondary'}>
-          Currently in Beta · Built on{' '}
+          目前处于 Beta 阶段 · 基于{' '}
           <Link
             type="body"
             color="inherit"

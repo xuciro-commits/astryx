@@ -1,6 +1,6 @@
 ---
-title: 'Building for people and agents at Meta San Francisco'
-description: "Join us November 12 at Meta San Francisco for an evening with the team behind Astryx, Meta's open-source design system."
+title: '在 Meta 旧金山，为人和 agent 而构建'
+description: '11 月 12 日，来 Meta 旧金山参加我们的晚间活动，与 Astryx 团队面对面——这是 Meta 的开源设计系统。'
 date: '2026-11-03'
 type: 'story'
 authors:
@@ -8,26 +8,26 @@ authors:
   - 'cvkxx'
 tags:
   - 'AI'
-  - 'Community'
-  - 'Design systems'
+  - '社区'
+  - '设计系统'
 coverImage: '/blog/building-for-people-and-agents/cover.png'
-coverAlt: 'Astryx Meetup SF, November 12, 6-8 PM, free with registration: Are design systems still valuable?'
+coverAlt: 'Astryx Meetup 旧金山，11 月 12 日晚 6 至 8 点，免费注册参加：设计系统还有价值吗？'
 ---
 
-Bay Area friends, join us November 12 at Meta San Francisco for an evening with the team behind **Astryx**, Meta's open-source design system.
+湾区的朋友们，11 月 12 日来 Meta 旧金山，和 **Astryx** 团队共度一个夜晚吧——这是 Meta 的开源设计系统。
 
-AI agents can generate convincing interfaces, but looking convincing does not guarantee a good experience. We will share lessons from building Astryx: how clear guidance, meaningful constraints, and evaluation turn generated UI into experiences people can trust.
+AI agent 能生成看起来很有说服力的界面，但“看起来有说服力”并不保证良好的体验。我们将分享构建 Astryx 的经验：清晰的指导、有意义的约束和评估，如何让生成的 UI 变成人们可以信赖的体验。
 
-During the meetup, we will explore:
+在本次 Meetup 中，我们将探讨：
 
-- Giving agents the right guidance at the right time
-- Constraining choices so quality repeats
-- Measuring what "good" means for humans and agents
+- 在恰当的时机给 agent 恰当的指导
+- 约束选择范围，让高质量结果可以复现
+- 衡量“好”对人类和 agent 分别意味着什么
 
-After the talk, stick around for Q&A and networking with designers, engineers, and practitioners building the agentic future.
+演讲结束后，欢迎留下来参加问答环节，并与正在构建 agentic 未来的设计师、工程师和从业者交流。
 
-Registration is free, and space is limited.
+活动免费注册，名额有限。
 
-[Sign up here](https://astryxmeetup.splashthat.com/).
+[在此报名](https://astryxmeetup.splashthat.com/)。
 
-We look forward to seeing you there.
+期待在现场见到你。

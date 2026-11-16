@@ -108,7 +108,7 @@ export function formatShortcutHint(userAgent: string): string {
  * the chord is omitted rather than guessed, which would hydrate-mismatch.
  */
 export function formatButtonTooltip(shortcutHint: string | null): string {
-  return shortcutHint ? `Format code (${shortcutHint})` : 'Format code';
+  return shortcutHint ? `格式化代码 (${shortcutHint})` : '格式化代码';
 }
 
 /**

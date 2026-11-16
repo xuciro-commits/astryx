@@ -54,6 +54,21 @@ const CATEGORIES = [
   'Utility',
 ] as const;
 
+const CATEGORY_LABELS: Record<(typeof CATEGORIES)[number], string> = {
+  Action: '操作',
+  Chat: '对话',
+  Container: '容器',
+  Content: '内容',
+  'Data Visualization': '数据可视化',
+  'Feedback & Status': '反馈与状态',
+  'Form Controls': '表单控件',
+  Layout: '布局',
+  Navigation: '导航',
+  Overlay: '浮层',
+  'Table & List': '表格与列表',
+  Utility: '工具',
+};
+
 /**
  * Which components have a showcase to put in their tile.
  *
@@ -214,11 +229,10 @@ export default function ComponentsGalleryPage() {
         <VStack gap={4} hAlign="center">
           <VStack gap={2} style={{alignItems: 'center'}}>
             <Text type="display-1" xstyle={styles.heroTitle}>
-              Browse the library
+              浏览组件库
             </Text>
             <Text type="body" color="secondary" xstyle={styles.heroTitle}>
-              Every component, with copy-ready examples for every variant,
-              state, and pattern.
+              每个组件都提供可直接复制的示例，覆盖所有变体、状态和使用模式。
             </Text>
           </VStack>
           <HStack gap={3} vAlign="center">
@@ -228,7 +242,7 @@ export default function ComponentsGalleryPage() {
                 <VStack gap={3}>
                   <VStack gap={1}>
                     <Text type="body" weight="bold">
-                      1. Install the package
+                      1. 安装包
                     </Text>
                     <Card padding={0}>
                       <CodeExampleBlock
@@ -240,7 +254,7 @@ export default function ComponentsGalleryPage() {
                   </VStack>
                   <VStack gap={1}>
                     <Text type="body" weight="bold">
-                      2. Import a component
+                      2. 导入组件
                     </Text>
                     <Card padding={0}>
                       <CodeExampleBlock
@@ -255,13 +269,13 @@ export default function ComponentsGalleryPage() {
               <Button
                 variant="primary"
                 size="lg"
-                label="Install core library"
+                label="安装核心组件库"
               />
             </Popover>
             <Button
               variant="secondary"
               size="lg"
-              label="View Figma"
+              label="查看 Figma"
               href={FIGMA_LIBRARY_URL}
               target="_blank"
               rel="noopener noreferrer"
@@ -279,7 +293,7 @@ export default function ComponentsGalleryPage() {
             <Fragment key={cat}>
               <Divider />
               <VStack gap={4}>
-                <Heading level={2}>{cat}</Heading>
+                <Heading level={2}>{CATEGORY_LABELS[cat]}</Heading>
                 <ComponentGrid items={items} />
               </VStack>
             </Fragment>

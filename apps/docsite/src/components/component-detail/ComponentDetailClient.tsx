@@ -113,8 +113,8 @@ const STABILITY_BADGES: Record<
   NonNullable<ComponentEntry['stability']>,
   {label: string; variant: BadgeVariant}
 > = {
-  experimental: {label: 'Experimental', variant: 'orange'},
-  lab: {label: 'Lab', variant: 'purple'},
+  experimental: {label: '实验性', variant: 'orange'},
+  lab: {label: '实验室', variant: 'purple'},
 };
 
 function OverviewContent({
@@ -144,7 +144,7 @@ function OverviewContent({
       {comp.usage && (
         <VStack gap={4}>
           <Heading level={2} type="display-3">
-            Usage
+            用法
           </Heading>
           <MarkdownText type="large" weight="normal">
             {comp.usage.description}
@@ -178,7 +178,7 @@ function OverviewContent({
       )}
 
       {!isHook && !hasInteractivePlayground(comp) && comp.props.length > 0 && (
-        <PropsTable props={comp.props} heading="Props" />
+        <PropsTable props={comp.props} heading="属性" />
       )}
 
       {(exampleRegistry[comp.name] || []).length +
@@ -187,10 +187,10 @@ function OverviewContent({
         <>
           <VStack gap={4}>
             <Heading level={2} type="display-3">
-              Examples
+              示例
             </Heading>
             <Text type="large" weight="normal">
-              Common configurations, variations, and states.
+              常见配置、变体与状态。
             </Text>
           </VStack>
           <VStack gap={10}>
@@ -209,16 +209,15 @@ function OverviewContent({
           <Divider />
           <VStack gap={2}>
             <Heading level={2} type="display-3">
-              Use with shadcn
+              与 shadcn 配合使用
             </Heading>
             <MarkdownText type="body">
-              Already using the shadcn registry workflow? Install the real
-              Astryx package and a local public re-export. Component
-              implementation source stays in Astryx.
+              已经在使用 shadcn registry 工作流？安装真正的 Astryx 包，
+              并在本地创建公共重导出。组件实现源码仍保留在 Astryx 中。
             </MarkdownText>
             {shadcnRegistryIsPreview && (
               <Text type="supporting" color="secondary">
-                This install URL expires with the draft preview.
+                此安装链接会随草稿预览过期。
               </Text>
             )}
             <CodeExampleBlock
@@ -302,11 +301,11 @@ function ComponentDetailTabs({
   return (
     <>
       <TabList value={tab} onChange={setTab} hasDivider>
-        <Tab value="overview" label="Overview" />
-        {hasPlayground && <Tab value="properties" label="Properties" />}
-        {hasThemingTab && <Tab value="theming" label="Theming" />}
+        <Tab value="overview" label="概览" />
+        {hasPlayground && <Tab value="properties" label="属性" />}
+        {hasThemingTab && <Tab value="theming" label="主题" />}
         {hasAccessibilityTab && (
-          <Tab value="accessibility" label="Accessibility" />
+          <Tab value="accessibility" label="无障碍" />
         )}
       </TabList>
 
@@ -341,7 +340,7 @@ function ComponentDetailTabs({
           {comp.props.length > 0 && (
             <Section>
               <VStack gap={3}>
-                <Heading level={3}>Props</Heading>
+                <Heading level={3}>属性</Heading>
                 <PlaygroundPropsTable
                   props={comp.props}
                   typeDefs={comp.typeDefs}
@@ -374,7 +373,7 @@ function ComponentDetailFallback({hasShowcase}: {hasShowcase: boolean}) {
   return (
     <div
       role="status"
-      aria-label="Loading component documentation"
+      aria-label="正在加载组件文档"
       {...stylex.props(styles.loadingContent)}>
       <VStack gap={8}>
         <Skeleton width="100%" height={40} radius={0} index={0} />

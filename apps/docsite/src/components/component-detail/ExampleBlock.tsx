@@ -105,7 +105,7 @@ function LivePreview({
     return (
       <Center style={{minHeight: 200, width: '100%'}}>
         <Text type="supporting" color="secondary">
-          Preview not available
+          预览不可用
         </Text>
       </Center>
     );
@@ -178,15 +178,15 @@ export function ExampleBlock({entry, componentName}: ExampleBlockProps) {
                 alignItems: 'center',
               }}>
               <TabList value={tab} onChange={setTab} size="sm">
-                <Tab value="description" label="Description" />
-                <Tab value="code" label="Code" />
+                <Tab value="description" label="说明" />
+                <Tab value="code" label="代码" />
                 {entry.registryItemPath && (
-                  <Tab value="install" label="Install" />
+                  <Tab value="install" label="安装" />
                 )}
               </TabList>
               {entry.source && (
                 <Button
-                  label="Open in Playground"
+                  label="在演练场中打开"
                   variant="ghost"
                   size="sm"
                   // Real anchor (Button renders <a> with href) so right-click /
@@ -206,7 +206,7 @@ export function ExampleBlock({entry, componentName}: ExampleBlockProps) {
           <Section variant="muted" padding={tab === 'code' ? 0 : 4}>
             {tab === 'description' ? (
               <MarkdownText type="body">
-                {entry.description || 'No description available.'}
+                {entry.description || '暂无说明。'}
               </MarkdownText>
             ) : tab === 'code' ? (
               <CodeExampleBlock
@@ -220,7 +220,7 @@ export function ExampleBlock({entry, componentName}: ExampleBlockProps) {
               <VStack gap={2}>
                 {shadcnRegistryIsPreview && (
                   <Text type="supporting" color="secondary">
-                    This install URL expires with the draft preview.
+                    此安装 URL 会随草稿预览过期。
                   </Text>
                 )}
                 <CodeExampleBlock

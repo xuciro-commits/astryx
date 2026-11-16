@@ -266,21 +266,20 @@ export function DiscoverShowcase() {
           <VStack gap={6} align="center" xstyle={styles.cardContent}>
             <VStack gap={6} align="center">
               <Heading level={2} type="display-1" color="primary">
-                Discover the full
+                探索完整的
                 <AstryxLogo
                   role="img"
                   aria-label="Astryx"
                   {...stylex.props(styles.inlineWordmark)}
                 />
-                design system
+                设计系统
               </Heading>
               <Text
                 type="body"
                 color="secondary"
                 xstyle={styles.supportingText}>
-                Browse {CORE_COMPONENT_COUNT_ROUNDED}+ components, explore
-                production-ready templates, and tune themes to match your brand;
-                pick a starting point and go.
+                浏览 {CORE_COMPONENT_COUNT_ROUNDED}+ 个组件，探索生产级模板，
+                调整主题以匹配你的品牌；选一个起点，开始吧。
               </Text>
             </VStack>
             <Grid
@@ -290,13 +289,13 @@ export function DiscoverShowcase() {
               <Button
                 variant="primary"
                 size="lg"
-                label="Get started"
+                label="开始使用"
                 href="/docs/getting-started"
               />
               <Button
                 variant="secondary"
                 size="lg"
-                label="Browse components"
+                label="浏览组件"
                 href="/components"
               />
             </Grid>

@@ -47,10 +47,10 @@ export function ComponentsPreview() {
         vAlign="center"
         wrap="wrap"
         xstyle={styles.controlsRow}>
-        <Badge variant="orange" label="Badge" />
-        <Badge variant="blue" label="Badge" />
+        <Badge variant="orange" label="徽章" />
+        <Badge variant="blue" label="徽章" />
         <RadioList
-          label="Sample option"
+          label="示例选项"
           isLabelHidden
           size="md"
           value=""
@@ -58,14 +58,14 @@ export function ComponentsPreview() {
           <RadioListItem label="" value="sample" />
         </RadioList>
         <CheckboxInput
-          label="Sample checkbox"
+          label="示例复选框"
           isLabelHidden
           size="md"
           value={checked}
           onChange={setChecked}
         />
         <Switch
-          label="Sample switch"
+          label="示例开关"
           isLabelHidden
           value={on}
           onChange={setOn}
@@ -75,16 +75,16 @@ export function ComponentsPreview() {
       <Grid columns={2} gap={3}>
         <Button
           variant="secondary"
-          label="Secondary"
+          label="次要按钮"
           xstyle={buttonStyles.fill}
         />
-        <Button variant="primary" label="Primary" xstyle={buttonStyles.fill} />
+        <Button variant="primary" label="主要按钮" xstyle={buttonStyles.fill} />
       </Grid>
 
       <TextInput
-        label="Search components"
+        label="搜索组件"
         isLabelHidden
-        placeholder="Search..."
+        placeholder="搜索..."
         value={search}
         onChange={setSearch}
         startIcon={Search}

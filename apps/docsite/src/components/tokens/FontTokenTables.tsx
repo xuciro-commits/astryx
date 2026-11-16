@@ -8,7 +8,7 @@ import {Table, pixel, proportional} from '@astryxdesign/core/Table';
 import type {TokenTableProps} from './types';
 import {resolveToken, getTokensByPrefix} from './helpers';
 
-const FONT_SAMPLE = 'The quick brown fox jumps over the lazy dog';
+const FONT_SAMPLE = '天地玄黄，宇宙洪荒。ABC abc 123';
 
 // Return the primary font family from a font stack, splitting on the first
 // top-level comma so a leading `var(--x, fallback)` (which contains its own
@@ -48,10 +48,10 @@ export function FontFamilyTokenTable({theme}: TokenTableProps) {
     <Table
       data={data as Record<string, unknown>[]}
       columns={[
-        {key: 'tokenName', header: 'Token', width: pixel(200)},
+        {key: 'tokenName', header: '令牌', width: pixel(200)},
         {
           key: 'value',
-          header: 'Value',
+          header: '值',
           width: pixel(200),
           renderCell: (item: Record<string, unknown>) => (
             <Text type="code" color="secondary">
@@ -61,7 +61,7 @@ export function FontFamilyTokenTable({theme}: TokenTableProps) {
         },
         {
           key: 'example',
-          header: 'Example',
+          header: '示例',
           width: proportional(1, {minWidth: 200}),
           renderCell: (item: Record<string, unknown>) => (
             <span
@@ -89,10 +89,10 @@ export function FontWeightTokenTable({theme}: TokenTableProps) {
     <Table
       data={data as Record<string, unknown>[]}
       columns={[
-        {key: 'tokenName', header: 'Token', width: pixel(200)},
+        {key: 'tokenName', header: '令牌', width: pixel(200)},
         {
           key: 'value',
-          header: 'Value',
+          header: '值',
           width: pixel(200),
           renderCell: (item: Record<string, unknown>) => (
             <Text type="code" color="secondary">
@@ -102,7 +102,7 @@ export function FontWeightTokenTable({theme}: TokenTableProps) {
         },
         {
           key: 'example',
-          header: 'Example',
+          header: '示例',
           width: proportional(1, {minWidth: 200}),
           renderCell: (item: Record<string, unknown>) => (
             <span
@@ -130,10 +130,10 @@ export function FontSizeTokenTable({theme}: TokenTableProps) {
     <Table
       data={data as Record<string, unknown>[]}
       columns={[
-        {key: 'tokenName', header: 'Token', width: pixel(200)},
+        {key: 'tokenName', header: '令牌', width: pixel(200)},
         {
           key: 'value',
-          header: 'Value',
+          header: '值',
           width: pixel(200),
           renderCell: (item: Record<string, unknown>) => (
             <Text type="code" color="secondary">
@@ -143,7 +143,7 @@ export function FontSizeTokenTable({theme}: TokenTableProps) {
         },
         {
           key: 'example',
-          header: 'Example',
+          header: '示例',
           width: proportional(1, {minWidth: 200}),
           renderCell: (item: Record<string, unknown>) => (
             <span

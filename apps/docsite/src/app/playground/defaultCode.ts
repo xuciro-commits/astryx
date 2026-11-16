@@ -28,21 +28,21 @@ export default function Example() {
       <Layout
         header={
           <LayoutHeader hasDivider>
-            <Heading level={2}>Welcome</Heading>
+            <Heading level={2}>欢迎</Heading>
           </LayoutHeader>
         }
         content={
           <LayoutContent>
             <Text type="body" color="secondary">
-              Try out components in the code editor, open a ready-made template,
-              and build your own theme in the theme editor — all in one place.
+              在代码编辑器中试用组件，打开现成模板，
+              并在主题编辑器中打造自己的主题——一切都在同一个地方。
             </Text>
           </LayoutContent>
         }
         footer={
           <LayoutFooter hasDivider>
             <HStack hAlign="end">
-              <Button label="Get started" variant="primary" />
+              <Button label="开始使用" variant="primary" />
             </HStack>
           </LayoutFooter>
         }

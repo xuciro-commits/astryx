@@ -197,7 +197,7 @@ function TemplatePreviewHeader({
     <Button
       variant="secondary"
       isIconOnly
-      label="Close preview"
+      label="关闭预览"
       size="lg"
       icon={<Icon icon="close" color="inherit" />}
       onClick={onClose}
@@ -242,7 +242,7 @@ function TemplatePreviewFooter({
           variant="ghost"
           isIconOnly
           size="lg"
-          label={copiedCommand === 'astryx' ? 'Copied!' : 'Copy Astryx command'}
+          label={copiedCommand === 'astryx' ? '已复制！' : '复制 Astryx 命令'}
           icon={
             <Icon
               icon={copiedCommand === 'astryx' ? 'check' : 'copy'}
@@ -258,7 +258,7 @@ function TemplatePreviewFooter({
 
   const playgroundButton = (
     <Button
-      label="Open in Playground"
+      label="在演练场中打开"
       variant="primary"
       size="lg"
       href={playgroundHref}
@@ -461,7 +461,7 @@ export function TemplatePreviewDialog({
                 variant="secondary"
                 size="lg"
                 isIconOnly
-                label="Previous template"
+                label="上一个模板"
                 icon={<Icon icon="chevronLeft" color="inherit" />}
                 onClick={() => go(-1)}
                 xstyle={styles.navArrowButton}
@@ -476,7 +476,7 @@ export function TemplatePreviewDialog({
                 variant="secondary"
                 size="lg"
                 isIconOnly
-                label="Next template"
+                label="下一个模板"
                 icon={<Icon icon="chevronRight" color="inherit" />}
                 onClick={() => go(1)}
                 xstyle={styles.navArrowButton}

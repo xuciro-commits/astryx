@@ -1,14 +1,14 @@
-# Astryx Example: Vite
+# Astryx 示例：Vite
 
-Reference application for building **@astryxdesign/core** from source in a Vite + React project.
+在 Vite + React 项目中从源码构建 **@astryxdesign/core** 的参考应用。
 
-Most apps don't need a source build. Astryx ships pre-built CSS: import `@astryxdesign/core/reset.css`, `@astryxdesign/core/astryx.css` and a theme's `theme.css`, and no build plugin is needed (see the [Vite quick start](../../packages/core/README.md#vite)). This example shows the other path: it compiles Astryx's TypeScript and StyleX source in your app with `astryxStylex()` from `@astryxdesign/build/vite`, which wraps `@stylexjs/unplugin`.
+大多数应用不需要从源码构建。Astryx 提供预构建的 CSS：导入 `@astryxdesign/core/reset.css`、`@astryxdesign/core/astryx.css` 以及某个主题的 `theme.css`，无需任何构建插件（参见 [Vite 快速开始](../../packages/core/README.md#vite)）。本示例展示另一条路径：它使用 `@astryxdesign/build/vite` 中的 `astryxStylex()` 在应用中编译 Astryx 的 TypeScript 与 StyleX 源码，该函数封装了 `@stylexjs/unplugin`。
 
-The [Next.js example](../example-nextjs/) uses the pre-built CSS path.
+[Next.js 示例](../example-nextjs/) 使用预构建 CSS 这条路径。
 
-## Setup Steps
+## 设置步骤
 
-### 1. Install dependencies
+### 1. 安装依赖
 
 ```bash
 npm install @stylexjs/stylex @astryxdesign/core @astryxdesign/theme-neutral react react-dom
@@ -18,7 +18,7 @@ npm install --save-dev @astryxdesign/build @stylexjs/unplugin @vitejs/plugin-rea
 
 ### 2. Browserslist
 
-Add a `browserslist` to `package.json` so that Vite's CSS pipeline targets modern browsers. Astryx tokens use native `light-dark()` (baseline 2024); without modern targets, lightningcss lowers it into polyfill variables that break theming:
+在 `package.json` 中添加 `browserslist`，让 Vite 的 CSS 管道面向现代浏览器。Astryx 令牌使用原生 `light-dark()`（2024 年进入基线）；若没有现代浏览器目标，lightningcss 会将其降级为 polyfill 变量，从而破坏主题功能：
 
 ```json
 {
@@ -26,11 +26,11 @@ Add a `browserslist` to `package.json` so that Vite's CSS pipeline targets moder
 }
 ```
 
-> For internal tools targeting latest Chrome, `"last 1 Chrome version"` is sufficient. For broader browser support, use targets that include Chrome 123+ / Firefox 120+ / Safari 17.5+ (when `light-dark()` shipped).
+> 对于面向最新版 Chrome 的内部工具，`"last 1 Chrome version"` 已足够。若需支持更广泛的浏览器，请使用包含 Chrome 123+ / Firefox 120+ / Safari 17.5+ 的目标（即 `light-dark()` 发布之时）。
 
-### 3. Vite config
+### 3. Vite 配置
 
-`vite.config.ts`:
+`vite.config.ts`：
 
 ```ts
 import {defineConfig} from 'vite';
@@ -42,11 +42,11 @@ export default defineConfig({
 });
 ```
 
-`astryxStylex()` sets up StyleX compilation, the CSS layer order (reset < astryx-base < astryx-theme < product), the `resolve.alias` to the `@astryxdesign/core` source, `optimizeDeps.exclude` so Vite does not pre-bundle Astryx, and Lightning CSS targets that keep `light-dark()`. Plugin order matters: spread `astryxStylex()` before `react()`.
+`astryxStylex()` 负责设置 StyleX 编译、CSS 层顺序（reset < astryx-base < astryx-theme < product）、指向 `@astryxdesign/core` 源码的 `resolve.alias`、避免 Vite 预打包 Astryx 的 `optimizeDeps.exclude`，以及保留 `light-dark()` 的 Lightning CSS 目标。插件顺序很重要：请在 `react()` 之前展开 `astryxStylex()`。
 
-### 4. CSS entry point
+### 4. CSS 入口点
 
-`src/index.css`: a minimal CSS file so Vite emits a CSS asset for StyleX to append to:
+`src/index.css`：一个最小化的 CSS 文件，让 Vite 输出一个可供 StyleX 追加样式的 CSS 资源：
 
 ```css
 :root {
@@ -54,7 +54,7 @@ export default defineConfig({
 }
 ```
 
-Import it in `src/main.tsx`, along with the base reset and theme CSS:
+在 `src/main.tsx` 中导入它，同时导入基础 reset 与主题 CSS：
 
 ```tsx
 import '@astryxdesign/core/reset.css';
@@ -62,17 +62,17 @@ import '@astryxdesign/theme-neutral/theme.css';
 import './index.css';
 ```
 
-The CSS import order matters:
+CSS 导入顺序很重要：
 
-1. `reset.css`: baseline resets (`@layer reset`)
-2. `theme.css`: theme token overrides (`@layer astryx-theme`)
-3. `index.css`: StyleX extraction placeholder
+1. `reset.css`：基线重置（`@layer reset`）
+2. `theme.css`：主题令牌覆盖（`@layer astryx-theme`）
+3. `index.css`：StyleX 提取占位符
 
-The source build compiles the component styles, so this example does not import `@astryxdesign/core/astryx.css`.
+源码构建会编译组件样式，因此本示例不导入 `@astryxdesign/core/astryx.css`。
 
-### 5. Theme provider
+### 5. 主题提供者
 
-Wrap your app with `Theme` and the default theme:
+用 `Theme` 和默认主题包裹你的应用：
 
 ```tsx
 import {Theme} from '@astryxdesign/core/theme';
@@ -83,9 +83,9 @@ export default function App() {
 }
 ```
 
-No `'use client'` needed; Vite doesn't have server/client boundaries.
+不需要 `'use client'`；Vite 没有服务端/客户端边界。
 
-## Commands
+## 命令
 
 ```bash
 # Start dev server with HMR
@@ -98,23 +98,23 @@ npm run build
 npm run preview
 ```
 
-## Gotchas
+## 注意事项
 
-| Issue                   | Symptom                                    | Fix                                                                       |
-| ----------------------- | ------------------------------------------ | ------------------------------------------------------------------------- |
-| Old browser targets     | Colors broken: `light-dark()` gets lowered | Keep the `browserslist` above; don't pass older `lightningcssTargets`     |
-| Missing CSS entry point | StyleX has no CSS asset to append to       | Create a minimal `index.css` and import it in `main.tsx`                  |
-| Plugin order            | Styles not extracted or HMR broken         | Spread `astryxStylex()` before `react()` in the plugins array             |
-| Duplicate React types   | JSX component type errors in monorepo      | Known monorepo issue with `@types/react` hoisting; doesn't affect runtime |
+| 问题              | 症状                             | 修复                                                            |
+| ----------------- | -------------------------------- | --------------------------------------------------------------- |
+| 过旧的浏览器目标  | 颜色异常：`light-dark()` 被降级  | 保留上面的 `browserslist`；不要传入更旧的 `lightningcssTargets` |
+| 缺少 CSS 入口点   | StyleX 没有可追加的 CSS 资源     | 创建一个最小化的 `index.css` 并在 `main.tsx` 中导入             |
+| 插件顺序          | 样式未被提取或 HMR 失效          | 在 plugins 数组中于 `react()` 之前展开 `astryxStylex()`         |
+| 重复的 React 类型 | monorepo 中出现 JSX 组件类型错误 | `@types/react` 提升导致的已知 monorepo 问题；不影响运行时       |
 
-## Testing outside the monorepo
+## 在 monorepo 外测试
 
-This example lives in the Astryx monorepo for convenience, but it should be representative of a real app consuming `@astryxdesign/core` from npm. Monorepo workspace symlinks can silently bypass issues that external consumers hit (Vite dep pre-bundling, missing dependencies, wrong resolve paths).
+本示例出于方便放在 Astryx monorepo 中，但它应能代表从 npm 使用 `@astryxdesign/core` 的真实应用。monorepo 的工作区符号链接可能会悄悄绕过外部使用者会遇到的问题（Vite 依赖预打包、缺少依赖、解析路径错误）。
 
-**Before merging changes to this example, test it as an external consumer.** See the [Testing Example Apps](https://github.com/meta/astryx/wiki/Testing-Example-Apps) wiki page for the full procedure.
+**在合并对本示例的更改之前，请以外部使用者的身份进行测试。** 完整流程见 [Testing Example Apps](https://github.com/meta/astryx/wiki/Testing-Example-Apps) wiki 页面。
 
-## Related
+## 相关
 
-- [Issue #145: Example apps for source distribution consumers](https://github.com/meta/astryx/issues/145)
-- [StyleX Vite React example](https://github.com/facebook/stylex/tree/main/examples/example-vite-react)
-- [Astryx Example: Next.js](../example-nextjs/)
+- [Issue #145：面向源码分发包使用者的示例应用](https://github.com/meta/astryx/issues/145)
+- [StyleX Vite React 示例](https://github.com/facebook/stylex/tree/main/examples/example-vite-react)
+- [Astryx 示例：Next.js](../example-nextjs/)

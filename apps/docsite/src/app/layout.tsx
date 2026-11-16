@@ -66,7 +66,7 @@ export const metadata: Metadata = {
         url: OG_IMAGE,
         width: 2400,
         height: 1260,
-        alt: 'Astryx — an open source design system by Meta',
+        alt: 'Astryx——由 Meta 打造的开源设计系统',
       },
     ],
   },
@@ -84,7 +84,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
     // color, top spacing) apply on the first paint. Deliberately no data-theme:
     // reset.css then keeps `color-scheme: light dark`, so the light-dark()
     // tokens follow the OS preference with no script and no flash (#2713).
-    <html lang="en" data-astryx-theme="astryx">
+    <html lang="zh-CN" data-astryx-theme="astryx">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link

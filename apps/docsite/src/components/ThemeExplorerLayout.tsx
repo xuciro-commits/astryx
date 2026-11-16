@@ -163,7 +163,7 @@ export function ThemeExplorerLayout({
 /** Sticky desktop sidebar, hidden at the shared mobile breakpoint. */
 export function ThemeExplorerSidebar({children}: {children: ReactNode}) {
   return (
-    <aside {...stylex.props(styles.sidebar)} aria-label="Theme picker">
+    <aside {...stylex.props(styles.sidebar)} aria-label="主题选择器">
       {children}
     </aside>
   );

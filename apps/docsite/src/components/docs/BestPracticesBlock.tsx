@@ -25,18 +25,18 @@ export function BestPracticesBlock({items}: {items: BestPracticesItem[]}) {
         columns={[
           {
             key: 'guidance',
-            header: 'Guidance',
+            header: '指导',
             width: pixel(100),
             renderCell: (item: Record<string, unknown>) => (
               <Badge
-                label={item.guidance ? 'Do' : "Don't"}
+                label={item.guidance ? '应该' : '不应该'}
                 variant={item.guidance ? 'success' : 'error'}
               />
             ),
           },
           {
             key: 'description',
-            header: 'Practices',
+            header: '最佳实践',
             renderCell: (item: Record<string, unknown>) => (
               <MarkdownText type="body">
                 {item.description as string}

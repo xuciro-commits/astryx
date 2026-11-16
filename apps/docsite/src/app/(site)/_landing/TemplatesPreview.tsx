@@ -185,7 +185,7 @@ export function TemplatesPreview({
                     // frame for the new color mode adds none.
                     key={colorMode}
                     src={`${PREVIEW_DIRECTORY}/${slug}.html${colorMode}`}
-                    title={`${slug} template preview`}
+                    title={`${slug} 模板预览`}
                     loading="lazy"
                     // The page has no script, and the card does not read it.
                     sandbox=""

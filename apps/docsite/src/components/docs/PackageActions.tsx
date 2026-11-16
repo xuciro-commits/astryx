@@ -34,9 +34,9 @@ export function PackageActions({
   cta,
 }: PackageActionsProps) {
   const steps = installSteps ?? [
-    {label: 'Install the package', code: `npm install ${packageName}`},
+    {label: '安装包', code: `npm install ${packageName}`},
     {
-      label: 'Import',
+      label: '导入',
       code: `import {...} from '${packageName}';`,
       language: 'typescript',
     },
@@ -65,7 +65,7 @@ export function PackageActions({
           </VStack>
         }>
         <Button
-          label={version ? `Install v${version}` : 'Install'}
+          label={version ? `安装 v${version}` : '安装'}
           variant="primary"
         />
       </Popover>

@@ -56,9 +56,9 @@ describe('blog post headings', () => {
     const headings = postHeadings(renderPost(RELEASE_POST_SLUG));
     expect(headings.map(h => h.id)).toEqual(
       expect.arrayContaining([
-        'themes-respond-in-css',
-        'migrate-to-0-6-0',
-        'thank-you',
+        '主题在-css-中响应',
+        '迁移到-0-6-0',
+        '致谢',
       ]),
     );
     for (const heading of headings) {

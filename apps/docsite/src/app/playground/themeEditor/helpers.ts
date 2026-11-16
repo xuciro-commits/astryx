@@ -136,14 +136,13 @@ export function getConcentricityWarning(
   const gap = spacingToPx(buildSpacingScale(spacingBase)['--spacing-1']);
   const suggestion =
     control === 'radius'
-      ? `Set radius to ${spacingBase}px`
-      : `Set spacing to ${radiusBase}px`;
+      ? `将圆角设为 ${spacingBase}px`
+      : `将间距设为 ${radiusBase}px`;
   return {
-    title: 'Concentricity broken',
+    title: '同心圆关系被破坏',
     description:
-      `Container radius (${container}px) − spacing-1 (${gap}px) = ${container - gap}px, ` +
-      `but element radius is ${element}px, so nested corners won't look ` +
-      `concentric. ${suggestion} to match.`,
+      `容器圆角（${container}px）− 间距 1（${gap}px）= ${container - gap}px，` +
+      `但元素圆角为 ${element}px，因此嵌套的圆角不会看起来同心。${suggestion} 即可匹配。`,
   };
 }
 

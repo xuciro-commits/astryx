@@ -73,7 +73,7 @@ function ParamRowMobile({
         <Text type="code" weight="bold">
           {param.name}
         </Text>
-        {param.required && <Badge label="required" variant="info" />}
+        {param.required && <Badge label="必填" variant="info" />}
       </HStack>
       <Text type="code" color="secondary">
         <HookTypeText
@@ -144,7 +144,7 @@ export function HookSignature({params, returns, typeDefs}: HookSignatureProps) {
       {params.length > 0 && (
         <Section>
           <VStack gap={2}>
-            <Heading level={3}>Parameters</Heading>
+            <Heading level={3}>参数</Heading>
             {isMobile ? (
               params.map(p => (
                 <div key={p.name}>
@@ -158,7 +158,7 @@ export function HookSignature({params, returns, typeDefs}: HookSignatureProps) {
                 columns={[
                   {
                     key: 'name',
-                    header: 'Param',
+                    header: '参数',
                     width: pixel(240),
                     renderCell: (item: Record<string, unknown>) => (
                       <HStack
@@ -169,14 +169,14 @@ export function HookSignature({params, returns, typeDefs}: HookSignatureProps) {
                           {item.name as string}
                         </Text>
                         {item.required === true && (
-                          <Badge label="required" variant="info" />
+                          <Badge label="必填" variant="info" />
                         )}
                       </HStack>
                     ),
                   },
                   {
                     key: 'type',
-                    header: 'Type',
+                    header: '类型',
                     width: pixel(240),
                     renderCell: (item: Record<string, unknown>) => (
                       <Text type="code" color="secondary">
@@ -191,7 +191,7 @@ export function HookSignature({params, returns, typeDefs}: HookSignatureProps) {
                   },
                   {
                     key: 'description',
-                    header: 'Description',
+                    header: '说明',
                     renderCell: (item: Record<string, unknown>) => (
                       <MarkdownText type="body">
                         {item.description as string}
@@ -209,7 +209,7 @@ export function HookSignature({params, returns, typeDefs}: HookSignatureProps) {
       {returns.length > 0 && (
         <Section>
           <VStack gap={2}>
-            <Heading level={3}>Returns</Heading>
+            <Heading level={3}>返回值</Heading>
             {isMobile ? (
               returns.map(r => (
                 <div key={r.name}>
@@ -223,7 +223,7 @@ export function HookSignature({params, returns, typeDefs}: HookSignatureProps) {
                 columns={[
                   {
                     key: 'name',
-                    header: 'Field',
+                    header: '字段',
                     width: pixel(220),
                     renderCell: (item: Record<string, unknown>) => (
                       <Text
@@ -236,7 +236,7 @@ export function HookSignature({params, returns, typeDefs}: HookSignatureProps) {
                   },
                   {
                     key: 'type',
-                    header: 'Type',
+                    header: '类型',
                     width: pixel(240),
                     renderCell: (item: Record<string, unknown>) => (
                       <Text type="code" color="secondary">
@@ -250,7 +250,7 @@ export function HookSignature({params, returns, typeDefs}: HookSignatureProps) {
                   },
                   {
                     key: 'description',
-                    header: 'Description',
+                    header: '说明',
                     renderCell: (item: Record<string, unknown>) => (
                       <MarkdownText type="body">
                         {item.description as string}

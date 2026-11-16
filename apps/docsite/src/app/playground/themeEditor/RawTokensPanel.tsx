@@ -85,17 +85,17 @@ const dynamic = stylex.create({
 });
 
 const TOKEN_GROUPS = {
-  colors: {label: 'Colors', tokens: colorDefaults},
-  spacing: {label: 'Spacing', tokens: spacingDefaults},
-  radius: {label: 'Radius', tokens: radiusDefaults},
+  colors: {label: '颜色', tokens: colorDefaults},
+  spacing: {label: '间距', tokens: spacingDefaults},
+  radius: {label: '圆角', tokens: radiusDefaults},
   typography: {
-    label: 'Typography',
+    label: '字体',
     tokens: {...typographyDefaults, ...textSizeDefaults, ...fontWeightDefaults},
   },
-  size: {label: 'Size', tokens: sizeDefaults},
-  shadow: {label: 'Elevation', tokens: shadowDefaults},
-  duration: {label: 'Duration', tokens: durationDefaults},
-  easing: {label: 'Easing', tokens: easeDefaults},
+  size: {label: '尺寸', tokens: sizeDefaults},
+  shadow: {label: '阴影层级', tokens: shadowDefaults},
+  duration: {label: '时长', tokens: durationDefaults},
+  easing: {label: '缓动', tokens: easeDefaults},
 } as const;
 
 type TokenGroupKey = keyof typeof TOKEN_GROUPS;
@@ -132,7 +132,7 @@ function SpacingEditor({tokenName, value, onChange}: EditorProps) {
       }
       input={
         <TextInput
-          label="Value"
+          label="值"
           isLabelHidden
           value={value}
           onChange={val => onChange(tokenName, val)}
@@ -153,7 +153,7 @@ function RadiusEditor({tokenName, value, onChange}: EditorProps) {
       }
       input={
         <TextInput
-          label="Value"
+          label="值"
           isLabelHidden
           value={value}
           onChange={val => onChange(tokenName, val)}
@@ -188,7 +188,7 @@ function TypographyEditor({tokenName, value, onChange}: EditorProps) {
       }
       input={
         <TextInput
-          label="Value"
+          label="值"
           isLabelHidden
           value={value}
           onChange={val => onChange(tokenName, val)}
@@ -206,7 +206,7 @@ function GenericEditor({tokenName, value, onChange}: EditorProps) {
       tokenName={tokenName}
       input={
         <TextInput
-          label="Value"
+          label="值"
           isLabelHidden
           value={value}
           onChange={val => onChange(tokenName, val)}
@@ -235,7 +235,7 @@ export function RawTokensPanel({
     <VStack gap={3}>
       <div {...stylex.props(s.scrollX)}>
         <ToggleButtonGroup
-          label="Token category"
+          label="令牌类别"
           type="single"
           size="sm"
           value={activeGroup}

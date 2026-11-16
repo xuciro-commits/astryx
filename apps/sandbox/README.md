@@ -1,12 +1,12 @@
 # Astryx Sandbox
 
-The component sandbox is an adapter-free Vite app. Its route manifest discovers authored page modules and the wrappers generated from the CLI template catalog. A production build prerenders each page and its route-group layout into a real `index.html` at **every** trailing-slash route, then hydrates it in the browser. Unknown routes have a static `404.html`, not an SPA catch-all.
+组件沙箱是一个不依赖适配器的 Vite 应用。它的路由清单会自动发现手写的页面模块，以及由 CLI 模板目录生成的包装器。生产构建会将每个页面及其路由组布局预渲染为 **每一个** 以斜杠结尾的路由对应的真实 `index.html`，然后在浏览器中水合。未知路由会得到一个静态 `404.html`，而不是 SPA 的兜底路由。
 
-<!-- SYNC: When files in this directory change, update this document. -->
+<!-- SYNC: 当此目录中的文件发生变化时，请更新本文档。 -->
 
-## Setup and development
+## 设置与开发
 
-From the repository root, install dependencies with pnpm and build the workspace first:
+在仓库根目录下，先用 pnpm 安装依赖并构建工作区：
 
 ```bash
 pnpm install
@@ -14,9 +14,9 @@ pnpm build
 pnpm dev:sandbox
 ```
 
-`dev:sandbox` builds core once, runs Sandbox generators, and starts Vite. The `AGENTS.md` file is generated at postinstall by `astryx init --features agents` and contains the component-authoring guidance. For core source hot reload, use `pnpm dev:sandbox:source` (the `source` condition, without guaranteed theme layers); for compiled CSS layers and near-hot reload, run `pnpm -F @astryxdesign/core dev` in a second terminal alongside `pnpm -F @astryxdesign/sandbox dev`.
+`dev:sandbox` 会构建一次 core，运行 Sandbox 生成器，并启动 Vite。`AGENTS.md` 文件在 postinstall 时由 `astryx init --features agents` 生成，包含组件编写指南。若要对 core 源码进行热重载，请使用 `pnpm dev:sandbox:source`（`source` 条件，不保证有主题层）；若需要编译后的 CSS 层和接近热重载的体验，请在第二个终端中同时运行 `pnpm -F @astryxdesign/core dev` 与 `pnpm -F @astryxdesign/sandbox dev`。
 
-## Build and routes
+## 构建与路由
 
 ```bash
 pnpm -F @astryxdesign/sandbox build
@@ -24,18 +24,18 @@ pnpm -F @astryxdesign/sandbox typecheck
 pnpm -F @astryxdesign/sandbox test
 ```
 
-The build first runs `sync-templates`, changelog, CLI/foundation docs, XLE, score-ledger, motion-audit, and theme-family generators. The score-ledger generator attempts a public wiki snapshot with a five-second timeout; its browser page refreshes with a `no-store` fetch and falls back to that snapshot or TBD. No backend or credential is involved. Then Vite compiles StyleX with `@astryxdesign/build/vite`, `scripts/prerender.mjs` renders each page and layout into `out/`, and `scripts/verify-export.mjs` checks **every** page body, HTML route and asset against `scripts/next-export-routes.json` (the preserved Next 15 export oracle).
+构建会先运行 `sync-templates`、changelog、CLI/foundation 文档、XLE、score-ledger、motion-audit 和 theme-family 生成器。score-ledger 生成器会尝试在五秒超时内获取公开 wiki 快照；其浏览器页面使用 `no-store` 的 fetch 刷新，并回退到该快照或 TBD。此过程不涉及后端或凭据。随后 Vite 使用 `@astryxdesign/build/vite` 编译 StyleX，`scripts/prerender.mjs` 将每个页面和布局渲染到 `out/`，而 `scripts/verify-export.mjs` 会对照 `scripts/next-export-routes.json`（保留的 Next 15 导出 oracle）检查 **每一个** 页面主体、HTML 路由和资源。
 
-Root-local development uses `/`. For staging under the docsite, run `SANDBOX_BASE_PATH=/sandbox pnpm -F @astryxdesign/sandbox build`; the emitted HTML, JS, CSS, template assets, tokenizer and navigation then use `/sandbox/`. `SANDBOX_TEMPLATE_ASSETS_BASE_PATH` can override the image location when a host requires it. This framework change does **not** move any production or PR deployment or modify Vercel configuration; current Pages links remain in place.
+根路径本地开发使用 `/`。若要在 docsite 下进行暂存，请运行 `SANDBOX_BASE_PATH=/sandbox pnpm -F @astryxdesign/sandbox build`；此时输出的 HTML、JS、CSS、模板资源、tokenizer 和导航都将使用 `/sandbox/`。当宿主有要求时，`SANDBOX_TEMPLATE_ASSETS_BASE_PATH` 可以覆盖图片位置。此框架变更**不会**迁移任何生产或 PR 部署，也不会修改 Vercel 配置；当前的 Pages 链接保持原样。
 
-### Adding a page
+### 添加页面
 
-Add `src/app/(sandbox)/pages/<slug>/page.tsx` for a sidebar-framed page, `(fullscreen)` for a template/preview shell, or `(raw)` for an unframed page. Add the navigation entry to `src/app/sandboxPages.ts` when the page belongs in the catalog. The route manifest discovers the page automatically. Generated template wrappers are owned by `scripts/sync-templates.js`, not hand-authored. When adding or intentionally removing a public deep link, review and update the checked `scripts/next-export-routes.json` route list along with the change; the contract test fails until the difference is accounted for.
+对于带侧边栏框架的页面，添加 `src/app/(sandbox)/pages/<slug>/page.tsx`；对于模板/预览外壳，使用 `(fullscreen)`；对于无框架页面，使用 `(raw)`。当页面属于目录时，请将导航条目添加到 `src/app/sandboxPages.ts`。路由清单会自动发现页面。生成的模板包装器由 `scripts/sync-templates.js` 管理，而非手工编写。添加或有意移除公共深链接时，请同时审查并更新已检入的 `scripts/next-export-routes.json` 路由列表；在该差异得到解释之前，契约测试会失败。
 
-## Key files
+## 关键文件
 
-- `vite.config.mts`, `src/main.tsx`, `src/route-entry.tsx`, `src/RouteView.tsx`, `src/entry-server.tsx`, `src/router.tsx`: prerendered routes, matching hydration, group layouts, navigation and base paths.
-- `index.html`, `src/app/globals.css`, `src/app/layers.css`: metadata, fonts, global CSS and theme layers.
-- `src/app/providers.tsx`: theme and mode state (including embed sync).
-- `scripts/route-manifest.mjs`, `scripts/prerender.mjs`, `scripts/verify-export.mjs`, `src/route-manifest.test.ts`: exact-path export contract and 404 behavior.
-- `src/generated/`, `src/app/(fullscreen)/templates/`, `public/template-assets/`: generated registries, wrappers and mirrored public images (ignored by git).
+- `vite.config.mts`、`src/main.tsx`、`src/route-entry.tsx`、`src/RouteView.tsx`、`src/entry-server.tsx`、`src/router.tsx`：预渲染路由、匹配的水合、分组布局、导航与基础路径。
+- `index.html`、`src/app/globals.css`、`src/app/layers.css`：元数据、字体、全局 CSS 与主题层。
+- `src/app/providers.tsx`：主题与模式状态（包括嵌入同步）。
+- `scripts/route-manifest.mjs`、`scripts/prerender.mjs`、`scripts/verify-export.mjs`、`src/route-manifest.test.ts`：精确路径导出契约与 404 行为。
+- `src/generated/`、`src/app/(fullscreen)/templates/`、`public/template-assets/`：生成的注册表、包装器与镜像的公共图片（由 git 忽略）。

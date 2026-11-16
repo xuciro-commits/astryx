@@ -330,8 +330,7 @@ export function InteractivePreviewStage({
                 textAlign: 'center',
               }}>
               <Text type="supporting" color="secondary">
-                Interactive preview needs required props that cannot be
-                generated automatically.
+                交互式预览需要必填属性，而无法自动生成这些属性。
               </Text>
               <Text type="supporting" color="secondary">
                 Missing: {missingRequiredProps.join(', ')}
@@ -356,10 +355,10 @@ export function InteractivePreviewStage({
                 textAlign: 'center',
               }}>
               <Text type="supporting" color="secondary">
-                Interactive preview not available for {name}.
+                {name} 暂无交互式预览。
               </Text>
               <Text type="supporting" color="secondary">
-                This component is not part of @astryxdesign/core.
+                该组件不属于 @astryxdesign/core。
               </Text>
             </VStack>
           </Center>
@@ -384,8 +383,8 @@ export function InteractivePreviewStage({
             zIndex: 2,
           }}>
           <Button
-            label="Show code"
-            tooltip="Show code"
+            label="显示代码"
+            tooltip="显示代码"
             icon={<Code size={16} />}
             isIconOnly
             variant={showCode ? 'secondary' : 'ghost'}
@@ -418,7 +417,7 @@ export function InteractivePreviewStage({
             <Suspense
               fallback={
                 <Text type="supporting" color="secondary">
-                  Loading preview…
+                  正在加载预览…
                 </Text>
               }>
               <PreviewErrorBoundary
@@ -456,7 +455,7 @@ export function InteractivePreviewStage({
                       (overlayControl.stateProp !== 'isOpen' ||
                         canControlOpenState) && (
                         <Button
-                          label="Open preview"
+                          label="打开预览"
                           variant="secondary"
                           size="sm"
                           onClick={() =>

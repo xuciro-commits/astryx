@@ -30,7 +30,7 @@ export async function GET(
     blogPosts.find(p => p.slug === slug) ??
     blogFixturePosts.find(p => p.slug === slug);
   if (!post) {
-    return new Response('Not found\n', {
+    return new Response('未找到\n', {
       status: 404,
       headers: {'content-type': 'text/plain; charset=utf-8'},
     });
@@ -43,9 +43,9 @@ export async function GET(
     '',
     post.description,
     '',
-    `Published: ${post.date}`,
-    `Authors: ${post.authors.join(', ')}`,
-    `Tags: ${post.tags.join(', ')}`,
+    `发布于：${post.date}`,
+    `作者：${post.authors.join(', ')}`,
+    `标签：${post.tags.join(', ')}`,
     '',
     '---',
     '',

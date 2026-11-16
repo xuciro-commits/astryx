@@ -57,14 +57,14 @@ function TargetLabel({
         {isInteractive && (
           <HStack xstyle={styles.badgeActions}>
             <Button
-              label="Properties"
+              label="属性"
               variant="ghost"
               size="sm"
               isIconOnly
               icon={<Settings size={12} />}
             />
             <Button
-              label="Deselect"
+              label="取消选择"
               variant="ghost"
               size="sm"
               isIconOnly
@@ -87,7 +87,7 @@ function TargetLabel({
 
   return (
     <Popover
-      label="Component properties"
+      label="组件属性"
       placement="below"
       alignment="start"
       width={400}

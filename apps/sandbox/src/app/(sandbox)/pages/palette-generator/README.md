@@ -1,31 +1,18 @@
-# Palette Generator Lab
+# 调色板生成器实验室
 
-This sandbox page is experimental decision tooling for AST-008. It does not
-define a public generator API, adopt generated colors into a theme, or claim
-that a palette is accessible.
+这个沙箱页面是 AST-008 的实验性决策工具。它不定义公共生成器 API，不将生成的配色采纳到主题中，也不声称某个调色板符合无障碍要求。
 
-## Reference data
+## 参考数据
 
-- **Neutral — PR #5628** is an exact snapshot of `neutralPalettes` from commit
-  `b19fc7a740ee43fa52db5555ccd0ac63bd0305d4` in
-  `neutralThemePaletteReference.ts`. Keeping the snapshot local makes the
-  comparison reproducible while #5668 remains unmerged.
-- **Neutral — legacy preview** uses the seeds and HCT-based light/dark behavior
-  from `apps/sandbox/src/app/(fullscreen)/pages/neutral-palette/page.tsx`.
-- **Stone**, **Gothic**, **Y2K**, and **Butter** use the exported palette objects
-  consumed by their corresponding sandbox palette pages. Page-level mode
-  behavior and Butter-specific overrides are represented in `themeCorpus.ts`.
+- **Neutral — PR #5628** 是 `neutralThemePaletteReference.ts` 中提交 `b19fc7a740ee43fa52db5555ccd0ac63bd0305d4` 的 `neutralPalettes` 精确快照。将快照保留在本地，使得在 #5668 仍未合并期间比较可复现。
+- **Neutral — 旧版预览** 使用 `apps/sandbox/src/app/(fullscreen)/pages/neutral-palette/page.tsx` 中的种子值以及基于 HCT 的明暗行为。
+- **Stone**、**Gothic**、**Y2K** 和 **Butter** 使用各自对应的沙箱调色板页面所用的导出调色板对象。页面级模式行为以及 Butter 专属覆盖都体现在 `themeCorpus.ts` 中。
 
-The deployed GitHub Pages versions of those sandbox pages are visual
-verification references. The lab does not fetch them at runtime because network
-state cannot be part of deterministic generation.
+这些沙箱页面部署在 GitHub Pages 上的版本是视觉验证的参考。实验室不会在运行时获取它们，因为网络状态不能成为确定性生成的一部分。
 
-Run the sandbox-owned generator tests with `pnpm --filter
-@astryxdesign/sandbox test`.
+使用 `pnpm --filter
+@astryxdesign/sandbox test` 运行沙箱自有的生成器测试。
 
-## Interpretation
+## 解读
 
-Existing-theme comparisons exclude the shared black and white endpoints from
-the visual difference summary. Suggested vibrancy values minimize average OKLab
-distance across stops 5–95 for the selected algorithm. They are starting points,
-not approvals or immutable theme settings.
+现有主题比较会从视觉差异摘要中排除共享的黑白端点。建议的 vibrancy 值会在所选算法下最小化 5–95 色阶之间的平均 OKLab 距离。它们只是起点，并非批准或不可变的主题设置。

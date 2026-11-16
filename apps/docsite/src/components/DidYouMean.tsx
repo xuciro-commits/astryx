@@ -30,7 +30,7 @@ export function DidYouMean({pages}: DidYouMeanProps) {
   return (
     <VStack gap={1} hAlign="center">
       <Text type="body" color="secondary">
-        Did you mean?
+        你是不是想找？
       </Text>
       {suggestions.map(suggestion => (
         <Link key={suggestion.path} href={suggestion.path} isStandalone>

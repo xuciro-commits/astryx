@@ -48,7 +48,7 @@ describe('docsite sitemap', () => {
   it('exports canonical page titles for route recovery', () => {
     expect(
       pages.find(page => new URL(page.url).pathname === '/changelog')?.title,
-    ).toBe("What's New");
+    ).toBe("更新内容");
   });
 
   it('includes every component detail page', () => {

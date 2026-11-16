@@ -401,19 +401,19 @@ function WallCard({contributors}: {contributors: ReadonlyArray<Contributor>}) {
           {...stylex.props(styles.wallWordmark)}
         />
         <Text type="body" color="primary" xstyle={styles.wallDescription}>
-          A growing community of designers and engineers ship Astryx together.
+          一个由设计师和工程师共同打造 Astryx 的友好社区。
           <br />
-          Your name could be next.
+          下一个可能就是你。
         </Text>
         <Link
-          label="See contributors"
+          label="查看贡献者"
           href={`${GITHUB_REPO}/graphs/contributors`}
           target="_blank"
           type="supporting"
           color="secondary"
           hasUnderline
           xstyle={styles.wallSeeContributors}>
-          See contributors
+          查看贡献者
         </Link>
       </div>
     </Card>
@@ -447,7 +447,7 @@ function BlockCard({
   const hasMedia = hasPreview || hasImage;
   return (
     <ClickableCard
-      label={`Open ${label}`}
+      label={`打开 ${label}`}
       href={href}
       variant="transparent"
       padding={5}
@@ -500,44 +500,44 @@ interface Resource {
 // Communications channels, using the same brand logos as the footer.
 const CHANNELS: ReadonlyArray<Resource> = [
   {
-    title: 'GitHub Issues',
+    title: 'GitHub Issue',
     description:
-      'File bugs and feature requests. Triaged weekly with response within a few days.',
+      '提交缺陷与功能请求。每周会集中处理，通常在几天内回复。',
     href: `${GITHUB_REPO}/issues`,
     icon: GitHubLogo,
   },
   {
     title: 'Discord',
     description:
-      'Hang out with the community in real time. Ask questions, share work, and trade ideas.',
+      '与社区实时交流。提问、分享作品、交换想法。',
     href: DISCORD_URL,
     icon: DiscordLogo,
   },
   {
     title: 'Facebook',
     description:
-      'Follow the page for announcements, milestones, and community highlights.',
+      '关注页面，获取公告、里程碑和社区亮点。',
     href: FACEBOOK_URL,
     icon: FacebookLogo,
   },
   {
     title: 'Instagram',
     description:
-      'See design work, behind-the-scenes, and visual inspiration from the team.',
+      '查看团队的设计作品、幕后故事与视觉灵感。',
     href: INSTAGRAM_URL,
     icon: InstagramLogo,
   },
   {
     title: 'Threads',
     description:
-      'Join the conversation and keep up with updates as they happen.',
+      '加入讨论，及时了解最新动态。',
     href: THREADS_URL,
     icon: ThreadsLogo,
   },
   {
     title: 'X',
     description:
-      'Follow along for release notes, design notes, and behind-the-scenes from the team.',
+      '关注发布说明、设计笔记以及团队幕后故事。',
     href: X_URL,
     icon: XLogo,
   },
@@ -553,27 +553,27 @@ interface StepperStep {
 const RFC_STEPS: ReadonlyArray<StepperStep> = [
   {
     number: '01',
-    title: 'Share a proposal',
+    title: '分享提案',
     description:
-      'Describe the problem you ran into and what you think should change. We respond within a week.',
+      '描述你遇到的问题以及你认为需要改变的地方。我们会在一周内回复。',
   },
   {
     number: '02',
-    title: 'Shape it together',
+    title: '共同打磨',
     description:
-      'We co-explore research, use cases, and design options until the right shape becomes obvious.',
+      '我们一起探索研究、使用场景和设计方案，直到找到最合适的形态。',
   },
   {
     number: '03',
-    title: 'Ship it experimentally',
+    title: '以实验形式发布',
     description:
-      'New components ship in @astryxdesign/lab first, where the team and real users put them through their paces.',
+      '新组件会先发布到 @astryxdesign/lab，由团队和真实用户充分试用。',
   },
   {
     number: '04',
-    title: 'Make it official',
+    title: '正式发布',
     description:
-      'Once battle-tested and refined, the work graduates from @astryxdesign/lab into @astryxdesign/core for everyone to use.',
+      '经过充分测试和打磨后，工作成果将从 @astryxdesign/lab 晋升到 @astryxdesign/core，供所有人使用。',
   },
 ];
 
@@ -590,41 +590,41 @@ interface StartHerePath {
 
 const START_HERE: ReadonlyArray<StartHerePath> = [
   {
-    title: 'Fix a bug',
+    title: '修复缺陷',
     description:
-      'Spot something broken? File an issue to confirm it, then submit a change with a clear reproduction.',
+      '发现哪里坏了？先提交 Issue 确认，再提交带有清晰复现步骤的改动。',
     href: `${GITHUB_REPO}/issues/new?template=bug.yml`,
-    effort: '~2 hours',
+    effort: '约 2 小时',
     image: {
       src: '/feature-bug.png',
-      alt: 'Bug report illustration with issue tracker and code snippet',
+      alt: '带有 Issue 跟踪器和代码片段的缺陷报告插图',
     },
   },
   {
-    title: 'Improve the docs',
+    title: '改进文档',
     description:
-      'Fix typos, improve examples, and fill gaps. Reviewed for correctness and clarity.',
+      '修正错别字、改进示例、补齐缺失内容。我们会审核准确性与清晰度。',
     href: `${GITHUB_REPO}/issues/new/choose`,
-    effort: '~30 min',
+    effort: '约 30 分钟',
     image: {
       src: '/feature-docs.png',
-      alt: 'Docs page preview showing the Astryx documentation site',
+      alt: 'Astryx 文档站点的页面预览',
     },
   },
   {
-    title: 'Add a template',
+    title: '添加模板',
     description:
-      'Show components in realistic context. Templates are training signal for both humans and LLMs.',
+      '在真实场景中展示组件。模板既是人类的参考，也是 LLM 的训练信号。',
     href: `${WIKI_BASE}/Contributing-Templates`,
-    effort: '~half day',
+    effort: '约半天',
     preview: <TemplatesPreview maxRows={2} />,
   },
   {
-    title: 'Build a theme',
+    title: '构建主题',
     description:
-      'Full visual control through defineTheme(). Tokens, component overrides, and mode switching.',
+      '通过 defineTheme() 实现完整视觉控制：设计令牌、组件覆盖和模式切换。',
     href: '/docs/theme',
-    effort: '~1 day',
+    effort: '约 1 天',
     preview: <ThemesPreview store={<FrozenPreview id="themes-store" />} />,
   },
 ];
@@ -636,84 +636,84 @@ interface ResourceCategory {
 
 const RESOURCE_CATEGORIES: ReadonlyArray<ResourceCategory> = [
   {
-    label: 'Contributing',
+    label: '贡献',
     items: [
       {
-        title: 'Contributing Guide',
+        title: '贡献指南',
         description:
-          'The full process, what we accept, and how proposals get reviewed.',
+          '完整流程、我们接受的内容，以及提案的审核方式。',
         href: `${WIKI_BASE}/Contributing`,
         icon: FileText,
       },
       {
-        title: 'Contributing with AI',
+        title: '使用 AI 贡献',
         description:
-          'How to use AI assistants effectively within Astryx conventions.',
+          '如何在 Astryx 规范内高效使用 AI 助手。',
         href: `${WIKI_BASE}/Contributing-with-AI-Assistants`,
         icon: FileText,
       },
       {
-        title: 'Dev Setup',
-        description: 'Clone, install, build, and run Storybook locally.',
+        title: '开发环境搭建',
+        description: '克隆、安装、构建并在本地运行 Storybook。',
         href: '/docs/getting-started',
         icon: FileText,
       },
       {
-        title: 'API Conventions',
+        title: 'API 约定',
         description:
-          'How components in Astryx are named, shaped, and composed.',
+          'Astryx 组件的命名、形态与组合方式。',
         href: `${WIKI_BASE}/API-Conventions`,
         icon: FileText,
       },
       {
-        title: 'API Arbitration',
-        description: 'How we settle design disagreements using vibe testing.',
+        title: 'API 仲裁',
+        description: '我们如何通过氛围测试解决设计分歧。',
         href: `${WIKI_BASE}/API-Arbitration`,
         icon: FileText,
       },
     ],
   },
   {
-    label: 'Design',
+    label: '设计',
     items: [
       {
-        title: 'Astryx Library',
-        description: 'Official Figma library, by Meta (@meta).',
+        title: 'Astryx 资源库',
+        description: '官方 Figma 资源库，由 Meta（@meta）维护。',
         href: 'https://www.figma.com/community/file/1659998707120781098',
         icon: FigmaLogo,
       },
       {
         title: 'Astryx for Figma',
-        description: 'Community-built by AItoPeople (@aitopeople).',
+        description: '由社区构建，作者 AItoPeople（@aitopeople）。',
         href: 'https://www.figma.com/community/file/1655939158795671259/astryx-for-figma',
         icon: FigmaLogo,
       },
       {
         title: 'Astryx Design System for Figma v0.1',
-        description: 'Community-built by Adrian Stefan (@stefdrian).',
+        description: '由社区构建，作者 Adrian Stefan（@stefdrian）。',
         href: 'https://www.figma.com/community/file/1661363854016665156/astryx-design-system-for-figma-v0-1',
         icon: FigmaLogo,
       },
     ],
   },
   {
-    label: 'Communications',
+    label: '沟通渠道',
     items: CHANNELS,
   },
   {
-    label: 'Legal',
+    label: '法律',
     items: [
       {
-        title: 'Code of Conduct',
+        title: '行为准则',
         description:
-          'Our standards for respectful collaboration and how we handle reports.',
+          '我们关于尊重协作的标准，以及处理举报的方式。',
         href: `${GITHUB_REPO}/blob/main/CODE_OF_CONDUCT.md`,
         icon: Scale,
       },
       {
-        title: 'MIT License',
+        title: 'MIT 许可证',
         description:
-          'Astryx is open source under the MIT License. Free to use.',
+          'Astryx 基于 MIT 许可证开源，可免费使用。',
         href: `${GITHUB_REPO}/blob/main/LICENSE`,
         icon: Scale,
       },
@@ -758,9 +758,9 @@ async function fetchContributors(): Promise<Contributor[]> {
 // =============================================================================
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Community',
+  title: '社区',
   description:
-    'Join the Astryx community: contribute on GitHub, follow updates, and meet the people building the design system.',
+    '加入 Astryx 社区：在 GitHub 上贡献、关注最新动态，结识共同构建设计系统的人们。',
   path: '/community',
 });
 
@@ -776,24 +776,23 @@ export default async function CommunityPage() {
             <div {...stylex.props(styles.heroRow)}>
               <VStack gap={1} xstyle={styles.heroText}>
                 <Heading level={1} type="display-1" color="primary">
-                  Build with us
+                  与我们一起构建
                 </Heading>
                 <Text type="body" size="base" color="secondary">
-                  A friendly community of designers and engineers shaping the
-                  system together.
+                  一个由设计师和工程师组成的友好社区，共同塑造这套系统。
                 </Text>
               </VStack>
               <HStack gap={2} wrap="wrap">
                 <Button
                   variant="secondary"
                   size="md"
-                  label="Browse Issues"
+                  label="浏览 Issue"
                   href={`${GITHUB_REPO}/issues`}
                 />
                 <Button
                   variant="primary"
                   size="md"
-                  label="Start Contributing"
+                  label="开始贡献"
                   href={`${WIKI_BASE}/Contributing`}
                 />
               </HStack>
@@ -808,12 +807,10 @@ export default async function CommunityPage() {
             <div {...stylex.props(styles.contribProcess)}>
               <VStack gap={1}>
                 <Heading level={2} type="display-3">
-                  How we build together
+                  我们如何协作
                 </Heading>
                 <Text type="body" color="secondary">
-                  Contributing to Astryx means contributing to the system, not
-                  to a single component. Each step has a clear gate, so you
-                  always know what comes next.
+                  为 Astryx 做贡献意味着贡献于整个系统，而不仅是单个组件。每个步骤都有明确的关卡，让你始终知道下一步是什么。
                 </Text>
               </VStack>
               {RFC_STEPS.map(step => (
@@ -859,7 +856,7 @@ export default async function CommunityPage() {
                 level={2}
                 type="display-2"
                 xstyle={styles.endBlockHeaderText}>
-                Resources
+                资源
               </Heading>
               <div {...stylex.props(styles.endBlockResourcesGrid)}>
                 {RESOURCE_CATEGORIES.map(category => (

@@ -42,7 +42,7 @@ export default async function NotFound() {
                 404
               </Heading>
               <Text type="body" color="secondary">
-                This page could not be found.
+                抱歉，找不到这个页面。
               </Text>
               <DidYouMean pages={pages} />
             </VStack>

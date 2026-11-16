@@ -1,6 +1,6 @@
 ---
-title: 'AI is a copycat so we gave it good examples to copy'
-description: 'We created a single entry point in the CLI that exposes the high quality templates our designers crafted so your agent can copy them and produce high quality output.'
+title: 'AI 是个模仿者，所以我们给了它好例子去模仿'
+description: '我们在 CLI 中创建了一个单一入口，提供设计师精心打造的高质量模板，让你的 agent 可以模仿它们并产出高质量结果。'
 date: '2026-07-17'
 type: 'engineering'
 draft: false
@@ -9,65 +9,65 @@ authors:
 tags:
   - 'CLI'
   - 'AI'
-  - 'Composition'
+  - '组合'
 coverImage: '/blog/astryx-cli-build-command/cover.png'
-coverAlt: 'Many copies of the Astryx astronaut cat mascot arranged in rows on a light blue background'
+coverAlt: '许多 Astryx 宇航员猫吉祥物的复制品成排排列在浅蓝色背景上'
 relatedDocs:
-  - title: 'The best CLI is one you never run'
+  - title: '最好的 CLI 是你永远不用运行的 CLI'
     href: '/blog/the-astryx-cli'
   - title: 'CLI'
     href: '/docs/cli'
-  - title: 'Components'
+  - title: '组件'
     href: '/components'
 ---
 
-This is the second post in the series on the Astryx CLI. The first was about how [the CLI is the docs](/blog/the-astryx-cli).
+这是 Astryx CLI 系列的第二篇文章。第一篇讲的是[CLI 就是文档](/blog/the-astryx-cli)。
 
-## You have probably noticed AI is very good at copying
+## 你可能已经注意到，AI 非常擅长模仿
 
-Arguably what an LLM does best is copy. We all know it is much worse at coming up with original ideas. And we all know it has major struggles with frontend code. This is not news to anyone who has spent time with any of the major models out there. And we ran straight into it building Astryx.
+可以说，LLM 最擅长的事情就是模仿。我们都知道它在提出原创想法方面要差得多。我们也都知道它在处理前端代码时非常吃力。对任何用过主流模型的人来说，这都不是新闻。而在构建 Astryx 时，我们直接撞上了这个问题。
 
-Early on our templates were not good. There was too much plain StyleX. Too many divs and spans. Not enough actual components. We would ask an agent to build a page and watch it barely touch Astryx or hand back something that just looked broken. That confused us for a while. The agent had the docs. It had every prop and every example through the CLI. It had everything it could possibly need. Why was it ignoring all of it?
+早期我们的模板并不好。纯 StyleX 太多。div 和 span 太多。真正的组件不够。我们会让 agent 构建一个页面，然后看着它几乎不碰 Astryx，或者交回一个看起来就是坏的东西。这让我们困惑了一阵子。agent 有文档。通过 CLI，它有每个 prop 和每个示例。它拥有可能需要的一切。为什么它对这一切视而不见？
 
-The answer was almost too simple. It was copying our bad examples. Garbage in, garbage out. The old saying still holds. That is why we wrote a [grading rubric for templates](https://github.com/meta/astryx/wiki/Contributing-Templates). It scores every template the same way every time. Nothing sloppy slips through and a room full of designers can hold one bar. We fixed what the agent was copying and the output followed.
+答案简单得几乎让人难以置信：它在模仿我们糟糕的示例。垃圾进，垃圾出。老话依然成立。这就是我们编写[模板评分标准](https://github.com/meta/astryx/wiki/Contributing-Templates)的原因。它每次都用同样的方式给每个模板打分。不会有马虎的东西混过去，一整屋子的设计师也能坚持同一套标准。我们修正了 agent 模仿的对象，产出也随之变好了。
 
-## Good examples to copy
+## 值得模仿的好例子
 
-That fixed the quality problem. We now have a large number of high quality templates our designers made. That box is checked. The next problem is usability. A full page example only helps when your need looks like the one we built. Needs vary a lot. Covering every one of them with full pages is not sustainable. That is why we make examples at three sizes:
+这解决了质量问题。我们现在有大量由设计师制作的高质量模板。这一项算是打勾了。下一个问题是可用性。整页示例只有在你需要的东西恰好和我们构建的相似时才有帮助。需求差异很大。用整页模板覆盖所有需求并不可持续。所以我们把示例做成三种规模：
 
-- A **page** is a full template. It is the dream case when your need matches one of ours.
-- A **block** is a smaller composable piece. It meets the same quality bar but it is not a full page. You compose them into what you need.
-- A **component** example shows a good way to use one specific component.
+- **页面**是完整模板。当你的需求与我们的某个模板吻合时，这是最理想的情况。
+- **区块**是更小的可组合片段。它满足同样的质量标准，但不是完整页面。你可以把它们组合成你需要的样子。
+- **组件**示例展示使用某个特定组件的良好方式。
 
-Now we have high quality examples at every size from full pages down to the smallest component. We have the full range. The next question is how an agent actually uses all of it. It can grep around and it will find some things. But what if it wants analytics and we named the template dashboard? There are plenty of cases like that where the words do not line up. A plain text search will not cut it. We had to be cleverer about how we expose this.
+现在，从完整页面一直到最小的组件，每种规模都有高质量示例。我们覆盖了全部范围。下一个问题是 agent 实际如何使用这些内容。它可以四处 grep，也会找到一些东西。但如果它想要 analytics，而我们把这个模板命名为 dashboard 呢？有很多类似的词对不上的情况。纯文本搜索无法胜任。我们必须在呈现方式上更聪明一些。
 
-## Introducing `astryx build`
+## 推出 `astryx build`
 
-The solution to everything above is a single command called `astryx build`. It takes a natural language prompt and returns the pieces that might be relevant to what you are building. It is the one command your agent uses to find anything it needs for the project you are working on. If it cannot find a whole page it might recommend a block or a component. It does not just hand back a list of results. It recommends the first move so your agent knows exactly where to start. In a way it is almost an interactive prompt.
+上述所有问题的解决方案就是一个名为 `astryx build` 的命令。它接收自然语言提示，返回可能与你要构建的内容相关的片段。这是你的 agent 用来为当前项目查找所需任何内容的唯一命令。如果找不到完整页面，它可能会推荐一个区块或组件。它不只是交回一串结果列表，还会推荐第一步，让你的 agent 明确知道该从哪里开始。某种程度上，它几乎像一个交互式提示。
 
-Under the hood it is a plain ranking algorithm. `astryx build` starts by gathering every candidate at once from your components and hooks and docs and templates. Then it cleans up your prompt. It throws out the filler words and expands the rest through a built-in synonym map so a request for a dashboard also reaches analytics and KPIs and metrics. It even stems each word so that chart and charts and charting all fold down to the same root.
+底层是一个朴素的排名算法。`astryx build` 首先从你的组件、hooks、文档和模板中一次性收集所有候选。然后它清理你的提示词：丢弃填充词，并通过内置同义词表扩展其余部分，这样“dashboard”的请求也能触达 analytics、KPIs 和 metrics。它甚至会对每个词做词干处理，让 chart、charts 和 charting 都归到同一个词根。
 
-Every candidate then gets scored on a fixed ladder of signals:
+然后每个候选会按照固定的信号层级打分：
 
-- An exact name match wins.
-- An exact keyword is next.
-- Below those sit the near matches that forgive typos and small misspellings by edit distance.
+- 完全名称匹配胜出。
+- 其次是完全关键词匹配。
+- 再往下是近似匹配，通过编辑距离容忍拼写错误和小笔误。
 
-A word that only lives in a description still counts but a clean name or keyword match always outranks it so you get the real thing and not something that happened to mention your word once. On a longer prompt it scores each concept on its own and rewards whatever covers the most of them. It then averages the strength of those matches so a wordy prompt is never punished for rambling.
+只出现在描述里的词仍然算数，但干净的名称或关键词匹配总是排在它前面，这样你得到的是真正想要的东西，而不是某个恰好提过一次你搜索词的条目。对于较长的提示，它会分别给每个概念打分，并奖励覆盖概念最多的候选。然后它对匹配强度取平均，因此冗长的提示不会因为啰嗦而受罚。
 
-Templates get one extra trick. Each one is indexed by what it is built from and not just its title. A page carries the names of the actual components inside it so it surfaces even when its title tells you nothing. In the end your agent gets everything it needs to build the page:
+模板还有一个额外的技巧。每个模板不仅按标题建立索引，还按它的构成建立索引。一个页面会携带其中实际组件的名称，因此即使标题什么也没说明，它也能被检索到。最终，你的 agent 能拿到构建页面所需的一切：
 
-- the closest page to start from
-- the blocks that cover parts of it
-- the components to fill the gaps
-- the frame and foundation every page needs anyway
+- 最接近的起始页面
+- 覆盖其中部分内容的区块
+- 填补空缺的组件
+- 每个页面本来就需要的外框和基础
 
-Then it picks a single starting move. A strong page match means scaffold this one and a weaker match means treat it as a layout reference and compose the rest. All of this is fast and deterministic so the same prompt returns the same result every time. There is no network call and no model behind it. You can read [the whole thing](https://github.com/meta/astryx/blob/main/packages/cli/src/api/search.mjs) yourself.
+然后它会选择一个起始动作。页面匹配很强时，意思是“以这个为脚手架”；匹配较弱时，意思是“把它当作布局参考，其余部分自己组合”。这一切都快速且确定，因此同一个提示每次都会返回相同结果。背后没有网络调用，也没有模型。你可以自己阅读[完整实现](https://github.com/meta/astryx/blob/main/packages/cli/src/api/search.mjs)。
 
-Finally every `astryx build` run ends with a short set of rules. No divs for layout and no inline styles and tokens for everything else. It is the rubric again but this time pointed at your agent instead of our designers. The agent still gets to improvise and the fences just keep it on the system while it does.
+最后，每次 `astryx build` 运行都会以一小段规则结束：布局不要用 div，不要用内联样式，其他一律用 token。这又是那份评分标准，只不过这次面向的是你的 agent，而不是我们的设计师。agent 仍然可以自由发挥，而这些边界只是让它在发挥时保持在系统之内。
 
-## The whole point
+## 核心目的
 
-A big part of what we are building toward with Astryx is this. An agent should be able to produce a genuinely good frontend without much effort from you at all. You should be able to spin something up and trust it without thinking hard about how it got there.
+我们构建 Astryx 的一个重要目标就在于此：agent 应该能在你几乎不费力的情况下，产出真正优秀的前端。你应该能够随手启动一个项目并信任它，而不必费心思考它是怎么做到的。
 
-Instead of fighting the copycat we lean into it. We make good things. We put them where the agent will find them. And we let it copy. Good examples become good output. And good output becomes the next thing worth copying. Give a copycat something worth copying and it starts to look a lot like taste.
+与其对抗模仿者，不如顺势而为。我们做出好东西。把它们放在 agent 能找到的地方。然后让它去模仿。好示例变成好产出。好产出又成为下一个值得模仿的对象。给模仿者值得模仿的东西，它就会开始显得很有品味。

@@ -50,7 +50,7 @@ export function buildOutline(sections: DocSection[]): {
   const outline: OutlineItem[] = [];
 
   sections.forEach((section, sectionIndex) => {
-    const sectionId = uniqueSlug(section.title, seen, 'section');
+    const sectionId = uniqueSlug(section.id ?? section.title, seen, 'section');
     sectionIds.push(sectionId);
     outline.push({
       id: sectionId,
@@ -63,7 +63,7 @@ export function buildOutline(sections: DocSection[]): {
         return;
       }
       const blockId = uniqueSlug(
-        `${section.title} ${block.text}`,
+        `${sectionId} ${block.text}`,
         seen,
         `${sectionId}-heading`,
       );

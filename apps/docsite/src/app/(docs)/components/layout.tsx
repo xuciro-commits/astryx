@@ -13,9 +13,9 @@ import {SITE_NAME} from '../../../lib/siteConfig';
 
 export const metadata: Metadata = {
   ...pageMetadata({
-    title: 'Components',
+    title: '组件',
     description:
-      'Browse every Astryx component with copy-ready examples for each variant, state, and pattern.',
+      '浏览 Astryx 的全部组件，每个变体、状态和模式都附带可直接复制的示例。',
     path: '/components',
   }),
   // Brand the per-component page titles (e.g. "Button · Astryx") so browser
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   // shadowing the root title template for the dynamic /components/[name] pages,
   // so re-declare the template here; `default` titles the gallery index.
   title: {
-    default: 'Components',
+    default: '组件',
     template: `%s · ${SITE_NAME}`,
   },
 };

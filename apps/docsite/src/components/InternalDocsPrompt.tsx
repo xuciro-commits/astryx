@@ -97,25 +97,24 @@ function DocsInfoBanner({
   return (
     <Banner
       role="region"
-      aria-label="Documentation notice"
+      aria-label="文档提示"
       container="section"
       status={internalHref ? 'info' : 'warning'}
       isDismissable
-      dismissLabel="Dismiss documentation notice for this page view"
+      dismissLabel="关闭此页面的文档提示"
       title={
         internalHref
-          ? 'Working on Meta internal tools?'
-          : "You're viewing Canary docs"
+          ? '正在开发 Meta 内部工具？'
+          : "你正在查看 Canary 文档"
       }
       description={
         <>
           {internalHref &&
-            'Meta internal docs include Meta-specific components and guidance.'}
+            'Meta 内部文档包含 Meta 专用组件与指南。'}
           {isCanary && internalHref && <br />}
           {isCanary && (
             <>
-              These docs may include unreleased components and props. View
-              production docs for the latest stable release.
+              这些文档可能包含尚未发布的组件与属性。请查看生产文档以获取最新稳定版本。
             </>
           )}
         </>
@@ -124,14 +123,14 @@ function DocsInfoBanner({
         <>
           {internalHref && (
             <Button
-              label="Meta internal docs"
+              label="Meta 内部文档"
               variant="secondary"
               href={internalHref}
             />
           )}
           {productionHref && (
             <Button
-              label="View production"
+              label="查看生产版本"
               variant="secondary"
               href={productionHref}
             />

@@ -21,7 +21,7 @@ import {CHANGELOG_PAGE_TITLE} from '../../../lib/pageTitles';
 export const metadata: Metadata = pageMetadata({
   title: CHANGELOG_PAGE_TITLE,
   description:
-    'Release notes and version history for Astryx packages and components.',
+    'Astryx 包与组件的发布说明和版本历史。',
   path: '/changelog',
 });
 

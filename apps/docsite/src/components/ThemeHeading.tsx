@@ -52,8 +52,8 @@ export function ThemeHeading({
   const isCentered = align === 'center';
   const modeToggleLabel =
     mode === 'dark'
-      ? 'Switch preview to light mode'
-      : 'Switch preview to dark mode';
+      ? '将预览切换到浅色模式'
+      : '将预览切换到深色模式';
   const modeToggleIcon =
     mode === 'dark' ? <Sun size={16} /> : <Moon size={16} />;
   const modeControl: ReactNode = onToggleMode ? (
@@ -78,14 +78,13 @@ export function ThemeHeading({
           type={isMobile ? 'display-2' : 'display-3'}
           justify={align}
           xstyle={styles.titleText}>
-          Themes
+          主题
         </Heading>
         {modeControl}
       </HStack>
       <VStack gap={1} hAlign={isCentered ? 'center' : undefined}>
         <Text type="body" color="secondary" justify={align}>
-          Astryx comes with a default theme built in. To make it your own, copy
-          any theme you see here into a theme file you own.
+          Astryx 内置一套默认主题。想打造自己的主题，只需将这里看到的任意主题复制到你的主题文件中。
         </Text>
         <Link
           type="body"
@@ -93,7 +92,7 @@ export function ThemeHeading({
           href="/docs/theme"
           hasUnderline
           tabIndex={isLoading ? -1 : undefined}>
-          Learn how theming works
+          了解主题的工作方式
         </Link>
       </VStack>
     </VStack>

@@ -11,6 +11,8 @@ import {
 } from 'react';
 import Link from 'next/link';
 import {useMediaQuery} from '@astryxdesign/core/hooks';
+import {InternationalizationProvider} from '@astryxdesign/core/i18n';
+import zhCN from '@astryxdesign/core/locales/zh-CN.generated.js';
 import {Theme} from '@astryxdesign/core/theme';
 import {LinkProvider} from '@astryxdesign/core/Link';
 import {astryxTheme} from '../themes/astryx';
@@ -97,10 +99,12 @@ export function Providers({children}: {children: React.ReactNode}) {
   };
 
   return (
-    <ThemeModeContext value={{themeMode: mode, toggleMode}}>
-      <Theme theme={astryxTheme} mode={mode}>
-        <LinkProvider component={Link}>{children}</LinkProvider>
-      </Theme>
-    </ThemeModeContext>
+    <InternationalizationProvider locale="zh-CN" messages={{'zh-CN': zhCN}}>
+      <ThemeModeContext value={{themeMode: mode, toggleMode}}>
+        <Theme theme={astryxTheme} mode={mode}>
+          <LinkProvider component={Link}>{children}</LinkProvider>
+        </Theme>
+      </ThemeModeContext>
+    </InternationalizationProvider>
   );
 }

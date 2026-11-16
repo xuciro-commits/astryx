@@ -43,8 +43,8 @@ export function ConfirmDialog({
   isOpen,
   title,
   message,
-  confirmLabel = 'Continue',
-  cancelLabel = 'Cancel',
+  confirmLabel = '继续',
+  cancelLabel = '取消',
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {

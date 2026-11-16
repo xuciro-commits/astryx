@@ -132,7 +132,7 @@ export function ChangelogView({
             {CHANGELOG_PAGE_TITLE}
           </Heading>
           <Text type="large" weight="normal" color="secondary">
-            Release notes and changelog for all packages.
+            所有包的发布说明与更新日志。
           </Text>
         </VStack>
 
@@ -164,7 +164,7 @@ export function ChangelogView({
           </>
         ) : (
           <Text type="body" color="secondary">
-            Changelogs could not be loaded.
+            无法加载更新日志。
           </Text>
         )}
       </VStack>

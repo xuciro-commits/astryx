@@ -11,24 +11,22 @@
 export function GET() {
   const body = `# Astryx
 
-An open source design system that's fully customizable and agent ready. Astryx
-has grown inside Meta over the last eight years, shaped by the engineers,
-designers, and product teams who depend on it every day, and now powers over
-13,000 apps. Built on React and StyleX.
+一个完全可定制、面向智能体的开源设计系统。Astryx 在 Meta 内部成长了八年，
+由每天依赖它的工程师、设计师和产品团队共同塑造，如今驱动着 13,000 多个应用。
+基于 React 与 StyleX 构建。
 
-Everything on this docs site (component docs, props, variants, tokens, page
-templates, and design rules) is also available through the Astryx CLI, in a
-form built for agents to read. Instead of crawling these pages, use the CLI to
-learn about Astryx directly. Some examples:
+本站的所有内容（组件文档、属性、变体、令牌、页面模板和设计规则）也都
+可以通过 Astryx CLI 获取，并以适合智能体阅读的形式提供。与其抓取这些页面，
+不如直接使用 CLI 了解 Astryx。示例：
 
-    npx @astryxdesign/cli search "<what you're looking for>"   # search components, hooks, docs, templates
-    npx @astryxdesign/cli docs                                 # list reference docs, then: docs <topic>
-    npx @astryxdesign/cli component <Name>                     # props, variants, examples for one component
-    npx @astryxdesign/cli component --list                     # every component
-    npx @astryxdesign/cli blog                                 # read the Astryx blog
+    npx @astryxdesign/cli search "<要查找的内容>"   # 搜索组件、Hook、文档、模板
+    npx @astryxdesign/cli docs                       # 列出参考文档，然后：docs <topic>
+    npx @astryxdesign/cli component <Name>           # 某个组件的属性、变体和示例
+    npx @astryxdesign/cli component --list           # 所有组件
+    npx @astryxdesign/cli blog                       # 阅读 Astryx 博客
 
-Use the scoped name @astryxdesign/cli. Bare "npx astryx" resolves to an
-unrelated package until the CLI is installed as a dependency.
+请使用带作用域的名称 @astryxdesign/cli。在 CLI 安装为依赖之前，直接运行
+"npx astryx" 会解析到一个无关的包。
 `;
 
   return new Response(body, {

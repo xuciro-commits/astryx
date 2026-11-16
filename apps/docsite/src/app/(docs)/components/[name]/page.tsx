@@ -35,7 +35,7 @@ export async function generateMetadata({
     title: comp.displayName,
     description:
       comp.description ||
-      `Props, usage, and live examples for the ${comp.displayName} component.`,
+      `${comp.displayName} 组件的属性、用法与实时示例。`,
     path: `/components/${comp.name}`,
     type: 'article',
   });

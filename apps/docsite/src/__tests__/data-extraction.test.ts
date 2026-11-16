@@ -416,7 +416,7 @@ describe('componentRegistry', () => {
     expect(dialogHeader).toBeDefined();
     expect(dialogHeader!.description.length).toBeGreaterThan(10);
     // Description should be specific to DialogHeader, not the parent Dialog
-    expect(dialogHeader!.description.toLowerCase()).toContain('header');
+    expect(dialogHeader!.description).toContain('标题栏');
   });
 
   it('extracted sub-components do not inherit parent usage prose', () => {
@@ -1166,11 +1166,11 @@ describe('docsRegistry', () => {
   it('title differs from slug (human-readable)', () => {
     const gettingStarted = docTopics.find(d => d.topic === 'getting-started');
     expect(gettingStarted).toBeDefined();
-    expect(gettingStarted?.title).toBe('Getting Started');
+    expect(gettingStarted?.title).toBe('快速开始');
 
     const theme = docTopics.find(d => d.topic === 'theme');
     expect(theme).toBeDefined();
-    expect(theme?.title).toBe('Theming');
+    expect(theme?.title).toBe('主题');
   });
 
   it('known topics are present', () => {
@@ -1512,7 +1512,7 @@ describe('DropdownMenu adaptive-presentation example', () => {
     // Unset by default: the menu is anchored, with the touch modes under a
     // finger. 'popover' pins the pointer behavior.
     expect(presentation?.default).toBeUndefined();
-    expect(presentation?.description).toContain("Pass 'popover'");
+    expect(presentation?.description).toContain("传入 'popover'");
 
     const defaults = dropdownMenu?.playground?.defaults as
       Record<string, unknown> | undefined;

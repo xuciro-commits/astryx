@@ -19,7 +19,7 @@ export function BestPractices({practices}: BestPracticesProps) {
     <Section>
       <VStack gap={4}>
         <Heading level={2} type="display-3">
-          Best practices
+          最佳实践
         </Heading>
         <BestPracticesBlock items={practices} />
       </VStack>

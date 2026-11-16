@@ -10,9 +10,9 @@ import type {Metadata} from 'next';
 import {pageMetadata} from '../../../lib/pageMetadata';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Templates',
+  title: '模板',
   description:
-    'Ready-to-use page templates to kickstart your project: dashboards, settings, forms, AI chat, and more.',
+    '开箱即用的页面模板，助你快速启动项目：仪表盘、设置、表单、AI 对话等。',
   path: '/templates',
 });
 

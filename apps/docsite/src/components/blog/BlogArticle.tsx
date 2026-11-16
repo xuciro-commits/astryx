@@ -69,7 +69,7 @@ export function BlogArticle({post}: BlogArticleProps) {
       <VStack gap={10}>
         <VStack gap={4}>
           <Breadcrumbs>
-            <BreadcrumbItem href="/blog">Blog</BreadcrumbItem>
+            <BreadcrumbItem href="/blog">博客</BreadcrumbItem>
             <BreadcrumbItem isCurrent>
               {POST_TYPE_LABELS[post.type]}
             </BreadcrumbItem>
@@ -121,7 +121,7 @@ export function BlogArticle({post}: BlogArticleProps) {
           <VStack gap={6}>
             <Divider />
             <Heading level={2} type="display-3">
-              Related
+              相关阅读
             </Heading>
             <Grid columns={{minWidth: 280, repeat: 'fill'}} gap={2}>
               {post.relatedDocs.map(doc => (

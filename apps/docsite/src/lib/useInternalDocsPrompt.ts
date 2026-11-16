@@ -88,7 +88,7 @@ function startCheck() {
   frame.tabIndex = -1;
   frame.setAttribute('aria-hidden', 'true');
   frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-  frame.title = 'Astryx documentation reachability check';
+  frame.title = 'Astryx 文档可达性检查';
   frame.referrerPolicy = 'no-referrer';
   frame.src = `${accessCheckOrigin}/embed/access-check?parent_origin=${encodeURIComponent(parentOrigin)}`;
 

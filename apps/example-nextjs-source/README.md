@@ -1,46 +1,46 @@
-# Astryx Example: Next.js (Source Build)
+# Astryx 示例：Next.js（源码构建）
 
-Reference application for compiling **@astryxdesign/core** from raw TypeScript + StyleX source alongside product code. Uses `@astryxdesign/build` for independent CSS layer separation.
+参考应用：将 **@astryxdesign/core** 从原始 TypeScript + StyleX 源码与产品代码一起编译。使用 `@astryxdesign/build` 实现独立的 CSS 层分离。
 
-> **Runs on webpack, not Turbopack.** The source build configures resolution through
-> `nextConfig.webpack`, which Turbopack never calls — under Turbopack the app loads
-> `dist` while PostCSS compiles the library from `source`, and the page renders unstyled
-> without erroring.
+> **运行在 webpack 上，而非 Turbopack。** 源码构建通过
+> `nextConfig.webpack` 配置解析，而 Turbopack 从不调用它——在 Turbopack 下，应用会加载
+> `dist`，而 PostCSS 却从 `source` 编译该库，页面会渲染成无样式状态
+> 但不会报错。
 >
-> This example pins Next 16 and explicitly passes `--webpack` to `next dev` and
-> `next build`. Next 16 defaults to Turbopack, but this source build requires
-> webpack because `nextConfig.webpack` sets its source-resolution conditions.
+> 此示例固定 Next 16，并向 `next dev` 和
+> `next build` 显式传递 `--webpack`。Next 16 默认使用 Turbopack，但此源码构建需要
+> webpack，因为 `nextConfig.webpack` 设置了它的源码解析条件。
 
-## Why source build?
+## 为什么用源码构建？
 
-|               | Source build                                       | Dist build                   |
-| ------------- | -------------------------------------------------- | ---------------------------- |
-| CSS output    | Only styles for components you import (~22KB)      | All component styles (~77KB) |
-| Layer control | Full: reset < astryx-base < astryx-theme < product | Basic: import order          |
-| Build time    | Slower (compiles Astryx source through Babel)      | Fast (pre-built CSS)         |
-| Setup         | More config (babel + postcss + next.config)        | Minimal (CSS imports)        |
+|          | 源码构建                                           | dist 构建               |
+| -------- | -------------------------------------------------- | ----------------------- |
+| CSS 输出 | 仅包含你导入组件的样式（约 22KB）                  | 所有组件样式（约 77KB） |
+| 层控制   | 完整：reset < astryx-base < astryx-theme < product | 基础：导入顺序          |
+| 构建时间 | 较慢（通过 Babel 编译 Astryx 源码）                | 较快（预构建的 CSS）    |
+| 配置     | 更多配置（babel + postcss + next.config）          | 最少（CSS 导入）        |
 
-## How it works
+## 工作原理
 
-`@astryxdesign/build` provides two plugins that work together:
+`@astryxdesign/build` 提供两个协同工作的插件：
 
-1. **`@astryxdesign/build/babel`**: wraps the StyleX babel plugin, routing Astryx library files to `astryx` class prefix and product files to default `x` prefix
-2. **`@astryxdesign/build/postcss`**: compiles StyleX CSS in two passes with different prefixes, wrapping each in its own `@layer`
+1. **`@astryxdesign/build/babel`**：包装 StyleX babel 插件，将 Astryx 库文件路由到 `astryx` 类前缀，将产品文件路由到默认的 `x` 前缀
+2. **`@astryxdesign/build/postcss`**：分两遍以不同前缀编译 StyleX CSS，并各自包裹在自己的 `@layer` 中
 
-This creates completely independent class namespaces:
+这会创建完全独立的类命名空间：
 
-- `.astryx78zum5 { display: flex }` in `@layer astryx-base`
-- `.x78zum5 { display: flex }` in `@layer product`
+- `@layer astryx-base` 中的 `.astryx78zum5 { display: flex }`
+- `@layer product` 中的 `.x78zum5 { display: flex }`
 
-Theme sits between them in `@layer astryx-theme`, so:
+主题位于它们之间的 `@layer astryx-theme` 中，因此：
 
-- Theme overrides library defaults ✓
-- Product overrides theme when needed ✓
-- No `!important` needed ✓
+- 主题会覆盖库默认值 ✓
+- 产品在需要时覆盖主题 ✓
+- 无需 `!important` ✓
 
-## Setup
+## 配置
 
-### 1. Install
+### 1. 安装
 
 ```bash
 npm install @stylexjs/stylex @astryxdesign/core @astryxdesign/theme-neutral next react react-dom
@@ -126,15 +126,15 @@ const nextConfig = {
 export default nextConfig;
 ```
 
-### 5. CSS files
+### 5. CSS 文件
 
-`src/app/layers.css` must be a separate file (webpack hoists `@import` content):
+`src/app/layers.css` 必须是独立文件（webpack 会提升 `@import` 内容）：
 
 ```css
 @layer reset, astryx-base, astryx-theme, product;
 ```
 
-`src/app/globals.css`:
+`src/app/globals.css`：
 
 ```css
 @import './layers.css';
@@ -144,29 +144,29 @@ export default nextConfig;
 @stylex;
 ```
 
-## Layer Demo
+## 层演示
 
-This example includes a visual demo showing:
+此示例包含一个可视化演示，展示：
 
-1. **astryx-base**: default Astryx component styles
-2. **astryx-theme**: theme overrides (secondary button background)
-3. **product**: app overrides (pill shape, green background, full-width)
-4. **Class prefix verification**: Astryx components use `astryx` prefix, product uses `x`
+1. **astryx-base**：Astryx 组件默认样式
+2. **astryx-theme**：主题覆盖（次要按钮背景）
+3. **product**：应用覆盖（胶囊形状、绿色背景、全宽）
+4. **类前缀验证**：Astryx 组件使用 `astryx` 前缀，产品使用 `x`
 
-Open devtools → CSS layers panel to see the separation.
+打开 devtools → CSS layers 面板查看分离效果。
 
-## Gotchas
+## 注意事项
 
-| Issue                    | Symptom                                      | Fix                                                                |
-| ------------------------ | -------------------------------------------- | ------------------------------------------------------------------ |
-| Missing `conditionNames` | Astryx resolves to dist (no `astryx` prefix) | Add `['source', 'import', 'require', 'default']` to webpack config |
-| Missing `aliases`        | `defineVars` resolution fails                | Add aliases for `@astryxdesign/core` and `@astryxdesign/core/*`    |
-| `layers.css` inline      | Layer order ignored                          | Keep as separate file (webpack hoists `@import`)                   |
-| Missing `browserslist`   | `light-dark()` gets lowered                  | Add `["last 1 Chrome version"]`                                    |
+| 问题                  | 症状                                     | 修复                                                               |
+| --------------------- | ---------------------------------------- | ------------------------------------------------------------------ |
+| 缺少 `conditionNames` | Astryx 解析到 dist（没有 `astryx` 前缀） | 在 webpack 配置中添加 `['source', 'import', 'require', 'default']` |
+| 缺少 `aliases`        | `defineVars` 解析失败                    | 为 `@astryxdesign/core` 和 `@astryxdesign/core/*` 添加别名         |
+| `layers.css` 内联     | 层顺序被忽略                             | 保持为独立文件（webpack 会提升 `@import`）                         |
+| 缺少 `browserslist`   | `light-dark()` 被降级                    | 添加 `["last 1 Chrome version"]`                                   |
 
-## Related
+## 相关
 
-- [Plain dist example](../example-nextjs/): simplest setup
-- [Dist + Tailwind](../example-nextjs-tailwind/): Tailwind for layout
-- [Dist + StyleX](../example-nextjs-stylex/): StyleX for product only
-- [`@astryxdesign/build`](../../packages/build/): the build plugin source
+- [纯 dist 示例](../example-nextjs/)：最简单的配置
+- [Dist + Tailwind](../example-nextjs-tailwind/)：使用 Tailwind 处理布局
+- [Dist + StyleX](../example-nextjs-stylex/)：仅产品使用 StyleX
+- [`@astryxdesign/build`](../../packages/build/)：构建插件源码

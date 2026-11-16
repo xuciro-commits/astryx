@@ -117,11 +117,11 @@ export function DocsShell({children, nav}: DocsShellProps) {
 
   const componentSearch = (
     <TextInput
-      label="Search components"
+      label="搜索组件"
       isLabelHidden
       value={componentQuery}
       onChange={setComponentQuery}
-      placeholder="Search components…"
+      placeholder="搜索组件…"
       startIcon={Search}
       hasClear
     />
@@ -172,32 +172,32 @@ export function DocsShell({children, nav}: DocsShellProps) {
           {!isOnComponentsRoute && (
             <>
               {/* Getting Started */}
-              <SideNavSection title="Documentation" isHeaderHidden>
+              <SideNavSection title="文档" isHeaderHidden>
                 <SideNavItem
-                  label="Getting Started"
+                  label="快速开始"
                   href="/docs/getting-started"
                   isSelected={pathname === '/docs/getting-started'}
                 />
                 <SideNavItem
-                  label="What's New"
+                  label="更新内容"
                   href="/changelog"
                   isSelected={pathname === '/changelog'}
                 />
               </SideNavSection>
 
               {/* Guide */}
-              <SideNavSection title="Guide" isHeaderHidden>
+              <SideNavSection title="指南" isHeaderHidden>
                 <SideNavItem
-                  label="Guide"
+                  label="指南"
                   collapsible={{defaultIsCollapsed: false}}>
                   <DocsSidebarItems items={guideItems} pathname={pathname} />
                 </SideNavItem>
               </SideNavSection>
 
               {/* Foundations */}
-              <SideNavSection title="Foundations" isHeaderHidden>
+              <SideNavSection title="基础" isHeaderHidden>
                 <SideNavItem
-                  label="Foundations"
+                  label="基础"
                   collapsible={{defaultIsCollapsed: false}}>
                   <DocsSidebarItems
                     items={foundationItems}
@@ -207,9 +207,9 @@ export function DocsShell({children, nav}: DocsShellProps) {
               </SideNavSection>
 
               {/* Stable libraries */}
-              <SideNavSection title="Libraries" isHeaderHidden>
+              <SideNavSection title="组件库" isHeaderHidden>
                 <SideNavItem
-                  label="Libraries"
+                  label="组件库"
                   collapsible={{defaultIsCollapsed: false}}>
                   {libraryPackages.map(p => (
                     <SideNavItem
@@ -226,7 +226,7 @@ export function DocsShell({children, nav}: DocsShellProps) {
               </SideNavSection>
 
               {canaryPackages.length > 0 && (
-                <SideNavSection title="Canary libraries" isHeaderHidden>
+                <SideNavSection title="Canary 组件库" isHeaderHidden>
                   {canaryPackages.map(p => (
                     <SideNavItem
                       key={p.name}
@@ -247,10 +247,10 @@ export function DocsShell({children, nav}: DocsShellProps) {
           {/* Components — only shown on /components routes */}
           {isOnComponentsRoute && (
             <>
-              <SideNavSection title="Components" isHeaderHidden>
+              <SideNavSection title="组件" isHeaderHidden>
                 {!q && (
                   <SideNavItem
-                    label="Overview"
+                    label="概览"
                     href="/components"
                     isSelected={pathname === '/components'}
                   />
@@ -279,7 +279,7 @@ export function DocsShell({children, nav}: DocsShellProps) {
                     ))
                   ) : (
                     <SideNavItem
-                      label="Utilities"
+                      label="工具"
                       collapsible={{defaultIsCollapsed: true}}>
                       {utilities.map(comp => (
                         <SideNavItem
@@ -294,7 +294,7 @@ export function DocsShell({children, nav}: DocsShellProps) {
               </SideNavSection>
 
               {!q && canaryCategories.length > 0 && (
-                <SideNavSection title="Canary components" isHeaderHidden>
+                <SideNavSection title="Canary 组件" isHeaderHidden>
                   {canaryCategories.map(category => (
                     <SideNavItem
                       key={category.packageName}
@@ -311,7 +311,7 @@ export function DocsShell({children, nav}: DocsShellProps) {
                       {renderComponentItems(category.componentItems)}
                       {category.utilities.length > 0 && (
                         <SideNavItem
-                          label="Utilities"
+                          label="工具"
                           collapsible={{defaultIsCollapsed: true}}>
                           {category.utilities.map(comp => (
                             <SideNavItem

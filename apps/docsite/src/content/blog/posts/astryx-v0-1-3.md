@@ -1,62 +1,62 @@
 ---
-title: 'Astryx v0.1.3: better tables, keyboard navigation, and accessibility'
-description: 'Plugin-contributed context menus on Table, full WAI-ARIA keyboard patterns, InputGroup composition, and more — plus one easy breaking change.'
+title: 'Astryx v0.1.3：更好的表格、键盘导航与无障碍'
+description: 'Table 支持插件贡献的右键菜单，完整的 WAI-ARIA 键盘交互模式，InputGroup 组合能力，以及更多内容——另有一项轻松的破坏性变更。'
 date: '2026-07-04'
 type: 'update'
 authors:
   - 'team'
 tags:
-  - 'Release'
-  - 'Accessibility'
-  - 'Components'
+  - '发布'
+  - '无障碍'
+  - '组件'
 ---
 
-Astryx v0.1.3 is out. This release is a big step forward for accessibility, keyboard navigation, and data tables. Install it with:
+Astryx v0.1.3 已发布。本次发布在无障碍、键盘导航和数据表格方面迈出了一大步。安装方式：
 
 ```bash
 npm i @astryxdesign/core@0.1.3
 ```
 
-All packages ship together at the same version, so bump every `@astryxdesign/*` package to `0.1.3` to match.
+所有包以同一版本一起发布，请将每个 `@astryxdesign/*` 包都升级到 `0.1.3` 以保持一致。
 
-## Highlights
+## 亮点
 
-### Right-click context menus on Table
+### Table 的右键上下文菜单
 
-Tables now support plugin-contributed context menus. Right-click a column header or a row to get real actions — like sort ascending, sort descending, and clear sort — instead of the browser's default menu. Plugins add their own actions through the existing cell transforms, and the table concatenates them across every enabled plugin, so you can extend the menu with no core changes.
+表格现在支持由插件贡献的上下文菜单。右键点击列标题或行，就能获得真正的操作——例如升序排序、降序排序和清除排序——而不是浏览器默认菜单。插件通过现有的 cell transforms 添加自己的操作，表格会汇总所有已启用插件的操作，因此无需改动核心即可扩展菜单。
 
-### Keyboard navigation
+### 键盘导航
 
-`TabList`, `TreeList`, `Toolbar`, `SegmentedControl`, and menus now follow the WAI-ARIA APG patterns: a single tab stop, arrow-key navigation, Home/End, typeahead, and roving focus. New building blocks — `useListFocus`, `useGridFocus`, `useTypeahead`, `useKeyboardHint`, and `useAnnounce` — let you build accessible composite widgets of your own, and a new `VisuallyHidden` primitive makes it easy to add screen-reader-only context.
+`TabList`、`TreeList`、`Toolbar`、`SegmentedControl` 和各菜单现在都遵循 WAI-ARIA APG 模式：单一 Tab 停留点、方向键导航、Home/End 键、typeahead 和 roving focus。新的构建块——`useListFocus`、`useGridFocus`、`useTypeahead`、`useKeyboardHint` 和 `useAnnounce`——让你可以自行构建无障碍的复合组件；新的 `VisuallyHidden` 原语则让添加仅屏幕阅读器可见的上下文变得轻而易举。
 
-### Compose inputs in an InputGroup
+### 在 InputGroup 中组合输入控件
 
-`Selector`, `MultiSelector`, `DateInput`, `TimeInput`, and `Typeahead` can now sit inside `InputGroup` with shared labels, descriptions, and connected borders.
+`Selector`、`MultiSelector`、`DateInput`、`TimeInput` 和 `Typeahead` 现在可以放入 `InputGroup`，共享标签、描述，并连成一体化的边框。
 
-### Explain disabled controls
+### 解释禁用控件的原因
 
-Add `disabledMessage` to choice, picker, and text-entry inputs to show a tooltip telling users _why_ a control is disabled — while keeping it focusable so the explanation is reachable by keyboard.
+为选择类、选择器和文本输入类控件添加 `disabledMessage`，即可通过工具提示告诉用户该控件*为什么*被禁用——同时保持控件可聚焦，让键盘用户也能读到这条说明。
 
-### Layout ergonomics
+### 布局易用性
 
-`Stack`, `Grid`, and `Center` gain padding, sizing, and scroll props, so common frame layouts no longer need inline `style={{}}`.
+`Stack`、`Grid` 和 `Center` 新增 padding、尺寸和滚动相关 props，常见的框架式布局不再需要内联 `style={{}}`。
 
-### Popover dismissal control
+### Popover 关闭控制
 
-New `hasLightDismiss` and `hasEscapeDismiss` props let you build explicit-dismiss surfaces like onboarding coachmarks. Layer animations now respect `prefers-reduced-motion`.
+新增的 `hasLightDismiss` 和 `hasEscapeDismiss` props 让你可以构建需要显式关闭的浮层，例如新手引导提示。图层动画现在会遵循 `prefers-reduced-motion`。
 
-### More
+### 更多
 
-A new **Kanban Board** template, plus a **blog RSS feed and plaintext (`.txt`) posts**.
+新增 **Kanban Board** 模板，以及**博客 RSS 订阅和纯文本（`.txt`）文章**。
 
-## One breaking change (easy)
+## 一项破坏性变更（很简单）
 
-`hasAutoFocus` was removed from `DropdownMenu`, `ContextMenu`, and `MoreMenu`. Menus now always focus their first item on open — the correct APG behavior. No migration needed; just delete the prop if you were passing it.
+`hasAutoFocus` 已从 `DropdownMenu`、`ContextMenu` 和 `MoreMenu` 中移除。菜单现在打开时始终聚焦第一项——这才是符合 APG 的正确行为。无需迁移；如果你之前传入了这个 prop，直接删掉即可。
 
-## Thank you
+## 感谢
 
-Huge thanks to everyone who contributed this release: [@AKnassa](https://github.com/AKnassa), [@arham766](https://github.com/arham766), [@athz](https://github.com/athz), [@cixzhang](https://github.com/cixzhang), [@durvesh1992](https://github.com/durvesh1992), [@ejhammond](https://github.com/ejhammond), [@ernestt](https://github.com/ernestt), [@harshavardhan194](https://github.com/harshavardhan194), [@humbertovirtudes](https://github.com/humbertovirtudes), [@IFAKA](https://github.com/IFAKA), [@imdreamrunner](https://github.com/imdreamrunner), [@josephfarina](https://github.com/josephfarina), [@kentonquatman](https://github.com/kentonquatman), [@mohitWeb-lab](https://github.com/mohitWeb-lab), [@pollychen-lab](https://github.com/pollychen-lab), and [@thedjpetersen](https://github.com/thedjpetersen).
+衷心感谢每一位为本次发布做出贡献的人：[@AKnassa](https://github.com/AKnassa)、[@arham766](https://github.com/arham766)、[@athz](https://github.com/athz)、[@cixzhang](https://github.com/cixzhang)、[@durvesh1992](https://github.com/durvesh1992)、[@ejhammond](https://github.com/ejhammond)、[@ernestt](https://github.com/ernestt)、[@harshavardhan194](https://github.com/harshavardhan194)、[@humbertovirtudes](https://github.com/humbertovirtudes)、[@IFAKA](https://github.com/IFAKA)、[@imdreamrunner](https://github.com/imdreamrunner)、[@josephfarina](https://github.com/josephfarina)、[@kentonquatman](https://github.com/kentonquatman)、[@mohitWeb-lab](https://github.com/mohitWeb-lab)、[@pollychen-lab](https://github.com/pollychen-lab) 和 [@thedjpetersen](https://github.com/thedjpetersen)。
 
-Also thank you to [@aarongarciah](https://github.com/aarongarciah) for feedback on accessibility, and to [@aurorascharff](https://github.com/aurorascharff), who drove the work to optimize the docsite on the latest Next.js features.
+同样感谢 [@aarongarciah](https://github.com/aarongarciah) 对无障碍方面的反馈，以及 [@aurorascharff](https://github.com/aurorascharff)，她推动了利用最新 Next.js 特性优化文档站的工作。
 
-The full changelog is on the [v0.1.3 release page](https://github.com/meta/astryx/releases/tag/v0.1.3).
+完整变更日志见 [v0.1.3 发布页面](https://github.com/meta/astryx/releases/tag/v0.1.3)。

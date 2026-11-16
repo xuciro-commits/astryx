@@ -10,10 +10,10 @@ tags:
 draft: true
 ---
 
-This fixture exercises every case of a `tsx live` block. It is served on the
-canary only, and the blog index, feed and sitemap never list it.
+这个测试样例覆盖了 `tsx live` 代码块的所有情况。它仅在 canary 上提供，
+博客索引、feed 和 sitemap 从不列出它。
 
-## A running example
+## 一个可运行的示例
 
 ```tsx live
 import {useState} from 'react';
@@ -34,7 +34,7 @@ export default function Counter() {
 }
 ```
 
-## An example that imports a post-local asset
+## 一个导入文章本地资源的示例
 
 ```tsx live
 import {SampleCard} from './SampleCard';
@@ -44,7 +44,7 @@ export default function Spread() {
 }
 ```
 
-## A broken example stays inside its frame
+## 出错的示例会留在其框架内
 
 ```tsx live
 export default function Broken() {
@@ -58,7 +58,7 @@ export default function DoesNotCompile( {
 }
 ```
 
-## An ordinary code block
+## 一个普通代码块
 
 ```tsx
 export default function NotLive() {
@@ -66,4 +66,4 @@ export default function NotLive() {
 }
 ```
 
-The post keeps rendering after every example above.
+在上述每个示例之后，文章仍会继续渲染。

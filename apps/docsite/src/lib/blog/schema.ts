@@ -29,12 +29,12 @@ export type BlogPostType = (typeof POST_TYPES)[number];
 
 /** Human-friendly labels for each post type, used in filters and badges. */
 export const POST_TYPE_LABELS: Record<BlogPostType, string> = {
-  update: 'Update',
-  guide: 'Guide',
-  design: 'Design',
-  story: 'Story',
-  perspective: 'Perspective',
-  engineering: 'Engineering',
+  update: '更新',
+  guide: '指南',
+  design: '设计',
+  story: '故事',
+  perspective: '观点',
+  engineering: '工程',
 };
 
 /** A curated related-doc link rendered near the end of an article. */

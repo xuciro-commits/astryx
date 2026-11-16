@@ -357,9 +357,9 @@ type Feature = {
 // than counting indices.
 const features: Record<string, Feature> = {
   components: {
-    title: `Over ${CORE_COMPONENT_COUNT_ROUNDED} components`,
+    title: `超过 ${CORE_COMPONENT_COUNT_ROUNDED} 个组件`,
     description:
-      'Accessible and themeable React components with built-in spacing, dark mode, and flexible styling.',
+      '可访问、可主题化的 React 组件，内置间距、深色模式与灵活的样式能力。',
     href: '/components',
     // Live, theme-aware sampler of real Astryx components instead of a
     // baked PNG — the old /feature-components.png stayed light on the
@@ -367,18 +367,18 @@ const features: Record<string, Feature> = {
     preview: <ComponentsPreview />,
   },
   themes: {
-    title: 'Themes that fit your brand',
+    title: '贴合你品牌的主题',
     description:
-      'Fully customizable themes ready for use. Make it yours without starting from scratch.',
+      '完全可定制的主题开箱即用。无需从零开始，即可打造专属风格。',
     href: '/themes',
     // Butter-themed store preview + swatches/"Aa" instead of the old
     // /feature-brand.png, so it re-themes for dark mode (the PNG stayed light).
     // FeaturesShowcase adds the preview: its store comes from the server page.
   },
   templates: {
-    title: 'Ready to ship templates',
+    title: '开箱即用的模板',
     description:
-      'Production-ready templates for common pages, just plug in your content.',
+      '面向常见页面的生产级模板，只需填入你的内容。',
     href: '/templates',
     // Scaled-down static pages that the build renders from the real page
     // templates, so they re-theme for dark mode and stay in sync with the
@@ -386,9 +386,9 @@ const features: Record<string, Feature> = {
     // FeaturesShowcase.
   },
   cli: {
-    title: 'A design system that your agent can use',
+    title: '智能体也能使用的设计系统',
     description:
-      'Scaffold projects, browse templates, generate themes, and get agent-ready docs from the command line or MCP.',
+      '通过命令行或 MCP 搭建项目、浏览模板、生成主题，并获取面向智能体的文档。',
     href: '/docs/cli',
     // Live, theme-aware chat composer instead of a baked PNG — the old
     // /feature-cli.png stayed light on the dark surface; CliPreview
@@ -496,7 +496,7 @@ function FeatureCard({
           href={feature.href}
           hasUnderline={false}
           xstyle={styles.exploreLink}>
-          Explore →
+          了解更多 →
         </Link>
         {hasPreview ? (
           // vAlign="center" + hAlign="center" centers the preview in
@@ -566,15 +566,15 @@ function HeadingBlock() {
   return (
     <VStack gap={4} xstyle={styles.headingCell}>
       <Heading level={2} type="display-2" color="primary">
-        Start anywhere.
+        从任意起点开始。
         <br />
-        Change anything.
+        想改哪里改哪里。
         <br />
-        Ship faster.
+        更快交付。
       </Heading>
       <Text display="block" type="large" weight="normal" color="secondary">
-        A design system that adapts to your workflow, not the other way around.
-        Built for speed, clarity, and creative freedom.
+        一套适应你的工作流的设计系统，而不是让你去适应它。
+        为速度、清晰与创作自由而打造。
       </Text>
     </VStack>
   );

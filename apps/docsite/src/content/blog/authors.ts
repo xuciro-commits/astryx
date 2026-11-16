@@ -44,24 +44,24 @@ export interface ResolvedAuthor extends Omit<AuthorProfile, 'avatar' | 'href'> {
  */
 export const authors = {
   team: {
-    name: 'Astryx team',
+    name: 'Astryx 团队',
     avatar: '/blog/authors/astryx-team.png',
     href: 'https://github.com/meta/astryx',
   },
   cvkxx: {
     name: 'Catherine',
     github: 'cvkxx',
-    role: 'Design',
+    role: '设计',
   },
   cixzhang: {
     name: 'Cindy',
     github: 'cixzhang',
-    role: 'Engineering',
+    role: '工程',
   },
   josephfarina: {
     name: 'Joey',
     github: 'josephfarina',
-    role: 'Engineering',
+    role: '工程',
   },
   liya: {
     name: 'Liya',
@@ -74,7 +74,7 @@ export const authors = {
   nynexman4464: {
     name: 'Alex',
     github: 'nynexman4464',
-    role: 'Engineering',
+    role: '工程',
   },
   potatowagon: {
     name: 'Sherry',

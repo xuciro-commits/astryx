@@ -190,10 +190,10 @@ export function DurationTokenTable({theme}: TokenTableProps) {
     <Table
       data={data as Record<string, unknown>[]}
       columns={[
-        {key: 'tokenName', header: 'Token', width: pixel(200)},
+        {key: 'tokenName', header: '令牌', width: pixel(200)},
         {
           key: 'value',
-          header: 'Value',
+          header: '值',
           renderCell: (item: Record<string, unknown>) => (
             <HStack gap={2} vAlign="center">
               <DurationBar value={item.value as string} />
@@ -221,10 +221,10 @@ export function EasingTokenTable({theme}: TokenTableProps) {
     <Table
       data={data as Record<string, unknown>[]}
       columns={[
-        {key: 'tokenName', header: 'Token', width: pixel(200)},
+        {key: 'tokenName', header: '令牌', width: pixel(200)},
         {
           key: 'value',
-          header: 'Value',
+          header: '值',
           renderCell: (item: Record<string, unknown>) => (
             <HStack gap={2} vAlign="center">
               <EasingCurve value={item.value as string} />
@@ -245,11 +245,11 @@ export function MotionTokenTable({theme}: TokenTableProps) {
   return (
     <VStack gap={6}>
       <VStack gap={3}>
-        <Heading level={3}>Duration</Heading>
+        <Heading level={3}>时长</Heading>
         <DurationTokenTable theme={theme} />
       </VStack>
       <VStack gap={3}>
-        <Heading level={3}>Easing</Heading>
+        <Heading level={3}>缓动</Heading>
         <EasingTokenTable theme={theme} />
       </VStack>
     </VStack>

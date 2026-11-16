@@ -67,7 +67,7 @@ export interface HeroAuroraPalette {
 export interface HeroThemeSlide {
   /** Theme package name, e.g. '@astryxdesign/theme-matcha'. */
   name: string;
-  /** Human-readable label, e.g. 'Matcha'. */
+  /** Human-readable label, e.g. '抹茶'. */
   label: string;
   /** Resolved theme object passed to <Theme>. */
   theme: DefinedTheme;
@@ -105,50 +105,50 @@ const CONTENT_BY_THEME: Record<string, HeroThemeContent> = {
     // backpack) now that Neutral is no longer a standalone reel slide.
     product: {
       image: '/landing/hero/neutral-watch.webp',
-      title: 'Minimalist watch',
-      description: 'Clean design, everyday durability.',
+      title: '极简手表',
+      description: '设计简洁，经久耐用。',
       price: '$240',
     },
     feature: {
       image: '/landing/hero/neutral-headphones.webp',
-      title: 'Wireless headphones',
+      title: '无线耳机',
       price: '$180',
     },
     mini: {
       image: '/landing/hero/neutral-backpack.webp',
-      title: 'Canvas backpack',
-      description: 'Water-resistant.',
+      title: '帆布背包',
+      description: '防泼水。',
     },
-    pills: {leading: 'Limited time', trailing: 'Free shipping'},
-    chatPrompt: 'How can I help?',
+    pills: {leading: '限时优惠', trailing: '免运费'},
+    chatPrompt: '有什么可以帮你？',
     reward: {
-      label: 'Points',
+      label: '积分',
       value: 7,
       total: 8,
-      member: 'Astryx team',
+      member: 'Astryx 团队',
     },
   },
   '@astryxdesign/theme-neutral': {
     product: {
       image: '/landing/hero/neutral-watch.webp',
-      title: 'Minimalist watch',
-      description: 'Clean design, everyday durability.',
+      title: '极简手表',
+      description: '设计简洁，经久耐用。',
       price: '$240',
     },
     feature: {
       image: '/landing/hero/neutral-headphones.webp',
-      title: 'Wireless headphones',
+      title: '无线耳机',
       price: '$180',
     },
     mini: {
       image: '/landing/hero/neutral-backpack.webp',
-      title: 'Canvas backpack',
-      description: 'Water-resistant.',
+      title: '帆布背包',
+      description: '防泼水。',
     },
-    pills: {leading: 'Limited time', trailing: 'Free shipping'},
-    chatPrompt: 'How can I help?',
+    pills: {leading: '限时优惠', trailing: '免运费'},
+    chatPrompt: '有什么可以帮你？',
     reward: {
-      label: 'Points',
+      label: '积分',
       value: 6,
       total: 10,
       member: 'Alex Rivera',
@@ -157,45 +157,45 @@ const CONTENT_BY_THEME: Record<string, HeroThemeContent> = {
   '@astryxdesign/theme-butter': {
     product: {
       image: '/landing/hero/butter-watch.webp',
-      title: 'Butter croissant',
-      description: 'Flaky, laminated layers baked golden each morning.',
+      title: '黄油可颂',
+      description: '层层酥脆，每天早晨烤至金黄。',
       price: '$6',
     },
     feature: {
       image: '/landing/hero/butter-backpack.webp',
-      title: 'Belgian waffle',
+      title: '比利时华夫饼',
       price: '$8',
     },
     mini: {
       image: '/landing/hero/butter-headphones.webp',
-      title: 'Pancakes',
-      description: 'Stacked tall with melting butter.',
+      title: '松饼',
+      description: '高高叠起，搭配融化的黄油。',
     },
-    pills: {leading: 'Limited time', trailing: 'Free shipping'},
-    chatPrompt: 'How can I help?',
-    reward: {label: 'Points', value: 5, total: 9, member: 'Noa Bright'},
+    pills: {leading: '限时优惠', trailing: '免运费'},
+    chatPrompt: '有什么可以帮你？',
+    reward: {label: '积分', value: 5, total: 9, member: 'Noa Bright'},
   },
   '@astryxdesign/theme-matcha': {
     product: {
       image: '/landing/hero/matcha-watch.webp',
-      title: 'Matcha',
-      description: 'Stone-ground ceremonial matcha over cold milk.',
+      title: '抹茶',
+      description: '石磨仪式级抹茶搭配冰牛奶。',
       price: '$6',
     },
     feature: {
       image: '/landing/hero/matcha-headphones.webp',
-      title: 'Strawberry matcha',
+      title: '草莓抹茶',
       price: '$7',
     },
     mini: {
       image: '/landing/hero/matcha-tumbler.webp',
-      title: 'Ube matcha',
-      description: 'Ube and cream matcha.',
+      title: '紫薯抹茶',
+      description: '紫薯与奶油抹茶。',
     },
-    pills: {leading: 'Limited time', trailing: 'Free shipping'},
-    chatPrompt: 'How can I help?',
+    pills: {leading: '限时优惠', trailing: '免运费'},
+    chatPrompt: '有什么可以帮你？',
     reward: {
-      label: 'Points',
+      label: '积分',
       value: 7,
       total: 8,
       member: 'Lottie Wang',
@@ -204,44 +204,44 @@ const CONTENT_BY_THEME: Record<string, HeroThemeContent> = {
   '@astryxdesign/theme-gothic': {
     product: {
       image: '/landing/hero/gothic-watch.webp',
-      title: 'Sea holly',
-      description: 'A single preserved thistle stem with a steely bloom.',
+      title: '海冬青',
+      description: '一支保留的蓟草，带着钢铁般冷冽的花。',
       price: '$24',
     },
     feature: {
       image: '/landing/hero/gothic-headphones.webp',
-      title: 'Garden rose',
+      title: '花园玫瑰',
       price: '$18',
     },
     mini: {
       image: '/landing/hero/gothic-backpack.webp',
-      title: 'Ranunculus',
-      description: 'Layered petals in a soft mauve.',
+      title: '花毛茛',
+      description: '柔和淡紫的层叠花瓣。',
     },
-    pills: {leading: 'Limited time', trailing: 'Free shipping'},
-    chatPrompt: 'How can I help?',
-    reward: {label: 'Points', value: 7, total: 8, member: 'Mara Vale'},
+    pills: {leading: '限时优惠', trailing: '免运费'},
+    chatPrompt: '有什么可以帮你？',
+    reward: {label: '积分', value: 7, total: 8, member: 'Mara Vale'},
   },
   '@astryxdesign/theme-y2k': {
     product: {
       image: '/landing/hero/y2k-watch.webp',
-      title: 'Phone',
-      description: 'Iridescent clamshell with a rainbow screen.',
+      title: '手机',
+      description: '虹彩翻盖机身，配彩虹屏幕。',
       price: '$18',
     },
     feature: {
       image: '/landing/hero/y2k-headphones.webp',
-      title: 'Glow star set',
+      title: '夜光星星套装',
       price: '$12',
     },
     mini: {
       image: '/landing/hero/y2k-backpack.webp',
-      title: 'Butterfly',
-      description: 'Sparkly stick-on in pastel chrome.',
+      title: '蝴蝶',
+      description: '柔彩镜面闪光贴纸。',
     },
-    pills: {leading: 'Limited time', trailing: 'Free shipping'},
-    chatPrompt: 'How can I help?',
-    reward: {label: 'Points', value: 6, total: 8, member: 'Bella Cruz'},
+    pills: {leading: '限时优惠', trailing: '免运费'},
+    chatPrompt: '有什么可以帮你？',
+    reward: {label: '积分', value: 6, total: 8, member: 'Bella Cruz'},
   },
 };
 
@@ -252,15 +252,15 @@ function fallbackContent(name: string): HeroThemeContent {
   return {
     product: {
       image,
-      title: 'Featured product',
-      description: 'A polished surface, styled by this theme.',
+      title: '精选产品',
+      description: '精致表面，由当前主题塑造。',
       price: '$40',
     },
-    feature: {image, title: 'Featured product', price: '$40'},
-    mini: {image, title: 'Featured', description: 'In stock now.'},
-    pills: {leading: 'Limited time', trailing: 'Free shipping'},
-    chatPrompt: 'How can I help?',
-    reward: {label: 'Points', value: 6, total: 10, member: 'Sam Lee'},
+    feature: {image, title: '精选产品', price: '$40'},
+    mini: {image, title: '精选', description: '现货供应。'},
+    pills: {leading: '限时优惠', trailing: '免运费'},
+    chatPrompt: '有什么可以帮你？',
+    reward: {label: '积分', value: 6, total: 10, member: 'Sam Lee'},
   };
 }
 
@@ -269,7 +269,7 @@ const LABEL_BY_THEME: Record<string, string> = {
   [ASTRYX]: 'Astryx',
   '@astryxdesign/theme-neutral': 'Neutral',
   '@astryxdesign/theme-butter': 'Butter',
-  '@astryxdesign/theme-matcha': 'Matcha',
+  '@astryxdesign/theme-matcha': '抹茶',
   '@astryxdesign/theme-gothic': 'Gothic',
   '@astryxdesign/theme-y2k': 'Y2K',
 };

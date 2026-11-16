@@ -97,7 +97,7 @@ describe('docsite static shell', () => {
     expect(themes.match(/<ThemeHeading/g)).toHaveLength(2);
     expect(themePage).toContain('<ThemeExplorerLayout>');
     expect(themes).toContain(
-      '<ThemeExplorerLayout statusLabel="Loading theme explorer">',
+      '<ThemeExplorerLayout statusLabel="正在加载主题浏览器">',
     );
     expect(layout).toContain('inert={statusLabel ? true : undefined}');
     expect(layout).toContain('<VisuallyHidden as="div" role="status">');
@@ -105,8 +105,8 @@ describe('docsite static shell', () => {
     expect(themePage).toContain('isMobile\n            mode={mode}');
     expect(heading).toContain('<Skeleton width={36} height={36}');
     expect(heading).toContain('tabIndex={isLoading ? -1 : undefined}');
-    expect(heading).toContain('Astryx comes with a default theme built in');
-    expect(heading).toContain('Learn how theming works');
+    expect(heading).toContain('Astryx 内置一套默认主题。想打造自己的主题，只需将这里看到的任意主题复制到你的主题文件中。');
+    expect(heading).toContain('了解主题的工作方式');
   });
 
   it('the site footer does not branch on a media query', () => {

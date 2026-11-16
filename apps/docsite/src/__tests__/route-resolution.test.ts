@@ -77,11 +77,11 @@ describe('route resolution', () => {
   it('shows the full theme text on the theme page', () => {
     const titles = pageBySlug.get('theme')?.sections.map(s => s.title) ?? [];
     for (const title of [
-      'Wrap your app in a theme',
-      'Available Themes',
-      'Custom themes',
+      '用主题包裹应用',
+      '可用主题',
+      '自定义主题',
       'defineTheme',
-      'Dark mode',
+      '深色模式',
       'useTheme Hook',
     ]) {
       expect(titles).toContain(title);
@@ -191,7 +191,7 @@ describe('route resolution', () => {
   it('introduces global mode in Getting Started and links its page', () => {
     const start = pageBySlug.get('getting-started')!;
     const section = start.sections.find(
-      s => s.title === 'Install once, use everywhere',
+      s => s.title === '一次安装，随处使用',
     );
     expect(section).toBeDefined();
     const text = JSON.stringify(section);

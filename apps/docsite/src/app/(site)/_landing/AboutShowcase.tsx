@@ -209,26 +209,26 @@ function YellowDiamondShape() {
 
 const columns: AboutColumn[] = [
   {
-    title: 'Design for speed',
+    title: '为速度而设计',
     description:
-      'Foundations you can trust, speed you can feel. The system is built so teams stop reinventing the basics and start shipping the ideas that matter.',
-    ctaLabel: 'Get started in minutes →',
+      '值得信赖的基础，感受得到的速度。这套系统的设计初衷，是让团队不再重复造轮子，而是把精力投入到真正重要的创意上。',
+    ctaLabel: '几分钟内开始使用 →',
     ctaHref: '/docs/getting-started',
     shape: <PinkBlobShape />,
   },
   {
-    title: 'Built by the people who use it',
+    title: '由使用者共同打造',
     description:
-      'The system gets sharper when we put it to work in the real world. Using it in context strengthens the whole system for everyone.',
-    ctaLabel: 'Learn how to contribute →',
+      '当系统在真实世界中投入使用，它就会变得更完善。在实际场景中使用它，会让整套系统惠及每一个人。',
+    ctaLabel: '了解如何贡献 →',
     ctaHref: '/community',
     shape: <LavenderCloudShape />,
   },
   {
-    title: "Ready for what's next",
+    title: '为下一步做好准备',
     description:
-      'The quality bar is accelerating. Astryx pairs opinionated foundations with flexible patterns so your system keeps pace, no matter how the craft evolves.',
-    ctaLabel: "See what's new →",
+      '质量标准正在不断提升。Astryx 将有主见的基础与灵活的模式相结合，无论工艺如何演进，你的系统都能跟上节奏。',
+    ctaLabel: '查看最新动态 →',
     ctaHref: '/changelog',
     shape: <YellowDiamondShape />,
   },
@@ -238,11 +238,10 @@ function AboutHeading() {
   return (
     <VStack gap={4} xstyle={styles.headingBlock}>
       <Heading level={2} type="display-2" color="primary">
-        Astryx powers over 13,000 apps
+        Astryx 已为超过 13,000 个应用提供支持
       </Heading>
       <Text type="large" weight="normal" color="secondary">
-        Astryx has grown inside Meta over the last eight years, shaped by the
-        engineers, designers, and product teams who depend on it every day.
+        过去八年，Astryx 在 Meta 内部成长，由每天依赖它的工程师、设计师和产品团队共同塑造。
       </Text>
     </VStack>
   );

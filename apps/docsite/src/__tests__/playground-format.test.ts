@@ -647,7 +647,7 @@ describe('formatShortcutHint', () => {
 describe('formatButtonTooltip', () => {
   it('names the shortcut once the platform is known', () => {
     expect(formatButtonTooltip('Ctrl+Shift+I')).toBe(
-      'Format code (Ctrl+Shift+I)',
+      '格式化代码 (Ctrl+Shift+I)',
     );
   });
 
@@ -655,6 +655,6 @@ describe('formatButtonTooltip', () => {
     // The platform can only be read from `navigator`, which does not exist
     // during SSR — so the first paint must claim no shortcut at all rather than
     // guess one and cause a hydration mismatch.
-    expect(formatButtonTooltip(null)).toBe('Format code');
+    expect(formatButtonTooltip(null)).toBe('格式化代码');
   });
 });

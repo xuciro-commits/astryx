@@ -5,8 +5,8 @@ import {Suspense} from 'react';
 import {PlaygroundClient} from './PlaygroundClient';
 
 export const metadata: Metadata = {
-  title: 'Astryx Playground',
-  description: 'Interactive code playground for Astryx components',
+  title: 'Astryx 演练场',
+  description: '用于 Astryx 组件的交互式代码演练场',
 };
 
 export default function PlaygroundPage() {

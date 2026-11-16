@@ -56,7 +56,7 @@ describe('PropsTable', () => {
   it('gives the Description column a readable floor', () => {
     render(<PropsTable props={props} heading="Props" />);
     const description = screen.getByRole('columnheader', {
-      name: 'Description',
+      name: '说明',
     });
     expect(description.style.minWidth).toBe('240px');
   });

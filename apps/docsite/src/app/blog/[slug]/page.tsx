@@ -33,7 +33,7 @@ export async function generateMetadata({
   const {slug} = await params;
   const found = findPost(slug);
   if (!found) {
-    return {title: 'Blog'};
+    return {title: '博客'};
   }
   const {post, isFixture} = found;
 

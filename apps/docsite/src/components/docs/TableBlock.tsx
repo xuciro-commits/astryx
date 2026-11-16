@@ -31,7 +31,7 @@ function isIconName(value: string): value is IconName {
 }
 
 function renderCellContent(value: string, header: string) {
-  if (header === 'Name' && isIconName(value)) {
+  if ((header === 'Name' || header === '名称') && isIconName(value)) {
     return (
       <HStack gap={2} align="center" xstyle={styles.iconNameCell}>
         <Icon icon={value} size="sm" color="secondary" />
@@ -67,7 +67,7 @@ export function TableBlock({
     // one, text-heavy columns squish to near-zero and character-wrap on narrow
     // viewports; with a floor, the table's horizontal scroll wrapper takes over
     // on mobile instead. The `Name` column is a fixed reference column.
-    width: h === 'Name' ? pixel(220) : proportional(1),
+    width: h === 'Name' || h === '名称' ? pixel(220) : proportional(1),
     renderCell: (item: Record<string, unknown>) =>
       renderCellContent((item[h] as string) ?? '', h),
   }));

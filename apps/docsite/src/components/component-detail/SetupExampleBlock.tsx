@@ -32,7 +32,7 @@ export function SetupExampleBlock({entry}: SetupExampleBlockProps) {
           {entry.label}
         </Text>
         <Text type="supporting" color="secondary">
-          Setup code. Copy it into your app; it does not run on its own.
+          安装代码。复制到你的应用中即可使用，它不会单独运行。
         </Text>
       </VStack>
       <Section variant="muted" padding={0} dividers={['top']}>

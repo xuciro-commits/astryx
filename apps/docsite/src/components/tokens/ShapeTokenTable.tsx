@@ -37,10 +37,10 @@ export function RadiusTokenTable({theme}: TokenTableProps) {
     <Table
       data={data as Record<string, unknown>[]}
       columns={[
-        {key: 'tokenName', header: 'Token', width: pixel(200)},
+        {key: 'tokenName', header: '令牌', width: pixel(200)},
         {
           key: 'value',
-          header: 'Value',
+          header: '值',
           width: pixel(200),
           renderCell: (item: Record<string, unknown>) => (
             <Text type="code" color="secondary">
@@ -50,7 +50,7 @@ export function RadiusTokenTable({theme}: TokenTableProps) {
         },
         {
           key: 'example',
-          header: 'Example',
+          header: '示例',
           width: proportional(1, {minWidth: 120}),
           renderCell: (item: Record<string, unknown>) => (
             <div
@@ -81,10 +81,10 @@ export function BorderTokenTable({theme}: TokenTableProps) {
     <Table
       data={data as Record<string, unknown>[]}
       columns={[
-        {key: 'tokenName', header: 'Token', width: pixel(200)},
+        {key: 'tokenName', header: '令牌', width: pixel(200)},
         {
           key: 'value',
-          header: 'Value',
+          header: '值',
           width: pixel(200),
           renderCell: (item: Record<string, unknown>) => (
             <Text type="code" color="secondary">
@@ -94,7 +94,7 @@ export function BorderTokenTable({theme}: TokenTableProps) {
         },
         {
           key: 'example',
-          header: 'Example',
+          header: '示例',
           width: proportional(1, {minWidth: 120}),
           renderCell: (item: Record<string, unknown>) => (
             <div
@@ -114,11 +114,11 @@ export function ShapeTokenTable({theme}: TokenTableProps) {
   return (
     <VStack gap={6}>
       <VStack gap={3}>
-        <Heading level={3}>Radius</Heading>
+        <Heading level={3}>圆角</Heading>
         <RadiusTokenTable theme={theme} />
       </VStack>
       <VStack gap={3}>
-        <Heading level={3}>Border</Heading>
+        <Heading level={3}>边框</Heading>
         <BorderTokenTable theme={theme} />
       </VStack>
     </VStack>

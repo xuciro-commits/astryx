@@ -150,7 +150,7 @@ export default function PreviewPage() {
   useEffect(() => {
     const script = document.createElement('script');
     script.src = '/vendor/typescript.js';
-    const fail = () => setCompilerError('TypeScript compiler failed to load');
+    const fail = () => setCompilerError('TypeScript 编译器加载失败');
     script.onload = () => {
       const w = window as unknown as {ts?: typeof TS};
       if (w.ts) {

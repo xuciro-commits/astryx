@@ -10,9 +10,9 @@ import type {Metadata} from 'next';
 import {blogPosts, blogTypes} from '../../generated/blogRegistry';
 import {BlogIndex} from '../../components/blog/BlogIndex';
 
-const BLOG_TITLE = 'Blog';
+const BLOG_TITLE = '博客';
 const BLOG_DESCRIPTION =
-  'Notes on building Astryx — releases, guides, stories, and perspectives on designing a system for humans and agents.';
+  '记录 Astryx 的建设历程——版本发布、指南、故事，以及为人类与智能体设计系统的思考。';
 
 // Next.js shallow-merges metadata: a child route that declares `openGraph`/
 // `twitter` REPLACES the root object wholesale (images are not inherited), so

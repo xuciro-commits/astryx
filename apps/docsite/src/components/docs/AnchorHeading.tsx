@@ -88,7 +88,7 @@ export function AnchorHeading({id, level, type, children}: AnchorHeadingProps) {
           size="sm"
           variant="ghost"
           label={`Copy link to "${typeof children === 'string' ? children : 'section'}"`}
-          tooltip={copied ? 'Copied' : 'Copy link'}
+          tooltip={copied ? '已复制' : '复制链接'}
           icon={<Icon icon={copied ? Check : Link2} size="sm" />}
           onClick={handleCopy}
         />

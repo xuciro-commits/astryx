@@ -45,34 +45,34 @@ export async function getSitemapPages(): Promise<SitemapPage[]> {
   const now = await getLastModified();
 
   const staticEntries: SitemapPage[] = [
-    {url: url('/'), title: 'Home', changeFrequency: 'weekly', priority: 1},
+    {url: url('/'), title: '首页', changeFrequency: 'weekly', priority: 1},
     {
       url: url('/components'),
-      title: 'Components',
+      title: '组件',
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
       url: url('/docs'),
-      title: 'Docs',
+      title: '文档',
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
       url: url('/templates'),
-      title: 'Templates',
+      title: '模板',
       changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
       url: url('/themes'),
-      title: 'Themes',
+      title: '主题',
       changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
       url: url('/blog'),
-      title: 'Blog',
+      title: '博客',
       changeFrequency: 'weekly',
       priority: 0.8,
     },
@@ -84,13 +84,13 @@ export async function getSitemapPages(): Promise<SitemapPage[]> {
     },
     {
       url: url('/community'),
-      title: 'Community',
+      title: '社区',
       changeFrequency: 'monthly',
       priority: 0.5,
     },
     {
       url: url('/playground'),
-      title: 'Playground',
+      title: '演练场',
       changeFrequency: 'monthly',
       priority: 0.6,
     },

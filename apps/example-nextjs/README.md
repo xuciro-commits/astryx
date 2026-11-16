@@ -1,21 +1,21 @@
-# Astryx Example: Next.js (Dist)
+# Astryx 示例：Next.js（Dist）
 
-Reference application for consuming **@astryxdesign/core** as a pre-built dist package in a Next.js project.
+参考应用，演示如何在 Next.js 项目中以预构建的 dist 包形式使用 **@astryxdesign/core**。
 
-No StyleX build plugin needed; Astryx ships pre-compiled CSS and JS. This is the simplest way to get started.
+无需 StyleX 构建插件；Astryx 提供预编译的 CSS 和 JS。这是最简单的入门方式。
 
-## Setup Steps
+## 安装步骤
 
-### 1. Install dependencies
+### 1. 安装依赖
 
 ```bash
 npm install @astryxdesign/core @astryxdesign/theme-neutral next react react-dom
 npm install --save-dev @types/react @types/react-dom typescript
 ```
 
-### 2. CSS imports
+### 2. CSS 导入
 
-In `src/app/globals.css`, import the reset, component styles, and theme:
+在 `src/app/globals.css` 中导入 reset、组件样式和主题：
 
 ```css
 @import '@astryxdesign/core/reset.css';
@@ -23,19 +23,19 @@ In `src/app/globals.css`, import the reset, component styles, and theme:
 @import '@astryxdesign/theme-neutral/theme.css';
 ```
 
-The CSS import order matters:
+CSS 导入顺序很重要：
 
-1. `reset.css`: baseline resets (`@layer reset`)
-2. `astryx.css`: all component styles (`@layer astryx-base`)
-3. `theme.css`: theme token overrides (`@layer astryx-theme`)
+1. `reset.css`：基线重置（`@layer reset`）
+2. `astryx.css`：所有组件样式（`@layer astryx-base`）
+3. `theme.css`：主题令牌覆盖（`@layer astryx-theme`）
 
-Import the CSS file in your root layout:
+在根布局中导入该 CSS 文件：
 
 ```tsx
 import './globals.css';
 ```
 
-### 3. Theme + Link provider (client boundary)
+### 3. 主题 + Link provider（客户端边界）
 
 ```tsx
 // src/app/providers.tsx
@@ -54,9 +54,9 @@ export function Providers({children}) {
 }
 ```
 
-`LinkProvider` wires up Next.js client-side navigation for all Astryx link-based components (Link, Button with href, TopNav, SideNav, Breadcrumbs, TabList).
+`LinkProvider` 为所有基于链接的 Astryx 组件（Link、带 href 的 Button、TopNav、SideNav、Breadcrumbs、TabList）接入 Next.js 客户端导航。
 
-### 4. Next.js config (webpack builds)
+### 4. Next.js 配置（webpack 构建）
 
 ```js
 // next.config.mjs
@@ -69,22 +69,22 @@ const nextConfig = {
 export default nextConfig;
 ```
 
-With webpack (`next build --webpack`), a Server Component that imports from the package root would otherwise ship every client component; this keeps first load to what the page uses. In Server Components, also import from the component's own entry, such as `@astryxdesign/core/Button`. Turbopack needs no change.
+使用 webpack（`next build --webpack`）时，从包根导入的 Server Component 否则会打包所有客户端组件；此配置让首次加载仅包含页面实际使用的内容。在 Server Components 中，还应从组件自身的入口导入，例如 `@astryxdesign/core/Button`。Turbopack 无需更改。
 
-## Gotchas
+## 常见问题
 
-| Issue                         | Symptom                                     | Fix                                         |
-| ----------------------------- | ------------------------------------------- | ------------------------------------------- |
-| Wrong CSS import order        | Missing theme tokens or broken layers       | Import reset → astryx → theme in that order |
-| No `'use client'` on provider | Server component error from `createContext` | Mark the provider file with `'use client'`  |
+| 问题                           | 现象                                       | 修复                                  |
+| ------------------------------ | ------------------------------------------ | ------------------------------------- |
+| CSS 导入顺序错误               | 缺少主题令牌或图层失效                     | 按 reset → astryx → theme 的顺序导入  |
+| provider 上没有 `'use client'` | `createContext` 导致 Server Component 报错 | 在 provider 文件中标记 `'use client'` |
 
-## Testing outside the monorepo
+## 在 monorepo 之外测试
 
-This example lives in the Astryx monorepo for convenience, but it should be representative of a real app consuming `@astryxdesign/core` from npm. Monorepo workspace resolution can silently bypass issues that external consumers hit.
+本示例为了方便起见位于 Astryx monorepo 中，但它应能代表从 npm 使用 `@astryxdesign/core` 的真实应用。Monorepo 的工作区解析可能会悄悄绕过外部使用方遇到的问题。
 
-**Before merging changes to this example, test it as an external consumer.** See the [Testing Example Apps](https://github.com/meta/astryx/wiki/Testing-Example-Apps) wiki page for the full procedure.
+**在合并对本示例的更改之前，请以外部使用方的身份测试它。** 完整流程见 [Testing Example Apps](https://github.com/meta/astryx/wiki/Testing-Example-Apps) wiki 页面。
 
-## Related
+## 相关
 
-- [Issue #145: Add example-nextjs project](https://github.com/meta/astryx/issues/145)
-- [Astryx + Tailwind example](../example-nextjs-tailwind/): same dist approach with Tailwind for custom layout styles
+- [Issue #145：新增 example-nextjs 项目](https://github.com/meta/astryx/issues/145)
+- [Astryx + Tailwind 示例](../example-nextjs-tailwind/)：同样采用 dist 方式，并用 Tailwind 编写自定义布局样式

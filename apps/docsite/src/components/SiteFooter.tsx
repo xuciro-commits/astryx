@@ -112,16 +112,16 @@ const FOOTER_LINKS: ReadonlyArray<{
   label: string;
   href: string;
 }> = [
-  {label: 'Docs', href: '/docs/getting-started'},
-  {label: 'Components', href: '/components'},
-  {label: 'Templates', href: '/templates'},
-  {label: 'Themes', href: '/themes'},
-  {label: 'Playground', href: '/playground'},
+  {label: '文档', href: '/docs/getting-started'},
+  {label: '组件', href: '/components'},
+  {label: '模板', href: '/templates'},
+  {label: '主题', href: '/themes'},
+  {label: '演练场', href: '/playground'},
   {label: 'Storybook', href: '/storybook/'},
-  {label: 'Sandbox', href: '/sandbox/'},
-  {label: 'Blog', href: '/blog'},
-  {label: 'Community', href: '/community'},
-  {label: 'Changelog', href: '/changelog'},
+  {label: '沙盒', href: '/sandbox/'},
+  {label: '博客', href: '/blog'},
+  {label: '社区', href: '/community'},
+  {label: '更新日志', href: '/changelog'},
 ];
 
 const SOCIAL_LINKS: ReadonlyArray<{
@@ -138,8 +138,8 @@ const SOCIAL_LINKS: ReadonlyArray<{
 ];
 
 const LEGAL_LINKS: ReadonlyArray<{label: string; href: string}> = [
-  {label: 'Terms of use', href: 'https://opensource.fb.com/legal/terms'},
-  {label: 'Privacy policy', href: 'https://opensource.fb.com/legal/privacy'},
+  {label: '使用条款', href: 'https://opensource.fb.com/legal/terms'},
+  {label: '隐私政策', href: 'https://opensource.fb.com/legal/privacy'},
 ];
 
 function NavLinks() {
@@ -215,7 +215,7 @@ export function SiteFooter({year}: {year: number}) {
   const metaOpenSourceLink = (
     <Link
       href="https://opensource.fb.com"
-      label="Meta Open Source"
+      label="Meta 开源"
       target="_blank">
       <MetaOpenSourceLogo
         aria-hidden="true"

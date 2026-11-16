@@ -121,11 +121,11 @@ const styles = stylex.create({
 
 // Primary navigation links, shared by the desktop bar and the mobile drawer.
 const NAV_ITEMS = [
-  {key: 'docs', label: 'Docs', href: '/docs/getting-started'},
-  {key: 'components', label: 'Components', href: '/components'},
-  {key: 'templates', label: 'Templates', href: '/templates'},
-  {key: 'themes', label: 'Themes', href: '/themes'},
-  {key: 'playground', label: 'Playground', href: '/playground'},
+  {key: 'docs', label: '文档', href: '/docs/getting-started'},
+  {key: 'components', label: '组件', href: '/components'},
+  {key: 'templates', label: '模板', href: '/templates'},
+  {key: 'themes', label: '主题', href: '/themes'},
+  {key: 'playground', label: '演练场', href: '/playground'},
 ] as const;
 
 export function SharedTopNav() {
@@ -217,7 +217,7 @@ export function SharedTopNav() {
     <>
       <TopNav
         ref={navRef}
-        label="Astryx navigation"
+        label="Astryx 导航"
         heading={
           <TopNavHeading
             logo={
@@ -245,8 +245,8 @@ export function SharedTopNav() {
           <HStack gap={2}>
             <HStack gap={0.5}>
               <Button
-                label="Search"
-                tooltip="Search"
+                label="搜索"
+                tooltip="搜索"
                 variant="ghost"
                 isIconOnly
                 icon={<Search size={20} />}
@@ -262,13 +262,13 @@ export function SharedTopNav() {
               <Button
                 label={
                   mode === 'light'
-                    ? 'Switch to dark mode'
-                    : 'Switch to light mode'
+                    ? '切换到深色模式'
+                    : '切换到浅色模式'
                 }
                 tooltip={
                   mode === 'light'
-                    ? 'Switch to dark mode'
-                    : 'Switch to light mode'
+                    ? '切换到深色模式'
+                    : '切换到浅色模式'
                 }
                 variant="ghost"
                 isIconOnly
@@ -299,8 +299,8 @@ export function SharedTopNav() {
                 onClick={toggleMode}
               />
               <Button
-                label="Community"
-                tooltip="Community"
+                label="社区"
+                tooltip="社区"
                 variant="ghost"
                 isIconOnly
                 icon={<HeartHandshake size={20} />}
@@ -317,7 +317,7 @@ export function SharedTopNav() {
               />
             </HStack>
             <Button
-              label="Get started"
+              label="开始使用"
               variant="primary"
               href="/docs/getting-started"
               onClick={() =>
@@ -327,8 +327,8 @@ export function SharedTopNav() {
             {(!isMobileNavEnabled || renderMode === 'default') && (
               <div {...stylex.props(styles.mobileToggle)}>
                 <Button
-                  label={isMobileNavEnabled ? 'Open navigation' : 'Open menu'}
-                  tooltip="Menu"
+                  label={isMobileNavEnabled ? '打开导航' : '打开菜单'}
+                  tooltip="菜单"
                   variant="ghost"
                   isIconOnly
                   icon={
@@ -367,7 +367,7 @@ export function SharedTopNav() {
           isOpen={isMenuOpen}
           onOpenChange={setIsMenuOpen}
           side="end"
-          label="Astryx navigation"
+          label="Astryx 导航"
           header={
             <AstryxIcon
               width={24}

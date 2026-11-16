@@ -153,7 +153,7 @@ export function PlayingCardContents({
 }: PlayingCardContentsProps) {
   if (faceDown) {
     return (
-      <span role="img" aria-label="Card back" {...stylex.props(styles.card)}>
+      <span role="img" aria-label="牌背" {...stylex.props(styles.card)}>
         <span {...stylex.props(styles.back)} />
       </span>
     );

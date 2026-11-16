@@ -53,14 +53,14 @@ function getInstallSteps(pkg: PackageMeta): InstallStep[] {
   const installTarget = pkg.canaryOnly ? `${pkg.name}@canary` : pkg.name;
   if (pkg.name.endsWith('/cli')) {
     return [
-      {label: 'Install the CLI', code: `npm install -D ${installTarget}`},
-      {label: 'Run a command', code: `npx @astryxdesign/cli component --list`},
+      {label: '安装 CLI', code: `npm install -D ${installTarget}`},
+      {label: '运行命令', code: `npx @astryxdesign/cli component --list`},
     ];
   }
   return [
-    {label: 'Install the package', code: `npm install ${installTarget}`},
+    {label: '安装包', code: `npm install ${installTarget}`},
     {
-      label: 'Import a component',
+      label: '导入组件',
       code: `import {...} from '${pkg.name}/ComponentName';`,
       language: 'typescript',
     },
@@ -68,7 +68,14 @@ function getInstallSteps(pkg: PackageMeta): InstallStep[] {
 }
 
 /** Sections to remove from the @astryxdesign/core README on the package page. */
-const CORE_STRIP_SECTIONS = ['Quick Start', 'Resources', 'Astryx CLI'];
+const CORE_STRIP_SECTIONS = [
+  'Quick Start',
+  'Resources',
+  'Astryx CLI',
+  '快速开始',
+  '资源',
+  'Astryx CLI',
+];
 
 export function generateStaticParams() {
   return [
@@ -94,7 +101,7 @@ export async function generateMetadata({
       title: topic.title,
       description:
         topic.description ||
-        `${topic.title} documentation for the Astryx design system.`,
+        `${topic.title}：Astryx 设计系统文档。`,
       path: `/docs/${slug}`,
       type: 'article',
     });
@@ -108,7 +115,7 @@ export async function generateMetadata({
       title: pkg.displayName,
       description:
         pkg.description ||
-        `The ${pkg.name} package for the Astryx design system.`,
+        `${pkg.name} 包：Astryx 设计系统。`,
       path: `/docs/${slug}`,
       type: 'article',
     });
@@ -165,7 +172,7 @@ export default async function DocPage({
       cta={
         firstComponent
           ? {
-              label: 'View Components',
+              label: '查看组件',
               href: `/components/${firstComponent.name}`,
             }
           : undefined
