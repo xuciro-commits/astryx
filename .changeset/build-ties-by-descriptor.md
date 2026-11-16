@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[fix] When page templates of one family tie exactly and the ranker's pick is one the word tables do not list (such as the collapsible and comparison tables, or an integration's template), `astryx build` starts from the tied template whose own description, keywords and page components best match the idea, then the one most typical of its family, instead of the alphabetically first.
+[fix] 当同一族的页面模板完全并列，且排序器的选择是词表未列出的模板（例如可折叠表格和对比表格，或某个集成的模板）时，`astryx build` 会从自身描述、关键词和页面组件与想法最匹配的并列模板开始，其次选择该族中最典型的模板，而不是按字母顺序排在第一的模板。
 
 @josephfarina

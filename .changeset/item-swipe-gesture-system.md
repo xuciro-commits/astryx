@@ -2,6 +2,6 @@
 '@astryxdesign/core': patch
 ---
 
-[fix] Swipe actions on `Item` and `ListItem` run on the gesture system. A row claims a sideways touch at 8 px, before a browser commits to scrolling it. From the claim the row follows the finger one for one, so the part under the finger stays under it. A pen now swipes the row as a finger does. A second finger that lands before the claim leaves the touch to the browser's pinch; once the row has claimed its finger, a second finger no longer cancels the swipe. The click a browser synthesizes after a swipe is cancelled at its source instead of being swallowed by a 400 ms timer.
+[fix] `Item` 和 `ListItem` 上的滑动操作运行在手势系统上。行会在浏览器决定滚动它之前，于 8 px 处接管横向触摸。从接管起，该行会一比一地跟随手指，因此手指下方的部分会保持在手指下方。现在触控笔也能像手指一样滑动该行。在接管之前落下的第二根手指会把触摸留给浏览器的捏合手势；一旦该行接管了其手指，第二根手指便不再取消滑动。浏览器在滑动后合成的点击会在源头被取消，而不是被 400 毫秒的计时器吞掉。
 
 @vjeux

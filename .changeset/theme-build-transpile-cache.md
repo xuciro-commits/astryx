@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[perf] `theme build` keeps the transpiled code of the theme sources it loads in the transpile cache the CLI already uses for integration manifests and TypeScript docs, so a build of an unchanged theme no longer transpiles it again: about 150 ms faster per build. An edited theme is transpiled again. On systems with user ids, that cache is the per-user one, which now stays within the same size limit as the kept catalogs: once it has grown, a run removes its least recently used transpiled copies, never one written in the last day or read in the last day where the file system records reads. `doctor`'s "Kept catalog cache" row now names that limit. Other output does not change.
+[perf] `theme build` 会将其加载的主题源码的转译代码保存在 CLI 已用于集成清单和 TypeScript 文档的转译缓存中，因此对未更改主题的构建不再重新转译：每次构建约快 150 毫秒。编辑过的主题会重新转译。在具有用户 ID 的系统上，该缓存是按用户划分的缓存，现在与保留的 catalog 遵循相同的大小限制：一旦缓存增长，运行时会删除最近最少使用的转译副本，但绝不会删除最近一天内写入或（在文件系统记录读取的情况下）最近一天内读取过的副本。`doctor` 的 "Kept catalog cache" 行现在会标明该限制。其他输出不变。
 
 @josephfarina

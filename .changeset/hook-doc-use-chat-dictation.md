@@ -3,5 +3,5 @@
 '@astryxdesign/cli': patch
 ---
 
-[docs] Hook docs for `useChatDictation`, so `astryx hook useChatDictation` and `astryx search` return it, and a `useChatDictation — Voice input` example block: a start and stop control that stays off when the browser has no speech recognition.
+[docs] 为 `useChatDictation` 添加 Hook 文档，使 `astryx hook useChatDictation` 和 `astryx search` 能返回它，并添加一个 `useChatDictation — Voice input` 示例块：一个启动和停止控件，在浏览器不支持语音识别时保持关闭状态。
 @popsiclelmlm

@@ -2,5 +2,5 @@
 '@astryxdesign/core': patch
 ---
 
-[fix] Icons, `useIcon`, and component icon slots use the nearest Theme's object, so registering or nesting another theme with the same name does not replace their artwork. Icons outside a provider keep the registered root-theme fallback.
+[fix] 图标、`useIcon` 以及组件图标插槽使用最近的 Theme 对象，因此注册或嵌套另一个同名主题不会替换它们的图案。提供者之外的图标仍保留已注册的根主题回退。
 @korkt-kim

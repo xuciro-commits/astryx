@@ -2,6 +2,6 @@
 '@astryxdesign/core': patch
 ---
 
-[feat] Under a finger, swipe actions on `Item` and `ListItem` move like a UIKit list row, the same on every touch device. The row stays under the finger, one for one, until the release, and settles on UIKit's own spring from where it is and as fast as it was moving, so a release no longer stops dead and restarts. The settle plays on the compositor, so a busy page cannot hold it back. A flick opens the row or closes it, by its direction. Under Reduce Motion nothing a release starts travels or springs: the row cross-fades to where it lands, as `design:reduced-motion` asks. A finger that lands on a moving row catches it instead of being ignored until the row stops.
+[feat] 手指操作下，`Item` 和 `ListItem` 上的滑动操作会像 UIKit 列表行一样移动，并且在所有触屏设备上表现一致。手指未松开前，该行会一比一地跟随手指；松开后，它会从当前位置以 UIKit 自身的弹簧效果、按此前的移动速度稳定下来，因此松开不再骤然停止并重新开始。稳定过程在合成器上播放，因此繁忙的页面也无法拖慢它。快速轻扫会根据方向打开或关闭该行。在“减弱动态效果”下，松开后启动的任何移动或弹簧都不再发生：该行会交叉淡入到最终位置，符合 `design:reduced-motion` 的要求。落在移动中行上的手指会接住该行，而不会被忽略直到行停下。
 
 @vjeux

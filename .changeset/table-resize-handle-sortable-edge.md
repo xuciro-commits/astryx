@@ -2,6 +2,6 @@
 '@astryxdesign/core': patch
 ---
 
-[fix] In a Table with sortable and resizable columns, a sortable column's resize line now sits on the column divider, like every other column's, in left-to-right and right-to-left layouts. Before, it sat one cell padding inside the column. A sortable header's right-click menu still opens at the pointer.
+[fix] 在同时支持排序和调整列宽的 Table 中，可排序列的调整线现在与其他各列一样位于列分隔线上，在从左到右和从右到左的布局中都是如此。此前，它位于列内缩进一个单元格内边距的位置。可排序表头的右键菜单仍在指针处打开。
 
 @mohamedhassank20

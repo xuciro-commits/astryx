@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[perf] `doctor` keeps its scan of how the app wires its themes between runs, like its docs checks, so a repeat `doctor` answers about 20 to 35 ms sooner. An edit to the app's source, a theme or a theme package scans again on the very next run.
+[perf] `doctor` 会像文档检查一样，在多次运行之间保留对应用主题接线方式的扫描结果，因此重复运行 `doctor` 的响应约提前 20 到 35 ms。对应用源码、主题或主题包的编辑会在下一次运行时重新扫描。
 
 @josephfarina

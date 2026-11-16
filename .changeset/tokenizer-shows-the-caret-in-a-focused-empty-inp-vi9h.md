@@ -2,5 +2,5 @@
 '@astryxdesign/core': patch
 ---
 
-[fix] Tokenizer shows the caret in a focused, empty input when the field has no width
+[fix] 当字段没有宽度时，Tokenizer 会在已聚焦的空输入框中显示光标
 @matthewfuaux

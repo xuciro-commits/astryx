@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[fix] In the Tool: IDE page template, the editor's and terminal's scrollbars no longer sit under the properties panel's resize handle. On desktop the editor and terminal keep a small gap before the handle, so the whole scrollbar scrolls; before, a press on the half of the scrollbar nearest the handle resized the panel. Mobile, where the panel is hidden, is unchanged.
+[fix] 在 Tool: IDE 页面模板中，编辑器和终端的滚动条不再位于属性面板的调整大小手柄下方。在桌面端，编辑器和终端在手柄前保留一个小间隙，因此整个滚动条都可以滚动；此前，按下滚动条最靠近手柄的那一半会调整面板大小。移动端（面板处于隐藏状态）保持不变。
 
 @charlie5188 @HelloOjasMutreja

@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[perf] Which integration component answers to a Core component's name is kept between runs with the component list, so `component` in a project whose integration replaces Core components no longer loads every one of that integration's component docs on each run: about 40 to 60 ms faster per call in a project with a large integration. It is decided again whenever a doc's `replaces`, the package's CLI range, the integration's components folder, its configuration or its manifest changes. Output does not change.
+[perf] 哪个集成组件响应 Core 组件的名称，会随组件列表在多次运行之间保留下来，因此在集成会替换 Core 组件的项目中，`component` 不再在每次运行时加载该集成的每一个组件文档：在集成规模较大的项目中，每次调用大约快 40 至 60 ms。只要某个文档的 `replaces`、包的 CLI 版本范围、集成的组件文件夹、其配置或其清单发生变化，就会重新判定。输出不变。
 
 @josephfarina

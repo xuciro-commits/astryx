@@ -2,9 +2,9 @@
 '@astryxdesign/core': patch
 ---
 
-[feat] Swipe actions on `Item` and `ListItem` come from one prop, `swipe`, whose value `createSwipe` makes, from `@astryxdesign/core/Swipe` or the package root: `swipe={createSwipe({leading, trailing, swipeBehavior})}`. Each action has an `id`, and its `onActivate` receives `{id, itemKey}`: the action's `id` and the `ListItem`'s `itemKey`. So one definition at module scope serves every row; one whose handlers need component state goes in `useMemo`. The swipe's type carries the ids, so an id it does not have fails to compile. A new value with the same ids keeps an open row open, and one with other ids closes it. The swipe's code comes with `createSwipe`, so a row given `swipe` is swipeable at its first paint, and an app that never imports it ships none of it. The `swipeActions` and `swipeBehavior` props and the `ItemSwipeAction` and `ItemSwipeActions` types are deprecated (DEP-0017) and are removed in the next minor release. `ItemSwipeActionVariant` and `ItemSwipeBehavior` stay, and the new API uses them. Until then the deprecated ones keep working, with the swipe behavior this release gives every row, and when `swipe` is set too, `swipe` wins. `astryx upgrade` rewrites static uses and gives each action an `id`.
+[feat] `Item` 和 `ListItem` 上的滑动操作来自单个属性 `swipe`，其值由 `createSwipe` 创建（来自 `@astryxdesign/core/Swipe` 或包根）：`swipe={createSwipe({leading, trailing, swipeBehavior})}`。每个操作都有一个 `id`，其 `onActivate` 接收 `{id, itemKey}`：即操作的 `id` 和 `ListItem` 的 `itemKey`。因此模块作用域中的一个定义可服务每一行；处理器需要组件状态的定义则应放在 `useMemo` 中。swipe 的类型携带这些 id，因此不存在的 id 会导致编译失败。具有相同 id 的新值会让已打开的行保持打开，而具有其他 id 的新值会将其关闭。swipe 的代码随 `createSwipe` 一起引入，因此设置了 `swipe` 的行在首次绘制时即可滑动，而从未导入它的应用不会打包任何相关代码。`swipeActions` 和 `swipeBehavior` 属性以及 `ItemSwipeAction` 和 `ItemSwipeActions` 类型已弃用（DEP-0017），并将在下一个小版本中移除。`ItemSwipeActionVariant` 和 `ItemSwipeBehavior` 保留，新 API 使用它们。在此之前，已弃用的属性继续有效，采用本版本为每一行提供的滑动行为；当同时设置 `swipe` 时，`swipe` 优先。`astryx upgrade` 会重写静态用法，并为每个操作提供一个 `id`。
 
-Before:
+之前：
 
 ```tsx
 <ListItem
@@ -14,7 +14,7 @@ Before:
 />
 ```
 
-After:
+之后：
 
 ```tsx
 import {createSwipe} from '@astryxdesign/core/Swipe';

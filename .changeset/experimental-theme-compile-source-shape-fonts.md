@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental theme compile`: a compile or `--check` of an editor theme whose source no longer imports or extends its settings, or names another theme, is refused with the same message `set` gives, so it never writes another theme's files or drops every setting. The app copy's font stylesheet imports the installed `@fontsource` package of every family the built theme uses, the theme's own source included, and compile's note on fonts named but not loaded follows it. A theme build counts the families the theme's own font stylesheet beside its source loads (the app copy's), so a build of the copy's source no longer names them as unloaded. A blank or whitespace-only `--out` is refused.
+[experimental] `astryx experimental theme compile`：如果编辑器主题的源码不再导入或扩展其设置，或命名了另一个主题，那么对该主题执行编译或 `--check` 会被拒绝，并给出与 `set` 相同的消息，因此它绝不会写入另一个主题的文件，也不会丢掉全部设置。应用副本的字体样式表会导入已构建主题所用每个字族的已安装 `@fontsource` 包（包括主题自身源码所用的字族），编译关于已命名但未加载字体的提示也会跟随它。主题构建会统计主题自身字体样式表（位于其源码旁，即应用副本的字体样式表）所加载的字族，因此对副本源码的构建不再将这些字族列为未加载。空白或仅含空格的 `--out` 会被拒绝。
 
 @josephfarina

@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[fix] `astryx experimental render` carries every image, font and media file a carried module's strings or a carried stylesheet name by a relative path inside the folder that holds the carried files, also when the page did not show it in this render: a branch the page did not take, or a stylesheet rule no element uses. Such files now ship in the rendered file, up to 8 MB each, as a shown image does; a larger one, one whose bytes are not an image, font or media file, or one it cannot read, is left out with a `not-embedded` warning that names the file that names it. A name that climbs above that folder is not the page's file and is not carried, as `--reverse` reads it too. `--reverse` reads the same names with the same scan, so such a page used to come back with `exact: false` and those files missing.
+[fix] `astryx experimental render` 会携带被携带模块的字符串或被携带样式表以相对路径指定的每个图片、字体和媒体文件，这些路径位于包含被携带文件的文件夹内；即使页面在此次渲染中没有显示它（页面未走的分支，或没有任何元素使用的样式表规则），也会携带。此类文件现在会像已显示的图片一样随渲染文件一起发布，每个最大 8 MB；更大的文件、字节不是图片、字体或媒体文件的文件，或无法读取的文件会被排除，并给出 `not-embedded` 警告，指明指定它的文件。爬出该文件夹的名称不是页面的文件，不会被携带，`--reverse` 读取时也是如此。`--reverse` 使用相同的扫描读取相同的名称，因此此类页面过去返回时会出现 `exact: false` 且缺少这些文件。
 
 @josephfarina

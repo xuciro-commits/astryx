@@ -2,5 +2,5 @@
 '@astryxdesign/core': patch
 ---
 
-[fix] Malformed component icon slot values no longer throw while formatting diagnostics. Invalid fields keep the component fallback without dropping valid sibling fields, and production skips diagnostic formatting.
+[fix] 格式错误的组件图标插槽值在格式化诊断信息时不再抛出异常。无效字段保留组件回退值，同时不会丢弃有效的同级字段，并且生产环境会跳过诊断格式化。
 @korkt-kim

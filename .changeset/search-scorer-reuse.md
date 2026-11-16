@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[perf] `search` lowercases each candidate's names, keywords and prose once per run instead of on every term and synonym, and scores a one-word query once instead of twice, so a warm search answers up to about 20 ms sooner, most for one-word and typo queries. Results are unchanged.
+[perf] `search` 每次运行时对每个候选项的名称、关键字和描述文本只做一次小写转换，而不是对每个词条和同义词都转换一次；单词查询只评分一次而不是两次，因此热搜索最多可提前约 20 ms 返回，单词查询和拼写错误查询受益最大。结果不变。
 
 @josephfarina

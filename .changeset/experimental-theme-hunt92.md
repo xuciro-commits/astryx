@@ -2,10 +2,10 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental theme editor`: an `--on` naming several parts (`'button, text-input'`, `button/text-input`, `'button and text-input'`, or spaces) is refused with one command per part named, never a group that one word of the list names. A flag's label after the value (`'red mode: dark'`, `'red state: hover'`, `'red variant: primary'`, `'red part: card'`) is read like the same label before it, and offers `--mode dark`, `--state hover`, `--when variant:primary` or `--on card`. A flag typed inside the quoted value (`'red --mode dark'`, `'4px --state hover'`, `'pill --on button'`) is lifted out into the command offered.
+[experimental] `astryx experimental theme editor`：命名多个部件的 `--on`（`'button, text-input'`、`button/text-input`、`'button and text-input'` 或空格分隔）会被拒绝，并为每个被命名的部件给出一个命令，绝不会给出一个用列表中的一个词命名的组。标志的标签位于值之后时（`'red mode: dark'`、`'red state: hover'`、`'red variant: primary'`、`'red part: card'`），读取方式与位于其之前相同，并给出 `--mode dark`、`--state hover`、`--when variant:primary` 或 `--on card`。在引号值内键入的标志（`'red --mode dark'`、`'4px --state hover'`、`'pill --on button'`）会被提取到所给出的命令中。
 
-No repair on a part property offers a reset the input did not hold (`0`, `none`, `1`, `auto`, `normal`). A background with one layer too many or an empty one offers the layers typed (`url(a.png), red`), and a bare number on `background` is no longer offered as a px position. `border-radius round` offers `9999px`, `opacity half` offers `0.5`, `content Hi` offers the text quoted, `font-weight heavy` its number and `text-transform caps` uppercase; other words (`padding large`, `box-shadow soft`) point to `how`, and `2 spacing units` is no longer read as `2px`. A number or size given as a font family (`--font-family-body 700`) is refused as a weight or size, never quoted into a family.
+部件属性上的修复不会提供输入中原本没有的重置值（`0`、`none`、`1`、`auto`、`normal`）。背景多一层或为空时，会给出键入的层（`url(a.png), red`），`background` 上的裸数字不再被当作 px 位置提供。`border-radius round` 给出 `9999px`，`opacity half` 给出 `0.5`，`content Hi` 给出带引号的文本，`font-weight heavy` 给出其数字，`text-transform caps` 给出大写；其他词（`padding large`、`box-shadow soft`）指向 `how`，`2 spacing units` 不再被读取为 `2px`。作为字体族给出的数字或尺寸（`--font-family-body 700`）会作为字重或尺寸被拒绝，绝不会被加引号当作字体族。
 
-A word with a negation (`not round`, `rounded-none`, `not bold`, `no caps`, `not red`) is never offered the word it negates: corners offers `square` (and reads `rounded-full` and `rounded-[12px]`), the rest point to `how`.
+带否定的词（`not round`、`rounded-none`、`not bold`、`no caps`、`not red`）绝不会被提供其否定的词：圆角会给出 `square`（并读取 `rounded-full` 和 `rounded-[12px]`），其余指向 `how`。
 
 @josephfarina

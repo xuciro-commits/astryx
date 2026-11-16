@@ -2,28 +2,28 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental theme editor`: every value a refusal or a saved-settings repair offers now passes one gate, and each offered line is checked as `set` checks it before it is shown. A value may come only from these sources:
+[experimental] `astryx experimental theme editor`：拒绝提示或已保存设置修复所提供的每个值现在都要通过同一道门，每一行提供内容在显示前都会按 `set` 的检查方式检查。值只能来自以下来源：
 
-- What was typed, under exact readings: quotes, labels and copy debris (a trailing `;`, `!important`, a comment) taken off; the same number written another way (full-width digits, a comma decimal, an exponent, rem or pt as px, a percent); CSS color names written as words (`dark red` is `darkred`).
-- A documented table: Tailwind's radius classes (`rounded-lg` is 8px), a dial's own words, a weight word, a number read as a dial's nearest rung.
-- The theme's own saved values, for a keep or unlock line.
-- The setting's documented fallback or other-direction step.
-- The correction of a typo of what was typed: one letter off for a word of five letters or fewer, two for a longer one.
+- 所输入的内容，按精确解读：去掉引号、标签和复制残留（结尾的 `;`、`!important`、注释）；同一数字的另一种写法（全角数字、逗号小数、指数、以 px 表示的 rem 或 pt、百分比）；以单词形式书写的 CSS 颜色名（`dark red` 即 `darkred`）。
+- 有文档记载的表格：Tailwind 的圆角类（`rounded-lg` 为 8px）、拨盘自身的词、字重词、按拨盘最近档位读取的数字。
+- 主题自身已保存的值，用于保留或解锁行。
+- 该设置的文档化回退值或反方向档位。
+- 对所输入内容的拼写错误的纠正：五个字母或更少的词允许一个字母之差，更长的词允许两个。
 
-Anything else, such as a stock color, a stock shadow or easing, a reset, a default token or a nearest guess, gives `how <thing>`. A scale step (`red-500`) is no bare color.
+其他任何内容，例如预设颜色、预设阴影或缓动、重置、默认令牌或最近猜测，都会给出 `how <thing>`。色阶档位（`red-500`）不是单纯的颜色。
 
-Also:
+另外：
 
-- `font 'Inter 600'` offers the family and the weight separately.
-- A Google Fonts spec (`Inter:wght@400;600`) offers its family.
-- Another property's label on a part property (`padding 'margin: 8px'`) offers that property.
-- `--color-danger` offers the error token, and `--color-primary` or `--color-brand` the accent token.
-- A CSS property typed for the whole theme leads with its dial or token (`border-radius 8px` → `corners 8px`), never a part that was not named.
-- A pasted object's nested values are read, and each of its lines is checked.
-- A bare fraction on a size token gets no px guessed.
-- A very long input is near nothing.
-- `--state 'hover,focus-visible'` gives one line per state.
-- A saved light-dark pair for one mode is refused with the half for that mode.
-- A CSS-wide keyword on a token offers the undo only when the theme sets the token.
+- `font 'Inter 600'` 会分别提供字体族和字重。
+- Google Fonts 规范（`Inter:wght@400;600`）会提供其字体族。
+- 部件属性上的另一个属性标签（`padding 'margin: 8px'`）会提供该属性。
+- `--color-danger` 提供错误令牌，`--color-primary` 或 `--color-brand` 提供强调色令牌。
+- 为整个主题输入的 CSS 属性会以其拨盘或令牌开头（`border-radius 8px` → `corners 8px`），绝不会是未命名的部件。
+- 粘贴对象的嵌套值会被读取，其中每一行都会检查。
+- 大小令牌上的裸分数不会猜成 px。
+- 极长的输入会被视为几乎没有内容。
+- `--state 'hover,focus-visible'` 会为每个状态给出一行。
+- 为单个模式保存的 light-dark 配对会被拒绝，并给出该模式对应的那一半。
+- 令牌上的 CSS 全局关键字仅在主题设置了该令牌时才提供撤销。
 
 @josephfarina

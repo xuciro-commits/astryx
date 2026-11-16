@@ -2,14 +2,14 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental theme editor`: per-variant colors in one mode, hover on every variant, later longhands, nested cards and kept sizes.
+[experimental] `astryx experimental theme editor`：单模式下的按变体颜色、每个变体的悬停、较晚的长属性、嵌套卡片和保留的尺寸。
 
-- A one-mode color (`--mode`, or any color in a `light-only` or `dark-only` theme) on a part whose variants each have their own (a button or card background, a badge's text) goes to each variant's own rule, with the other mode's half exactly what that variant showed there (the base theme's value, else Core's; transparent stays transparent), so the other mode is unchanged for every variant; a variant's own hover still shows.
-- A whole-part hover background (`--state hover`) reaches every variant, including ones the base theme gives their own hover or resting color.
-- A longhand set after a shorthand wins even where the base theme holds that longhand (`padding-inline` after `padding`, `border-color` after `border`).
-- A plain card inside a variant card keeps the card padding the editor gives it, in each text direction, and a variant's own padding (from the settings or your own source) no longer leaks into it; a variant your own source pads keeps its padding after an unequal editor padding on the plain card.
-- The spacing dial keeps every exact control size the theme keeps (in px, rem or calc, from your own source, or set on the part) in order, on a part too; a size with no room between two kept ones takes the smaller one's size, and the result says so.
-- `--mode` refused on a border names the variant in the per-mode color step; a gradient is offered as written for both modes.
-- With your own source setting one corner, the corners note says the dial shows on the other corners after the undo.
+- 一个单模式颜色（`--mode`，或 `light-only` 或 `dark-only` 主题中的任何颜色）用在各变体自有其颜色的部件上（按钮或卡片背景、徽章的文本）时，会进入每个变体自己的规则，而另一模式的一半恰好是该变体在那里显示的值（基础主题的值，否则 Core 的值；透明仍是透明），因此每个变体的另一模式保持不变；变体自己的悬停仍会显示。
+- 整个部件的悬停背景（`--state hover`）会作用于每个变体，包括基础主题为其设置了自有悬停色或静止色的变体。
+- 在简写之后设置的长属性会胜出，即使基础主题持有该长属性也是如此（`padding` 之后的 `padding-inline`，`border` 之后的 `border-color`）。
+- 变体卡片内的普通卡片在每种文字方向上都会保留编辑器为其设置的卡片内边距，变体自己的内边距（来自设置或你自己的源码）不会再渗入其中；你自己的源码设置了内边距的变体，在普通卡片上应用了不相等的编辑器内边距后仍保留其内边距。
+- 间距刻度盘会按顺序保留主题保留的每个精确控件尺寸（以 px、rem 或 calc 表示，来自你自己的源码，或在部件上设置），在部件上也是如此；在两个保留尺寸之间没有空间的尺寸会采用较小者的尺寸，结果会说明这一点。
+- 在边框上拒绝 `--mode` 时，会在按模式颜色步骤中指明该变体；渐变会按原样提供用于两种模式。
+- 当你自己的源码设置了某一个圆角时，圆角说明会指出撤销后刻度盘会作用于其他圆角。
 
 @josephfarina

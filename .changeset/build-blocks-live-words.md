@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[fix] `astryx build` ranks blocks also by single words a block's docs use that its fitted word weights do not know (such as a newer Core block's own terms), so a request that uses those words can tie to that block.
+[fix] `astryx build` 还会根据块的文档中使用、而其拟合词权重并不认识的单个词语（例如较新的 Core 块自己的术语）对块进行排序，因此使用这些词语的请求可以关联到该块。
 
 @josephfarina

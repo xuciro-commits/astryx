@@ -2,6 +2,6 @@
 '@astryxdesign/core': patch
 ---
 
-[fix] In block and inline layout, a Link whose label has no break opportunity, such as a bare URL from `useLinkify`, now wraps inside its line instead of running past it and making the page scroll sideways. The Link stops at its container and its label may shrink, so its text wraps. In a flex row, a Link whose label is wider than the row is now capped at the row's width and wraps. A Link in a line wide enough for its label looks the same. A content-sized grid or table column still grows to the label's longest word.
+[fix] 在块级与内联布局中，标签没有断行机会的 Link（例如来自 `useLinkify` 的裸 URL）现在会在其所在行内换行，而不再溢出该行并导致页面横向滚动。Link 会止于其容器，其标签可以收缩，因此文本会换行。在 flex 行中，标签比行更宽的 Link 现在会被限制在行宽内并换行。当所在行足够宽、能容纳其标签时，Link 的外观保持不变。按内容确定尺寸的网格列或表格列仍会增长到该标签最长的单词。
 
 @cixzhang

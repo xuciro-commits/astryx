@@ -2,6 +2,6 @@
 '@astryxdesign/core': patch
 ---
 
-[feat] A trackpad's two-finger swipe moves an `Item` or `ListItem` swipe-action row with the fingers from its first event past 8 px and, when they lift, settles it on the nearest stop at their speed, without stopping first. Within one swipe an open row only closes, and a long fast swipe fires the outermost action where a full swipe may. A mouse wheel's notches never swipe a row.
+[feat] 触控板的双指滑动会从第一个超过 8 px 的事件开始，让 `Item` 或 `ListItem` 的滑动操作行随手指移动，并在手指抬起时按手指的速度将其稳定在最近的停靠点，而无需先停下。在一次滑动中，已打开的行只会关闭；长而快速的滑动会在允许完整滑动时触发最外侧的操作。鼠标滚轮的刻度从不滑动行。
 
 @vjeux

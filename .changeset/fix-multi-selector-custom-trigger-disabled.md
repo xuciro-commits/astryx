@@ -2,5 +2,5 @@
 '@astryxdesign/core': patch
 ---
 
-[fix] MultiSelector's caller-rendered trigger exposes its disabled state and blocks caller activation handlers, including when read-only or disabled by InputGroup, while remaining focusable.
+[fix] MultiSelector 由调用方渲染的触发器会暴露其禁用状态并阻止调用方的激活处理函数，包括在只读或被 InputGroup 禁用时，同时仍可聚焦。
 @korkt-kim

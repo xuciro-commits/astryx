@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental theme editor`: the app copy in `src/themes/<theme>/` is written around a file of yours at another name (a note, a swap file); only a file of yours at one of the copy's names, or a link on the way to it, stops it, and then every change's result and `wiring` say the copy was not updated and why. The copy's `<theme>.fonts.css` is always there (a comment only when the theme loads no font stylesheet), so the app theme module's import of it holds when fonts or the base change; `compile` writes the whole copy, that file included. `new` refuses a name the theme commands skip (`a--b`, `b-`) and suggests the cleaned one. The package commands give true answers for an editor theme: `eject` says its source is yours already, and a path (`themes/<theme>`) is answered with the command by name.
+[experimental] `astryx experimental theme editor`：`src/themes/<theme>/` 中的应用副本会围绕你在其他名称下的文件写入（一个说明文件、一个交换文件）；只有你的文件位于副本的某个名称处，或位于通往该名称的路径上的链接，才会阻止它，此时每次更改的结果和 `wiring` 都会说明副本未更新及其原因。副本的 `<theme>.fonts.css` 始终存在（仅当主题不加载任何字体样式表时只含注释），因此应用主题模块对它的导入在字体或基准变化时仍然成立；`compile` 会写入整个副本，包括该文件。`new` 会拒绝主题命令会跳过的名称（`a--b`、`b-`），并建议清理后的名称。包命令会为编辑器主题给出正确答案：`eject` 说明其源已经属于你，而路径（`themes/<theme>`）会以命令名称作答。
 
 @josephfarina

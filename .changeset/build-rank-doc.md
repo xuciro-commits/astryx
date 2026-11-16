@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[docs] The `build` API doc and the build kit's comments say that for a whole page the page-pick model chooses the start from the ranker's list and its own word tables, so the start can differ from the ranker's first template.
+[docs] `build` API 文档和构建套件的注释说明：对于整个页面，页面选择模型从排序器的列表及其自身的词表中选出起点，因此起点可能不同于排序器的第一个模板。
 
 @josephfarina

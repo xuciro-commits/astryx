@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[feat] `astryx build` picks which page template to start from with a second word model, once the existing model has called a page. The page-or-shell and page-or-block calls are unchanged; only the choice among page templates changes.
+[feat] `astryx build` 在现有模型已选定页面之后，用第二个文字模型选择从哪个页面模板开始。page-or-shell 和 page-or-block 的调用保持不变；只有页面模板之间的选择会变化。
 
 @josephfarina

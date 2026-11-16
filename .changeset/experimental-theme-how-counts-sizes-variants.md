@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental theme editor how`: "2 steps more", "3 steps rounder" and "2 spacing units more" are that many steps (never a 2px or 3px value, never a "step" part); "avatars 24x24px" sets their width and height; a warmer or cooler accent moves only its hue (and says so when the accent is a gray), never the neutral grays; "headings 2-4" and "h2 to h4" change only those levels, each from its own size; variant words after except ("except transparent ones", "except success ones") keep that variant's own fill, never an overlay; a semi-transparent background is the part's own fill (never an overlay) mixed with transparent; "primary button text the same color as the secondary button text" takes that variant's own color; "bigger than 4px" goes past the bound from the value now, or says the part is already past it; and the answer check measures a part's color in the variant a command writes.
+[experimental] `astryx experimental theme editor how`："2 steps more"、"3 steps rounder" 和 "2 spacing units more" 就是那么多步（绝不是 2px 或 3px 的值，也绝不是 "step" 部分）；"avatars 24x24px" 会设置它们的宽度和高度；更暖或更冷的强调色只移动其色相（并在强调色为灰色时说明这一点），绝不移动中性灰；"headings 2-4" 和 "h2 to h4" 只更改这些层级，每个层级都基于自己的尺寸；except 之后的变体词（"except transparent ones"、"except success ones"）保留该变体自身的填充，绝不使用叠加层；半透明背景是该部件自身填充（绝非叠加层）与透明的混合；"primary button text the same color as the secondary button text" 采用该变体自身的颜色；"bigger than 4px" 从当前值出发越过该界限，或者说该部件已经越过了它；答案检查会按命令写入的变体来测量部件的颜色。
 
 @josephfarina

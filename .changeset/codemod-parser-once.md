@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[perf] `upgrade` binds jscodeshift to each parser once per codemod instead of once per file, which built a new copy of jscodeshift's helpers for every file. An upgrade over a 240-file app runs about 150 ms faster. Output does not change.
+[perf] `upgrade` 让 jscodeshift 对每个解析器在每个 codemod 中只绑定一次，而不是每个文件绑定一次，此前这会为每个文件构建一份新的 jscodeshift 辅助函数副本。对含 240 个文件的应用执行升级约快 150 ms。输出不变。
 
 @josephfarina

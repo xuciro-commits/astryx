@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[fix] When `astryx build`'s ranker picks a template the word tables don't list, it now weighs that template against the pick model's best listed page, the same model that chooses the page everywhere else, instead of against the call model's.
+[fix] 当 `astryx build` 的排序器选中一个未列入词表的模板时，它现在会将该模板与挑选模型（pick model）的最佳已列页面进行比较——该模型在其他所有地方都负责选择页面——而不是与调用模型（call model）的最佳已列页面比较。
 
 @josephfarina

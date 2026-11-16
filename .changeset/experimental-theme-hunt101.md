@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental theme editor`: the check of a theme's own token values judges what a build made now writes, through one path for `show`, `set`, `undo` and `compile`. A value from an import, an expression, a spread or a computed key is judged by its built value; only the value a later key keeps counts; a pair is judged as the `light-dark()` it builds. The source is read only to name the file and line that hold each value (an imported file is named, not the theme file) and for what a build erases: a second `tokens` key, and a pair with other than two values. Typography is judged by the values the build was given: a scale base with a unit (which builds `NaNrem`) is refused with the number of pixels it means, a scale with a ratio and no base is named, a family written in quotes or holding `; { } < >` is refused with the working form, and `fallbacks` is checked as part of the family list it builds. A family set through typography no longer gets the phone note.
+[experimental] `astryx experimental theme editor`：对主题自身 token 值的检查会判断当前构建所写入的内容，`show`、`set`、`undo` 和 `compile` 共用同一条路径。来自导入、表达式、展开或计算键的值会按其构建后的值判断；只有后出现的键所保留的值才算数；一对颜色值会按其构建出的 `light-dark()` 判断。读取源码仅用于指出每个值所在的文件与行（会指出被导入的文件，而不是主题文件），以及构建会抹掉的内容：第二个 `tokens` 键，以及不是两个值的一对。排版会按构建所获得的值判断：带单位的比例基数（会构建出 `NaNrem`）会被拒绝，并给出它表示的像素数；有比例但没有基数的 scale 会被指出；用引号书写或包含 `; { } < >` 的字体族会被拒绝，并给出可行的形式；`fallbacks` 会作为其构建出的字体族列表的一部分检查。通过排版设置的字体族不再会得到手机端提示。
 
 @josephfarina

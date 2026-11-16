@@ -2,5 +2,5 @@
 '@astryxdesign/richtext': patch
 ---
 
-[feat] In `RichTextEditor`, a Markdown block marker typed at the start of a list item now re-marks it and keeps its text: `- `, `1. `, or `[ ] ` switches the item's list between bullets, numbers, and tasks, and `# ` or `> ` takes a top-level item out of its list as a heading or a quote, the rest of the list continuing after it. Each change is one undo step, back to the marker as typed.
+[feat] 在 `RichTextEditor` 中，在列表项开头键入的 Markdown 块标记现在会重新标记该项并保留其文本：`- `、`1. ` 或 `[ ] ` 会在项目符号、编号和任务之间切换该项所在的列表，而 `# ` 或 `> ` 会将顶层项从列表中取出，作为标题或引用，列表其余部分在其后继续。每次更改都是一步撤销，可回到键入的标记状态。
 @emilyhorsman @ernestt

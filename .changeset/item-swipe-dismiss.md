@@ -2,6 +2,6 @@
 '@astryxdesign/core': patch
 ---
 
-[fix] An open swipe-action row on `Item` and `ListItem` closes on a touch tap on its own content, as a UIKit list row does, and that tap no longer activates the row or paints its press. It also closes when the list or the page scrolls, including a scroll that starts on the row itself, unless focus is inside its open panel (the browser may be scrolling a focused entry into view), and it counts as open from the release that opens it, before its spring comes to rest.
+[fix] `Item` 和 `ListItem` 上已打开的滑动操作行，会在触摸点击其自身内容时关闭，就像 UIKit 列表行那样，而且该点击不再激活该行或绘制按压效果。当列表或页面滚动时它也会关闭，包括从该行自身开始的滚动，除非焦点位于其打开的面板内（浏览器可能正在将聚焦的条目滚动到视野中）；并且从打开它的松手动作起就算作已打开，即使其弹簧动画尚未停稳。
 
 @vjeux

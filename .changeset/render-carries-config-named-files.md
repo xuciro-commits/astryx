@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental render` carries the page's own modules and JSON data whose names only look like configuration: `config.ts`, `lib/arc.ts`, `data/chart-config.json`, `data/config.json`. They were left out as tool configuration, so the page came back from `--reverse` with `exact: false` and without them. These names stay refused: `tsconfig.json` and `tsconfig.*.json`, `jsconfig.json`, any `*.config.json` or `*.config.{js,ts,…}` module, manifests and lockfiles, and dotfiles such as `.eslintrc.js`. A file that carries one says render format 2, so a CLI that reads render formats names the CLI that reads it; 0.7.16 and earlier refuse it as damaged.
+[experimental] `astryx experimental render` 会携带页面自身的模块和 JSON 数据，即使它们的名称看起来像配置：`config.ts`、`lib/arc.ts`、`data/chart-config.json`、`data/config.json`。此前它们被当作工具配置而排除，因此 `--reverse` 返回的页面会带有 `exact: false` 且不包含它们。以下名称仍会被拒绝：`tsconfig.json` 和 `tsconfig.*.json`、`jsconfig.json`、任何 `*.config.json` 或 `*.config.{js,ts,…}` 模块、清单与锁文件，以及诸如 `.eslintrc.js` 的点文件。包含其中之一的文件会标明渲染格式 2，因此能读取渲染格式的 CLI 会指明哪个 CLI 能读取它；0.7.16 及更早版本会将其视为损坏而拒绝。
 
 @josephfarina

@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental theme editor`: the refusal of a theme's own token values no longer ends a reason with two periods.
+[experimental] `astryx experimental theme editor`：拒绝主题自身令牌值的原因说明不再以两个句号结尾。
 
 @josephfarina

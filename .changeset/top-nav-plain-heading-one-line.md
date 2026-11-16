@@ -2,6 +2,6 @@
 '@astryxdesign/core': patch
 ---
 
-[fix] On a phone, TopNav's compact bar keeps a plain-text heading on one line and ends it in an ellipsis, so a long title no longer wraps and makes the bar taller.
+[fix] 在手机上，TopNav 的紧凑栏会将纯文本标题保持在一行并以省略号结尾，因此长标题不再换行而使栏变高。
 
 @josephfarina

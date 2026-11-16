@@ -2,6 +2,6 @@
 '@astryxdesign/core': patch
 ---
 
-[feat] Under a finger, a full swipe on an `Item` or `ListItem` swipe-action row works like a UIKit list row's, the same on every touch device. Past the open width the entries ride the row and the outermost action stretches out to the edge. Dragged on past the confirm point, judged on the finger as UIKit does, the row runs ahead and the outermost action covers its place. Letting go there fires it at any speed; backing out undoes that and closes the row. On a side with two or more actions, a full swipe confirms only from the open row. A disabled outermost action never confirms.
+[feat] 手指操作下，`Item` 或 `ListItem` 滑动操作行上的全滑会像 UIKit 列表行一样工作，并且在所有触屏设备上表现一致。超过展开宽度后，各条目会随该行移动，最外侧的操作会拉伸到边缘。拖过确认点（按 UIKit 的方式以手指判定）后，该行会继续前进，最外侧的操作会覆盖其位置。此时松开会在任意速度下触发它；退回去则会撤销该操作并关闭该行。在有两个或更多操作的一侧，只有从展开的行开始全滑才会确认。已禁用的最外侧操作绝不会确认。
 
 @vjeux

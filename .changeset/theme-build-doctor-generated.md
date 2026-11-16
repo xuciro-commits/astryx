@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[fix] `theme build` of a missing file in a folder whose files another command generates (their first comment says which command writes them) says the file is generated and names that command, instead of offering a blank theme template. `doctor` still compares such a local theme's outputs with its source, and its fix for a stale or missing one runs the exact command that writes it, never a `theme build`. `doctor`'s fix when the themes folder cannot be read names the theme the message names (for a generated one, its command), never `<slug>`. A font stylesheet's local `@import` (a file beside it, `url(faces.css)`, or a package stylesheet such as `@fontsource/inter/index.css`, resolved from where the stylesheet really is) is followed and its fonts proven; a URL import is an external font service, and a local import doctor cannot follow, or one past the files it follows, is a warning, never a failure. The help and docs say `editor show <name> --png` takes pictures of real components.
+[fix] 当某个文件夹中的文件由另一个命令生成（其首行注释说明是哪个命令写入的）时，对缺失文件执行 `theme build` 会说明该文件是生成的并指出该命令，而不是提供空白的主题模板。`doctor` 仍会将此类本地主题的输出与其源码比较，并且对过期或缺失输出的修复会运行写入它的确切命令，绝不会运行 `theme build`。当 themes 文件夹无法读取时，`doctor` 的修复会指出消息中提到的主题（对于生成的主题，则指出其命令），绝不会是 `<slug>`。字体样式表的本地 `@import`（其旁边的文件、`url(faces.css)`，或诸如 `@fontsource/inter/index.css` 的包样式表，从样式表实际所在位置解析）会被追踪并验证其字体；URL 导入属于外部字体服务；doctor 无法追踪的本地导入，或超出其追踪文件范围的本地导入，只会是警告，绝不会失败。帮助与文档说明 `editor show <name> --png` 会拍摄真实组件的图片。
 
 @josephfarina

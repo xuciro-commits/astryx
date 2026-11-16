@@ -2,6 +2,6 @@
 '@astryxdesign/core': patch
 ---
 
-[feat] A theme's component overrides can hold `@light` and `@dark` blocks: properties, pseudo-class overrides and pseudo-elements that apply only where the element's color mode is that mode, as `Theme` resolves it from its own `mode`, the system preference, or a `MediaTheme` surface. Inside media surfaces a block applies as the `onDark` and `onLight` overrides do: inside any surface of its mode, so where surfaces of both modes enclose an element (a light `MediaTheme` inside a dark one) both blocks apply and the light block wins a property both set. Where no enclosing mode matches, the block writes nothing, so every other rule applies there as it would without it, and it can be any value, not only a color. Themes without these blocks compile to the same CSS.
+[feat] 主题的组件覆盖可以包含 `@light` 和 `@dark` 块：属性、伪类覆盖和伪元素仅在元素的颜色模式为该模式时应用，`Theme` 会根据自身的 `mode`、系统偏好或 `MediaTheme` 表面来解析该模式。在媒体表面内，块的作用与 `onDark` 和 `onLight` 覆盖相同：在其模式的任何表面内生效，因此当两种模式的表面同时包围一个元素时（深色表面内的浅色 `MediaTheme`），两个块都会应用，且浅色块在两者都设置的属性上胜出。当没有包围的模式匹配时，该块不写入任何内容，因此其他所有规则在该处都会像没有它时一样应用，而且它可以取任意值，不限于颜色。没有这些块的主题编译出的 CSS 相同。
 
 @josephfarina

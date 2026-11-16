@@ -2,6 +2,6 @@
 '@astryxdesign/core': patch
 ---
 
-[chore] Internal: the UIKit values of a swipe-action row (the swipe threshold, the springs a confirmed row runs ahead on and a released row settles with, the touch claim distance the web needs) and the release rule that picks closed, open or fire (a fast release goes the way it moves, a slow one by where it is, and only a confirmed full swipe fires), checked against releases measured on UIKit. Not exported from the package entry point.
+[chore] 内部：滑动操作行的 UIKit 数值（滑动阈值、已确认的行向前运行以及已释放的行稳定下来所用的弹簧、Web 所需的触摸接管距离）和决定关闭、打开或触发的释放规则（快速释放沿其移动方向，慢速释放按所处位置决定，只有已确认的完整滑动才会触发），均已对照 UIKit 上实测的释放进行校验。不从包入口导出。
 
 @vjeux

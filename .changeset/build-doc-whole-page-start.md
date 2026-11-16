@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[docs] The `build()` API description says a whole-page idea that would start on the app shell starts from the closest page template.
+[docs] `build()` API 描述说明，本来会从应用外壳开始的整页想法会从最接近的页面模板开始。
 
 @josephfarina

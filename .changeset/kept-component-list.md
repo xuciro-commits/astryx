@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[perf] `component --list` keeps its list between runs in a project where an integration can load, like template discovery's records, so a repeat list answers sooner there (about 220 ms with a large TypeScript integration). A new, removed or edited component, doc or integration lists again on the very next run.
+[perf] `component --list` 在可加载集成的项目中会像模板发现的记录那样在多次运行之间保留其列表，因此在那里重复列出会更快响应（使用大型 TypeScript 集成时约 220 毫秒）。新增、删除或编辑过的组件、文档或集成会在下一次运行时重新列出。
 
 @josephfarina

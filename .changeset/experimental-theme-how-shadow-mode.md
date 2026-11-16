@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental theme editor how` scales a named mode of a shadow written as one value by giving it a light-dark() pair, so "make shadows darker in dark mode" on themes such as chocolate or gothic changes the dark shadows and keeps the light ones. A shadow answer that would look the same as now (a color already at full strength) is not offered.
+[experimental] `astryx experimental theme editor how` 通过为以单值书写的阴影的指定模式提供一对 light-dark() 值来缩放它，因此在 chocolate 或 gothic 等主题上执行 "make shadows darker in dark mode" 会改变暗色阴影并保留亮色阴影。与现在看起来相同的阴影结果（颜色已达到最大强度）不会被提供。
 
 @josephfarina

@@ -2,6 +2,6 @@
 '@astryxdesign/core': patch
 ---
 
-[fix] MobileNav with `side="auto"` opens from the opener's inline edge in right-to-left layouts. When the opener holds focus, that is used. When nothing is focused (such as the first open after a page load), the opener is found through its `aria-controls`, which AppShell's `MobileNavToggle` sets. A custom opener without `aria-controls` that never takes focus still opens from `end`.
+[fix] 在从右到左的布局中，设置 `side="auto"` 的 MobileNav 会从触发器的行内边缘打开。当触发器持有焦点时，使用该焦点。当没有任何元素获得焦点时（例如页面加载后的首次打开），会通过其 `aria-controls` 找到触发器，该属性由 AppShell 的 `MobileNavToggle` 设置。没有 `aria-controls` 且从不获取焦点的自定义触发器仍会从 `end` 打开。
 
 @mahmed74

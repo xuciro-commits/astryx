@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[fix] `astryx experimental render` and `--reverse` read a folder or file whose name begins with two dots (`..x`) as one inside the folder that holds it, where they took it for the folder above. A page in such a folder keeps its own folder as the root of the files it carries, so the file it writes reverses; a file above it stays out, named in a `not-embedded` warning. The note at the top of a page rendered outside a project names the page by its path among the files it lists (`app/x/page.tsx`), where it named only the file (`page.tsx`) and pointed at it as the file to edit.
+[fix] `astryx experimental render` 和 `--reverse` 会把名称以两个点开头的文件夹或文件（`..x`）视为其所在文件夹内的项目，而此前会把它当成上一级文件夹。此类文件夹中的页面会以自身所在文件夹作为其所携带文件的根目录，因此它写入的文件可以反向还原；它上方的文件则留在外部，并在 `not-embedded` 警告中指明。在项目之外渲染的页面顶部说明会按其列出的文件中的路径来命名该页面（`app/x/page.tsx`），而此前只命名文件（`page.tsx`）并将其指向为应编辑的文件。
 
 @josephfarina

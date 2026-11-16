@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental theme compile`: the app copy guard reads paths as the build does, so an `--out` written with backslashes or through a link into an editor theme's copy is refused, and a copy file named with backslashes is answered with the theme to compile. A file of yours in the copy folder, without the editor's mark, compiles like any theme source. Refusals run from a subfolder suggest the compile from the app root. The note on fonts named but not loaded follows the font stylesheet this compile writes, and the copy's font file no longer says the system has a font no package loads. A check held up by a file of yours names it and never sends you to a command that does not move it.
+[experimental] `astryx experimental theme compile`：应用副本的防护会像构建那样解析路径，因此用反斜杠书写的 `--out`，或通过链接指向编辑器主题副本的 `--out`，会被拒绝；而用反斜杠命名的副本文件会得到应编译的主题。你在副本文件夹中的文件（不带编辑器标记）会像任何主题源码一样编译。从子文件夹运行时给出的拒绝会建议从应用根目录执行编译。关于已命名但未加载字体的提示会跟随此编译所写入的字体样式表，副本的字体文件也不再提示系统存在某个没有任何包加载的字体。若检查因你的文件而受阻，会指出该文件，绝不会把你引向无法移动它的命令。
 
 @josephfarina

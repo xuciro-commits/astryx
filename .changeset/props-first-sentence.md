@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[feat] `astryx component <Name>` prints the first sentence of each prop's description, under one line naming the command that prints them whole: the read's own selector and `--package` scope with `--props`, so it resolves to the same component. A read prints its descriptions whole when that line would cost more than the cut saves. The `--props` view, `--json` and `astryx discover` keep every description whole.
+[feat] `astryx component <Name>` 会打印每个 prop 描述的第一句，其下方有一行指明可完整打印这些描述的命令：该读取自身的 selector 与 `--package` 范围加上 `--props`，因此会解析到同一个组件。当该行的开销超过截断所节省的开销时，读取会完整打印描述。`--props` 视图、`--json` 和 `astryx discover` 会保留每条描述的完整内容。
 
 @josephfarina

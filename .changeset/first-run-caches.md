@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[perf] A machine's first `search` or `build` run, and its first `component`, `template`, `theme`, `discover` or `docs` run in a project where an integration can load, now keeps what it gathers, and Node's compile cache is written from the first run. With the CLI installed in the project, the second command on a new machine (most often the same session's next one) reads them instead of gathering again: about 1.7 s faster for `search` and 0.8 s for `component` in a project with an integration. A global copy with no Core beside it starts installing its Core after its first run, which changes what the next run reads, so it reads from its third run, as before. Answers do not change; `doctor`'s "Kept catalog cache" row counts the entries the first run now keeps.
+[perf] 一台机器上首次运行 `search` 或 `build`，以及在可以加载集成的项目中首次运行 `component`、`template`、`theme`、`discover` 或 `docs` 时，现在会保留其收集到的内容，并且 Node 的编译缓存从首次运行起就会被写入。当 CLI 安装在项目中时，新机器上的第二条命令（通常是同一会话中的下一条）会读取这些内容，而不再重新收集：在带有集成的项目中，`search` 约快 1.7 秒，`component` 约快 0.8 秒。旁边没有 Core 的全局副本会在首次运行后开始安装其 Core，这会改变下一次运行所读取的内容，因此它从第三次运行起才会读取，与之前一样。答案不会改变；`doctor` 的 "Kept catalog cache" 行会统计首次运行现在保留的条目。
 
 @josephfarina

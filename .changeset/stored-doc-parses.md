@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[perf] The published CLI reads its own shipped docs as already checked against their schema at publish, instead of checking each one on every read, so `docs` answers about 25 ms sooner. A doc that was edited or is not shipped is checked as before. Output is unchanged.
+[perf] 已发布的 CLI 将随包发布的文档视为在发布时已通过 schema 校验，而不是在每次读取时逐个校验，因此 `docs` 的响应约提前 25 ms。被编辑过或未随包发布的文档仍按原方式校验。输出不变。
 
 @josephfarina

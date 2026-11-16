@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental theme editor how` judges a dial step by what it does, never by its own word: "more washed out colors" answers `vibrancy less` again. A typed value waives the way only for what it writes; every other value is still measured the way asked.
+[experimental] `astryx experimental theme editor how` 根据拨盘步骤的实际作用来判断它，而不是根据它自己的措辞：“more washed out colors” 会再次回答 `vibrancy less`。输入的值仅对其写入的内容豁免该方式；其他每个值仍按所要求的方式衡量。
 
 @josephfarina

@@ -2,6 +2,6 @@
 '@astryxdesign/core': patch
 ---
 
-[fix] The useHotkeys docs no longer recommend `shift+/` for a help overlay. The hook compares the final key against `event.key`, and Shift+/ produces `?` on US layouts, so a `shift+/` registration never fires there. The docs now use `?` and say to register a punctuation key that shift changes as the character it produces. No behavior changes.
+[fix] useHotkeys 文档不再推荐用 `shift+/` 打开帮助浮层。该 hook 会将最终按键与 `event.key` 比较，而在美式键盘布局上 Shift+/ 会产生 `?`，因此 `shift+/` 注册在那里永远不会触发。文档现在改用 `?`，并说明对于 shift 会改变其字符的标点键，应按其产生的字符来注册。行为没有变化。
 
 @josephfarina

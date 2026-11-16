@@ -2,14 +2,14 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental theme editor`: what is pasted is read as meant, and a repair carries the value given.
+[experimental] `astryx experimental theme editor`：粘贴的内容会按其本意读取，修复建议会带上给定的值。
 
-- A repair never offers a stock value the input did not hold (a gray, a violet, `inter`, `system`, `1px`): a line that sets the same setting again carries the value typed or saved, cleaned, else `how` for the setting.
-- A value labeled with a word that is not the setting's own name is refused with what the word means, never set with it dropped: a mode (`accent 'dark: #2563eb'` offers `--color-accent '#2563eb' --mode dark`), a state (set on a part with `--state`), a kind of screen (not set per screen), a part (`--on <part>`), a heading level (`headings 'h1: bold'` offers `font-weight 700 --on heading --when level:1`), or a word it does not read. The setting's own name before the value is the value (`font 'fontFamily: Inter, serif'`); a camelCase or quoted label of another setting names it.
-- A size multiplied by a variable with a number fallback (`calc(0.75rem * var(--x, 1))`) is taken.
-- CSS function names in any case are read (`LIGHT-DARK(…)`); a `light-dark()` with another separator offers the comma; a font list missing the comma before its generic family (`Georgia serif`) or with a spaced generic (`sans serif`) offers the list meant.
-- A backslash before `#`, a quote or a space is taken off; a JavaScript escape in a `content` string is written as CSS writes it (`\u2022` is `\2022`); JSON arrays and design-token objects (`{"$value": …}`, `{"value": 18, "unit": "px"}`) are read as their value.
-- `headings lighter` is the weight light; two headings words give one line each.
-- The change receipt names a quote or space mark as its CSS escape, so text and JSON name the same value; a saved value in corner brackets is named as quoted, not as spaces.
+- 修复建议绝不会提供一个输入中原本没有的现成值（某个灰度、某个紫色、`inter`、`system`、`1px`）：再次设置同一设置项的一行会带上键入或保存的值（经过清理），否则给出该设置项的 `how`。
+- 带有并非该设置项自身名称的标签的值会被拒绝，并说明该词的含义，绝不会在丢弃该词的情况下设置：一个模式（`accent 'dark: #2563eb'` 会给出 `--color-accent '#2563eb' --mode dark`）、一个状态（在部件上用 `--state` 设置）、一种屏幕类型（不按屏幕设置）、一个部件（`--on <part>`）、一个标题级别（`headings 'h1: bold'` 会给出 `font-weight 700 --on heading --when level:1`），或一个它无法识别的词。值前面是该设置项自身的名称时，它就是该值（`font 'fontFamily: Inter, serif'`）；另一个设置项的 camelCase 或带引号的标签会指明它。
+- 乘以带数字回退值的变量的尺寸（`calc(0.75rem * var(--x, 1))`）会被接受。
+- 任意大小写的 CSS 函数名都能被读取（`LIGHT-DARK(…)`）；使用其他分隔符的 `light-dark()` 会提示改用逗号；字体列表在通用族前缺少逗号（`Georgia serif`）或通用族带空格（`sans serif`）时，会给出本意的列表。
+- `#`、引号或空格前的反斜杠会被去掉；`content` 字符串中的 JavaScript 转义会按 CSS 的写法写出（`\u2022` 即 `\2022`）；JSON 数组和设计令牌对象（`{"$value": …}`、`{"value": 18, "unit": "px"}`）会按其值读取。
+- `headings lighter` 表示字重 light；两个 headings 词各给出一行。
+- 变更回执会把引号或空格标记写为其 CSS 转义，因此文本和 JSON 命名的是同一个值；以角括号保存的值会按带引号命名，而不是按空格命名。
 
 @josephfarina

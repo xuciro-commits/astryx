@@ -2,6 +2,6 @@
 '@astryxdesign/core': patch
 ---
 
-[fix] A press no longer scales a trigger whose own layer is open: a Button that opens a menu or a Popover, and a ghost or secondary Selector, MultiSelector or ComplexSelector. Under a mouse or a finger, the open layer stays where an unpressed open puts it. A disclosure button without a popup keeps its press.
+[fix] 当触发器自身的层处于打开状态时，按压不再缩放该触发器：打开菜单或 Popover 的 Button，以及 ghost 或 secondary 的 Selector、MultiSelector 或 ComplexSelector。在鼠标或手指下，已打开的层停留在未按压打开时所处的位置。没有弹层的展开按钮仍保留按压效果。
 
 @vjeux

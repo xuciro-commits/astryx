@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[fix] `astryx build` reads a request that opens with "add" and says where the piece goes ("add a filter row above the table") as a change to a page the builder already has, so it starts from the app shell. "Add a dashboard to the app" and "add a new dashboard" still start from a page template.
+[fix] `astryx build` 会把以 “add” 开头并说明部件放置位置的请求（“add a filter row above the table”）理解为对构建器已有页面的更改，因此从应用外壳开始。“Add a dashboard to the app” 和 “add a new dashboard” 仍从页面模板开始。
 
 @josephfarina

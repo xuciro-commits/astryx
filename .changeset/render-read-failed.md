@@ -2,6 +2,6 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental render` and `--reverse` say that a file they cannot read cannot be read, with the reason (`EACCES: no permission`, a folder or a pipe given as the file), and the new error code `ERR_READ_FAILED`. They used to say the file does not exist, with `ERR_FILE_NOT_FOUND`, which a file that is not there keeps.
+[experimental] `astryx experimental render` 和 `--reverse` 会说明某个文件无法读取，并给出原因（`EACCES: no permission`、传入的是文件夹或管道），同时使用新的错误码 `ERR_READ_FAILED`。它们过去会说文件不存在并使用 `ERR_FILE_NOT_FOUND`；文件确实不存在时仍保留该错误码。
 
 @josephfarina

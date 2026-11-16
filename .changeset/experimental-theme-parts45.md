@@ -2,14 +2,14 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental theme editor`: state settings keep the base theme's other state styles, one-mode halves across the background family and states, and one-mode tokens that are no color.
+[experimental] `astryx experimental theme editor`：状态设置保留基础主题的其他状态样式、背景族和状态中的单模式另一半，以及非颜色的单模式令牌。
 
-- A state setting (a hover text color, say) keeps the base theme's other styles in that state, such as a variant's own hover background, in both modes.
-- A one-mode color in a state keeps, in the other mode, what that state shows there: its own value, else the resting color a setting gives the variant or the part, else the base theme's.
-- `background` and `background-color` count as one property for one-mode settings: a variant's earlier color is kept as the other half and replaced, and a later both-mode color replaces a one-mode one of the other name.
-- A one-mode color in a state is accepted where the base theme gives the part that color.
-- In a `light-only` or `dark-only` theme, a token that is no color (a shadow) is written as one value, never as a light and dark pair.
-- When `--mode` is refused in a one-mode theme, the offered command keeps `--when` and `--state`, and offers `mode both` first for the mode the theme does not show.
-- The spacing dial reads kept sizes in pt, pc, in, cm, mm, Q and em, in any letter case, and keeps a variant's own exact size in order on that variant.
+- 状态设置（例如悬停文本颜色）会在两种模式下保留基础主题在该状态中的其他样式，例如变体自己的悬停背景。
+- 状态中的单模式颜色会在另一模式下保留该状态在那里显示的值：其自身值，否则是设置为该变体或部件提供的静止色，再否则是基础主题的值。
+- 对于单模式设置，`background` 和 `background-color` 算作同一个属性：变体较早的颜色会作为另一半保留并被替换，而较晚的两种模式颜色会替换另一个名称的单模式颜色。
+- 当基础主题为该部件提供该颜色时，状态中的单模式颜色会被接受。
+- 在 `light-only` 或 `dark-only` 主题中，非颜色的令牌（阴影）写为一个值，绝不会写成浅色和深色对。
+- 当单模式主题中拒绝 `--mode` 时，提供的命令会保留 `--when` 和 `--state`，并针对主题未显示的模式优先提供 `mode both`。
+- 间距刻度盘会读取以 pt、pc、in、cm、mm、Q 和 em 表示的保留尺寸（不区分字母大小写），并按顺序在该变体上保留变体自己的精确尺寸。
 
 @josephfarina

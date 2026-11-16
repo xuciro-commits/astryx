@@ -2,13 +2,13 @@
 '@astryxdesign/cli': patch
 ---
 
-[experimental] `astryx experimental theme editor`: one-mode colors in a variant or a state, gradient layers with a color, keywords with a mode, and the corners dial on parts with their own radius.
+[experimental] `astryx experimental theme editor`：变体或状态中的单模式颜色、带颜色的渐变图层、带模式的 CSS 关键字，以及自有圆角部件的 corners 旋钮。
 
-- A one-mode color in a variant or a state (a heading level, a hover) keeps the theme's own value around it in the other mode: the variant's resting color, then the part's, then the whole theme's, as the theme finally has it. A later brand color reaches the other mode.
-- In a one-mode background, a color written beside a gradient (`#f00 linear-gradient(…)`) is that mode's background color, and the gradient its image.
-- A CSS-wide keyword (`unset`, `inherit`) takes no `--mode`; the offered command sets it for both modes.
-- The corners dial reaches parts whose base theme gives them a radius of their own, and a corners step on a part starts from the radius the part shows.
-- A one-mode color on a part says that, in the other mode, it overrides what Core or the base theme gives the part in context.
-- `how` lists the margins a part reads among its spacing, as `set` reads them.
+- 变体或状态（标题层级、悬停）中的单模式颜色会在另一模式下保留其周围主题自身的值：先是变体的静止颜色，然后是部件的，再然后是整个主题的，以主题最终的状态为准。之后设置的品牌颜色会到达另一模式。
+- 在单模式 background 中，写在渐变旁边的颜色（`#f00 linear-gradient(…)`）是该模式的背景颜色，而渐变则是其图片。
+- CSS 全局关键字（`unset`、`inherit`）不接受 `--mode`；提供的命令会为两个模式设置它。
+- corners 旋钮会作用于基础主题为其提供了自身圆角的部件，且部件上的 corners 步长从该部件显示的圆角开始。
+- 部件上的单模式颜色会说明，在另一模式下它会覆盖 Core 或基础主题在上下文中为该部件提供的值。
+- `how` 会列出部件在其间距中读取的外边距，读取方式与 `set` 相同。
 
 @josephfarina
